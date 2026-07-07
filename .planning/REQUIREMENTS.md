@@ -117,17 +117,63 @@
 
 ## Traceability
 
-로드맵 생성 시 채워짐.
+로드맵 매핑 완료 (2026-07-07). 모든 v1 REQ가 정확히 하나의 페이즈에 매핑됨.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (roadmapper가 채움) | — | Pending |
+| CONTRACT-01 | Phase 1 | Pending |
+| CONTRACT-02 | Phase 1 | Pending |
+| CONTRACT-03 | Phase 1 | Pending |
+| CONTRACT-04 | Phase 1 | Pending |
+| BOOT-01 | Phase 1 | Pending |
+| BOOT-02 | Phase 1 | Pending |
+| BOOT-03 | Phase 1 | Pending |
+| DOCS-01 | Phase 1 | Pending |
+| DOCS-02 | Phase 1 | Pending |
+| MEM-01 | Phase 2 | Pending |
+| MEM-02 | Phase 2 | Pending |
+| MEM-03 | Phase 2 | Pending |
+| RULES-01 | Phase 2 | Pending |
+| RULES-02 | Phase 2 | Pending |
+| HOOK-05 | Phase 2 | Pending |
+| CONFIG-01 | Phase 3 | Pending |
+| CONFIG-02 | Phase 3 | Pending |
+| AGENT-01 | Phase 3 | Pending |
+| AGENT-02 | Phase 3 | Pending |
+| AGENT-03 | Phase 3 | Pending |
+| AGENT-04 | Phase 3 | Pending |
+| AGENT-05 | Phase 3 | Pending |
+| CMD-01 | Phase 3 | Pending |
+| CMD-02 | Phase 3 | Pending |
+| CMD-03 | Phase 3 | Pending |
+| CMD-04 | Phase 3 | Pending |
+| CMD-05 | Phase 3 | Pending |
+| CMD-06 | Phase 3 | Pending |
+| CMD-07 | Phase 3 | Pending |
+| CMD-08 | Phase 3 | Pending |
+| CMD-09 | Phase 3 | Pending |
+| SKILL-01 | Phase 3 | Pending |
+| SKILL-02 | Phase 3 | Pending |
+| DOCS-03 | Phase 3 | Pending |
+| HOOK-01 | Phase 4 | Pending |
+| HOOK-02 | Phase 4 | Pending |
+| HOOK-03 | Phase 4 | Pending |
+| HOOK-04 | Phase 4 | Pending |
+| POLY-01 | Phase 4 | Pending |
+| CI-01 | Phase 5 | Pending |
+| CI-02 | Phase 5 | Pending |
+| EMIT-01 | Phase 6 | Pending |
+| EMIT-02 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 36 total
-- Mapped to phases: 0 (roadmap 생성 전)
-- Unmapped: 36 ⚠️
+- v1 requirements: 43 total (이전 "36" 헤더는 stale — 실제 REQ-ID 수는 43)
+- Mapped to phases: 43 ✓
+- Unmapped: 0 ✓
+
+**Phase distribution:** P1=9, P2=6, P3=19, P4=5, P5=2, P6=2
+
+**Note on POLY-01 / CONTRACT-02:** POLY-01(전체 린터)은 Phase 4에 단일 매핑. 그 정규화 코어는 CONTRACT-02(Phase 1)로 별도 REQ이며 Phase 1에서 한 번 만들어 골든러너·린터가 공유 — 중복 매핑 아님.
 
 ---
 *Requirements defined: 2026-07-07*
-*Last updated: 2026-07-07 after initial definition*
+*Last updated: 2026-07-07 after roadmap traceability mapping*
