@@ -36,7 +36,7 @@ def test_pytest_allowed(matrix: dict) -> None:
 
 
 def test_git_push_force_asks(matrix: dict) -> None:
-    # `git push*` (ask) is the last matching rule; `rm -rf*` does not match (P3 — no trailing allow).
+    # `git push*` (ask) is the last matching rule; `rm -rf*` doesn't match (P3 — no trailing allow).
     assert resolve_bash(matrix["bash"], "git push --force") == "ask"
 
 

@@ -1,8 +1,8 @@
 """Import-path wiring for the harness_perms tests (CONFIG-02, D-03).
 
-Mirrors tools/memory_regen/tests/conftest.py exactly: harness_perms is a *virtual* uv-workspace
-member (not pip-installed), imported by module path from the repo root, so the tests must put the
-repo root onto sys.path themselves. `tools` is a namespace package (no tools/__init__.py) — inserting
+Mirrors tools/memory_regen/tests/conftest.py: harness_perms is a *virtual* uv-workspace member
+(not pip-installed), imported by module path from the repo root, so the tests must put the repo
+root onto sys.path themselves. `tools` is a namespace package (no tools/__init__.py) — inserting
 the repo root lets `from tools.harness_perms import ...` resolve.
 """
 
