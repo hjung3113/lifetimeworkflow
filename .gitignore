@@ -10,3 +10,6 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
+
+# Golden machine-proposed baselines (transient; promoted to .verified only by /golden-approve, P9)
+golden/**/baseline.received.tsv
