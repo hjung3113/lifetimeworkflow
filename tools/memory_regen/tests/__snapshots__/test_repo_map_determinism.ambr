@@ -1,0 +1,12 @@
+# serializer version: 1
+# name: test_render_matches_committed_snapshot
+  '''
+  # DERIVED — do not hand-edit (tools/memory_regen/repo_map.py)
+  
+  Importance-ranked code map (tree-sitter symbols -> networkx PageRank over the reference graph). Rank-ordered, no scores; regenerated each session.
+  1. `mod.py` - helper, main
+  2. `mod.sh` - helper
+  3. `Mod.cs` - Helper, Main, Mod
+  
+  '''
+# ---
