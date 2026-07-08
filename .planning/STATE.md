@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: verifying
 stopped_at: Phase 4 context gathered
-last_updated: "2026-07-08T12:44:12.145Z"
+last_updated: "2026-07-08T12:50:01.906Z"
 last_activity: 2026-07-08
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 24
-  completed_plans: 20
+  completed_plans: 21
   percent: 50
 ---
 
@@ -30,7 +30,7 @@ Plan: 7 of 7
 Status: Phase complete — ready for verification
 Last activity: 2026-07-08
 
-Progress: [████████░░] 83%
+Progress: [█████████░] 88%
 
 ## Performance Metrics
 
@@ -71,6 +71,7 @@ Progress: [████████░░] 83%
 | Phase 3 P03-07 | 9min | 2 tasks | 10 files |
 | Phase 4 P01 | 14min | 2 tasks | 8 files |
 | Phase 04 P02 | 7min | 2 tasks | 9 files |
+| Phase 04 P03 | 12min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,9 @@ Recent decisions affecting current work:
 - [Phase ?]: [04-01] POLY-01 polyglot §4.3-4.6 linter (tools/polyglot_lint): detection-by-normalization diffs raw vs libs/python normalize.core (R1-BOM/R2-CRLF/R7-tsv/R3-decimal/R5-datetime/R6-null), fail loud exit 1; reuses the core (no second normalizer, D-02/D-03) proven by identity + corpus-parity on libs/normalize-fixtures. Shared engine HOOK-04/HOOK-03 will call.
 - [Phase 04]: secret_scan feeds resolve_path only the *.env SECRET subset, never the full constitution deny key — preserves contract-guard's GOLDEN_APPROVE_HUMAN bypass under any-deny-wins aggregation (04-06 composition invariant / Blocker-1 fix)
 - [Phase 04]: shared tools/hooks _stdin adapter is fail-safe on malformed/empty stdin — yields a sentinel Event mapping to 'no decision' so a broken payload never crashes a gate (T-04-05)
+- [Phase ?]: HOOK-04 contract-guard uses CONSTITUTION_GLOBS (constitution-only subset, no *.env) so its domain is provably disjoint from secret_scan (W-1)
+- [Phase ?]: Approved-but-dirty constitution writes still denied via reused lint_bytes (D-04 byte-pristine); allowed-path BOM/CRLF deferred to format-on-write 04-04
+- [Phase ?]: GOLDEN_APPROVE_HUMAN bypass requires non-empty non-blank value; empty string does not bypass (Q1 RESOLVED, T-04-06)
 
 ### Pending Todos
 
@@ -129,6 +133,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-08T12:44:12.124Z
+Last session: 2026-07-08T12:49:27.127Z
 Stopped at: Phase 4 context gathered
 Resume file: None
