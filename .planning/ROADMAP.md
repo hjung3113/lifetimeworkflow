@@ -50,7 +50,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 01-05-PLAN.md — Contract-drift gate: RFC 8785 JCS hash manifest + breaking/non-breaking classification, covers §4-5 (CONTRACT-04)
+- [x] 01-05-PLAN.md — Contract-drift gate: RFC 8785 JCS hash manifest + breaking/non-breaking classification, covers §4-5 (CONTRACT-04)
 - [ ] 01-06-PLAN.md — Golden loop: .NET toy converter + Python golden-runner + two fixtures + /golden-approve refusal gate (CONTRACT-03)
 
 ### Phase 2: Two-Plane Memory + Rules
@@ -136,7 +136,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Constitution + Golden Core | 4/6 | In Progress|  |
+| 1. Constitution + Golden Core | 5/6 | In Progress|  |
 | 2. Two-Plane Memory + Rules | 0/TBD | Not started | - |
 | 3. Agents + Commands + Skills | 0/TBD | Not started | - |
 | 4. Plugins + Hooks | 0/TBD | Not started | - |
