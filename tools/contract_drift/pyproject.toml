@@ -1,0 +1,12 @@
+[project]
+name = "logparser-contract-drift"
+version = "0.0.0"
+description = "Contract-drift gate (CONTRACT-04, D-07): live JCS SHA-256 manifest vs committed baseline diff + breaking/non-breaking classification. Trips on any unapproved .schema.json change, incl. §4-5 conventions (P14)."
+requires-python = ">=3.11"
+# Consumes tools.contract_hash (rfc8785-based); classification is a pure schema-document diff.
+dependencies = ["rfc8785==0.1.4"]
+
+[tool.uv]
+# Virtual member: no build-system. Invoked as `python -m tools.contract_drift.drift`; the gate
+# CLI lives in check.sh. No wheel is built.
+package = false
