@@ -11,6 +11,7 @@ Pins the two guarantees the repo-map depends on:
 
 from __future__ import annotations
 
+import ast
 import inspect
 import warnings
 from pathlib import Path
@@ -55,12 +56,33 @@ def test_ext_to_lang_resolves_each_language() -> None:
     assert queries.lang_for_path(Path("x.txt")) is None
 
 
+def _code_lines(obj) -> str:
+    """Source of ``obj`` with comment lines and the leading docstring stripped (code only)."""
+    src = inspect.getsource(obj)
+    tree = ast.parse(src)
+    _doc_nodes = (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+    docstrings = {
+        ast.get_docstring(node, clean=False)
+        for node in ast.walk(tree)
+        if isinstance(node, _doc_nodes)
+    }
+    out = []
+    for line in src.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            continue
+        if any(ds and ds in line for ds in docstrings if ds):
+            continue
+        out.append(line)
+    return "\n".join(out)
+
+
 def test_parse_path_uses_querycursor_not_removed_api() -> None:
-    """Pitfall 3 guard: source uses the 0.25 QueryCursor seam, not lang.query()/Query.captures()."""
-    src = inspect.getsource(queries)
-    assert "QueryCursor" in src, "must use the tree-sitter 0.25 QueryCursor API"
-    # The removed 0.24-era chained call must not appear.
-    assert ".query(" not in src, "must NOT call the removed Language.query() API"
+    """Pitfall 3 guard: code uses the 0.25 QueryCursor seam, not lang.query()/Query.captures()."""
+    code = _code_lines(queries.parse_symbols)
+    assert "QueryCursor" in code, "must use the tree-sitter 0.25 QueryCursor API"
+    # The removed 0.24-era chained call must not appear in executable code (docstrings excluded).
+    assert ".query(" not in code, "must NOT call the removed Language.query() API"
 
 
 def test_parse_emits_no_deprecation_or_attribute_error(tmp_source_tree: Path) -> None:
