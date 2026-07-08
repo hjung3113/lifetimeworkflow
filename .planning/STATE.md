@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Phase 4 context gathered
+status: re-scoped
+stopped_at: Phase 4 complete; ADR-0002 re-scope to general template; Phase 5 (GEN) inserted
 last_updated: "2026-07-08T13:03:52.576Z"
 last_activity: 2026-07-08
 progress:
-  total_phases: 6
+  total_phases: 7
   completed_phases: 4
   total_plans: 24
   completed_plans: 24
-  percent: 67
+  percent: 57
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 4 complete — next up Phase 5 (CI + Gates)
+**Current focus:** ADR-0002 re-scope → general reusable template. Next: Phase 5 (De-specialization & Template Extraction, GEN-01..04).
 
 ## Current Position
 
-Phase: 4 (Plugins + Hooks) — COMPLETE (6/6 plans; 345 passed / 2 skipped; all 4 success criteria demonstrated live)
-Plan: 6 of 6
-Status: Phase complete — gates wired live (7 PreToolUse / 4 PostToolUse), GSD hooks preserved, opencode stubs authored-deferred
+Phase: 4 COMPLETE. **Re-scoped (ADR-0002):** project redefined from log-parser-specific harness → general contract-first polyglot agent-harness template; log-parser domain to be demoted to `examples/log-parser/`. New Phase 5 (GEN) inserted; old CI→6, Emitter→7 (re-scoped generic).
+Plan: — (Phase 5 not yet planned)
+Status: Planning artifacts recast (PROJECT/ROADMAP/REQUIREMENTS/STATE). Next: write ADR-0002 + plan Phase 5. Actual domain move handled in Phase 5 (touches live drift/contract-guard gates — needs deliberate ADR + hash re-baseline).
 Last activity: 2026-07-08
 
-Progress: [██████████] 100% (4/6 phases)
+Progress: [███████░░░] 57% (4/7 phases)
 
 ## Performance Metrics
 

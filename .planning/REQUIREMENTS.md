@@ -81,10 +81,17 @@
 - [ ] **BOOT-02**: uv 워크스페이스 + Python 툴링(ruff·pyright·pytest) 골격
 - [ ] **BOOT-03**: 부트스트랩을 SessionStart/setup에 와이어링
 
-### CI — 지속적 통합 & 게이트
+### GEN — 범용화 & 템플릿 추출 (Phase 5, INSERTED · ADR-0002)
 
-- [ ] **CI-01**: 폴리글랏 매트릭스 CI(GitHub Actions) — `dotnet test` + `pytest` + contract-check를 비우회 실행
-- [ ] **CI-02**: CODEOWNERS(`contracts/`·`adr/`·`golden/` 게이트) + PR 템플릿(경량 breaking 체크)
+- [ ] **GEN-01**: 로그파서 도메인 시드(`contracts/{log-specs,reference-data,normalization,state}`, `libs/{python/normalize,dotnet/Normalize,normalize-fixtures}`, `components/toy-converter`, 관련 `golden/`)를 `examples/log-parser/`로 이동 — 신규 ADR + contract-hash manifest 재베이스라인 동반, 이동 후 라이브 contract-drift 게이트가 clean
+- [ ] **GEN-02**: 도메인 중립 최소 기본 인스턴스(제네릭 샘플 계약 + 골든 픽스처)를 루트에 제공 — 반도체 콘텐츠 없이 contract→hash→drift→golden 전체 루프가 돎을 증명
+- [ ] **GEN-03**: 참여 언어·툴체인을 단일 프로젝트 설정 슬롯(예: `harness/project.toml`)에서 읽기 — 권한 매트릭스 `dotnet */uv */pytest *` 스코프·엔지니어 페르소나·`/build`·`/test`·`/lint` 본문이 설정에서 파생(하드코딩 아님). 로그파서 예시가 .NET 10 + Python(uv) 값 공급
+- [ ] **GEN-04**: 코어→예시 단방향 의존 가드 테스트 — `tools/`·`harness/`·`libs/`(코어)가 `examples/**`를 import·경로참조 안 함, 추출 후 비-예시 테스트 스위트 그린 유지 + 루트 문서(`CLAUDE.md`·루트 `AGENTS.md`·`docs/`)는 템플릿+인스턴스 추가법 기술, 로그파서 특화는 예시 자체 `AGENTS.md`/README로 이동
+
+### CI — 지속적 통합 & 게이트 (Phase 6, generic)
+
+- [ ] **CI-01**: **설정 파생** 폴리글랏 매트릭스 CI(GitHub Actions) — 언어별 테스트 잡 + generic contract-check/drift/golden을 비우회 실행. 잡은 `harness/project.toml` 설정에서 파생(하드코딩 `dotnet test`/`pytest` 아님); 로그파서 예시가 .NET 10 + pytest 레그 공급(.NET egress 유예가 GitHub 러너에서 실제 실행되는 지점)
+- [ ] **CI-02**: CODEOWNERS(`contracts/`·`adr/`·`golden/` + 예시 인스턴스 등가물 게이트) + PR 템플릿(경량 breaking 체크)
 
 ### EMIT — 단일소스 듀얼런타임 산출 (마지막 페이즈)
 
@@ -160,17 +167,21 @@
 | HOOK-03 | Phase 4 | Complete |
 | HOOK-04 | Phase 4 | Complete |
 | POLY-01 | Phase 4 | Complete |
-| CI-01 | Phase 5 | Pending |
-| CI-02 | Phase 5 | Pending |
-| EMIT-01 | Phase 6 | Pending |
-| EMIT-02 | Phase 6 | Pending |
+| GEN-01 | Phase 5 | Pending |
+| GEN-02 | Phase 5 | Pending |
+| GEN-03 | Phase 5 | Pending |
+| GEN-04 | Phase 5 | Pending |
+| CI-01 | Phase 6 | Pending |
+| CI-02 | Phase 6 | Pending |
+| EMIT-01 | Phase 7 | Pending |
+| EMIT-02 | Phase 7 | Pending |
 
 **Coverage:**
-- v1 requirements: 43 total (이전 "36" 헤더는 stale — 실제 REQ-ID 수는 43)
-- Mapped to phases: 43 ✓
+- v1 requirements: 47 total (43 원본 + GEN-01..04 신규, ADR-0002 re-scope)
+- Mapped to phases: 47 ✓
 - Unmapped: 0 ✓
 
-**Phase distribution:** P1=9, P2=6, P3=19, P4=5, P5=2, P6=2
+**Phase distribution:** P1=9, P2=6, P3=19, P4=5, P5=4(GEN), P6=2(CI), P7=2(EMIT)
 
 **Note on POLY-01 / CONTRACT-02:** POLY-01(전체 린터)은 Phase 4에 단일 매핑. 그 정규화 코어는 CONTRACT-02(Phase 1)로 별도 REQ이며 Phase 1에서 한 번 만들어 골든러너·린터가 공유 — 중복 매핑 아님.
 

@@ -1,8 +1,10 @@
-# Roadmap: 설비 로그파서 파이프라인 opencode 하네스 (LogParser Pipeline Harness)
+# Roadmap: Contract-First 폴리글랏 에이전트 하네스 템플릿
+
+> **Re-scope (2026-07-08, ADR-0002):** 원래 반도체 로그파서 전용 하네스로 Phase 1–4를 완주했으나, 재사용 가능한 **범용 템플릿**으로 재정의. 완료된 Phase 1–4(도메인 시드 포함)는 유지하고, **새 Phase 5 "De-specialization & Template Extraction"**을 삽입해 도메인·언어 특화 콘텐츠를 `examples/log-parser/`로 격리 + 코어 중립화한다. 기존 Phase 5(CI)·6(Emitter)은 6·7로 밀리며 **generic 관점으로 재범위**된다(하드코딩 `dotnet test`/`pytest` 대신 설정형 매트릭스).
 
 ## Overview
 
-This harness is a config compiler plus runtime overlay — not an application — so it is built bottom-up in the order the domain's own risk profile dictates. We start by proving ONE real contract→golden→drift→human-approval loop end-to-end on seeded domain contracts (the walking skeleton), because the normalized golden-equivalence comparator is the single shared linchpin of both the golden runner and the polyglot linter. From that safety net we layer the two-plane memory and rules, then the full authored agent/command/skill surface (migration commands gated behind the *trusted* golden net), then the runtime hooks that enforce what prose only advises, then a non-bypassable CI mirror plus human ratification, and finally — last, because it has nothing to compile until the source exists — the single-source emitter that produces both opencode and Claude Code runtime artifacts. The operative principle throughout: machines gate, humans ratify; agents may propose but never self-bless a golden or auto-mutate the constitution plane.
+This harness is a config compiler plus runtime overlay — not an application — so it is built bottom-up in the order the risk profile dictates. Phases 1–4 proved the durable core on a concrete domain instance (semiconductor log-parser): one real contract→golden→drift→human-approval loop, the two-plane memory + rules, the full authored agent/command/skill surface, and the runtime hooks that enforce what prose only advises. **Phase 5 now extracts that durable core from its domain instance** — demoting the log-parser contracts/normalization/toy-converter to `examples/log-parser/` behind an ADR + hash re-baseline, and turning the hardwired .NET+Python assumption into a project-config slot — so the harness becomes a reusable template any project can fill in. Then a generic non-bypassable CI mirror (config-driven language matrix, not hardcoded jobs) plus human ratification, and finally the single-source emitter that produces both opencode and Claude Code runtime artifacts. The operative principle throughout: machines gate, humans ratify; agents may propose but never self-bless a golden or auto-mutate the constitution plane. **New principle (ADR-0002): the core is domain- and language-neutral; specialization lives only under `examples/<instance>/`, and the core never depends on an example.**
 
 ## Phases
 
@@ -17,8 +19,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Two-Plane Memory + Rules** - Constitution-vs-derived memory split, auto-regenerated derived artifacts, nearest-wins AGENTS.md, and non-ignorable session-start context injection. (completed 2026-07-08)
 - [x] **Phase 3: Agents + Commands + Skills** - The full authored harness surface — personas, commands, skills — in canonical source, with migration commands gated behind the trusted golden net. (completed 2026-07-08)
 - [x] **Phase 4: Plugins + Hooks** - Runtime enforcement of everything authored in Phases 1-3: contract-guard, polyglot linter, format-on-write, secret protection, commit gate. (completed 2026-07-08)
-- [ ] **Phase 5: CI + Gates** - Non-bypassable CI mirror of the in-session gates plus the human ratification path (CODEOWNERS, PR template, wired toolchain bootstrap).
-- [ ] **Phase 6: Single-Source Dual-Runtime Emitter** - One authored source compiles into both opencode (primary) + Claude Code (secondary) artifacts, with per-runtime limit validators that fail loud.
+- [ ] **Phase 5: De-specialization & Template Extraction** *(INSERTED — ADR-0002 re-scope)* - Demote the log-parser domain seed to `examples/log-parser/` (ADR + hash re-baseline), turn hardwired .NET+Python into a project-config slot, add a minimal generic default instance, and prove the core is example-free (core→example no-dependency).
+- [ ] **Phase 6: CI + Gates (generic)** - Non-bypassable CI mirror of the in-session gates plus the human ratification path (CODEOWNERS, PR template), driven by a **config-derived** language matrix rather than hardcoded `dotnet test`/`pytest` jobs; the example instance supplies its own .NET+Python matrix.
+- [ ] **Phase 7: Single-Source Dual-Runtime Emitter** - One authored source compiles into both opencode (primary) + Claude Code (secondary) artifacts, with per-runtime limit validators that fail loud.
 
 ## Phase Details
 
@@ -134,26 +137,42 @@ Plans:
 - [x] 04-05-PLAN.md — HOOK-03 commit-gate (drift + golden[skip] + polyglot) + permission order-resolution suite
 - [x] 04-06-PLAN.md — Claude hook wiring (coexist) + coexist test + authored opencode plugin stubs
 
-### Phase 5: CI + Gates
+### Phase 5: De-specialization & Template Extraction *(INSERTED — ADR-0002)*
 
-**Goal**: A non-bypassable CI mirror of the in-session plugin gates plus the human ratification path completes the "machines gate, humans ratify" loop before the safety net is relied on for real migration work.
+**Goal**: The durable harness core is cleanly separated from its log-parser domain instance, so the repo is a reusable template: domain contracts/normalization/toy-converter move to `examples/log-parser/`, the .NET+Python assumption becomes a project-config slot, and the core provably depends on no example.
 **Mode:** mvp
 **Depends on**: Phase 4
+**Requirements**: GEN-01, GEN-02, GEN-03, GEN-04 (see REQUIREMENTS.md v1 §GEN)
+**Success Criteria** (what must be TRUE):
+
+  1. The log-parser domain seed — `contracts/{log-specs,reference-data,normalization,state}`, `libs/{python/normalize,dotnet/Normalize,normalize-fixtures}`, `components/toy-converter`, and its `golden/` cases — is relocated under `examples/log-parser/` behind a new ADR (0002 or successor) and a re-baselined contract-hash manifest, so the live contract-drift gate reads clean AFTER the move (no orphaned/broken drift baseline).
+  2. A minimal, domain-neutral **default instance** exists at the repo root (a generic sample contract + its golden fixture) that exercises the full contract→hash→drift→golden loop without any semiconductor-log content — proving the machinery runs on a blank domain.
+  3. The participating languages/toolchains are read from a single project-config slot (e.g. `harness/project.toml`); the permission matrix's `dotnet */uv */pytest *` scopes, the engineer personas, and the `/build`·`/test`·`/lint` command bodies derive from that config rather than hardcoding .NET+Python — and the log-parser example supplies the .NET 10 + Python(uv) values.
+  4. A guard test proves **core→example single-direction dependency**: nothing under `tools/`, `harness/`, `libs/` (core) imports or path-references `examples/**`; the full non-example test suite stays green after extraction.
+  5. Root docs (`CLAUDE.md`, root `AGENTS.md`, `docs/`) describe the template + how to add an instance, with log-parser specifics moved into the example's own `AGENTS.md`/README.
+
+**Plans**: TBD
+
+### Phase 6: CI + Gates (generic)
+
+**Goal**: A non-bypassable CI mirror of the in-session plugin gates plus the human ratification path completes the "machines gate, humans ratify" loop — driven by a config-derived language matrix so it stays reusable across instances, not hardwired to one domain's toolchain.
+**Mode:** mvp
+**Depends on**: Phase 5
 **Requirements**: CI-01, CI-02
 **Success Criteria** (what must be TRUE):
 
-  1. A GitHub Actions polyglot matrix runs `dotnet test` + `pytest` + contract-check as non-bypassable jobs on every PR, installing .NET 10 and resolving the `uv` workspace idempotently as part of the run.
+  1. A GitHub Actions matrix runs the **config-derived** per-language test jobs + the generic `contract-check`/drift/golden jobs as non-bypassable checks on every PR, installing each configured toolchain and resolving workspaces idempotently as part of the run. The log-parser example contributes the `.NET 10 + pytest` legs (this is where the .NET egress deferral finally runs for real, on GitHub runners).
   2. A golden or contract-drift failure in CI blocks merge and cannot be skipped by an agent.
-  3. CODEOWNERS gates `contracts/`, `adr/`, and `golden/` so only a human ratifies constitution-plane and golden-baseline changes.
+  3. CODEOWNERS gates `contracts/`, `adr/`, and `golden/` (and the example instances' equivalents) so only a human ratifies constitution-plane and golden-baseline changes.
   4. The PR template carries a lightweight breaking-change / golden checklist that surfaces on every pull request.
 
 **Plans**: TBD
 
-### Phase 6: Single-Source Dual-Runtime Emitter
+### Phase 7: Single-Source Dual-Runtime Emitter
 
-**Goal**: One authored harness source compiles into both runtime-native artifact sets, built last because it is a pure function of the Phase 2-4 source and has nothing to compile until they exist.
+**Goal**: One authored harness source compiles into both runtime-native artifact sets, built last because it is a pure function of the Phase 2-5 source and has nothing to compile until they exist.
 **Mode:** mvp
-**Depends on**: Phase 5
+**Depends on**: Phase 6
 **Requirements**: EMIT-01, EMIT-02
 **Success Criteria** (what must be TRUE):
 
@@ -167,7 +186,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -175,5 +194,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Two-Plane Memory + Rules | 5/5 | Complete   | 2026-07-08 |
 | 3. Agents + Commands + Skills | 7/7 | Complete   | 2026-07-08 |
 | 4. Plugins + Hooks | 6/6 | Complete   | 2026-07-08 |
-| 5. CI + Gates | 0/TBD | Not started | - |
-| 6. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |
+| 5. De-specialization & Template Extraction | 0/TBD | Not started | - |
+| 6. CI + Gates (generic) | 0/TBD | Not started | - |
+| 7. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |

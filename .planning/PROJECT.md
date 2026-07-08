@@ -1,12 +1,14 @@
-# 설비 로그파서 파이프라인 opencode 하네스 (LogParser Pipeline Harness)
+# Contract-First 폴리글랏 에이전트 하네스 템플릿 (Contract-First Polyglot Agent-Harness Template)
+
+> **방향 전환 (2026-07-08, ADR-0002):** 이 프로젝트는 원래 반도체 설비 로그파서 파이프라인 **전용** 하네스로 출발했으나, 실제 구현 방향이 계속 바뀌면서 **재사용 가능한 범용 하네스 템플릿**으로 재정의되었다. 로그파서 도메인은 삭제하지 않고 `examples/log-parser/`의 **worked example(레퍼런스 인스턴스)**로 강등한다. Phase 1–4에서 만든 durable한 아키텍처는 그대로 유지된다.
 
 ## What This Is
 
-반도체 설비 이벤트 로그파서를 책임 분리된 폴리글랏 모노레포(.NET 10 파서·컨버터 / Python 스케줄러·수집기)로 재설계하는 프로젝트를, **에이전트가 만들고·유지보수·개발·리팩토링**할 수 있게 해주는 **opencode 에이전트 하네스**다. 산출물은 컴포넌트 구현 코드가 아니라 하네스 그 자체 — opencode agents·commands·skills·plugins, Diátaxis+ADR+contracts 문서구조, 그리고 세션을 넘어 유지되는 두 평면(헌법/파생) 컨텍스트 메모리 층이다. 대상 사용자는 이 모노레포에서 일하는 개발자와 그들을 돕는 코딩 에이전트다.
+**어떤 contract-first 폴리글랏 프로젝트든** 에이전트가 만들고·유지보수·개발·리팩토링할 수 있게 해주는 **재사용 가능한 에이전트 하네스 템플릿**이다. 산출물은 특정 컴포넌트 구현 코드가 아니라 하네스 그 자체 — opencode/Claude agents·commands·skills·plugins, Diátaxis+ADR+contracts 문서구조, 세션을 넘어 유지되는 두 평면(헌법/파생) 컨텍스트 메모리 층, 그리고 계약·골든·drift·권한을 강제하는 런타임 게이트다. 대상 사용자는 (1) 이 템플릿을 clone/scaffold해 자기 프로젝트에 얹는 개발자와 (2) 그들을 돕는 코딩 에이전트다. **도메인·언어는 하드코딩이 아니라 채워 넣는 슬롯**이다 — 반도체 로그파서는 그 슬롯을 채운 하나의 예시일 뿐.
 
 ## Core Value
 
-**계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다** — 에이전트가 이 레포에서 "어떻게 개발·유지보수·리팩토링하는가"가 부족(tribal knowledge)이 아니라 실행 가능한 스킬·커맨드·훅으로 박혀 있어야 한다.
+**계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·전환 리스크를 하네스가 자동으로 강제·검증한다 — 그리고 이 강제 구조가 특정 도메인·언어에 묶이지 않고 어느 프로젝트에나 재사용된다.** 에이전트가 레포에서 "어떻게 개발·유지보수·리팩토링하는가"가 부족(tribal knowledge)이 아니라 실행 가능한 스킬·커맨드·훅으로 박혀 있고, 그 박힌 구조를 도메인만 갈아끼워 다음 프로젝트로 가져갈 수 있어야 한다.
 
 ## Requirements
 
@@ -24,8 +26,9 @@
 - [ ] **문서 아키텍처**: Diátaxis(tutorials/how-to/reference/explanation) + adr/(불변 MADR) + glossary + 루트/컴포넌트별 AGENTS.md, reference/는 계약에서 생성(에이전트 유지)
 - [ ] **two-plane 컨텍스트 메모리**: 헌법 평면(contracts·adr·glossary·golden — 사람 소유·게이트) + 파생/휘발 평면(.memory/ activeContext·progress + repo-map·contracts-index 파생) + SessionStart 훅 무시불가 주입
 - [ ] **폴리글랏 안전망**: 골든 동등성 비교기(정규화 비교)·contract-drift CI 게이트(스키마 해시)·CODEOWNERS+/golden-approve 사람 승인
-- [ ] **도메인 계약·문서 시드**: parserimprove monorepo_skeleton의 contracts(TSV 스펙·정규화·기준정보·state)·docs를 example/seed로 명시하여 포함
-- [ ] **툴체인 부트스트랩**: .NET 10 SDK 설치 스크립트 + uv 워크스페이스 + polyglot 매트릭스 CI 골격을 SessionStart/setup에 연결
+- [ ] **범용화(신규, ADR-0002)**: 도메인·언어 특화 콘텐츠를 `examples/log-parser/`로 격리하고, 코어를 도메인·언어 중립으로. 언어는 프로젝트 설정 슬롯에서 파생. 코어→예시 무의존(단방향). 새 프로젝트가 scaffold할 수 있는 최소 generic 기본 인스턴스 제공.
+- [ ] **레퍼런스 예시 인스턴스**: parserimprove monorepo_skeleton의 contracts(TSV 스펙·정규화·기준정보·state)·정규화 코어·toy-converter를 `examples/log-parser/`의 worked example로 보존(삭제 아님) — "이렇게 슬롯을 채운다"의 살아있는 예시.
+- [ ] **툴체인 부트스트랩(설정형)**: 언어별 SDK 설치·워크스페이스·CI 매트릭스를 프로젝트 설정에서 파생. 예시 인스턴스는 .NET 10 SDK + uv 워크스페이스로 채움.
 
 ### Out of Scope
 
@@ -46,9 +49,10 @@
 ## Constraints
 
 - **Runtime**: opencode 1차 타깃, 단일 소스에서 Claude Code 아티팩트도 생성(개발=Claude, 배포=opencode). 각 런타임 제약(예: 스킬 크기 상한) 존중.
-- **Polyglot**: 파서·컨버터=.NET 10(CPU 바운드), 스케줄러·수집기=Python(uv). 언어 경계는 프로세스/파일/DB로만 — 객체 직접 전달 금지.
-- **Contract-first**: contracts/가 코드보다 우선. 코드가 계약과 다르면 코드가 틀린 것. 계약 변경은 골든/contract-drift 게이트를 동반.
+- **Polyglot (설정형)**: 하네스는 폴리글랏을 지원하되 **특정 언어를 하드코딩하지 않는다**. 참여 언어·툴체인은 프로젝트 설정(예: `harness/project.toml` 또는 동등물)의 슬롯이며, 에이전트 페르소나·권한 매트릭스·CI 매트릭스가 그 설정에서 파생된다. 언어 경계는 프로세스/파일/DB로만 — 객체 직접 전달 금지 (이 불변식은 언어 무관하게 유지). 레퍼런스 예시(`examples/log-parser/`)는 .NET 10 + Python(uv)로 그 슬롯을 채운다.
+- **Contract-first**: contracts/가 코드보다 우선. 코드가 계약과 다르면 코드가 틀린 것. 계약 변경은 골든/contract-drift 게이트를 동반. **계약의 도메인 내용은 슬롯** — 하네스는 계약을 강제하는 기계이지 특정 계약 자체가 아니다.
 - **Memory**: two-plane. 파생물(repo-map·contracts-index·docs/reference)은 손으로 관리 금지(자동 생성). 결정은 append-only ADR.
+- **Genericity(신규)**: durable 코어(`tools/`, `harness/`, 게이트, 메모리, 문서구조)는 도메인·언어 중립. 도메인·언어 특화 콘텐츠는 `examples/<instance>/` 아래로 격리. 코어가 특정 예시를 import/의존하면 안 됨(예시→코어 단방향 의존).
 - **Env**: 원격 ephemeral — 하네스는 SessionStart 훅으로 툴체인/상태를 자기부트스트랩. 브랜치 `claude/data-pipeline-harness-8aypct`.
 - **모델 아이덴티티**: 커밋·PR·코드 코멘트 등 레포 산출물에 모델 식별자 미포함.
 
@@ -62,6 +66,9 @@
 | parserimprove 계약·문서 실제 시드(예시 명시) | 구체 예시가 하네스 검증에 유용, generic보다 실효 | — Pending |
 | 맞춤 직접 구성(gsd-opencode 포트 미채택) | 도메인 맞춤·최소·정확; 750파일 범용 대비 | — Pending |
 | A 모델(CLI spawn) 우선 인코딩, B는 확장점 | integration_contracts §④; MVP 견고성, A→B 페이로드 동형 유지 | — Pending |
+| **[ADR-0002] 범용 템플릿으로 재정의, 로그파서는 examples/로 강등** | 실제 구현 방향이 크게 바뀜 — 도메인 고정 하네스는 부채. durable 아키텍처(Phase 1–4)는 재사용 가치가 있으므로 도메인·언어 슬롯화 | ✅ Accepted 2026-07-08 |
+| **[ADR-0002] 언어를 하드코딩 대신 설정 슬롯화(.NET+Python은 예시 인스턴스)** | 폴리글랏 기계는 가치, 특정 두 언어 고정은 아님 | ✅ Accepted 2026-07-08 |
+| **[ADR-0002] 도메인 이동은 새 Phase 5로, ADR+해시 재베이스라인 동반** | contracts/는 헌법 평면 — 라이브 drift/contract-guard 게이트가 방어, 의도된 헌법 변경으로 처리 | ✅ Accepted 2026-07-08 |
 
 ## Evolution
 
@@ -81,4 +88,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-07 after initialization*
+*Last updated: 2026-07-08 — re-scoped to general reusable template (ADR-0002); log-parser domain demoted to `examples/log-parser/`. Phases 1–4 durable core retained.*
