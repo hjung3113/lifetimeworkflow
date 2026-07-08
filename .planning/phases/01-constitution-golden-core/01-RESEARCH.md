@@ -353,7 +353,7 @@ libs/normalize-fixtures/          # ONE corpus, consumed by BOTH language test s
 | A4 | The exact §4-5 null-token, TSV-escape rule, and identifier casing are still `TBD` in the seed and will be chosen as placeholder demo values (domain values are Out of Scope) | CONTRACT-01/02 | Low — placeholders are explicitly allowed; must be flagged as example values, not domain truth |
 | A5 | Materializing §4-5 as `format-conventions.schema.json` (vs custom JSON Schema keywords) is the simplest P14-closing shape | Pattern 2 | Low — alternative is `x-` annotations inside each spec schema; either is hashable |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Which single contract drives the walking-skeleton loop?**
    - Know: the TSV `standard-log.spec` is the richest and most representative seed.

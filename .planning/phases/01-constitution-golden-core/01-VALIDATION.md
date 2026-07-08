@@ -22,7 +22,7 @@ created: 2026-07-08
 | **Framework (.NET)** | xunit.v3 3.2.2 (minimal smoke on toy converter; golden equivalence is language-neutral) |
 | **Config file** | `pyproject.toml` (uv workspace root + pytest config) — created in Wave 0 |
 | **Quick run command** | `uv run pytest <touched module>/tests -x` |
-| **Full suite command** | `uv run pytest && uv run ruff check . && bash tools/contract-drift/check.sh` |
+| **Full suite command** | `uv run pytest && uv run ruff check . && bash tools/contract_drift/check.sh` |
 | **Estimated runtime** | ~30–60 seconds (excludes one-time .NET SDK bootstrap) |
 
 ---
@@ -30,7 +30,7 @@ created: 2026-07-08
 ## Sampling Rate
 
 - **After every task commit:** Run `uv run pytest <touched module>/tests -x` (< 30s)
-- **After every plan wave:** Run full suite (`uv run pytest && uv run ruff check . && bash tools/contract-drift/check.sh`)
+- **After every plan wave:** Run full suite (`uv run pytest && uv run ruff check . && bash tools/contract_drift/check.sh`)
 - **Before `/gsd:verify-work`:** two-fixture golden demo green (repr-only PASS / value-regression FAIL) + drift-mutation demo trips the gate + bootstrap smoke green
 - **Max feedback latency:** ~30 seconds (quick), ~60 seconds (full)
 
@@ -46,9 +46,9 @@ created: 2026-07-08
 | BOOT-02/03 | 0 | uv workspace resolves; SessionStart idempotent (2nd-run cache hit) | slopsquat | smoke | `uv sync --frozen` + cache-hit assert | ❌ W0 | ⬜ pending |
 | CONTRACT-01 | 1 | Seed YAML + companion schema validate (Draft 2020-12) | V5 input-val | unit | `uv run check-jsonschema --schemafile <schema> <instance>` | ❌ W0 | ⬜ pending |
 | CONTRACT-02 | 1 | Both language cores emit identical canonical output on shared corpus | — | unit (parity) | `uv run pytest libs/python/normalize/tests -x` + `dotnet test libs/dotnet` | ❌ W0 | ⬜ pending |
-| CONTRACT-03 (PASS) | 2 | repr-only fixture (BOM/CRLF/decimal/TZ) PASSES golden | — | integration | `uv run pytest tools/golden-runner/tests/test_repr_only.py -x` | ❌ W0 | ⬜ pending |
-| CONTRACT-03 (FAIL) | 2 | value-regression fixture FAILS golden | — | integration | `uv run pytest tools/golden-runner/tests/test_value_regression.py -x` | ❌ W0 | ⬜ pending |
-| CONTRACT-03 (gate) | 2 | `/golden-approve` refuses baseline write w/o human sign-off | V4 / P9 | unit | `uv run pytest tools/golden-runner/tests/test_approve_gate.py -x` | ❌ W0 | ⬜ pending |
+| CONTRACT-03 (PASS) | 2 | repr-only fixture (BOM/CRLF/decimal/TZ) PASSES golden | — | integration | `uv run pytest tools/golden_runner/tests/test_repr_only.py -x` | ❌ W0 | ⬜ pending |
+| CONTRACT-03 (FAIL) | 2 | value-regression fixture FAILS golden | — | integration | `uv run pytest tools/golden_runner/tests/test_value_regression.py -x` | ❌ W0 | ⬜ pending |
+| CONTRACT-03 (gate) | 2 | `/golden-approve` refuses baseline write w/o human sign-off | V4 / P9 | unit | `uv run pytest tools/golden_runner/tests/test_approve_gate.py -x` | ❌ W0 | ⬜ pending |
 | CONTRACT-04 (drift) | 1 | mutating a §4-5 convention field bumps hash + trips gate | V6 / P14 | unit | `uv run pytest tools/contract-drift/tests/test_convention_mutation.py -x` | ❌ W0 | ⬜ pending |
 | CONTRACT-04 (classify) | 1 | breaking vs non-breaking classification | V6 | unit | `uv run pytest tools/contract-drift/tests/test_classify.py -x` | ❌ W0 | ⬜ pending |
 | DOCS-01/02 | 1 | Diátaxis dirs + adr/0001 + glossary exist | — | structural | `test -d docs/tutorials && test -f docs/adr/0001-*.md && test -f docs/glossary.md` | ❌ W0 | ⬜ pending |
@@ -60,7 +60,7 @@ created: 2026-07-08
 ## Wave 0 Requirements
 
 - [ ] `pyproject.toml` — uv workspace root + pytest config + tool pins (resolve A1: pytest 8.4 pin vs env 9.1.1)
-- [ ] `tools/golden-runner/tests/conftest.py` — subprocess / toy-converter fixtures (`subprocess.run([list], shell=False)`)
+- [ ] `tools/golden_runner/tests/conftest.py` — subprocess / toy-converter fixtures (`subprocess.run([list], shell=False)`)
 - [ ] `libs/normalize-fixtures/` — shared `(raw, canonical)` corpus consumed by BOTH Python and .NET cores
 - [ ] `components/toy-converter/` csproj + minimal xunit smoke (needs .NET 10 → BOOT-01 first)
 - [ ] `tools/bootstrap/verify.sh` — asserts dotnet 10 present + uv resolve
