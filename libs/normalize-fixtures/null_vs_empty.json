@@ -1,0 +1,5 @@
+[
+  { "name": "null-token-to-sentinel", "kind": "string", "raw": "\\N", "canonical": "<NULL>" },
+  { "name": "empty-string-stays-empty", "kind": "string", "raw": "", "canonical": "" },
+  { "name": "ordinary-string-passthrough", "kind": "string", "raw": "hello", "canonical": "hello" }
+]
