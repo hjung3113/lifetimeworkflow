@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 2 context gathered
-last_updated: "2026-07-08T07:00:07.029Z"
+last_updated: "2026-07-08T07:08:47.093Z"
 last_activity: 2026-07-08
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 11
-  completed_plans: 7
+  completed_plans: 8
   percent: 17
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 2 (Two-Plane Memory + Rules) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-07-08
 
-Progress: [██████░░░░] 64%
+Progress: [███████░░░] 73%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [██████░░░░] 64%
 | Phase 1 P05 | 18min | 2 tasks | 10 files |
 | Phase 1 P06 | 8min | 3 tasks | 21 files |
 | Phase 2 P01 | 20min | 2 tasks | 12 files |
+| Phase 2 P02-02 | 5min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,7 @@ Recent decisions affecting current work:
 - [Phase 2]: [02-01] Two-plane .memory/ locked: state/ committed (survives ephemeral container), derived/ gitignored + DERIVED marker; constitution-immutability is a declaration here — runtime enforcement is Phase-4 contract-guard (MEM-01/02, D-03/D-04).
 - [Phase 2]: [02-01] tools/memory_regen pins EXACT tree-sitter 0.25.2 + grammar wheels (py 0.25.0 / cs 0.23.5 / bash 0.25.1) + networkx 3.6.1 — individual wheels NOT language-pack (runtime download breaks determinism); resolved once so Wave-2 never touches uv.lock (T-02-SC).
 - [Phase 2]: [02-01] Bootstrap runs 'uv sync --all-packages' (install+verify): memory_regen is the first member with deps absent from the virtual root, so a bare 'uv sync' silently prunes the tree-sitter/networkx toolchain every SessionStart.
+- [Phase 2]: [02-02] Single injection contract fixed (D-01): python -m tools.memory_regen.inject is the ONE payload source; Claude SessionStart hook (4th slot, coexists) + authored-deferred opencode adapter both wrap the identical assemble() — capped ~1k-token, banner-first (never dropped), drift-aware, priority-truncated, pointer-only (no full contract bodies, P13/T-02-06).
 
 ### Pending Todos
 
@@ -105,6 +107,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-08T06:58:46.844Z
+Last session: 2026-07-08T07:08:26.812Z
 Stopped at: Phase 2 context gathered
 Resume file: None

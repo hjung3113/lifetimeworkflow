@@ -74,7 +74,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 02-02-PLAN.md — Claude SessionStart injector: shared `inject.assemble` contract (capped/banner/priority-truncate) + 4th-slot hook + authored-deferred opencode stub (HOOK-05)
+- [x] 02-02-PLAN.md — Claude SessionStart injector: shared `inject.assemble` contract (capped/banner/priority-truncate) + 4th-slot hook + authored-deferred opencode stub (HOOK-05)
 - [ ] 02-03-PLAN.md — contracts-index generator: scan contracts/ + reuse Phase-1 hash/drift modules → deterministic `.memory/derived/contracts-index.md` (MEM-03)
 - [ ] 02-04-PLAN.md — repo-map generator: tree-sitter 0.25 parse + networkx PageRank → deterministic token-bounded `.memory/derived/repo-map.md` (MEM-03)
 - [ ] 02-05-PLAN.md — Nearest-wins `AGENTS.md`: root + per-package .NET/Python (restated non-negotiables, P11) + `CLAUDE.md` pointer (RULES-01, RULES-02)
@@ -148,7 +148,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Constitution + Golden Core | 6/6 | Complete   | 2026-07-08 |
-| 2. Two-Plane Memory + Rules | 1/5 | In Progress|  |
+| 2. Two-Plane Memory + Rules | 2/5 | In Progress|  |
 | 3. Agents + Commands + Skills | 0/TBD | Not started | - |
 | 4. Plugins + Hooks | 0/TBD | Not started | - |
 | 5. CI + Gates | 0/TBD | Not started | - |

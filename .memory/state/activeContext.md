@@ -6,10 +6,12 @@
 
 ## In flight
 
-- Phase 2 — Two-Plane Memory + Rules. Plan 02-01 laid the `.memory/` two-plane skeleton
-  and the `tools/memory_regen` uv-workspace member (pinned tree-sitter + networkx).
+- Phase 2 — Two-Plane Memory + Rules. 02-01 laid the `.memory/` two-plane skeleton +
+  `tools/memory_regen` member. 02-02 fixed the single injection contract
+  (`inject.assemble`) and wired the Claude SessionStart injector as the 4th slot
+  (coexists) + authored-deferred opencode adapter.
 
 ## Next
 
-- 02-02 injector, 02-03 contracts-index, 02-04 repo-map, 02-05 AGENTS.md rules build on
-  this layout and the resolved toolchain.
+- 02-03 contracts-index and 02-04 repo-map produce `.memory/derived/*.md` — `assemble()`
+  already reads their heads and degrades gracefully until they exist. 02-05 AGENTS.md rules.

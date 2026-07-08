@@ -62,7 +62,7 @@
 - [ ] **HOOK-02**: secret protection — secret 읽기/쓰기 차단(deny-list + 패턴 스캔)
 - [ ] **HOOK-03**: commit gate — 게이트(contract-drift·골든 패리티·폴리글랏 린터) 실패 시 커밋 차단
 - [ ] **HOOK-04**: contract-guard — 헌법 평면·golden 쓰기를 승인 경로 없이 차단, on-write 인코딩/TSV 규칙 강제
-- [ ] **HOOK-05**: session-start 컨텍스트 주입기 — opencode `event`(session.created) + `chat.system.transform`, Claude `SessionStart` additionalContext로 휘발 상태·drift 상태를 **무시 불가** 주입 (런타임 비대칭 조정)
+- [x] **HOOK-05**: session-start 컨텍스트 주입기 — opencode `event`(session.created) + `chat.system.transform`, Claude `SessionStart` additionalContext로 휘발 상태·drift 상태를 **무시 불가** 주입 (런타임 비대칭 조정)
 
 ### DOCS — 문서 아키텍처
 
@@ -135,7 +135,7 @@
 | MEM-03 | Phase 2 | Pending |
 | RULES-01 | Phase 2 | Pending |
 | RULES-02 | Phase 2 | Pending |
-| HOOK-05 | Phase 2 | Pending |
+| HOOK-05 | Phase 2 | Complete |
 | CONFIG-01 | Phase 3 | Pending |
 | CONFIG-02 | Phase 3 | Pending |
 | AGENT-01 | Phase 3 | Pending |
