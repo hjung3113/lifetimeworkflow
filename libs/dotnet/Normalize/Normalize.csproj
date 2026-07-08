@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    §4.3-4.6 normalization core — .NET thin impl (CONTRACT-02, D-04/D-05).
+    Framework-only (System.Globalization / System.Text); no NuGet deps. TSV comparator only —
+    no contract-text JSON canonicalizer (that hasher is Python-side, Plan 05).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+</Project>
