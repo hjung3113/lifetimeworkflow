@@ -66,8 +66,8 @@
 
 ### DOCS — 문서 아키텍처
 
-- [ ] **DOCS-01**: Diátaxis 문서 트리(tutorials/how-to/reference/explanation) + `glossary`(ubiquitous language)
-- [ ] **DOCS-02**: `docs/adr/` MADR 구조(번호·불변·supersede)
+- [x] **DOCS-01**: Diátaxis 문서 트리(tutorials/how-to/reference/explanation) + `glossary`(ubiquitous language)
+- [x] **DOCS-02**: `docs/adr/` MADR 구조(번호·불변·supersede)
 - [ ] **DOCS-03**: `reference/`는 계약에서 **파생**(사람은 tutorials/how-to/explanation만 작성)
 
 ### SKILL — 스킬 (progressive disclosure)
@@ -128,8 +128,8 @@
 | BOOT-01 | Phase 1 | Pending |
 | BOOT-02 | Phase 1 | Pending |
 | BOOT-03 | Phase 1 | Pending |
-| DOCS-01 | Phase 1 | Pending |
-| DOCS-02 | Phase 1 | Pending |
+| DOCS-01 | Phase 1 | Complete |
+| DOCS-02 | Phase 1 | Complete |
 | MEM-01 | Phase 2 | Pending |
 | MEM-02 | Phase 2 | Pending |
 | MEM-03 | Phase 2 | Pending |
