@@ -1,0 +1,14 @@
+[project]
+name = "logparser-harness-lint"
+version = "0.0.0"
+description = "D-02/D-04/D-07 structural validators for the harness/ single source: the shared YAML frontmatter parser (frontmatter.py, reused by Plans 03/04/05 agent/command/skill lints) + the hermetic opencode.json jsonschema gate. Imported by module path `tools.harness_lint`; run via `uv run pytest tools/harness_lint`."
+requires-python = ">=3.11"
+# NO unique external deps — jsonschema (4.26.0) and ruamel.yaml (transitive via check-jsonschema)
+# both resolve from the shared workspace env. This member must never mutate uv.lock (T-03-SC).
+# DO NOT add pyyaml — it is absent from the lock; parse frontmatter with the already-resolved ruamel.yaml.
+dependencies = []
+
+[tool.uv]
+# Virtual member: no build-system, nothing to package. Imported by module path from the shared uv
+# workspace environment. Mirrors tools/harness_perms + tools/memory_regen (package = false).
+package = false

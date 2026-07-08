@@ -24,7 +24,7 @@ def _load(path: Path) -> dict:
 
 
 def test_opencode_json_validates_against_vendored_subset() -> None:
-    """jsonschema.validate must NOT raise — opencode.json conforms to the vendored subset (T-03-05)."""
+    """jsonschema.validate must NOT raise — opencode.json conforms to the subset (T-03-05)."""
     config = _load(_CONFIG)
     schema = _load(_SCHEMA)
     jsonschema.validate(config, schema)  # raises ValidationError on drift/typo
@@ -35,7 +35,9 @@ def test_opencode_json_has_config01_keys() -> None:
     config = _load(_CONFIG)
     assert config["model"], "expensive implementer-tier model missing"
     assert config["small_model"], "cheap explorer-tier small_model missing"
-    assert isinstance(config["instructions"], list) and config["instructions"], "instructions glob list missing"
+    assert isinstance(config["instructions"], list) and config["instructions"], (
+        "instructions glob list missing"
+    )
     assert isinstance(config["formatter"], dict) and config["formatter"], "formatter wiring missing"
     assert "mcp" in config, "mcp wiring key missing"
 

@@ -8,6 +8,7 @@ members = [
     "logparser-contract-hash",
     "logparser-golden-runner",
     "logparser-harness",
+    "logparser-harness-lint",
     "logparser-harness-perms",
     "logparser-memory-regen",
     "logparser-normalize",
@@ -246,6 +247,11 @@ dev = [
     { name = "ruff", specifier = "~=0.15" },
     { name = "syrupy", specifier = "==5.2.0" },
 ]
+
+[[package]]
+name = "logparser-harness-lint"
+version = "0.0.0"
+source = { virtual = "tools/harness_lint" }
 
 [[package]]
 name = "logparser-harness-perms"
