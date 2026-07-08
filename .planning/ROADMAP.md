@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Constitution + Golden Core** - Walking skeleton: seed contracts, build the shared normalization comparator + golden runner + contract-drift gate, and close one real legacy↔new equivalence loop end-to-end. (completed 2026-07-08)
 - [x] **Phase 2: Two-Plane Memory + Rules** - Constitution-vs-derived memory split, auto-regenerated derived artifacts, nearest-wins AGENTS.md, and non-ignorable session-start context injection. (completed 2026-07-08)
-- [ ] **Phase 3: Agents + Commands + Skills** - The full authored harness surface — personas, commands, skills — in canonical source, with migration commands gated behind the trusted golden net.
+- [x] **Phase 3: Agents + Commands + Skills** - The full authored harness surface — personas, commands, skills — in canonical source, with migration commands gated behind the trusted golden net. (completed 2026-07-08)
 - [ ] **Phase 4: Plugins + Hooks** - Runtime enforcement of everything authored in Phases 1-3: contract-guard, polyglot linter, format-on-write, secret protection, commit gate.
 - [ ] **Phase 5: CI + Gates** - Non-bypassable CI mirror of the in-session gates plus the human ratification path (CODEOWNERS, PR template, wired toolchain bootstrap).
 - [ ] **Phase 6: Single-Source Dual-Runtime Emitter** - One authored source compiles into both opencode (primary) + Claude Code (secondary) artifacts, with per-runtime limit validators that fail loud.
@@ -109,7 +109,7 @@ Plans:
 **Wave 3** *(blocked on Wave 2 completion — migration commands gated behind the golden-adjacent surface, D-05)*
 
 - [x] 03-06-PLAN.md — Runnable /docs-sync generator (contracts→reference, deterministic) + command + generated reference pages (CMD-08, DOCS-03)
-- [ ] 03-07-PLAN.md — Migration commands: runnable /strangler-step baseline-refusal gate + /new-normalization-rule order scaffold (CMD-05, CMD-06)
+- [x] 03-07-PLAN.md — Migration commands: runnable /strangler-step baseline-refusal gate + /new-normalization-rule order scaffold (CMD-05, CMD-06)
 
 ### Phase 4: Plugins + Hooks
 
@@ -165,7 +165,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Constitution + Golden Core | 6/6 | Complete   | 2026-07-08 |
 | 2. Two-Plane Memory + Rules | 5/5 | Complete   | 2026-07-08 |
-| 3. Agents + Commands + Skills | 6/7 | In Progress|  |
+| 3. Agents + Commands + Skills | 7/7 | Complete   | 2026-07-08 |
 | 4. Plugins + Hooks | 0/TBD | Not started | - |
 | 5. CI + Gates | 0/TBD | Not started | - |
 | 6. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |

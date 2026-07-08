@@ -50,8 +50,8 @@
 - [ ] **CMD-02**: `/golden` — 실행 + 정규화 diff
 - [ ] **CMD-03**: `/golden-approve` — CODEOWNERS 사람 사인오프로만 baseline 갱신 (에이전트 self-bless 금지)
 - [ ] **CMD-04**: `/checkpoint` — 휘발 평면(activeContext·progress) 갱신, ephemeral 컨테이너 대비 커밋
-- [ ] **CMD-05**: `/new-normalization-rule` — 계약 우선 순서(계약 → 데이터기반 (input,expected) 케이스 → 코드) 강제
-- [ ] **CMD-06**: `/strangler-step` — 한 경로만 추출, `/golden` 패리티 게이트 통과 필수, 빅뱅 금지
+- [x] **CMD-05**: `/new-normalization-rule` — 계약 우선 순서(계약 → 데이터기반 (input,expected) 케이스 → 코드) 강제
+- [x] **CMD-06**: `/strangler-step` — 한 경로만 추출, `/golden` 패리티 게이트 통과 필수, 빅뱅 금지
 - [ ] **CMD-07**: `/adr` — append-only MADR 스캐폴드
 - [x] **CMD-08**: `/docs-sync` — 계약에서 Diátaxis `reference/` 재생성
 - [ ] **CMD-09**: `/component` — 신규 컴포넌트를 올바른 구조·AGENTS.md·테스트 하네스와 함께 스캐폴드
@@ -147,8 +147,8 @@
 | CMD-02 | Phase 3 | Pending |
 | CMD-03 | Phase 3 | Pending |
 | CMD-04 | Phase 3 | Pending |
-| CMD-05 | Phase 3 | Pending |
-| CMD-06 | Phase 3 | Pending |
+| CMD-05 | Phase 3 | Complete |
+| CMD-06 | Phase 3 | Complete |
 | CMD-07 | Phase 3 | Pending |
 | CMD-08 | Phase 3 | Complete |
 | CMD-09 | Phase 3 | Pending |
