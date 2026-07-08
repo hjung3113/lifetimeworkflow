@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 3 — Agents + Commands + Skills
+**Current focus:** Phase 4 complete — next up Phase 5 (CI + Gates)
 
 ## Current Position
 
-Phase: 3 (Agents + Commands + Skills) — EXECUTING
-Plan: 7 of 7
-Status: Phase complete — ready for verification
+Phase: 4 (Plugins + Hooks) — COMPLETE (6/6 plans; 345 passed / 2 skipped; all 4 success criteria demonstrated live)
+Plan: 6 of 6
+Status: Phase complete — gates wired live (7 PreToolUse / 4 PostToolUse), GSD hooks preserved, opencode stubs authored-deferred
 Last activity: 2026-07-08
 
-Progress: [██████████] 100%
+Progress: [██████████] 100% (4/6 phases)
 
 ## Performance Metrics
 
