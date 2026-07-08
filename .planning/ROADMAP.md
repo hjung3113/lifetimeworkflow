@@ -70,7 +70,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 02-01-PLAN.md — Two-plane `.memory/` layout + gitignore boundary + `tools/memory_regen` uv member with pinned tree-sitter/networkx (MEM-01, MEM-02)
+- [x] 02-01-PLAN.md — Two-plane `.memory/` layout + gitignore boundary + `tools/memory_regen` uv member with pinned tree-sitter/networkx (MEM-01, MEM-02)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -148,7 +148,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Constitution + Golden Core | 6/6 | Complete   | 2026-07-08 |
-| 2. Two-Plane Memory + Rules | 0/5 | Planned | - |
+| 2. Two-Plane Memory + Rules | 1/5 | In Progress|  |
 | 3. Agents + Commands + Skills | 0/TBD | Not started | - |
 | 4. Plugins + Hooks | 0/TBD | Not started | - |
 | 5. CI + Gates | 0/TBD | Not started | - |

@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 2 context gathered
-last_updated: "2026-07-08T06:51:08.694Z"
-last_activity: 2026-07-08 -- Phase 2 planning complete
+last_updated: "2026-07-08T07:00:07.029Z"
+last_activity: 2026-07-08
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 11
-  completed_plans: 6
+  completed_plans: 7
   percent: 17
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 1 — Constitution + Golden Core
+**Current focus:** Phase 2 — Two-Plane Memory + Rules
 
 ## Current Position
 
-Phase: 1 (Constitution + Golden Core) — EXECUTING
-Plan: 6 of 6
+Phase: 2 (Two-Plane Memory + Rules) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-07-08 -- Phase 2 planning complete
+Last activity: 2026-07-08
 
-Progress: [██████████] 100%
+Progress: [██████░░░░] 64%
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [██████████] 100%
 | Phase 1 P04 | 8 | 3 tasks | 13 files |
 | Phase 1 P05 | 18min | 2 tasks | 10 files |
 | Phase 1 P06 | 8min | 3 tasks | 21 files |
+| Phase 2 P01 | 20min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,9 @@ Recent decisions affecting current work:
 - [Phase ?]: [01-04] §4-5 normalization core (CONTRACT-02): language-neutral spec + Python (green) + .NET (authored; dotnet test deferred by BOOT-01 egress), cross-validated by one shared libs/normalize-fixtures corpus (D-04).
 - [Phase ?]: [01-05] contract-drift gate (CONTRACT-04): RFC 8785 (JCS, rfc8785 0.1.4) canonicalize + SHA-256 per-schema manifest over all contracts/**/*.schema.json incl. format-conventions.schema.json — a §4-5 convention flip (bom false->true) bumps the hash and trips the gate exactly like a column reorder (P14); changes classified breaking vs non-breaking.
 - [Phase 1]: [01-06] Walking-skeleton golden loop closed (CONTRACT-03): Python golden-runner spawns .NET toy converter (subprocess shell=False, dotnet via absolute $HOME/.dotnet path P5), normalizes both sides via shared §4-5 core, diffs vs approved .verified. repr-only PASS / value-regression FAIL (P4). /golden-approve refuses promotion without human --approve+--adr+token (P9). — End-to-end polyglot equivalence slice; .NET live spawn DEFERRED (BOOT-01 egress), comparison path proven green via recorded-output twin.
+- [Phase 2]: [02-01] Two-plane .memory/ locked: state/ committed (survives ephemeral container), derived/ gitignored + DERIVED marker; constitution-immutability is a declaration here — runtime enforcement is Phase-4 contract-guard (MEM-01/02, D-03/D-04).
+- [Phase 2]: [02-01] tools/memory_regen pins EXACT tree-sitter 0.25.2 + grammar wheels (py 0.25.0 / cs 0.23.5 / bash 0.25.1) + networkx 3.6.1 — individual wheels NOT language-pack (runtime download breaks determinism); resolved once so Wave-2 never touches uv.lock (T-02-SC).
+- [Phase 2]: [02-01] Bootstrap runs 'uv sync --all-packages' (install+verify): memory_regen is the first member with deps absent from the virtual root, so a bare 'uv sync' silently prunes the tree-sitter/networkx toolchain every SessionStart.
 
 ### Pending Todos
 
@@ -101,6 +105,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-08T06:24:00.837Z
+Last session: 2026-07-08T06:58:46.844Z
 Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-two-plane-memory-rules/02-CONTEXT.md
+Resume file: None
