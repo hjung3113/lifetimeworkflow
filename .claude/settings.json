@@ -24,6 +24,14 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/tools/bootstrap/install.sh"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/memory-inject.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [
