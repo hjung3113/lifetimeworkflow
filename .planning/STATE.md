@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: verifying
 stopped_at: Phase 4 context gathered
-last_updated: "2026-07-08T12:52:41.567Z"
+last_updated: "2026-07-08T12:54:53.159Z"
 last_activity: 2026-07-08
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 24
-  completed_plans: 22
+  completed_plans: 23
   percent: 50
 ---
 
@@ -30,7 +30,7 @@ Plan: 7 of 7
 Status: Phase complete — ready for verification
 Last activity: 2026-07-08
 
-Progress: [█████████░] 92%
+Progress: [██████████] 96%
 
 ## Performance Metrics
 
@@ -73,6 +73,7 @@ Progress: [█████████░] 92%
 | Phase 04 P02 | 7min | 2 tasks | 9 files |
 | Phase 04 P03 | 12min | 2 tasks | 2 files |
 | Phase 04 P04 | 3min | 2 tasks | 3 files |
+| Phase 04 P05 | 5min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Approved-but-dirty constitution writes still denied via reused lint_bytes (D-04 byte-pristine); allowed-path BOM/CRLF deferred to format-on-write 04-04
 - [Phase ?]: GOLDEN_APPROVE_HUMAN bypass requires non-empty non-blank value; empty string does not bypass (Q1 RESOLVED, T-04-06)
 - [Phase ?]: 04-04: HOOK-01 format-on-write reuses normalize.core strip_bom_normalize_newlines (single §4.3-4.6 rule, D-02); mutates via FS/subprocess not Claude Write (no PostToolUse re-entry); dotnet-format gated-skip, gate always exits 0
+- [Phase 04]: HOOK-03 commit-gate composes run_gate + lint_file + golden-parity (D-02, no re-impl)
+- [Phase 04]: Golden-parity is dotnet-gated: SKIP-with-log when .NET absent so drift+polyglot always run (D-06)
 
 ### Pending Todos
 
@@ -135,6 +138,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-08T12:52:21.988Z
+Last session: 2026-07-08T12:53:43.504Z
 Stopped at: Phase 4 context gathered
 Resume file: None

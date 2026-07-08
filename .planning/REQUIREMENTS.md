@@ -60,7 +60,7 @@
 
 - [x] **HOOK-01**: format-on-write — 편집 시 자동 포맷(formatter 연동), LF/인코딩 강제점
 - [x] **HOOK-02**: secret protection — secret 읽기/쓰기 차단(deny-list + 패턴 스캔)
-- [ ] **HOOK-03**: commit gate — 게이트(contract-drift·골든 패리티·폴리글랏 린터) 실패 시 커밋 차단
+- [x] **HOOK-03**: commit gate — 게이트(contract-drift·골든 패리티·폴리글랏 린터) 실패 시 커밋 차단
 - [x] **HOOK-04**: contract-guard — 헌법 평면·golden 쓰기를 승인 경로 없이 차단, on-write 인코딩/TSV 규칙 강제
 - [x] **HOOK-05**: session-start 컨텍스트 주입기 — opencode `event`(session.created) + `chat.system.transform`, Claude `SessionStart` additionalContext로 휘발 상태·drift 상태를 **무시 불가** 주입 (런타임 비대칭 조정)
 
@@ -157,7 +157,7 @@
 | DOCS-03 | Phase 3 | Complete |
 | HOOK-01 | Phase 4 | Complete |
 | HOOK-02 | Phase 4 | Complete |
-| HOOK-03 | Phase 4 | Pending |
+| HOOK-03 | Phase 4 | Complete |
 | HOOK-04 | Phase 4 | Complete |
 | POLY-01 | Phase 4 | Complete |
 | CI-01 | Phase 5 | Pending |
