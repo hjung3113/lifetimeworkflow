@@ -98,7 +98,7 @@ Plans:
 **Wave 1**
 
 - [x] 03-01-PLAN.md — Permission matrix data + last-wins glob resolver (runnable, unit-tested; reused by Phase-4 hooks) (CONFIG-02)
-- [ ] 03-02-PLAN.md — opencode.json config + vendored subset schema + harness_lint foundation (shared frontmatter parser + opencode.json structural test) (CONFIG-01)
+- [x] 03-02-PLAN.md — opencode.json config + vendored subset schema + harness_lint foundation (shared frontmatter parser + opencode.json structural test) (CONFIG-01)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -165,7 +165,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Constitution + Golden Core | 6/6 | Complete   | 2026-07-08 |
 | 2. Two-Plane Memory + Rules | 5/5 | Complete   | 2026-07-08 |
-| 3. Agents + Commands + Skills | 1/7 | In Progress|  |
+| 3. Agents + Commands + Skills | 2/7 | In Progress|  |
 | 4. Plugins + Hooks | 0/TBD | Not started | - |
 | 5. CI + Gates | 0/TBD | Not started | - |
 | 6. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |
