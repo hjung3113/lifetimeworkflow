@@ -63,14 +63,25 @@ def normalize_cell(value: str, kind: str, null_token: str = DEFAULT_NULL_TOKEN) 
     return value
 
 
+def strip_bom_normalize_newlines(raw: bytes) -> str:
+    """R1 (strip a leading UTF-8 BOM) + R2 (fold CRLF/CR -> LF) — the §4.3-4.6 byte-hygiene rule.
+
+    This is the SINGLE source of the R1+R2 rule (D-02, no divergent normalizer): both the TSV
+    comparator (:func:`normalize_tsv`) and the HOOK-01 format-on-write gate
+    (``tools/hooks/format_on_write.py``) call it, so byte hygiene is defined in exactly one place.
+    ``utf-8-sig`` decoding drops a leading BOM if present; CRLF and bare CR are both folded to LF.
+    """
+    text = raw.decode("utf-8-sig")  # R1 strip BOM
+    return text.replace("\r\n", "\n").replace("\r", "\n")  # R2 force LF
+
+
 def normalize_tsv(raw: bytes) -> str:
     """Canonicalize a whole TSV blob: R1 (BOM strip) + R2 (LF) + R8 (deterministic row sort).
 
-    ``utf-8-sig`` decoding strips a leading UTF-8 BOM if present. Rows are ordinal-sorted
-    (``sorted`` compares by Unicode code point) so an unordered set never causes a false diff.
+    R1+R2 reuse :func:`strip_bom_normalize_newlines`; rows are then ordinal-sorted (``sorted``
+    compares by Unicode code point) so an unordered set never causes a false diff.
     """
-    text = raw.decode("utf-8-sig")  # R1 strip BOM
-    text = text.replace("\r\n", "\n").replace("\r", "\n")  # R2 force LF
+    text = strip_bom_normalize_newlines(raw)  # R1 strip BOM + R2 force LF
     lines = text.split("\n")
     if lines and lines[-1] == "":
         lines = lines[:-1]  # drop trailing empty from final newline
