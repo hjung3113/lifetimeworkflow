@@ -1,0 +1,19 @@
+# repr-only golden case — walking-skeleton PASS demo (CONTRACT-03, ROADMAP 성공기준 3, P4)
+#
+# ⚠️ SEED PLACEHOLDER — 예시 값(비민감 소량 샘플), 도메인 확정값 아님.
+# input/seed.tsv 와 expected/baseline.verified.tsv 는 **논리값이 동일**하고 오직 표현(representation)
+# 만 다르다. §4.3–4.6 정규화 코어를 통과시키면 두 쪽이 동일해져 골든 PASS — byte-diff였다면 false red.
+
+case_id: repr-only
+owner: TBD
+status: draft (seed placeholder)
+equipment: { maker: TBD, model: TBD }
+
+# 이 케이스가 의도적으로 담은 "표현만 다름" 항목 (정규화가 중화해야 하는 것들)
+allowed_representation_diffs:
+  - encoding_bom      # input 은 UTF-8 BOM 有, baseline 은 no-BOM (R1)
+  - newline_crlf      # input 은 CRLF, baseline 은 LF (R2)
+  - decimal_locale    # input '1,5' / '2,25', baseline '1.5' / '2.25' (R3, §4.6)
+  - timezone_offset   # input +09:00, baseline UTC ISO-8601 'Z' (R5, §4.4)
+
+expected_result: PASS   # 정규화 후 동등 → 골든 통과
