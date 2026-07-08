@@ -69,7 +69,10 @@ def test_frontmatter_parses(path: Path) -> None:
 
 @pytest.mark.parametrize("path", _command_files(), ids=lambda p: p.stem)
 def test_description_is_routing_signal(path: Path) -> None:
-    """description present, non-empty, and carries a routing trigger token (P7 — not a bare label)."""
+    """description present, non-empty, carries a routing trigger token.
+
+    P7 — not a bare label.
+    """
     fm = _load(path)
     desc = str(fm.get("description", "")).strip()
     assert desc, f"{path.stem}: description missing or empty"

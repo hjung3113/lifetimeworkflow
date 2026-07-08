@@ -49,7 +49,10 @@ def test_main_returns_nonzero_without_baseline(tmp_path, capsys):
 
 
 def test_require_baseline_does_not_fabricate(tmp_path):
-    """The gate must not create a baseline as a side effect of being asked for one (machines gate)."""
+    """The gate must not create a baseline as a side effect of being asked for one.
+
+    (machines gate).
+    """
     with pytest.raises(StranglerRefused):
         require_baseline(_TARGET, golden_dir=tmp_path)
     # Nothing was written under the (empty) golden dir.

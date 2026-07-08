@@ -18,6 +18,7 @@ def matrix() -> dict:
 
 # --- resolve_bash: last-wins glob (T-03-01) -----------------------------------------------------
 
+
 def test_last_wins_specific_overrides_catchall() -> None:
     # A later, more specific rule wins over the earlier catch-all.
     assert resolve_bash({"*": "ask", "dotnet *": "allow"}, "dotnet test") == "allow"
@@ -54,6 +55,7 @@ def test_default_deny_posture_empty_rules() -> None:
 
 # --- resolve_path: constitution / secret denies (T-03-02, T-03-03) ------------------------------
 
+
 def test_golden_write_denied(matrix: dict) -> None:
     assert resolve_path(matrix["path_deny_globs"], "golden/case.verified") == "deny"
 
@@ -63,9 +65,7 @@ def test_dotenv_denied(matrix: dict) -> None:
 
 
 def test_contracts_denied(matrix: dict) -> None:
-    assert (
-        resolve_path(matrix["path_deny_globs"], "contracts/log-specs/x.schema.json") == "deny"
-    )
+    assert resolve_path(matrix["path_deny_globs"], "contracts/log-specs/x.schema.json") == "deny"
 
 
 def test_source_path_allowed(matrix: dict) -> None:

@@ -2,9 +2,10 @@
 
 A virtual uv-workspace member (sibling of golden_runner/, docs_sync/, contract_hash/), invoked by
 module path (``python -m tools.strangler_guard <target-path>``). It is the *runnable* half of
-``/strangler-step``: before any legacy path is strangler-extracted it asserts that a captured legacy
-golden **.verified** baseline exists for that path, and REFUSES outright (non-zero exit) when it does
-not — a migration must never proceed without a trusted equivalence reference (T-03-24).
+``/strangler-step``: before any legacy path is strangler-extracted it asserts that a captured
+legacy golden **.verified** baseline exists for that path, and REFUSES outright (non-zero exit)
+when it does not — a migration must never proceed without a trusted equivalence reference
+(T-03-24).
 
 The refusal shape mirrors ``tools.golden_runner.approve.GoldenApprovalRefused`` (CLI exit 3):
 "machines gate, humans ratify". The gate NEVER fabricates or creates a baseline — the human/golden

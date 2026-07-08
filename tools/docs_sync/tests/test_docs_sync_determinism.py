@@ -41,7 +41,10 @@ def test_render_is_deterministic_over_real_tree() -> None:
 
 
 def test_generate_delete_regenerate_is_byte_identical(tmp_path: Path) -> None:
-    """generate → sha256 → delete → regenerate → identical hashes (NOT git diff), against tmp_path."""
+    """generate → sha256 → delete → regenerate → identical hashes.
+
+    (NOT git diff), against tmp_path.
+    """
     out = tmp_path / "reference"
 
     first = docs_sync.write(out=out)
@@ -119,10 +122,11 @@ def test_format_conventions_page_has_conventions_block(tmp_path: Path) -> None:
 
 
 def test_rows_are_sorted_and_typed() -> None:
-    """rows() returns (name, type, required, enum/const, description); names sorted, required bool."""
-    _, schema = next(
-        (n, s) for n, s in docs_sync.iter_schemas() if n == "standard-log"
-    )
+    """rows() returns (name, type, required, enum/const, description).
+
+    Names sorted, required bool.
+    """
+    _, schema = next((n, s) for n, s in docs_sync.iter_schemas() if n == "standard-log")
     table = docs_sync.rows(schema)
     assert table, "standard-log yielded no rows"
     names = [r[0] for r in table]

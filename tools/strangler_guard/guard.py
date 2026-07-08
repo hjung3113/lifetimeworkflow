@@ -29,8 +29,8 @@ _VERIFIED_NAME = "baseline.verified.tsv"
 class StranglerRefused(Exception):
     """Strangler extraction refused — no captured legacy golden baseline exists for the target path.
 
-    The migration equivalent of :class:`tools.golden_runner.approve.GoldenApprovalRefused`: a machine
-    gate an agent must not route around by inventing a baseline.
+    The migration equivalent of :class:`tools.golden_runner.approve.GoldenApprovalRefused`: a
+    machine gate an agent must not route around by inventing a baseline.
     """
 
 
@@ -38,8 +38,8 @@ def _slug(target_path: str) -> str:
     """Derive a deterministic golden case slug from a legacy target path.
 
     ``src/legacy/Parser.cs`` -> ``src-legacy-parser-cs``. Purely structural (lowercase, non-alnum
-    runs collapse to a single hyphen) so the derived location is reproducible by the golden plane and
-    by the test that seeds a baseline.
+    runs collapse to a single hyphen) so the derived location is reproducible by the golden plane
+    and by the test that seeds a baseline.
     """
     return re.sub(r"[^a-z0-9]+", "-", target_path.lower()).strip("-")
 
@@ -85,13 +85,16 @@ def require_baseline(target_path: str, golden_dir: str | Path = DEFAULT_GOLDEN_D
 def main(argv: list[str] | None = None) -> int:
     """CLI: refuse (exit 3) unless a captured legacy golden baseline exists for the target path.
 
-    ``python -m tools.strangler_guard <target-path> [--golden-dir DIR]``. Exit 0 when a baseline is
-    present, 3 on refusal — mirrors ``tools.golden_runner.approve`` (GoldenApprovalRefused -> exit 3).
+    ``python -m tools.strangler_guard <target-path> [--golden-dir DIR]``. Exit 0 when a baseline
+    is present, 3 on refusal — mirrors ``tools.golden_runner.approve`` (GoldenApprovalRefused ->
+    exit 3).
     """
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Refuse a strangler extraction that lacks a captured legacy golden baseline (P10)."
+        description=(
+            "Refuse a strangler extraction that lacks a captured legacy golden baseline (P10)."
+        )
     )
     parser.add_argument("target_path", help="the single legacy path being strangler-extracted")
     parser.add_argument(

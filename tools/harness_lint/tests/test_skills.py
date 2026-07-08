@@ -43,7 +43,8 @@ _RESERVED_WORDS = ("anthropic", "claude")
 # Angle-bracket XML tags are forbidden in name/description (T-03-19).
 _XML_CHARS = ("<", ">")
 
-# Exactly the seven enumerated skills (D-07) — core + meta + domain. No more, no fewer (anti-sprawl).
+# Exactly the seven enumerated skills (D-07) — core + meta + domain.
+# No more, no fewer (anti-sprawl).
 EXPECTED_SKILLS = frozenset(
     {
         "dotnet-conventions",
@@ -99,13 +100,18 @@ def test_name_within_caps_and_matches_dir(path: Path) -> None:
 
 @pytest.mark.parametrize("path", _skill_files(), ids=lambda p: p.parent.name)
 def test_description_within_caps_and_routes(path: Path) -> None:
-    """description: non-empty, ≤1024, no XML tag, no reserved word, carries a trigger (T-03-17/19)."""
+    """description: non-empty, ≤1024, no XML tag, no reserved word.
+
+    Carries a trigger (T-03-17/19).
+    """
     fm, _ = _load(path)
     dir_name = path.parent.name
     desc = str(fm.get("description", "")).strip()
     assert desc, f"{dir_name}: description missing or empty"
     assert len(desc) <= _DESC_MAX, f"{dir_name}: description length {len(desc)} exceeds {_DESC_MAX}"
-    assert not any(c in desc for c in _XML_CHARS), f"{dir_name}: description contains an XML tag char"
+    assert not any(c in desc for c in _XML_CHARS), (
+        f"{dir_name}: description contains an XML tag char"
+    )
     lowered = desc.lower()
     assert not any(w in lowered for w in _RESERVED_WORDS), (
         f"{dir_name}: description contains a reserved vendor word {_RESERVED_WORDS}"

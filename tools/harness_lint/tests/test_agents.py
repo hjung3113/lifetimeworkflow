@@ -103,7 +103,10 @@ def test_expected_personas_present_no_sprawl() -> None:
 
 @pytest.mark.parametrize("path", _agent_files(), ids=lambda p: p.stem)
 def test_description_is_routing_signal(path: Path) -> None:
-    """description present, non-empty, and carries a routing trigger token (P7 — not a bare label)."""
+    """description present, non-empty, carries a routing trigger token.
+
+    P7 — not a bare label.
+    """
     fm = _load(path)
     desc = str(fm.get("description", "")).strip()
     assert desc, f"{path.stem}: description missing or empty"
@@ -146,5 +149,6 @@ def test_read_only_personas_have_no_write_affordance(name: str) -> None:
     fm = _load(_AGENTS_DIR / f"{name}.md")
     assert is_read_only(fm), (
         f"{name}: has a write/shell affordance — must be read-only in BOTH the opencode "
-        f"permission block (no edit/bash/write allow) AND the Claude tools list (no Write/Bash/Edit)"
+        f"permission block (no edit/bash/write allow) AND the Claude tools list "
+        f"(no Write/Bash/Edit)"
     )

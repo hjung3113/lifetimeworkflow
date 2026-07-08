@@ -86,7 +86,10 @@ def _type(prop: dict) -> str:
 
 
 def _enum_const(prop: dict) -> str:
-    """The fixed value(s) a property is pinned to: ``const`` verbatim, ``enum`` comma-joined, else ''."""
+    """The fixed value(s) a property is pinned to.
+
+    ``const`` verbatim, ``enum`` comma-joined, else ''.
+    """
     if "const" in prop:
         return _scalar(prop["const"])
     if "enum" in prop:
