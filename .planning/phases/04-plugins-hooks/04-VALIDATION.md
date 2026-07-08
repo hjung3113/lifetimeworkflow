@@ -1,8 +1,8 @@
 ---
 phase: 4
 slug: plugins-hooks
-status: draft
-nyquist_compliant: false
+status: ready
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-07-08
 ---
@@ -41,9 +41,11 @@ created: 2026-07-08
 | POLY-01 | non-canonical decimal/datetime/null cell → violation (shares `normalize.core`) | unit | same | ❌ W0 |
 | POLY-01 | TSV column-shift (uneven tabs) → violation | unit | same | ❌ W0 |
 | POLY-01 | linter canonical == `normalize_tsv`/`normalize_cell` on `libs/normalize-fixtures/*.json` (no drift) | unit | `tools/polyglot_lint/tests/test_corpus_parity.py` | ❌ W0 |
-| HOOK-04 | write to `contracts/**`/`adr/**`/`golden/**` w/o approval → `permissionDecision:"deny"`; with `GOLDEN_APPROVE_HUMAN` token → no decision | unit | `tools/hooks/tests/test_contract_guard.py` | ❌ W0 |
-| HOOK-04 | source-path write (`libs/python/foo.py`) → allowed | unit | same | ❌ W0 |
-| HOOK-02 | real secret (AWS key/PEM) in content or `*.env` path → deny; benign fixture → allow | unit | `tools/hooks/tests/test_secret_scan.py` | ❌ W0 |
+| HOOK-04 | write to `contracts/**`/`adr/**`/`golden/**` w/o approval → `permissionDecision:"deny"`; with NON-EMPTY `GOLDEN_APPROVE_HUMAN` token → no decision; empty-string token → still deny | unit | `tools/hooks/tests/test_contract_guard.py` | ❌ W0 |
+| HOOK-04 | source-path write (`libs/python/foo.py`) → allowed; BOM/CRLF on an ALLOWED path → no contract-guard decision (format-on-write's job); BOM/CRLF on an APPROVED constitution path → still deny | unit | same | ❌ W0 |
+| HOOK-02 | real secret (AWS key/PEM) in content or `*.env` path → deny; benign fixture → allow; constitution-plane path w/o secret → NOT denied (contract-guard's domain; secret_scan uses SECRET_PATH_GLOBS subset) | unit | `tools/hooks/tests/test_secret_scan.py` | ❌ W0 |
+| POLY-01 (composition) | `GOLDEN_APPROVE_HUMAN` unblocks a constitution write end-to-end when secret_scan + contract-guard both fire (secret_scan does not shadow the bypass) | unit | `tools/hooks/tests/test_secret_scan.py` + `test_contract_guard.py` | ❌ W0 |
+| POLY-01 (in-session) | `/lint` invokes `python -m tools.polyglot_lint.lint` over tracked boundary files (in-session call site); ruff/dotnet blocks preserved | structural | `tools/hooks/tests/test_lint_command_wires_polyglot.py` | ❌ W0 |
 | HOOK-01 | BOM+CRLF file → LF/no-BOM after; format twice == once (idempotent, via subprocess not Write) | unit | `tools/hooks/tests/test_format_on_write.py` | ❌ W0 |
 | HOOK-01 | dotnet absent → `.cs` path skips gracefully | unit | same | ❌ W0 |
 | HOOK-03 | drift present → block/non-zero; clean → 0 | unit | `tools/hooks/tests/test_commit_gate.py` | ❌ W0 |
@@ -79,11 +81,11 @@ created: 2026-07-08
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 40s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 40s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** signed off 2026-07-08 (post plan-check revision — 4 blockers + 2 warnings resolved: secret_scan glob subset, contract-guard polyglot scoping, POLY-01 in-session /lint wiring, Q1/Q2/Q3 resolved, empty-token hardening). `wave_0_complete` flips true at execution.

@@ -449,22 +449,24 @@ if __name__ == "__main__":
 
 **If this table is empty:** it is not — five assumptions need planner/user confirmation, chiefly A2 (approval mechanism) and A3 (secret patterns).
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> Resolved 2026-07-08 during the Phase-4 plan-check revision loop (AskUserQuestion unavailable → resolved with the recommended defaults, tightened per plan-checker feedback; adjustable on request). Each resolution is carried into the affected plan.
 
 1. **What exactly is contract-guard's "approval path"?** (D-04 requires "without an approval path" → so an approval path must exist.)
    - What we know: `GOLDEN_APPROVE_HUMAN` env token already gates golden promotion; agents are instructed never to fabricate it. `path_deny_globs` already covers `contracts/**`, `docs/adr/**`, `golden/**`.
-   - What's unclear: reuse that env token (presence-based), require a distinct per-write token, or key off a CODEOWNERS/marker signal? Env presence is simplest and consistent (A2).
-   - Recommendation: reuse `GOLDEN_APPROVE_HUMAN` presence as the bypass in this env; document that CI (Phase 5) enforces the *hard* gate via CODEOWNERS. Confirm with user in discuss/plan.
+   - What was unclear: reuse that env token (presence-based), require a distinct per-write token, or key off a CODEOWNERS/marker signal?
+   - **RESOLVED:** Reuse `GOLDEN_APPROVE_HUMAN`, bypass on a **NON-EMPTY value** (empty string does NOT bypass) — a small hardening over bare `bool(os.environ.get(...))`. A *matching-token* scheme like `approve.py`'s `promote()` (caller-supplied token must equal the env value) is **not applicable at the hook tier**: a PreToolUse hook receives only the tool event on stdin (`file_path`/`content`) — there is no caller-supplied token channel to match against, unlike the `approve.py` CLI which takes `--approve <token>`. The signal is therefore layered by tier: (a) **hook tier** = non-empty env presence (fast dev-surface signal; agent instructed never to set it — 04-03); (b) **CLI tier** = `approve.py` matching-token + `--adr` (golden promotion — Phase 1, already stronger); (c) **CI tier** = CODEOWNERS human review on `contracts/`·`docs/adr/`·`golden/` (the non-fabricatable HARD gate — Phase 5). The hook is the convenience interception; CODEOWNERS is the real authority. Carried into 04-03 (`approved = bool((os.environ.get("GOLDEN_APPROVE_HUMAN") or "").strip())`, empty-string test case added).
 
 2. **Exact secret pattern set + allow-list scope.**
    - What we know: `*.env` path-deny exists; test/fixture dirs contain high-entropy sample data (base64 in `normalize-fixtures`, the approval token in tests).
-   - What's unclear: which patterns, and whether to allow-list `tests/`, `golden/`, `libs/normalize-fixtures/`.
-   - Recommendation: shape-anchored patterns (A3) + allow-list the three fixture/test dirs; unit-test a real-secret block and a benign-fixture pass.
+   - What was unclear: which patterns, and whether to allow-list `tests/`, `golden/`, `libs/normalize-fixtures/`.
+   - **RESOLVED:** Shape-anchored patterns only (A3: AWS `AKIA[0-9A-Z]{16}`, PEM `-----BEGIN … PRIVATE KEY-----`, conservative `(?i)(secret|token|api[_-]?key)\s*[:=]\s*\S{16,}`) + allow-list `tests/`, `golden/`, `libs/normalize-fixtures/`; unit-test a real-secret block and a benign-fixture pass. Additionally (plan-checker Blocker 1): secret_scan's **path** deny uses a secret-specific subset `["*.env","**/*.env"]`, **NOT** the full `path_deny_globs` — the constitution-plane globs are contract-guard's domain (which honors the approval bypass), so secret_scan must not shadow that bypass when both fire as PreToolUse hooks. Carried into 04-02.
 
 3. **Does format-on-write PostToolUse re-trigger PostToolUse (mutation loop)?**
    - What we know: PostToolUse fires after Write/Edit; format-on-write itself writes the file.
-   - What's unclear: whether the formatter's own write re-enters the hook (Claude Code hooks fire on *tool* Write, not arbitrary FS writes by a subprocess — so a subprocess `ruff format` should not re-trigger).
-   - Recommendation: format via subprocess inside the hook (not via a Claude Write tool) → no re-entry; add an idempotency test (format twice == once).
+   - What was unclear: whether the formatter's own write re-enters the hook.
+   - **RESOLVED:** Format via subprocess inside the hook (`ruff format`/byte-fix on the file path), **not** via a Claude Write tool — Claude Code hooks fire on *tool* invocations, not arbitrary subprocess FS writes, so no re-entry. Idempotency test (`format twice == once`) added in 04-04. Also (plan-checker Blocker 2): general-path BOM/CRLF hygiene is **owned by format-on-write's PostToolUse auto-fix**; contract-guard's on-write polyglot **deny** is scoped to the constitution plane only, so the PreToolUse deny does not preempt the PostToolUse fix on ordinary source paths. Carried into 04-03 + 04-04.
 
 ## Environment Availability
 
