@@ -13,7 +13,7 @@
 
 - [x] **CONTRACT-01**: parserimprove `monorepo_skeleton`의 계약(TSV 로그 스펙·정규화 규칙·기준정보·state)을 `contracts/`에 **example/seed(placeholder)로 명시**하여 시드한다 (도메인 확정값은 Out of Scope)
 - [x] **CONTRACT-02**: 정규화 비교 코어(canonicalizing comparator) — UTF-8/BOM 제거·LF·InvariantCulture 소수점·float 허용오차·키 정렬·UTC/ISO-8601 — 를 골든러너와 폴리글랏 린터가 **공유**하는 단일 구현으로 만든다
-- [ ] **CONTRACT-03**: 골든 픽스처 세트 + 골든러너 — 정규화 비교로 레거시↔신규 **동등성**을 언어 무관하게 검증한다 (byte-diff 금지)
+- [x] **CONTRACT-03**: 골든 픽스처 세트 + 골든러너 — 정규화 비교로 레거시↔신규 **동등성**을 언어 무관하게 검증한다 (byte-diff 금지)
 - [x] **CONTRACT-04**: contract-drift 게이트 — 계약(스키마)을 RFC 8785 정규화 후 SHA-256 해시로 고정하고, 미승인 변경 시 실패시키며 breaking 여부를 분류한다
 
 ### POLY — 폴리글랏 경계 안전망
@@ -123,7 +123,7 @@
 |-------------|-------|--------|
 | CONTRACT-01 | Phase 1 | Complete |
 | CONTRACT-02 | Phase 1 | Complete |
-| CONTRACT-03 | Phase 1 | Pending |
+| CONTRACT-03 | Phase 1 | Complete |
 | CONTRACT-04 | Phase 1 | Complete |
 | BOOT-01 | Phase 1 | Pending |
 | BOOT-02 | Phase 1 | Pending |
