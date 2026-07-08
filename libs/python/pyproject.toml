@@ -1,10 +1,12 @@
 [project]
 name = "logparser-normalize"
 version = "0.0.0"
-description = "언어중립 §4.3–4.6 정규화 비교 코어 — Python thin impl (CONTRACT-02). 구현은 후속 플랜."
+description = "언어중립 §4.3–4.6 정규화 비교 코어 — Python thin impl (CONTRACT-02, D-04/D-05). normalize_cell + normalize_tsv, cross-validated by libs/normalize-fixtures."
 requires-python = ">=3.11"
+# Stdlib-only (decimal/codecs/datetime per RESEARCH §Don't Hand-Roll) — no runtime deps.
 dependencies = []
 
 [tool.uv]
-# Virtual member: no build-system, nothing to package yet. The normalization core lands in a later plan.
+# Virtual member: no build-system, nothing to package. The core is imported by path from the
+# uv workspace environment (see the parity test); no wheel is built yet.
 package = false
