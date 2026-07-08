@@ -13,3 +13,7 @@ __pycache__/
 
 # Golden machine-proposed baselines (transient; promoted to .verified only by /golden-approve, P9)
 golden/**/baseline.received.tsv
+
+# Two-plane memory: DERIVED plane is machine-regenerated every session (D-03/D-04) — never commit.
+# STATE plane (.memory/state/**) and .memory/README.md stay TRACKED (small state survives sessions).
+.memory/derived/
