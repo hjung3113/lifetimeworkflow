@@ -18,7 +18,7 @@
 
 ### POLY — 폴리글랏 경계 안전망
 
-- [ ] **POLY-01**: 폴리글랏 경계 린터 — `integration_contracts §4-5` 체크리스트(인코딩·BOM·LF·TSV 이스케이프·타임존·소수점/로케일·null-vs-empty·쓰기 원자성·식별자/구간 규칙)를 on-write 훅 + CI에서 실행되는 실행 가능한 규칙으로 인코딩한다 (CONTRACT-02 코어 공유)
+- [x] **POLY-01**: 폴리글랏 경계 린터 — `integration_contracts §4-5` 체크리스트(인코딩·BOM·LF·TSV 이스케이프·타임존·소수점/로케일·null-vs-empty·쓰기 원자성·식별자/구간 규칙)를 on-write 훅 + CI에서 실행되는 실행 가능한 규칙으로 인코딩한다 (CONTRACT-02 코어 공유)
 
 ### MEM — 두 평면 컨텍스트 메모리
 
@@ -159,7 +159,7 @@
 | HOOK-02 | Phase 4 | Pending |
 | HOOK-03 | Phase 4 | Pending |
 | HOOK-04 | Phase 4 | Pending |
-| POLY-01 | Phase 4 | Pending |
+| POLY-01 | Phase 4 | Complete |
 | CI-01 | Phase 5 | Pending |
 | CI-02 | Phase 5 | Pending |
 | EMIT-01 | Phase 6 | Pending |

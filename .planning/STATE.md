@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: verifying
 stopped_at: Phase 4 context gathered
-last_updated: "2026-07-08T11:51:50.703Z"
+last_updated: "2026-07-08T12:43:26.873Z"
 last_activity: 2026-07-08
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 18
-  completed_plans: 18
+  total_plans: 24
+  completed_plans: 20
   percent: 50
 ---
 
@@ -30,7 +30,7 @@ Plan: 7 of 7
 Status: Phase complete — ready for verification
 Last activity: 2026-07-08
 
-Progress: [██████████] 100%
+Progress: [████████░░] 83%
 
 ## Performance Metrics
 
@@ -69,6 +69,7 @@ Progress: [██████████] 100%
 | Phase 3 P05 | 12min | 3 tasks | 8 files |
 | Phase 3 P06 | 14min | 3 tasks | 14 files |
 | Phase 3 P03-07 | 9min | 2 tasks | 10 files |
+| Phase 4 P01 | 14min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [03-05] Seven skills as harness/skills/<name>/SKILL.md with progressive disclosure; caps identical for opencode AND Claude (name<=64/desc<=1024 HARD, body>500 WARN) per RESEARCH 200-vs-1024 correction; test_skills.py pins exactly 7 disjoint skills (anti-sprawl P8).
 - [Phase ?]: [03-06] /docs-sync (DOCS-03/CMD-08): tools/docs_sync stdlib-json generator clones contracts_index.py determinism (rows/render/write/main, DERIVED header, no datetime/float) — contracts/**/*.schema.json to docs/reference/*.md byte-identical delete+regenerate (sha256 + committed syrupy, NOT git diff). write() confined under docs/reference/ (mirror golden_runner._confine, T-03-21); read via stdlib json same path as contract_hash, zero new deps (T-03-SC/T-03-23). reference/ is DERIVED, tutorials/how-to/explanation stay human-authored. Command macro wraps python -m tools.docs_sync (agent python-engineer).
 - [Phase ?]: [03-07] CMD-06 /strangler-step is a RUNNABLE gate (tools/strangler_guard): require_baseline refuses (StranglerRefused -> exit 3, mirroring approve.py) when no captured legacy golden .verified baseline exists for a target path; never fabricates one (P10/T-03-24). Macro adds single-path + mandatory /golden parity. CMD-05 /new-normalization-rule enforces contract -> (input,expected) data case -> intentional failing code stub (Pattern 4/D-06). Phase 3 COMPLETE (7/7).
+- [Phase ?]: [04-01] POLY-01 polyglot §4.3-4.6 linter (tools/polyglot_lint): detection-by-normalization diffs raw vs libs/python normalize.core (R1-BOM/R2-CRLF/R7-tsv/R3-decimal/R5-datetime/R6-null), fail loud exit 1; reuses the core (no second normalizer, D-02/D-03) proven by identity + corpus-parity on libs/normalize-fixtures. Shared engine HOOK-04/HOOK-03 will call.
 
 ### Pending Todos
 
@@ -124,6 +126,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-08T11:51:50.682Z
+Last session: 2026-07-08T12:42:58.754Z
 Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-plugins-hooks/04-CONTEXT.md
+Resume file: None
