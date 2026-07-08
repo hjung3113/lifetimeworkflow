@@ -1,0 +1,34 @@
+{
+  "_note": "CONFIG-02 permission data (D-03). Pure data — NO enforcement logic here. Consumed by tools/harness_perms/resolver.py (resolve_bash + resolve_path) and, in Phase 4, by the contract-guard / secret hooks that import that resolver verbatim. The 15 opencode permission keys each map to allow|ask|deny; `bash` is an INSERTION-ORDERED object encoding last-wins glob semantics (catch-all `*` FIRST, increasingly specific overrides after — never end with a broad `allow`, Pitfall P3). `path_deny_globs` are the constitution/secret path-scoped denies the resolver enforces (opencode's native `edit` key is not path-globbable, so path denies live here as data).",
+
+  "read": "allow",
+  "edit": "ask",
+  "bash": {
+    "*": "ask",
+    "dotnet *": "allow",
+    "uv *": "allow",
+    "pytest *": "allow",
+    "git push*": "ask",
+    "rm -rf*": "deny"
+  },
+  "glob": "allow",
+  "grep": "allow",
+  "list": "allow",
+  "task": "allow",
+  "external_directory": "ask",
+  "todowrite": "allow",
+  "question": "allow",
+  "webfetch": "ask",
+  "websearch": "ask",
+  "lsp": "allow",
+  "skill": "allow",
+  "doom_loop": "ask",
+
+  "path_deny_globs": [
+    "contracts/**",
+    "docs/adr/**",
+    "golden/**",
+    "*.env",
+    "**/*.env"
+  ]
+}
