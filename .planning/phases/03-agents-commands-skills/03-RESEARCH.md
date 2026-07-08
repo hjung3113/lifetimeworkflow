@@ -464,7 +464,7 @@ def write(contracts="contracts", out="docs/reference") -> list[Path]: ...  # one
 | A6 | `chat.system.transform` (not `experimental.` prefixed) is the opencode injection hook | Layout / plugin wiring | Phase-2 stub already flags this MEDIUM; re-verify before wiring plugin into opencode.json |
 | A7 | Claude agents have no `mode` field equivalent to opencode `primary` | Agent Format | Orchestrator "primary" maps to a Claude convention, not a field; emitter handles |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Vendored schema vs subset assertion for opencode.json structural test.**
    - Know: fetching the live schema is non-hermetic. Recommend vendoring a pinned copy or hand-authoring a subset schema asserting the CONFIG-01/02 keys.
