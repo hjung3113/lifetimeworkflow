@@ -53,7 +53,7 @@
 - [ ] **CMD-05**: `/new-normalization-rule` — 계약 우선 순서(계약 → 데이터기반 (input,expected) 케이스 → 코드) 강제
 - [ ] **CMD-06**: `/strangler-step` — 한 경로만 추출, `/golden` 패리티 게이트 통과 필수, 빅뱅 금지
 - [ ] **CMD-07**: `/adr` — append-only MADR 스캐폴드
-- [ ] **CMD-08**: `/docs-sync` — 계약에서 Diátaxis `reference/` 재생성
+- [x] **CMD-08**: `/docs-sync` — 계약에서 Diátaxis `reference/` 재생성
 - [ ] **CMD-09**: `/component` — 신규 컴포넌트를 올바른 구조·AGENTS.md·테스트 하네스와 함께 스캐폴드
 
 ### HOOK — 플러그인 / 훅 (강제 표면)
@@ -68,7 +68,7 @@
 
 - [x] **DOCS-01**: Diátaxis 문서 트리(tutorials/how-to/reference/explanation) + `glossary`(ubiquitous language)
 - [x] **DOCS-02**: `docs/adr/` MADR 구조(번호·불변·supersede)
-- [ ] **DOCS-03**: `reference/`는 계약에서 **파생**(사람은 tutorials/how-to/explanation만 작성)
+- [x] **DOCS-03**: `reference/`는 계약에서 **파생**(사람은 tutorials/how-to/explanation만 작성)
 
 ### SKILL — 스킬 (progressive disclosure)
 
@@ -150,11 +150,11 @@
 | CMD-05 | Phase 3 | Pending |
 | CMD-06 | Phase 3 | Pending |
 | CMD-07 | Phase 3 | Pending |
-| CMD-08 | Phase 3 | Pending |
+| CMD-08 | Phase 3 | Complete |
 | CMD-09 | Phase 3 | Pending |
 | SKILL-01 | Phase 3 | Complete |
 | SKILL-02 | Phase 3 | Complete |
-| DOCS-03 | Phase 3 | Pending |
+| DOCS-03 | Phase 3 | Complete |
 | HOOK-01 | Phase 4 | Pending |
 | HOOK-02 | Phase 4 | Pending |
 | HOOK-03 | Phase 4 | Pending |
