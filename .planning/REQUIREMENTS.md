@@ -24,7 +24,7 @@
 
 - [x] **MEM-01**: 헌법 평면 레이아웃 — `contracts/`·`docs/adr/`·`glossary`·`golden/`를 사람 소유·CODEOWNERS 게이트·불변으로 배치한다 (에이전트 자동 변경 금지)
 - [x] **MEM-02**: 파생/휘발 평면 — `.memory/`(activeContext·progress) + 파생물(repo-map·contracts-index)을 두고, 파생물은 손으로 관리하지 않는다(자동 재생성, gitignore)
-- [ ] **MEM-03**: 파생 아티팩트 생성기 — repo-map(tree-sitter + PageRank)과 contracts-index를 계약/코드에서 재생성한다
+- [x] **MEM-03**: 파생 아티팩트 생성기 — repo-map(tree-sitter + PageRank)과 contracts-index를 계약/코드에서 재생성한다
 
 ### RULES — 규칙 (AGENTS.md)
 
@@ -132,7 +132,7 @@
 | DOCS-02 | Phase 1 | Complete |
 | MEM-01 | Phase 2 | Complete |
 | MEM-02 | Phase 2 | Complete |
-| MEM-03 | Phase 2 | Pending |
+| MEM-03 | Phase 2 | Complete |
 | RULES-01 | Phase 2 | Pending |
 | RULES-02 | Phase 2 | Pending |
 | HOOK-05 | Phase 2 | Complete |
