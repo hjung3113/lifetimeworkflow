@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-04-PLAN.md
-last_updated: "2026-07-08T07:24:07.574Z"
+stopped_at: Completed 02-05-PLAN.md
+last_updated: "2026-07-08T07:35:00.000Z"
 last_activity: 2026-07-08
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 11
-  completed_plans: 10
-  percent: 17
+  completed_plans: 11
+  percent: 33
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 
 ## Current Position
 
-Phase: 2 (Two-Plane Memory + Rules) — EXECUTING
-Plan: 5 of 5
-Status: Ready to execute
+Phase: 2 (Two-Plane Memory + Rules) — COMPLETE
+Plan: 5 of 5 (all plans complete)
+Status: Phase 2 complete — ready for Phase 3 (CONFIG)
 Last activity: 2026-07-08
 
-Progress: [█████████░] 91%
+Progress: [██████████] 100% (Phase 2)
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Progress: [█████████░] 91%
 | Phase 2 P02-02 | 5min | 2 tasks | 6 files |
 | Phase 2 P02-03 | 8min | 1 tasks | 3 files |
 | Phase 2 P02-04 | 15min | 2 tasks | 5 files |
+| Phase 2 P02-05 | 9min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,7 @@ Recent decisions affecting current work:
 - [Phase 2]: [02-01] tools/memory_regen pins EXACT tree-sitter 0.25.2 + grammar wheels (py 0.25.0 / cs 0.23.5 / bash 0.25.1) + networkx 3.6.1 — individual wheels NOT language-pack (runtime download breaks determinism); resolved once so Wave-2 never touches uv.lock (T-02-SC).
 - [Phase 2]: [02-01] Bootstrap runs 'uv sync --all-packages' (install+verify): memory_regen is the first member with deps absent from the virtual root, so a bare 'uv sync' silently prunes the tree-sitter/networkx toolchain every SessionStart.
 - [Phase 2]: [02-02] Single injection contract fixed (D-01): python -m tools.memory_regen.inject is the ONE payload source; Claude SessionStart hook (4th slot, coexists) + authored-deferred opencode adapter both wrap the identical assemble() — capped ~1k-token, banner-first (never dropped), drift-aware, priority-truncated, pointer-only (no full contract bodies, P13/T-02-06).
+- [Phase 2]: [02-05] Nearest-wins AGENTS.md rules layer: root (map + golden-path + non-negotiables + lazy-load) + per-package Python/.NET files that RESTATE non-negotiables verbatim (P11 — Codex replaces nested AGENTS.md vs concat, so never inherit-only). CLAUDE.md gets a pointer-not-duplicate section in the non-GSD-managed gap (profile block untouched, T-02-13). Prose is advisory by design — true backstop = 02-02 injector + Phase-4 hooks. Phase 2 COMPLETE (all 4 success criteria met).
 - [Phase 2]: [02-04] repo-map uses networkx pure-Python PageRank backend (_pagerank_python) — numpy-free; keeps 02-01 pinned toolchain + uv.lock untouched (T-02-SC). Determinism (delete+regen byte-identical) via sorted node/edge insertion + (-score,path) tie-break + rank-only (no floats) + no timestamp; proven by generate-twice sha256 + committed syrupy snapshot (NOT git diff — derived/ gitignored). tree-sitter 0.25 Query+QueryCursor API (NOT removed lang.query().captures()).
 
 ### Pending Todos
@@ -110,6 +112,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-08T07:23:57.467Z
-Stopped at: Completed 02-04-PLAN.md
+Last session: 2026-07-08T07:35:00.000Z
+Stopped at: Completed 02-05-PLAN.md (Phase 2 complete)
 Resume file: None

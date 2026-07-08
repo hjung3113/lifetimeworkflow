@@ -28,8 +28,8 @@
 
 ### RULES — 규칙 (AGENTS.md)
 
-- [ ] **RULES-01**: 루트 `AGENTS.md`(모노레포 맵·golden-path·contract-first·지연로딩 규칙) + `CLAUDE.md` 포인터
-- [ ] **RULES-02**: per-package `AGENTS.md`(.NET / Python)로 언어별 규칙을 nearest-wins 스코핑한다 (런타임별 병합 의미 차이는 훅으로 보강)
+- [x] **RULES-01**: 루트 `AGENTS.md`(모노레포 맵·golden-path·contract-first·지연로딩 규칙) + `CLAUDE.md` 포인터
+- [x] **RULES-02**: per-package `AGENTS.md`(.NET / Python)로 언어별 규칙을 nearest-wins 스코핑한다 (런타임별 병합 의미 차이는 훅으로 보강)
 
 ### CONFIG — opencode.json & 권한
 
@@ -133,8 +133,8 @@
 | MEM-01 | Phase 2 | Complete |
 | MEM-02 | Phase 2 | Complete |
 | MEM-03 | Phase 2 | Complete |
-| RULES-01 | Phase 2 | Pending |
-| RULES-02 | Phase 2 | Pending |
+| RULES-01 | Phase 2 | Complete |
+| RULES-02 | Phase 2 | Complete |
 | HOOK-05 | Phase 2 | Complete |
 | CONFIG-01 | Phase 3 | Pending |
 | CONFIG-02 | Phase 3 | Pending |
