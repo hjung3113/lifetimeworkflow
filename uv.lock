@@ -13,6 +13,7 @@ members = [
     "logparser-harness-perms",
     "logparser-memory-regen",
     "logparser-normalize",
+    "logparser-strangler-guard",
 ]
 
 [[package]]
@@ -289,6 +290,11 @@ requires-dist = [
 name = "logparser-normalize"
 version = "0.0.0"
 source = { virtual = "libs/python" }
+
+[[package]]
+name = "logparser-strangler-guard"
+version = "0.0.0"
+source = { virtual = "tools/strangler_guard" }
 
 [[package]]
 name = "networkx"
