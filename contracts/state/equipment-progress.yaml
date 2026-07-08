@@ -1,0 +1,32 @@
+# ⚠️ SEED PLACEHOLDER — 예시 시드, 도메인 확정값 아님 (CONTRACT-01)
+# parserimprove monorepo_skeleton에서 복사한 골격. 모든 TBD/예시 값은 example placeholder일 뿐
+# 도메인 진실이 아니다. 동반 정본은 equipment-progress.schema.json.
+#
+# 설비별 진행상태 + carryover — 스켈레톤
+# 정본은 DB(SSOT). 스케줄러가 유일한 정상 쓰기 주체. 이 파일은 상태 모델을 계약으로 문서화.
+
+id: state.equipment-progress
+description: 설비별 "어디까지 처리했는지" watermark + 파일경계 carryover
+owner: TBD
+version: 0.1.0
+
+storage:
+  type: db            # 온프렘 공정 DB (S3/파일 아님)
+  role: ssot          # 단일 진실 원천. 소켓/파일 상태를 이중 진실로 두지 않음
+
+progress:
+  keys: [equipment_id]
+  fields:
+    - watermark        # 마지막으로 처리 완료한 지점(시간/파일 구간)
+    - last_status      # live/rework/따라잡기 진행 상태
+    - updated_at
+
+carryover:
+  keys: [equipment_id]
+  fields:
+    - pending_open_events   # start만 있고 end 미도착한 동작 등
+    - flow_context          # 흐름 추적 정보
+  note: 표준/비표준별 저장 위치·재처리 시 처리 방식 TBD (parser_project_revised §10)
+
+change_policy:
+  ref: ../../docs/01-contracts-and-change-policy.md

@@ -1,0 +1,35 @@
+# ⚠️ SEED PLACEHOLDER — 예시 시드, 도메인 확정값 아님 (CONTRACT-01)
+# parserimprove monorepo_skeleton에서 복사한 골격. 모든 TBD/예시 값은 example placeholder일 뿐
+# 도메인 진실이 아니다. 동반 정본은 correction-rules.schema.json.
+#
+# 값 정규화·보정 규칙 카탈로그 — 스켈레톤
+# 50종+ 규칙을 코드가 아니라 데이터로 관리 (데이터 기반 파라미터화 테스트와 연동).
+# 값 정규화(제각각→일관)와 보정(결함 메움)은 별개 단계임에 주의.
+
+id: normalization.catalog
+description: 설비사·모델별 값 정규화 + 보정 규칙 카탈로그
+owner: TBD
+version: 0.1.0
+
+normalization_rules:
+  # 예시 골격 — 실제 규칙 데이터로 확장
+  - id: norm.example
+    scope: { maker_id: TBD, model_id: TBD }
+    target_field: TBD
+    mapping: { }        # raw → normalized
+    test_cases:         # (입력, 기대출력) — 골든/파라미터화 테스트가 사용
+      - input: TBD
+        expected: TBD
+
+correction_rules:
+  - id: corr.example
+    scope: { maker_id: TBD }
+    kind: TBD           # enrichment(보강) | fix(교정)
+    description: TBD
+    test_cases:
+      - input: TBD
+        expected: TBD
+
+change_policy:
+  # 신규 케이스 추가 = non-breaking. 기존 케이스 기대출력 변경 = breaking.
+  ref: ../../docs/01-contracts-and-change-policy.md
