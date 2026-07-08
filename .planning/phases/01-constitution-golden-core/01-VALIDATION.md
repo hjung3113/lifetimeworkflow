@@ -49,8 +49,8 @@ created: 2026-07-08
 | CONTRACT-03 (PASS) | 2 | repr-only fixture (BOM/CRLF/decimal/TZ) PASSES golden | — | integration | `uv run pytest tools/golden_runner/tests/test_repr_only.py -x` | ❌ W0 | ⬜ pending |
 | CONTRACT-03 (FAIL) | 2 | value-regression fixture FAILS golden | — | integration | `uv run pytest tools/golden_runner/tests/test_value_regression.py -x` | ❌ W0 | ⬜ pending |
 | CONTRACT-03 (gate) | 2 | `/golden-approve` refuses baseline write w/o human sign-off | V4 / P9 | unit | `uv run pytest tools/golden_runner/tests/test_approve_gate.py -x` | ❌ W0 | ⬜ pending |
-| CONTRACT-04 (drift) | 1 | mutating a §4-5 convention field bumps hash + trips gate | V6 / P14 | unit | `uv run pytest tools/contract-drift/tests/test_convention_mutation.py -x` | ❌ W0 | ⬜ pending |
-| CONTRACT-04 (classify) | 1 | breaking vs non-breaking classification | V6 | unit | `uv run pytest tools/contract-drift/tests/test_classify.py -x` | ❌ W0 | ⬜ pending |
+| CONTRACT-04 (drift) | 1 | mutating a §4-5 convention field bumps hash + trips gate | V6 / P14 | unit | `uv run pytest tools/contract_drift/tests/test_convention_mutation.py -x` | ❌ W0 | ⬜ pending |
+| CONTRACT-04 (classify) | 1 | breaking vs non-breaking classification | V6 | unit | `uv run pytest tools/contract_drift/tests/test_classify.py -x` | ❌ W0 | ⬜ pending |
 | DOCS-01/02 | 1 | Diátaxis dirs + adr/0001 + glossary exist | — | structural | `test -d docs/tutorials && test -f docs/adr/0001-*.md && test -f docs/glossary.md` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*

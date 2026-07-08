@@ -390,19 +390,19 @@ nyquist_validation is **enabled** (`config.json workflow.nyquist_validation: tru
 | Framework (Python) | pytest 8.4.x (pin) / env has 9.1.1 — resolve A1 |
 | Framework (.NET) | xunit.v3 3.2.2 (optional in P1; toy converter may ship with a minimal smoke test) |
 | Config file | `pyproject.toml` (uv workspace + pytest config) — created in Wave 0 |
-| Quick run command | `uv run pytest tools/golden-runner/tests -x` |
-| Full suite command | `uv run pytest && uv run ruff check . && bash tools/contract-drift/check.sh` |
+| Quick run command | `uv run pytest tools/golden_runner/tests -x` |
+| Full suite command | `uv run pytest && uv run ruff check . && bash tools/contract_drift/check.sh` |
 
 ### Phase Requirements → Test Map
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|-------------|
 | CONTRACT-01 | Seed YAML + companion schema validate against Draft 2020-12 | unit | `uv run check-jsonschema --schemafile <schema> <instance>` | ❌ Wave 0 |
 | CONTRACT-02 | Both language cores produce identical canonical output on shared corpus | unit (parity) | `uv run pytest libs/python/normalize/tests -x` + `dotnet test libs/dotnet` | ❌ Wave 0 |
-| CONTRACT-03 (PASS) | repr-only fixture (BOM/CRLF/decimal/TZ) passes golden | integration | `uv run pytest tools/golden-runner/tests/test_repr_only.py -x` | ❌ Wave 0 |
-| CONTRACT-03 (FAIL) | value-regression fixture fails golden | integration | `uv run pytest tools/golden-runner/tests/test_value_regression.py -x` | ❌ Wave 0 |
-| CONTRACT-04 (drift) | mutating a §4-5 field bumps the hash + trips gate | unit | `uv run pytest tools/contract-drift/tests/test_convention_mutation.py -x` | ❌ Wave 0 |
-| CONTRACT-04 (classify) | breaking vs non-breaking classification | unit | `uv run pytest tools/contract-drift/tests/test_classify.py -x` | ❌ Wave 0 |
-| CONTRACT-03 (approve) | `/golden-approve` refuses baseline write without human sign-off | unit | `uv run pytest tools/golden-runner/tests/test_approve_gate.py -x` | ❌ Wave 0 |
+| CONTRACT-03 (PASS) | repr-only fixture (BOM/CRLF/decimal/TZ) passes golden | integration | `uv run pytest tools/golden_runner/tests/test_repr_only.py -x` | ❌ Wave 0 |
+| CONTRACT-03 (FAIL) | value-regression fixture fails golden | integration | `uv run pytest tools/golden_runner/tests/test_value_regression.py -x` | ❌ Wave 0 |
+| CONTRACT-04 (drift) | mutating a §4-5 field bumps the hash + trips gate | unit | `uv run pytest tools/contract_drift/tests/test_convention_mutation.py -x` | ❌ Wave 0 |
+| CONTRACT-04 (classify) | breaking vs non-breaking classification | unit | `uv run pytest tools/contract_drift/tests/test_classify.py -x` | ❌ Wave 0 |
+| CONTRACT-03 (approve) | `/golden-approve` refuses baseline write without human sign-off | unit | `uv run pytest tools/golden_runner/tests/test_approve_gate.py -x` | ❌ Wave 0 |
 | BOOT-01 | `dotnet --version` starts with `10.` after bootstrap | smoke | `bash tools/bootstrap/verify.sh` (asserts dotnet 10 + uv resolve) | ❌ Wave 0 |
 | BOOT-02/03 | uv workspace resolves; SessionStart runs bootstrap idempotently | smoke | `uv sync --frozen` + second-run cache-hit assertion | ❌ Wave 0 |
 | DOCS-01/02 | Diátaxis dirs + adr/0001 + glossary exist | structural | `test -d docs/tutorials && test -f docs/adr/0001-*.md && test -f docs/glossary.md` | ❌ Wave 0 |
@@ -414,7 +414,7 @@ nyquist_validation is **enabled** (`config.json workflow.nyquist_validation: tru
 
 ### Wave 0 Gaps
 - [ ] `pyproject.toml` — uv workspace root + pytest config + tool pins (resolve A1)
-- [ ] `tools/golden-runner/tests/conftest.py` — subprocess/toy-converter fixtures
+- [ ] `tools/golden_runner/tests/conftest.py` — subprocess/toy-converter fixtures
 - [ ] `libs/normalize-fixtures/` — shared `(raw,canonical)` corpus (consumed by Py + .NET)
 - [ ] `components/toy-converter/` csproj + minimal xunit smoke (needs .NET 10 → BOOT-01 first)
 - [ ] `tools/bootstrap/verify.sh` — asserts dotnet 10 + uv resolve
