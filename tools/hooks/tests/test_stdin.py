@@ -13,7 +13,6 @@ import dataclasses
 
 from tools.hooks._stdin import Event, emit_block, emit_deny, parse_event
 
-
 # --- parse_event: crafted PreToolUse event -> typed record --------------------------------------
 
 

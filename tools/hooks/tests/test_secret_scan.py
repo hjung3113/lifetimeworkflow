@@ -124,12 +124,18 @@ def test_main_denies_real_secret_exit0_json() -> None:
         {"tool_name": "Write", "tool_input": {"file_path": "src/x.py", "content": f"k={AWS_KEY}"}}
     )
     assert proc.returncode == 0
-    assert '"permissionDecision": "deny"' in proc.stdout or '"permissionDecision":"deny"' in proc.stdout
+    assert (
+        '"permissionDecision": "deny"' in proc.stdout
+        or '"permissionDecision":"deny"' in proc.stdout
+    )
 
 
 def test_main_allowlisted_fixture_silent() -> None:
     proc = _run_main(
-        {"tool_name": "Write", "tool_input": {"file_path": "tests/fixtures/blob.json", "content": AWS_KEY}}
+        {
+            "tool_name": "Write",
+            "tool_input": {"file_path": "tests/fixtures/blob.json", "content": AWS_KEY},
+        }
     )
     assert proc.returncode == 0
     assert proc.stdout.strip() == ""
@@ -137,7 +143,10 @@ def test_main_allowlisted_fixture_silent() -> None:
 
 def test_main_constitution_plane_silent() -> None:
     proc = _run_main(
-        {"tool_name": "Write", "tool_input": {"file_path": "contracts/x.schema.json", "content": "{}"}}
+        {
+            "tool_name": "Write",
+            "tool_input": {"file_path": "contracts/x.schema.json", "content": "{}"},
+        }
     )
     assert proc.returncode == 0
     assert proc.stdout.strip() == ""
