@@ -4,7 +4,7 @@ Drives the three composed branches of :mod:`tools.hooks.commit_gate` by monkeypa
 built-once assets (D-02) so no live .NET / contract tree is needed:
 
   * ``run_gate``      (tools.contract_drift.drift)   — contract-drift component
-  * ``lint_file``     (tools.polyglot_lint.lint)     — §4.3-4.6 polyglot component (over staged files)
+  * ``lint_file``     (tools.polyglot_lint.lint)     — §4.3-4.6 polyglot component (staged files)
   * ``resolve_dotnet``(tools.golden_runner.runner)   — golden-parity gating probe
 
 Invariants proved:
@@ -21,7 +21,6 @@ from __future__ import annotations
 import json
 
 from tools.hooks import commit_gate
-
 
 # --- helpers ------------------------------------------------------------------------------------
 
@@ -42,7 +41,10 @@ def _drift_present(monkeypatch) -> None:
     monkeypatch.setattr(
         commit_gate,
         "run_gate",
-        lambda *a, **k: {"ok": False, "drifted": [("contracts/x.schema.json", "changed", "breaking")]},
+        lambda *a, **k: {
+            "ok": False,
+            "drifted": [("contracts/x.schema.json", "changed", "breaking")],
+        },
     )
 
 
@@ -129,7 +131,8 @@ def test_is_git_subcommand_ignores_status() -> None:
 
 
 def test_is_git_subcommand_skips_env_and_global_flags() -> None:
-    assert commit_gate.is_git_subcommand("GIT_AUTHOR_NAME=x git -C /repo commit -m y", "commit") is True
+    cmd = "GIT_AUTHOR_NAME=x git -C /repo commit -m y"
+    assert commit_gate.is_git_subcommand(cmd, "commit") is True
 
 
 def test_is_git_subcommand_fullpath_git() -> None:
@@ -165,4 +168,6 @@ def test_from_hook_blocks_commit_on_drift(monkeypatch, capsys) -> None:
     rc = commit_gate.main(["--from-hook"])
     out = capsys.readouterr().out
     assert rc == 2  # Claude PreToolUse block exit code
-    assert json.loads(out)["decision"] == "block"
+    # The block decision is the last stdout line (composition PASS/SKIP lines precede it).
+    block_line = [ln for ln in out.splitlines() if ln.strip()][-1]
+    assert json.loads(block_line)["decision"] == "block"
