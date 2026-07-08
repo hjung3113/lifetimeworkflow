@@ -54,12 +54,14 @@ def test_per_package_restates_non_negotiables(repo_root: Path, rel: str) -> None
     text = _read(repo_root, rel)
     lower = text.lower()
     # Contract-first restated.
-    assert "contract-first" in lower, f"{rel} does not restate contract-first (P11 inherit-only risk)"
+    assert "contract-first" in lower, (
+        f"{rel} does not restate contract-first (P11 inherit-only risk)"
+    )
     # Constitution-plane-is-gated restated (names the gated members).
     assert "contracts/" in text and "golden/" in text, f"{rel} does not restate constitution-gated"
-    assert (
-        "do not write" in lower or "human-promoted" in lower or "gated" in lower
-    ), f"{rel} does not restate the constitution-gated rule"
+    assert "do not write" in lower or "human-promoted" in lower or "gated" in lower, (
+        f"{rel} does not restate the constitution-gated rule"
+    )
     # §4-5 boundary invariants restated (BOM + LF are the signature markers).
     assert "bom" in lower and "lf" in lower, f"{rel} does not restate the §4-5 boundary invariants"
 

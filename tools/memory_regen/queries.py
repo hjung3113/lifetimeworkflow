@@ -1,17 +1,18 @@
 """Per-language tree-sitter tags queries + the parse layer (MEM-03, Task 1, RESEARCH Pattern 1).
 
-This module owns the FIRST stage of the repo-map: turn a source file into ``def``/``ref`` symbol
-names. It deliberately uses the tree-sitter **0.25** API — ``tree_sitter.Query(lang, s)`` +
-``tree_sitter.QueryCursor(query).captures(root)`` — and NEVER the removed 0.24-era
-``Language.query(s).captures(node)`` chain (Pitfall 3 / RESEARCH §State of the Art: that path throws
-``AttributeError`` on 0.25). Grammars load from the pinned individual wheels (``tree_sitter_python``,
-``tree_sitter_c_sharp``, ``tree_sitter_bash``) — NOT ``tree-sitter-language-pack`` (which downloads
-parser binaries at runtime, breaking determinism + offline/ephemeral operation; T-02-SC).
+This module owns the FIRST stage of the repo-map: turn a source file into ``def``/``ref``
+symbol names. It deliberately uses the tree-sitter **0.25** API — ``tree_sitter.Query(lang, s)``
++ ``tree_sitter.QueryCursor(query).captures(root)`` — and NEVER the removed 0.24-era
+``Language.query(s).captures(node)`` chain (Pitfall 3 / RESEARCH §State of the Art: that path
+throws ``AttributeError`` on 0.25). Grammars load from the pinned individual wheels
+(``tree_sitter_python``, ``tree_sitter_c_sharp``, ``tree_sitter_bash``) — NOT
+``tree-sitter-language-pack`` (which downloads parser binaries at runtime, breaking
+determinism + offline/ephemeral operation; T-02-SC).
 
-``LANGUAGES`` maps a language name → (grammar module, file extensions, tags query). ``parse_symbols``
-runs the query for one file and returns ``{"def": [...names], "ref": [...names]}``. The repo-map
-(``repo_map.py``) walks the tree, resolves each file's language via :func:`lang_for_path`, and builds
-a def/ref graph from these captures.
+``LANGUAGES`` maps a language name → (grammar module, file extensions, tags query).
+``parse_symbols`` runs the query for one file and returns ``{"def": [...names], "ref":
+[...names]}``. The repo-map (``repo_map.py``) walks the tree, resolves each file's language
+via :func:`lang_for_path`, and builds a def/ref graph from these captures.
 """
 
 from __future__ import annotations
@@ -53,10 +54,7 @@ _C_SHARP_QUERY = (
     "(invocation_expression function: (member_access_expression name: (identifier) @ref))"
 )
 
-_BASH_QUERY = (
-    "(function_definition name: (word) @def)\n"
-    "(command name: (command_name (word) @ref))"
-)
+_BASH_QUERY = "(function_definition name: (word) @def)\n(command name: (command_name (word) @ref))"
 
 
 LANGUAGES: dict[str, LangSpec] = {

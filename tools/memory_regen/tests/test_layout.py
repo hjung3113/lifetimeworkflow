@@ -1,8 +1,10 @@
-"""Structural layout test for the two-plane memory skeleton + resolved toolchain (Crit-1, MEM-01/02).
+"""Structural layout test for the two-plane memory skeleton + resolved toolchain (Crit-1,
+MEM-01/02).
 
-Assertions only touch *structure*, never the content of a gitignored path, and never `git diff` on
-`.memory/derived/` (Pitfall 2: a gitignored path never shows in `git diff`, so such a test is a
-silent no-op). The gitignore boundary is probed with `git check-ignore` instead.
+Assertions only touch *structure*, never the content of a gitignored path, and never
+`git diff` on `.memory/derived/` (Pitfall 2: a gitignored path never shows in `git diff`,
+so such a test is a silent no-op). The gitignore boundary is probed with `git check-ignore`
+instead.
 """
 
 from __future__ import annotations
@@ -58,7 +60,8 @@ def test_readme_names_all_constitution_members(repo_root: Path) -> None:
 
 
 def test_state_stubs_carry_no_secrets(repo_root: Path) -> None:
-    """T-02-01: committed state must not carry secret *values* (banners warning about them are OK)."""
+    """T-02-01: committed state must not carry secret *values* (banners warning about them
+    are OK)."""
     state_dir = repo_root / ".memory" / "state"
     for stub in state_dir.glob("*.md"):
         text = stub.read_text(encoding="utf-8").lower()

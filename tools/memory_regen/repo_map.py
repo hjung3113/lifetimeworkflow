@@ -2,11 +2,12 @@
 
 The one genuinely new engine of this phase (RESEARCH §Key insight). It walks the monorepo source
 subtrees (``libs/python``, ``libs/dotnet``, ``tools``, ``components`` — code only, D-06, never
-``.planning/``), parses each ``.py``/``.cs``/``.sh`` file into def/ref symbols via the tree-sitter
-0.25 layer (:mod:`tools.memory_regen.queries`), builds a directed file→file graph (edge A→B when A
-references a symbol defined in B, weighted by count), ranks files by ``networkx.pagerank`` (importance
-via reference topology, not size/mtime), and renders the top-N with elided def signatures into a
-token-bounded, DERIVED-marked ``.memory/derived/repo-map.md``.
+``.planning/``), parses each ``.py``/``.cs``/``.sh`` file into def/ref symbols via the
+tree-sitter 0.25 layer (:mod:`tools.memory_regen.queries`), builds a directed file→file
+graph (edge A→B when A references a symbol defined in B, weighted by count), ranks files
+by ``networkx.pagerank`` (importance via reference topology, not size/mtime), and renders
+the top-N with elided def signatures into a token-bounded, DERIVED-marked
+``.memory/derived/repo-map.md``.
 
 Determinism (delete + regenerate byte-identical — success criterion 2 / D-04, Pitfall 1) is achieved
 by: sorted node + edge insertion, ``(-score, path)`` tie-break, NO raw PageRank floats in the body
@@ -129,12 +130,13 @@ def build_graph(
 def ranked_files(graph: nx.DiGraph) -> list[tuple[str, float]]:
     """Rank files by PageRank, sorted ``(-score, path)`` (score desc, path asc tie-break).
 
-    Uses networkx's pure-Python PageRank backend (``_pagerank_python``) rather than the public
-    ``nx.pagerank`` dispatcher: on networkx 3.6 the public entry routes to ``_pagerank_scipy``, which
-    imports numpy/scipy — neither is in the 02-01-pinned toolchain (T-02-SC: individual wheels only,
-    ``uv.lock`` resolved once in Wave 1, never touched in Wave 2). The pure-Python power iteration is
-    the identical PageRank algorithm, dependency-free, and deterministic (uniform start vector over
-    the sorted node insertion order → delete+regen byte-identical, Pattern 2).
+    Uses networkx's pure-Python PageRank backend (``_pagerank_python``) rather than the
+    public ``nx.pagerank`` dispatcher: on networkx 3.6 the public entry routes to
+    ``_pagerank_scipy``, which imports numpy/scipy — neither is in the 02-01-pinned
+    toolchain (T-02-SC: individual wheels only, ``uv.lock`` resolved once in Wave 1,
+    never touched in Wave 2). The pure-Python power iteration is the identical PageRank
+    algorithm, dependency-free, and deterministic (uniform start vector over the sorted
+    node insertion order → delete+regen byte-identical, Pattern 2).
     """
     if graph.number_of_nodes() == 0:
         return []
@@ -161,7 +163,7 @@ def render(graph: nx.DiGraph, budget_chars: int = 4000) -> str:
     )
 
     rows: list[str] = []
-    for position, (rel, _score) in enumerate(ranked_files(graph), start=1):
+    for _position, (rel, _score) in enumerate(ranked_files(graph), start=1):
         defs = graph.nodes[rel].get("defs", ())
         if not defs:
             continue  # isolated file with no definitions — nothing to show

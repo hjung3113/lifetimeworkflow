@@ -1,9 +1,9 @@
 """Tests for the tree-sitter parse layer (MEM-03, Task 1, ROADMAP Crit-2 / RESEARCH Pattern 1).
 
 Pins the two guarantees the repo-map depends on:
-  (a) parse correctness — parsing the tmp_source_tree ``.py`` / ``.cs`` / ``.sh`` fixtures (one def +
-      one ref each) yields NON-EMPTY ``def`` captures per language (refs where the grammar exposes
-      them), via the tree-sitter 0.25 ``Query`` + ``QueryCursor`` API.
+  (a) parse correctness — parsing the tmp_source_tree ``.py`` / ``.cs`` / ``.sh`` fixtures
+      (one def + one ref each) yields NON-EMPTY ``def`` captures per language (refs where
+      the grammar exposes them), via the tree-sitter 0.25 ``Query`` + ``QueryCursor`` API.
   (b) Pitfall-3 guard — the parse path does NOT touch the removed ``Language.query`` /
       ``Query.captures`` 0.24-era API (which throws ``AttributeError`` on 0.25). We assert the code
       uses the ``QueryCursor`` seam and that a full parse raises no ``AttributeError``.
@@ -19,7 +19,6 @@ from pathlib import Path
 import pytest
 
 from tools.memory_regen import queries
-
 
 _EXT_LANG = {".py": "python", ".cs": "c_sharp", ".sh": "bash"}
 

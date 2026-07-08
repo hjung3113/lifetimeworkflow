@@ -21,8 +21,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from tools.contract_hash.hash import CONTRACTS_DIR, MANIFEST_PATH, build_manifest
 from tools.contract_drift.drift import run_gate
+from tools.contract_hash.hash import CONTRACTS_DIR, MANIFEST_PATH, build_manifest
 
 # --- paths (derived plane is gitignored + regenerated every session, D-03) --------------------
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -40,7 +40,8 @@ KIND = {
     "state": "state",
 }
 
-# No machine-readable owner today (contracts/README.md: "owner: TBD") → emit TBD, never fabricate (A3).
+# No machine-readable owner today (contracts/README.md: "owner: TBD") → emit TBD,
+# never fabricate (A3).
 OWNER_TBD = "TBD"
 
 # Length of the hash prefix folded into a row — enough to disambiguate, not the full 64-hex digest.
@@ -55,11 +56,14 @@ def index_rows(
 
     Each row is ``(rel_path, kind, owner, hash_prefix, drift_status)``:
       * ``rel_path`` — ``contracts/...`` POSIX key (from the reused manifest).
-      * ``kind`` — derived from the ``contracts/<top>/`` segment via :data:`KIND` (else ``other``).
-      * ``owner`` — always :data:`OWNER_TBD` (A3 — no machine-readable owner exists; never fabricate).
-      * ``hash_prefix`` — first :data:`_HASH_PREFIX` hex chars of the Phase-1 JCS SHA-256 (no re-hash).
-      * ``drift_status`` — ``clean`` unless the schema is in ``run_gate()["drifted"]``, in which case
-        ``drift:<kind>:<classification>`` (e.g. ``drift:changed:breaking``).
+      * ``kind`` — derived from the ``contracts/<top>/`` segment via :data:`KIND` (else
+        ``other``).
+      * ``owner`` — always :data:`OWNER_TBD` (A3 — no machine-readable owner exists; never
+        fabricate).
+      * ``hash_prefix`` — first :data:`_HASH_PREFIX` hex chars of the Phase-1 JCS SHA-256
+        (no re-hash).
+      * ``drift_status`` — ``clean`` unless the schema is in ``run_gate()["drifted"]``, in
+        which case ``drift:<kind>:<classification>`` (e.g. ``drift:changed:breaking``).
 
     Rows are sorted by relative path so the render is deterministic (Pitfall 1).
     """
@@ -79,9 +83,10 @@ def index_rows(
 def render(rows: list[tuple[str, str, str, str, str]]) -> str:
     """Render rows into the deterministic DERIVED-marked markdown index.
 
-    Output = the ``DERIVED — do not hand-edit`` header, then a stable markdown table (one row per
-    contract, sorted). Contains NO timestamp and NO raw float (Pitfall 1) so generating twice is
-    byte-identical. Hash prefixes are content-derived (stable). Trailing newline for POSIX-clean text.
+    Output = the ``DERIVED — do not hand-edit`` header, then a stable markdown table (one
+    row per contract, sorted). Contains NO timestamp and NO raw float (Pitfall 1) so
+    generating twice is byte-identical. Hash prefixes are content-derived (stable).
+    Trailing newline for POSIX-clean text.
     """
     lines = [
         f"# {DERIVED_HEADER}",

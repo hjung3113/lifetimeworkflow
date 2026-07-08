@@ -18,7 +18,6 @@ from pathlib import Path
 from tools.contract_hash.hash import build_manifest
 from tools.memory_regen import contracts_index
 
-
 # ---- (b) drift correctness: mutated tmp schema shows drift, sibling clean --------------------
 
 
@@ -95,7 +94,8 @@ def test_output_carries_derived_marker_and_no_body() -> None:
 
 
 def test_rows_have_kind_owner_hash_and_status() -> None:
-    """Every row = (rel, kind, owner=TBD, hash[:12], status); hash is a prefix, owner never fabricated."""
+    """Every row = (rel, kind, owner=TBD, hash[:12], status); hash is a prefix, owner never
+    fabricated."""
     rows = contracts_index.index_rows()
     assert rows, "no contracts indexed"
     for rel, kind, owner, hash_prefix, status in rows:
@@ -110,5 +110,6 @@ def test_rows_have_kind_owner_hash_and_status() -> None:
 
 
 def test_render_matches_committed_snapshot(snapshot) -> None:
-    """Committed .ambr snapshot pins render() over the real contracts tree (determinism reference)."""
+    """Committed .ambr snapshot pins render() over the real contracts tree (determinism
+    reference)."""
     assert contracts_index.render(contracts_index.index_rows()) == snapshot
