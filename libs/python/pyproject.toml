@@ -1,0 +1,10 @@
+[project]
+name = "logparser-normalize"
+version = "0.0.0"
+description = "언어중립 §4.3–4.6 정규화 비교 코어 — Python thin impl (CONTRACT-02). 구현은 후속 플랜."
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv]
+# Virtual member: no build-system, nothing to package yet. The normalization core lands in a later plan.
+package = false

@@ -1,0 +1,54 @@
+[project]
+name = "logparser-harness"
+version = "0.0.0"
+description = "설비 로그파서 파이프라인 opencode 하네스 — uv workspace root (Python 스케줄러·수집기·tools 평면)"
+requires-python = ">=3.11"
+# Runtime deps for the repo-level Python tools (contract-hash / drift gate, schema validation).
+# Pinned to the exact versions in CLAUDE.md / 01-RESEARCH.md (T-01-SC: pin so resolution can't drift).
+dependencies = [
+    "rfc8785==0.1.4",
+    "jsonschema==4.26.0",
+]
+
+[dependency-groups]
+# Dev tooling. pytest pinned <9 per A1 (syrupy 5.2.0 compat with pytest 9 unverified — do NOT let it
+# resolve to 9.x). Other pins are the CLAUDE.md values; forward-compatible patch bumps are acceptable.
+dev = [
+    "pytest>=8.4,<9",
+    "syrupy==5.2.0",
+    "ruff~=0.15",
+    "pyright==1.1.409",
+    "check-jsonschema==0.37.4",
+]
+
+[tool.uv]
+# Root is a virtual project (no build-system): its dependencies are installed into the workspace
+# environment, but the root itself is never built/packaged.
+package = false
+
+[tool.uv.workspace]
+# libs/python = §4-5 normalization core (Python thin impl, later plan).
+# tools/*      = repo-level Python tools (golden-runner, contract-hash/drift — later plans).
+# uv requires every dir matched by `members` to contain a pyproject.toml, so shell-only tool dirs
+# (tools/bootstrap) must be excluded or `uv sync` fails. components/* (.NET) are not members at all.
+members = ["libs/python", "tools/*"]
+exclude = ["tools/bootstrap"]
+
+[tool.pytest.ini_options]
+minversion = "8.4"
+testpaths = ["libs/python", "tools"]
+addopts = "-ra"
+python_files = ["test_*.py", "*_test.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".dotnet", ".venv", "bin", "obj"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "standard"
+exclude = ["**/.dotnet", "**/.venv", "**/bin", "**/obj", "**/__pycache__"]
