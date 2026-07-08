@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 1 context gathered
-last_updated: "2026-07-08T03:15:39.467Z"
+last_updated: "2026-07-08T03:22:08.477Z"
 last_activity: 2026-07-08
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 6
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 1 (Constitution + Golden Core) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 Status: Ready to execute
 Last activity: 2026-07-08
 
-Progress: [███░░░░░░░] 33%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [███░░░░░░░] 33%
 
 *Updated after each plan completion*
 | Phase 1 P03 | 2 | 2 tasks | 7 files |
+| Phase 1 P02 | 5 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,8 @@ Recent decisions affecting current work:
 - [Roadmap]: "Machines gate, humans ratify" — no agent self-bless of golden; constitution plane is human-owned/CODEOWNERS-gated.
 - [Phase ?]: [01-03] Diátaxis docs skeleton laid down; reference/ quadrant flagged derived-from-contracts (populated by /docs-sync in Phase 3, DOCS-03) — never hand-authored.
 - [Phase ?]: [01-03] MADR adr/0001 immutably records walking-skeleton architecture; adr/README.md establishes append-only/supersede-not-edit convention (DOCS-02).
+- [Phase ?]: [01-02] format-conventions.schema.json materializes §4.3-4.6 conventions as const/enum fields — the P14 drift-hash target so convention changes (not just column reorders) trip the gate (Plan 05).
+- [Phase ?]: [01-02] golden/ seeded as a TOP-LEVEL constitution-plane sibling of contracts/ (no contracts/golden/ nesting), per D-06/D-07 locked layout.
 
 ### Pending Todos
 
@@ -92,6 +95,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-08T03:15:33.570Z
+Last session: 2026-07-08T03:22:02.137Z
 Stopped at: Phase 1 context gathered
 Resume file: None
