@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 3 context gathered
-last_updated: "2026-07-08T09:31:04.330Z"
+last_updated: "2026-07-08T09:38:19.504Z"
 last_activity: 2026-07-08
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 18
-  completed_plans: 15
+  completed_plans: 16
   percent: 33
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 3 (Agents + Commands + Skills) — EXECUTING
-Plan: 5 of 7
+Plan: 6 of 7
 Status: Ready to execute
 Last activity: 2026-07-08
 
-Progress: [████████░░] 83%
+Progress: [█████████░] 89%
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Progress: [████████░░] 83%
 | Phase 3 P03-02 | 9min | 2 tasks | 8 files |
 | Phase 3 P03-03 | 10min | 2 tasks | 7 files |
 | Phase 3 P03-04 | 11min | 3 tasks | 10 files |
+| Phase 3 P05 | 12min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,7 @@ Recent decisions affecting current work:
 - [Phase 2]: [02-04] repo-map uses networkx pure-Python PageRank backend (_pagerank_python) — numpy-free; keeps 02-01 pinned toolchain + uv.lock untouched (T-02-SC). Determinism (delete+regen byte-identical) via sorted node/edge insertion + (-score,path) tie-break + rank-only (no floats) + no timestamp; proven by generate-twice sha256 + committed syrupy snapshot (NOT git diff — derived/ gitignored). tree-sitter 0.25 Query+QueryCursor API (NOT removed lang.query().captures()).
 - [Phase 3]: [03-01] CONFIG-02 permission = data + pure tested resolver: harness/permission-matrix.json holds the 15-key matrix (bash *-first last-wins, terminal rm -rf*:deny not a broad allow per P3) + path_deny_globs (contracts/**, docs/adr/**, golden/**, *.env); tools/harness_perms/resolver.py (resolve_bash/resolve_path/load_matrix) is pure fnmatch+json, unit-proven, reused verbatim by Phase-4 hooks. __init__ re-exports lazily (PEP 562) to avoid conftest-collection deadlock in the namespace-package uv member.
 - [Phase 3]: [03-03] Five personas authored as dual-representation harness/agents/*.md (opencode permission: + Claude tools:); code-reviewer AND explorer read-only in BOTH reps enforced by is_read_only() in test_agents.py (T-03-09/P-perm); placeholder model tiers only (provider/explorer-tier), no real model IDs; engineer bash scope mirrors permission-matrix.json (dotnet */uv */pytest *).
+- [Phase ?]: [03-05] Seven skills as harness/skills/<name>/SKILL.md with progressive disclosure; caps identical for opencode AND Claude (name<=64/desc<=1024 HARD, body>500 WARN) per RESEARCH 200-vs-1024 correction; test_skills.py pins exactly 7 disjoint skills (anti-sprawl P8).
 
 ### Pending Todos
 
@@ -118,6 +120,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-08T09:23:25.692Z
+Last session: 2026-07-08T09:38:05.370Z
 Stopped at: Phase 3 context gathered
 Resume file: None

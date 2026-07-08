@@ -72,8 +72,8 @@
 
 ### SKILL — 스킬 (progressive disclosure)
 
-- [ ] **SKILL-01**: 코어 스킬 세트(dotnet-conventions·python-conventions·golden-testing·data-contracts) — frontmatter 상시 + 본문 지연로딩, 런타임 크기 상한 준수
-- [ ] **SKILL-02**: skill-creator(메타) + 도메인 스킬(normalization-catalog·pipeline-patterns[carryover·시나리오])
+- [x] **SKILL-01**: 코어 스킬 세트(dotnet-conventions·python-conventions·golden-testing·data-contracts) — frontmatter 상시 + 본문 지연로딩, 런타임 크기 상한 준수
+- [x] **SKILL-02**: skill-creator(메타) + 도메인 스킬(normalization-catalog·pipeline-patterns[carryover·시나리오])
 
 ### BOOT — 툴체인 부트스트랩
 
@@ -152,8 +152,8 @@
 | CMD-07 | Phase 3 | Pending |
 | CMD-08 | Phase 3 | Pending |
 | CMD-09 | Phase 3 | Pending |
-| SKILL-01 | Phase 3 | Pending |
-| SKILL-02 | Phase 3 | Pending |
+| SKILL-01 | Phase 3 | Complete |
+| SKILL-02 | Phase 3 | Complete |
 | DOCS-03 | Phase 3 | Pending |
 | HOOK-01 | Phase 4 | Pending |
 | HOOK-02 | Phase 4 | Pending |

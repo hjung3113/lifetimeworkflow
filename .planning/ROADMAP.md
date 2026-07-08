@@ -104,7 +104,7 @@ Plans:
 
 - [x] 03-03-PLAN.md — 5 agent personas (dual-representation, routing-signal descriptions) + read-only-reviewer structural validator (AGENT-01..05)
 - [x] 03-04-PLAN.md — 8 golden-adjacent command macros (/build /test /lint /golden /golden-approve /adr /checkpoint /component) + glob command validator (CMD-01/02/03/04/07/09)
-- [ ] 03-05-PLAN.md — 7 skills (4 core + skill-creator + 2 domain) progressive disclosure + structural cap validator (SKILL-01/02)
+- [x] 03-05-PLAN.md — 7 skills (4 core + skill-creator + 2 domain) progressive disclosure + structural cap validator (SKILL-01/02)
 
 **Wave 3** *(blocked on Wave 2 completion — migration commands gated behind the golden-adjacent surface, D-05)*
 
@@ -165,7 +165,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Constitution + Golden Core | 6/6 | Complete   | 2026-07-08 |
 | 2. Two-Plane Memory + Rules | 5/5 | Complete   | 2026-07-08 |
-| 3. Agents + Commands + Skills | 4/7 | In Progress|  |
+| 3. Agents + Commands + Skills | 5/7 | In Progress|  |
 | 4. Plugins + Hooks | 0/TBD | Not started | - |
 | 5. CI + Gates | 0/TBD | Not started | - |
 | 6. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |
