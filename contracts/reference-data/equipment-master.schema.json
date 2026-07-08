@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harness.local/contracts/reference-data/equipment-master.schema.json",
+  "title": "equipment-master reference data (SEED PLACEHOLDER companion schema)",
+  "description": "Draft 2020-12 companion schema for equipment-master.yaml. Validates the entities block (equipment/model/alias key+field shapes) while allowing TBD placeholder values. Seed/example — master data Out of Scope (CONTRACT-01).",
+  "type": "object",
+  "required": ["id", "entities"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string" },
+    "description": { "type": "string" },
+    "owner": { "type": "string" },
+    "version": { "type": "string" },
+    "entities": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/entity" }
+    },
+    "change_policy": { "type": "object" }
+  },
+  "$defs": {
+    "entity": {
+      "type": "object",
+      "required": ["keys"],
+      "additionalProperties": true,
+      "properties": {
+        "description": { "type": "string" },
+        "keys": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "fields": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

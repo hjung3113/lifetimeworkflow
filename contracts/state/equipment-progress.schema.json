@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harness.local/contracts/state/equipment-progress.schema.json",
+  "title": "equipment-progress state + carryover (SEED PLACEHOLDER companion schema)",
+  "description": "Draft 2020-12 companion schema for equipment-progress.yaml. Validates storage/progress/carryover shapes while allowing TBD placeholder values. Seed/example — state model Out of Scope (CONTRACT-01).",
+  "type": "object",
+  "required": ["id", "storage", "progress"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string" },
+    "description": { "type": "string" },
+    "owner": { "type": "string" },
+    "version": { "type": "string" },
+    "storage": {
+      "type": "object",
+      "required": ["type", "role"],
+      "additionalProperties": true,
+      "properties": {
+        "type": { "type": "string" },
+        "role": { "type": "string" }
+      }
+    },
+    "progress": {
+      "type": "object",
+      "required": ["keys", "fields"],
+      "additionalProperties": true,
+      "properties": {
+        "keys": { "type": "array", "items": { "type": "string" } },
+        "fields": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "carryover": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "keys": { "type": "array", "items": { "type": "string" } },
+        "fields": { "type": "array", "items": { "type": "string" } },
+        "note": { "type": "string" }
+      }
+    },
+    "change_policy": { "type": "object" }
+  }
+}
