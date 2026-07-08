@@ -64,6 +64,16 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python -m tools.hooks.format_on_write",
+            "timeout": 30
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -104,6 +114,36 @@
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/gsd-validate-commit.sh",
             "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python -m tools.hooks.contract_guard",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python -m tools.hooks.secret_scan",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python -m tools.hooks.commit_gate --from-hook",
+            "timeout": 120
           }
         ]
       }
