@@ -1,0 +1,12 @@
+[project]
+name = "logparser-harness-perms"
+version = "0.0.0"
+description = "CONFIG-02 permission core (D-03): pure stdlib last-wins bash resolver + path-deny resolver over harness/permission-matrix.json. No I/O beyond a thin json loader, no eval, no subprocess. Reused verbatim by the Phase-4 contract-guard / secret hooks; imported by module path `tools.harness_perms`."
+requires-python = ">=3.11"
+# Stdlib-only (fnmatch + json). NO external deps — this member must never mutate uv.lock (T-03-SC).
+dependencies = []
+
+[tool.uv]
+# Virtual member: no build-system, nothing to package. Imported by module path from the shared uv
+# workspace environment. Mirrors tools/memory_regen + tools/golden_runner (package = false).
+package = false
