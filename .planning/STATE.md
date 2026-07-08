@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 1 context gathered
-last_updated: "2026-07-08T02:43:05.875Z"
-last_activity: 2026-07-08 -- Phase 1 planning complete
+last_updated: "2026-07-08T02:49:37.002Z"
+last_activity: 2026-07-08 -- Phase 1 execution started
 progress:
   total_phases: 6
   completed_phases: 0
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 1 — Constitution + Golden Core (walking skeleton)
+**Current focus:** Phase 1 — Constitution + Golden Core
 
 ## Current Position
 
-Phase: 1 of 6 (Constitution + Golden Core)
-Plan: 0 of TBD in current phase
-Status: Ready to execute
-Last activity: 2026-07-08 -- Phase 1 planning complete
+Phase: 1 (Constitution + Golden Core) — EXECUTING
+Plan: 1 of 6
+Status: Executing Phase 1
+Last activity: 2026-07-08 -- Phase 1 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -74,6 +74,7 @@ None yet.
 
 [Issues that affect future work]
 
+- **[BLOCKING — plan 01-01] BOOT-01 .NET 10 install egress-denied:** `tools/bootstrap/install.sh` + `verify.sh` are committed and correct, but the .NET 10 download hosts are blocked by this container's egress policy (`builds.dotnet.microsoft.com`, `dotnetcli.azureedge.net`, `dotnetcli.blob.core.windows.net`, `aka.ms` → 403 CONNECT). The proxy README forbids routing around policy denials. **Human action:** allowlist those hosts in the egress policy (or ship a pre-installed .NET 10), then run `bash tools/bootstrap/install.sh && bash tools/bootstrap/verify.sh` to finish the plan. uv workspace (BOOT-02) and SessionStart wiring (BOOT-03) are DONE and green.
 - Toolchain: .NET 10 SDK is NOT installed in this ephemeral env — Phase 1 (BOOT-01) install script gates all .NET-side execution.
 - Research flag: opencode.ai is proxy-403'd; re-verify exact hook event names, 15-key permission matrix semantics, and skill size caps against live docs before Phase 4 (hooks) and Phase 6 (emitter).
 - Research flag: internal inconsistency on Claude skill description cap (≤200 vs ≤1024 chars) — resolve precisely at Phase 6 emitter-validator implementation.
