@@ -6,6 +6,7 @@ requires-python = ">=3.11"
 members = [
     "logparser-contract-drift",
     "logparser-contract-hash",
+    "logparser-golden-runner",
     "logparser-harness",
     "logparser-normalize",
 ]
@@ -205,6 +206,11 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [{ name = "rfc8785", specifier = "==0.1.4" }]
+
+[[package]]
+name = "logparser-golden-runner"
+version = "0.0.0"
+source = { virtual = "tools/golden_runner" }
 
 [[package]]
 name = "logparser-harness"

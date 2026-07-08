@@ -8,10 +8,10 @@ Provides the A-model spawn plumbing:
                      risk P5 / threat T-06-01), so ``shutil.which("dotnet")`` / a bare ``"dotnet"``
                      string would intermittently fail. Mirror how 01-01 verify.sh hardcodes
                      ``$HOME/.dotnet/dotnet``.
-- ``toy_converter_project`` — path to components/toy-converter/ToyConverter.csproj (the spawn target).
+- ``toy_converter_project`` — path to components/toy-converter/ToyConverter.csproj (spawn target).
 - ``golden_out``   — a tmp ``--out`` path (converter writes here; kept out of the repo tree).
 - ``require_dotnet`` — skips the test when the .NET SDK is not installed (egress-blocked env),
-                     so the pure-Python suite (approve gate + recorded-output comparison) still runs.
+                     so the pure-Python suite (approve gate + recorded comparison) still runs.
 
 All spawns go through ``subprocess.run([list], shell=False)`` (never string+shell) — see runner.py.
 """
