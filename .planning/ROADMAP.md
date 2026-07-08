@@ -130,7 +130,7 @@ Plans:
 - [x] 04-01-PLAN.md — POLY-01 polyglot §4.3-4.6 boundary linter (detection-by-normalization, shares normalize.core)
 - [x] 04-02-PLAN.md — tools/hooks shared stdin adapter + HOOK-02 secret protection (resolver path-deny + shape-anchored regex)
 - [x] 04-03-PLAN.md — HOOK-04 contract-guard (constitution-plane deny + GOLDEN_APPROVE_HUMAN bypass + on-write TSV)
-- [ ] 04-04-PLAN.md — HOOK-01 format-on-write (BOM/LF byte-fix + ruff, dotnet-format gated-skip, idempotent)
+- [x] 04-04-PLAN.md — HOOK-01 format-on-write (BOM/LF byte-fix + ruff, dotnet-format gated-skip, idempotent)
 - [ ] 04-05-PLAN.md — HOOK-03 commit-gate (drift + golden[skip] + polyglot) + permission order-resolution suite
 - [ ] 04-06-PLAN.md — Claude hook wiring (coexist) + coexist test + authored opencode plugin stubs
 
@@ -174,6 +174,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Constitution + Golden Core | 6/6 | Complete   | 2026-07-08 |
 | 2. Two-Plane Memory + Rules | 5/5 | Complete   | 2026-07-08 |
 | 3. Agents + Commands + Skills | 7/7 | Complete   | 2026-07-08 |
-| 4. Plugins + Hooks | 3/6 | In Progress|  |
+| 4. Plugins + Hooks | 4/6 | In Progress|  |
 | 5. CI + Gates | 0/TBD | Not started | - |
 | 6. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |
