@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 3 context gathered
-last_updated: "2026-07-08T09:00:52.232Z"
-last_activity: 2026-07-08 -- Phase 3 execution started
+last_updated: "2026-07-08T09:10:25.487Z"
+last_activity: 2026-07-08
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 18
-  completed_plans: 11
+  completed_plans: 12
   percent: 33
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 3 (Agents + Commands + Skills) — EXECUTING
-Plan: 1 of 7
-Status: Executing Phase 3
-Last activity: 2026-07-08 -- Phase 3 execution started
+Plan: 2 of 7
+Status: Ready to execute
+Last activity: 2026-07-08
 
-Progress: [██████████] 100% (Phase 2)
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Progress: [██████████] 100% (Phase 2)
 | Phase 2 P02-03 | 8min | 1 tasks | 3 files |
 | Phase 2 P02-04 | 15min | 2 tasks | 5 files |
 | Phase 2 P02-05 | 9min | 2 tasks | 5 files |
+| Phase 3 P03-01 | 12min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,7 @@ Recent decisions affecting current work:
 - [Phase 2]: [02-02] Single injection contract fixed (D-01): python -m tools.memory_regen.inject is the ONE payload source; Claude SessionStart hook (4th slot, coexists) + authored-deferred opencode adapter both wrap the identical assemble() — capped ~1k-token, banner-first (never dropped), drift-aware, priority-truncated, pointer-only (no full contract bodies, P13/T-02-06).
 - [Phase 2]: [02-05] Nearest-wins AGENTS.md rules layer: root (map + golden-path + non-negotiables + lazy-load) + per-package Python/.NET files that RESTATE non-negotiables verbatim (P11 — Codex replaces nested AGENTS.md vs concat, so never inherit-only). CLAUDE.md gets a pointer-not-duplicate section in the non-GSD-managed gap (profile block untouched, T-02-13). Prose is advisory by design — true backstop = 02-02 injector + Phase-4 hooks. Phase 2 COMPLETE (all 4 success criteria met).
 - [Phase 2]: [02-04] repo-map uses networkx pure-Python PageRank backend (_pagerank_python) — numpy-free; keeps 02-01 pinned toolchain + uv.lock untouched (T-02-SC). Determinism (delete+regen byte-identical) via sorted node/edge insertion + (-score,path) tie-break + rank-only (no floats) + no timestamp; proven by generate-twice sha256 + committed syrupy snapshot (NOT git diff — derived/ gitignored). tree-sitter 0.25 Query+QueryCursor API (NOT removed lang.query().captures()).
+- [Phase 3]: [03-01] CONFIG-02 permission = data + pure tested resolver: harness/permission-matrix.json holds the 15-key matrix (bash *-first last-wins, terminal rm -rf*:deny not a broad allow per P3) + path_deny_globs (contracts/**, docs/adr/**, golden/**, *.env); tools/harness_perms/resolver.py (resolve_bash/resolve_path/load_matrix) is pure fnmatch+json, unit-proven, reused verbatim by Phase-4 hooks. __init__ re-exports lazily (PEP 562) to avoid conftest-collection deadlock in the namespace-package uv member.
 
 ### Pending Todos
 
@@ -112,6 +114,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-08T08:17:15.693Z
+Last session: 2026-07-08T09:10:01.726Z
 Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-agents-commands-skills/03-CONTEXT.md
+Resume file: None

@@ -34,7 +34,7 @@
 ### CONFIG — opencode.json & 권한
 
 - [ ] **CONFIG-01**: `opencode.json` — 모델 티어링(explorer 저가 / implementer 고가)·instructions glob·formatter·MCP 와이어링
-- [ ] **CONFIG-02**: 15키 권한 매트릭스 — bash glob last-wins, reviewer 읽기전용 스코핑, secret/constitution 쓰기 deny
+- [x] **CONFIG-02**: 15키 권한 매트릭스 — bash glob last-wins, reviewer 읽기전용 스코핑, secret/constitution 쓰기 deny
 
 ### AGENT — 에이전트 페르소나
 
@@ -137,7 +137,7 @@
 | RULES-02 | Phase 2 | Complete |
 | HOOK-05 | Phase 2 | Complete |
 | CONFIG-01 | Phase 3 | Pending |
-| CONFIG-02 | Phase 3 | Pending |
+| CONFIG-02 | Phase 3 | Complete |
 | AGENT-01 | Phase 3 | Pending |
 | AGENT-02 | Phase 3 | Pending |
 | AGENT-03 | Phase 3 | Pending |
