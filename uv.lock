@@ -14,6 +14,7 @@ members = [
     "logparser-hooks",
     "logparser-memory-regen",
     "logparser-normalize",
+    "logparser-polyglot-lint",
     "logparser-strangler-guard",
 ]
 
@@ -296,6 +297,11 @@ requires-dist = [
 name = "logparser-normalize"
 version = "0.0.0"
 source = { virtual = "libs/python" }
+
+[[package]]
+name = "logparser-polyglot-lint"
+version = "0.0.0"
+source = { virtual = "tools/polyglot_lint" }
 
 [[package]]
 name = "logparser-strangler-guard"
