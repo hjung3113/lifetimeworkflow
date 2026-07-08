@@ -33,8 +33,12 @@ fi
 # --- Python workspace (BOOT-02 / D-09) -------------------------------------
 # Resolve the uv workspace from the repo root. Idempotent and non-fatal: a transient failure
 # here must not break session startup (the golden/verify gates surface real breakage instead).
+# --all-packages installs EVERY workspace member's deps (not just the virtual root's): tools/
+# members declare their own pins (e.g. memory_regen's tree-sitter/networkx), and a bare `uv sync`
+# would prune any member dep absent from the root — silently uninstalling the derived-plane
+# toolchain every SessionStart. --all-packages keeps the whole polyglot member set present.
 if command -v uv >/dev/null 2>&1; then
-    ( cd "$REPO_ROOT" && uv sync >/dev/null 2>&1 ) || true
+    ( cd "$REPO_ROOT" && uv sync --all-packages >/dev/null 2>&1 ) || true
 fi
 
 exit 0

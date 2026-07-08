@@ -8,8 +8,8 @@ so a fresh ephemeral container bootstraps itself with zero manual steps (D-08/D-
 
 | Script | Purpose | Idempotent? |
 |--------|---------|-------------|
-| `install.sh` | Install .NET 10 SDK (`dotnet-install.sh --channel 10.0 --install-dir $HOME/.dotnet`) if absent, then `uv sync` the workspace | Yes — cached 10.x SDK is skipped silently; `uv sync` is a no-op when already resolved |
-| `verify.sh` | Green-gate: assert `$HOME/.dotnet/dotnet --version` starts with `10.` and `uv sync --frozen` succeeds | Yes — read-only assertions |
+| `install.sh` | Install .NET 10 SDK (`dotnet-install.sh --channel 10.0 --install-dir $HOME/.dotnet`) if absent, then `uv sync --all-packages` the workspace | Yes — cached 10.x SDK is skipped silently; `uv sync` is a no-op when already resolved |
+| `verify.sh` | Green-gate: assert `$HOME/.dotnet/dotnet --version` starts with `10.` and `uv sync --frozen --all-packages` succeeds | Yes — read-only assertions |
 
 ## Idempotency contract (P5)
 
@@ -17,7 +17,8 @@ so a fresh ephemeral container bootstraps itself with zero manual steps (D-08/D-
 
 - **First run** (cold container): downloads + installs .NET 10 to `$HOME/.dotnet`, then resolves the uv workspace.
 - **Subsequent runs** (warm): the cache-check `test -x $HOME/.dotnet/dotnet && dotnet --version | grep '^10\.'`
-  short-circuits the download — the .NET branch is silent and fast. `uv sync` re-resolves cheaply.
+  short-circuits the download — the .NET branch is silent and fast. `uv sync --all-packages`
+  re-resolves cheaply (and installs every workspace member's pinned deps, not just the root's).
 
 This keeps session startup fast and never re-downloads the SDK once cached.
 
