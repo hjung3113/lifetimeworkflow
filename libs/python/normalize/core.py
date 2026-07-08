@@ -69,9 +69,9 @@ def normalize_tsv(raw: bytes) -> str:
     ``utf-8-sig`` decoding strips a leading UTF-8 BOM if present. Rows are ordinal-sorted
     (``sorted`` compares by Unicode code point) so an unordered set never causes a false diff.
     """
-    text = raw.decode("utf-8-sig")                      # R1 strip BOM
+    text = raw.decode("utf-8-sig")  # R1 strip BOM
     text = text.replace("\r\n", "\n").replace("\r", "\n")  # R2 force LF
     lines = text.split("\n")
     if lines and lines[-1] == "":
-        lines = lines[:-1]                              # drop trailing empty from final newline
-    return "\n".join(sorted(lines))                     # R8 deterministic ordinal order
+        lines = lines[:-1]  # drop trailing empty from final newline
+    return "\n".join(sorted(lines))  # R8 deterministic ordinal order
