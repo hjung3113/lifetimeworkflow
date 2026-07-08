@@ -38,11 +38,11 @@
 
 ### AGENT — 에이전트 페르소나
 
-- [ ] **AGENT-01**: orchestrator(primary) — 작업 분해·위임
-- [ ] **AGENT-02**: dotnet-engineer — .NET 10 구현, `dotnet *` 스코프
-- [ ] **AGENT-03**: python-engineer — Python/uv 구현, `uv *`·`pytest *` 스코프
-- [ ] **AGENT-04**: code-reviewer — 읽기전용(Read/Grep/Glob), 쓰기·bash 없음
-- [ ] **AGENT-05**: explorer — 저가 모델 코드 탐색, 경로 반환
+- [x] **AGENT-01**: orchestrator(primary) — 작업 분해·위임
+- [x] **AGENT-02**: dotnet-engineer — .NET 10 구현, `dotnet *` 스코프
+- [x] **AGENT-03**: python-engineer — Python/uv 구현, `uv *`·`pytest *` 스코프
+- [x] **AGENT-04**: code-reviewer — 읽기전용(Read/Grep/Glob), 쓰기·bash 없음
+- [x] **AGENT-05**: explorer — 저가 모델 코드 탐색, 경로 반환
 
 ### CMD — 슬래시 커맨드
 
@@ -138,11 +138,11 @@
 | HOOK-05 | Phase 2 | Complete |
 | CONFIG-01 | Phase 3 | Complete |
 | CONFIG-02 | Phase 3 | Complete |
-| AGENT-01 | Phase 3 | Pending |
-| AGENT-02 | Phase 3 | Pending |
-| AGENT-03 | Phase 3 | Pending |
-| AGENT-04 | Phase 3 | Pending |
-| AGENT-05 | Phase 3 | Pending |
+| AGENT-01 | Phase 3 | Complete |
+| AGENT-02 | Phase 3 | Complete |
+| AGENT-03 | Phase 3 | Complete |
+| AGENT-04 | Phase 3 | Complete |
+| AGENT-05 | Phase 3 | Complete |
 | CMD-01 | Phase 3 | Pending |
 | CMD-02 | Phase 3 | Pending |
 | CMD-03 | Phase 3 | Pending |
