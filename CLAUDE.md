@@ -168,7 +168,14 @@ Use these entry points:
 Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
 <!-- GSD:workflow-end -->
 
+## Agent Rules — see AGENTS.md
 
+The canonical, nearest-wins rules for working in this repo live in **`AGENTS.md`** (root)
+and the per-package files it points to (`libs/python/AGENTS.md`, `libs/dotnet/AGENTS.md`).
+Read the root `AGENTS.md` first; read a per-package `AGENTS.md` only when you touch that
+package (lazy-load). Non-negotiables (contract-first, §4.3–4.6 boundary invariants,
+constitution-plane-is-gated, derived-not-hand-edited) are restated per-package — never
+inherited-only. This is a pointer, not a duplicate: `AGENTS.md` is the source.
 
 <!-- GSD:profile-start -->
 ## Developer Profile
