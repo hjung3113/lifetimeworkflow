@@ -11,6 +11,7 @@ members = [
     "logparser-harness",
     "logparser-harness-lint",
     "logparser-harness-perms",
+    "logparser-hooks",
     "logparser-memory-regen",
     "logparser-normalize",
     "logparser-strangler-guard",
@@ -264,6 +265,11 @@ source = { virtual = "tools/harness_lint" }
 name = "logparser-harness-perms"
 version = "0.0.0"
 source = { virtual = "tools/harness_perms" }
+
+[[package]]
+name = "logparser-hooks"
+version = "0.0.0"
+source = { virtual = "tools/hooks" }
 
 [[package]]
 name = "logparser-memory-regen"
