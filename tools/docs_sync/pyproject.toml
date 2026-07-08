@@ -1,0 +1,16 @@
+[project]
+name = "logparser-docs-sync"
+version = "0.0.0"
+description = "DOCS-03 /docs-sync generator — reads contracts/**/*.schema.json (stdlib json only) and regenerates the DERIVED Diátaxis reference quadrant under docs/reference/. Clones the tools/memory_regen/contracts_index.py determinism discipline (rows→render→write→main, DERIVED header, no timestamps/floats, byte-identical delete+regenerate). Zero new external deps; invoked as `python -m tools.docs_sync`."
+requires-python = ">=3.11"
+# DOCS-03 / T-03-SC: zero new external packages. Schemas are read with the stdlib `json`
+# module on the SAME path as tools.contract_hash — never a second hash/read impl (T-03-23),
+# never a new dependency. syrupy/pytest for the determinism proof come from the workspace dev
+# group; nothing is declared here, so `uv sync --all-packages` must not mutate uv.lock.
+dependencies = []
+
+[tool.uv]
+# Virtual member: no build-system, nothing to package. Imported by module path from the shared
+# uv workspace environment (`python -m tools.docs_sync`); no wheel is built. Mirrors
+# tools/contract_hash + tools/golden_runner + tools/memory_regen.
+package = false

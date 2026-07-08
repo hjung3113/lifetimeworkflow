@@ -1,0 +1,118 @@
+# serializer version: 1
+# name: test_render_matches_committed_snapshot
+  '''
+  ===== standard-log =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # standard-log TSV spec (SEED PLACEHOLDER companion schema)
+  
+  > DERIVED reference — regenerated from `contracts/log-specs/standard-log.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  Draft 2020-12 companion schema for standard-log.spec.yaml. Validates the spec structure (format block + columns array) while allowing TBD placeholder values. Seed/example — domain-confirmed values Out of Scope (CONTRACT-01).
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | carryover | object | no |  |  |
+  | change_policy | object | no |  |  |
+  | columns | array | yes |  |  |
+  | description | string | no |  |  |
+  | format | object | yes |  |  |
+  | id | string | yes |  |  |
+  | owner | string | no |  |  |
+  | version | string | no |  |  |
+  
+  ===== correction-rules =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # normalization + correction rules catalog (SEED PLACEHOLDER companion schema)
+  
+  > DERIVED reference — regenerated from `contracts/normalization/correction-rules.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  Draft 2020-12 companion schema for correction-rules.catalog.yaml. Validates normalization_rules + correction_rules array shapes while allowing TBD placeholder values. Seed/example — domain rules Out of Scope (CONTRACT-01).
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | change_policy | object | no |  |  |
+  | correction_rules | array | yes |  |  |
+  | description | string | no |  |  |
+  | id | string | yes |  |  |
+  | normalization_rules | array | yes |  |  |
+  | owner | string | no |  |  |
+  | version | string | no |  |  |
+  
+  ===== format-conventions =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # Cross-cutting format conventions (§4.3-4.6) — materialized, hashable (P14)
+  
+  > DERIVED reference — regenerated from `contracts/normalization/format-conventions.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  SEED PLACEHOLDER. Materializes the integration_contracts_design §4.3-4.6 cross-cutting canonicalization conventions as explicit const/enum fields so the contract-drift hash (Plan 05, RFC 8785 -> SHA-256) covers convention changes — not only column reorders (PITFALLS P14). Flipping any const here (e.g. bom false->true) MUST bump the drift hash. All values are EXAMPLE placeholders (A4); domain-confirmed values are Out of Scope (CONTRACT-01).
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | bom | const | yes | false | §4.3 byte-order-mark presence — stripped/absent (recommended). .NET may emit a BOM; Python then misreads the first column. |
+  | culture | const | yes | invariant | §4.6 number formatting culture — InvariantCulture forced (.NET ToString is locale-dependent). |
+  | decimal_sep | const | yes | . | §4.6 decimal separator — '.' fixed (locale ',' accident guard). |
+  | encoding | const | yes | utf-8 | §4.3 character encoding — unified UTF-8. |
+  | float_compare | object | yes |  | §4 numeric comparison — tolerance-aware float compare (avoid last-digit repr diffs). |
+  | interval | const | yes | [start,end) | §4 interval half-open convention [start,end) for time/file ranges. |
+  | newline | const | yes | lf | §4.3 line ending — force LF (no CRLF). .NET default may be CRLF. |
+  | null_token | const | yes | \N | §4.3 explicit null-vs-empty token — EXAMPLE placeholder ('' empty string is distinct from this null token). Domain value TBD. |
+  | row_ordering | const | yes | deterministic-sort | §4 key/row ordering — deterministic sort before diff (unordered sets must not cause false diffs). |
+  | timezone | const | yes | utc-iso8601 | §4.4 timezone/time format — UTC, fixed ISO-8601 string. Guards .NET DateTime.Kind vs Python naive/aware serialization divergence. |
+  | tsv_escape | const | yes | backslash | §4.3 TSV escaping of tab/newline-in-value — EXAMPLE agreed rule (backslash-escape). Domain rule TBD. |
+  
+  ## Canonicalization conventions (§4.3–4.6)
+  
+  - **bom** = `false` — §4.3 byte-order-mark presence — stripped/absent (recommended). .NET may emit a BOM; Python then misreads the first column.
+  - **culture** = `invariant` — §4.6 number formatting culture — InvariantCulture forced (.NET ToString is locale-dependent).
+  - **decimal_sep** = `.` — §4.6 decimal separator — '.' fixed (locale ',' accident guard).
+  - **encoding** = `utf-8` — §4.3 character encoding — unified UTF-8.
+  - **interval** = `[start,end)` — §4 interval half-open convention [start,end) for time/file ranges.
+  - **newline** = `lf` — §4.3 line ending — force LF (no CRLF). .NET default may be CRLF.
+  - **null_token** = `\N` — §4.3 explicit null-vs-empty token — EXAMPLE placeholder ('' empty string is distinct from this null token). Domain value TBD.
+  - **row_ordering** = `deterministic-sort` — §4 key/row ordering — deterministic sort before diff (unordered sets must not cause false diffs).
+  - **timezone** = `utc-iso8601` — §4.4 timezone/time format — UTC, fixed ISO-8601 string. Guards .NET DateTime.Kind vs Python naive/aware serialization divergence.
+  - **tsv_escape** = `backslash` — §4.3 TSV escaping of tab/newline-in-value — EXAMPLE agreed rule (backslash-escape). Domain rule TBD.
+  
+  ===== equipment-master =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # equipment-master reference data (SEED PLACEHOLDER companion schema)
+  
+  > DERIVED reference — regenerated from `contracts/reference-data/equipment-master.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  Draft 2020-12 companion schema for equipment-master.yaml. Validates the entities block (equipment/model/alias key+field shapes) while allowing TBD placeholder values. Seed/example — master data Out of Scope (CONTRACT-01).
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | change_policy | object | no |  |  |
+  | description | string | no |  |  |
+  | entities | object | yes |  |  |
+  | id | string | yes |  |  |
+  | owner | string | no |  |  |
+  | version | string | no |  |  |
+  
+  ===== equipment-progress =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # equipment-progress state + carryover (SEED PLACEHOLDER companion schema)
+  
+  > DERIVED reference — regenerated from `contracts/state/equipment-progress.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  Draft 2020-12 companion schema for equipment-progress.yaml. Validates storage/progress/carryover shapes while allowing TBD placeholder values. Seed/example — state model Out of Scope (CONTRACT-01).
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | carryover | object | no |  |  |
+  | change_policy | object | no |  |  |
+  | description | string | no |  |  |
+  | id | string | yes |  |  |
+  | owner | string | no |  |  |
+  | progress | object | yes |  |  |
+  | storage | object | yes |  |  |
+  | version | string | no |  |  |
+  
+  '''
+# ---
