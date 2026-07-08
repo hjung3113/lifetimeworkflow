@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: Agents + Commands + Skills** - The full authored harness surface — personas, commands, skills — in canonical source, with migration commands gated behind the trusted golden net.
 - [ ] **Phase 4: Plugins + Hooks** - Runtime enforcement of everything authored in Phases 1-3: contract-guard, polyglot linter, format-on-write, secret protection, commit gate.
 - [ ] **Phase 5: CI + Gates** - Non-bypassable CI mirror of the in-session gates plus the human ratification path (CODEOWNERS, PR template, wired toolchain bootstrap).
-- [ ] **Phase 6: Single-Source Dual-Runtime Emitter** - One authored source compiles into opencode (primary) + Claude Code (secondary) artifacts, with per-runtime limit validators that fail loud.
+- [ ] **Phase 6: Single-Source Dual-Runtime Emitter** - One authored source compiles into both opencode (primary) + Claude Code (secondary) artifacts, with per-runtime limit validators that fail loud.
 
 ## Phase Details
 
@@ -66,7 +66,18 @@ Plans:
   3. Root `AGENTS.md` (monorepo map, golden-path, contract-first, lazy-load rules) plus per-package .NET and Python `AGENTS.md` resolve nearest-wins, and a `CLAUDE.md` pointer exists.
   4. Session-start injection injects pointers/indexes (not full contract payloads, capped size) and marks volatile state provisional, so an ADR always overrides memory.
 
-**Plans**: TBD
+**Plans**: 5 plans (2 waves)
+Plans:
+**Wave 1**
+
+- [ ] 02-01-PLAN.md — Two-plane `.memory/` layout + gitignore boundary + `tools/memory_regen` uv member with pinned tree-sitter/networkx (MEM-01, MEM-02)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 02-02-PLAN.md — Claude SessionStart injector: shared `inject.assemble` contract (capped/banner/priority-truncate) + 4th-slot hook + authored-deferred opencode stub (HOOK-05)
+- [ ] 02-03-PLAN.md — contracts-index generator: scan contracts/ + reuse Phase-1 hash/drift modules → deterministic `.memory/derived/contracts-index.md` (MEM-03)
+- [ ] 02-04-PLAN.md — repo-map generator: tree-sitter 0.25 parse + networkx PageRank → deterministic token-bounded `.memory/derived/repo-map.md` (MEM-03)
+- [ ] 02-05-PLAN.md — Nearest-wins `AGENTS.md`: root + per-package .NET/Python (restated non-negotiables, P11) + `CLAUDE.md` pointer (RULES-01, RULES-02)
 
 ### Phase 3: Agents + Commands + Skills
 
@@ -137,7 +148,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Constitution + Golden Core | 6/6 | Complete   | 2026-07-08 |
-| 2. Two-Plane Memory + Rules | 0/TBD | Not started | - |
+| 2. Two-Plane Memory + Rules | 0/5 | Planned | - |
 | 3. Agents + Commands + Skills | 0/TBD | Not started | - |
 | 4. Plugins + Hooks | 0/TBD | Not started | - |
 | 5. CI + Gates | 0/TBD | Not started | - |
