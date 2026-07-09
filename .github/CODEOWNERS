@@ -1,0 +1,31 @@
+# CODEOWNERS — human ratification of the CONSTITUTION plane.
+#
+# "Machines gate, humans ratify." The CI workflow (.github/workflows/ci.yml) is the machine gate;
+# this file routes changes to the human-owned constitution plane (contracts / ADRs / goldens) to
+# their owner for review. It is the merge-time mirror of the in-session CODEOWNERS-gated posture.
+#
+# ── ENFORCEMENT CAVEAT (repo setting — human, out of scope for this file) ────────────────────
+# By itself CODEOWNERS is ADVISORY: GitHub will auto-request the listed owner as a reviewer, but a
+# PR can still merge WITHOUT their approval unless a human enables
+#   Settings → Branches → branch protection → "Require review from Code Owners"
+# (typically alongside "Require a pull request before merging"). This file does NOT and cannot flip
+# that toggle; enabling it is a deliberate out-of-scope repo-config action.
+#
+# ── SOLO-REPO SELF-APPROVAL NUANCE ──────────────────────────────────────────────────────────
+# GitHub does not let an author approve their OWN pull request. In a solo repo where @hjung3113 is
+# both the sole code owner AND the author of most PRs, "Require review from Code Owners" cannot be
+# satisfied by self-review — it needs at least one OTHER account with access, or the requirement
+# must be waived per-merge by an admin. This is a user-controlled workflow choice, noted here so the
+# constraint is explicit rather than surprising at merge time.
+#
+# Path syntax: a leading "/" anchors to the repo root; a trailing "/" matches a directory
+# recursively. Later matching entries win, so keep these least-to-most specific if extended.
+
+# ── Constitution plane (core) ───────────────────────────────────────────────────────────────
+/contracts/        @hjung3113
+/docs/adr/         @hjung3113
+/golden/           @hjung3113
+
+# ── Example-instance equivalents (constitution plane inside an instance) ─────────────────────
+/examples/*/contracts/   @hjung3113
+/examples/*/golden/      @hjung3113
