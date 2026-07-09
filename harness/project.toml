@@ -1,0 +1,34 @@
+# GEN-03 project-config slot — the harness's language/toolchain SINGLE SOURCE OF TRUTH (D-03).
+#
+# Pure DATA. No enforcement logic lives here (mirrors harness/permission-matrix.json's data-only
+# posture). The participating languages are a SLOT a project fills, not a core hardcode: the values
+# below are the *log-parser example instance's* declared toolchains (.NET 10 + Python/uv), placed in
+# the active-instance slot. Cloning this repo as a domain-neutral template = swap these tables.
+#
+# Consumers:
+#   * tools/harness_config/loader.py — stdlib `tomllib` reader; exposes the language list + the
+#     `language_bash_scopes()` helper (union of bash_scope + the implicit Python test-runner scope).
+#   * tools/harness_lint/tests/test_language_config.py — the GEN-03 CONSISTENCY gate: the
+#     permission-matrix `dotnet */uv */pytest *` allow-scopes and the engineer personas MUST agree
+#     with what this file declares. A silent divergence fails the suite (config = SSOT, no codegen —
+#     per D-03 "full codegen is overkill").
+
+[instance]
+# "" = the generic default instance rooted at this repo. A downstream project that vendors the
+# harness overrides `root` (and the [[languages]] tables) from its own copy of this file.
+root = ""
+
+[[languages]]
+id = "dotnet"
+bash_scope = "dotnet *"                      # matches permission-matrix.json bash allow-scope
+test = "dotnet test"
+format = "dotnet format"
+sdk_bootstrap = "tools/bootstrap/install.sh" # env has no .NET; bootstrap installs channel 10.0
+persona = "harness/agents/dotnet-engineer.md"
+
+[[languages]]
+id = "python"
+bash_scope = "uv *"                          # matches permission-matrix.json bash allow-scope
+test = "uv run pytest"
+format = "ruff format"
+persona = "harness/agents/python-engineer.md"

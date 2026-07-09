@@ -9,6 +9,7 @@ members = [
     "logparser-docs-sync",
     "logparser-golden-runner",
     "logparser-harness",
+    "logparser-harness-config",
     "logparser-harness-lint",
     "logparser-harness-perms",
     "logparser-hooks",
@@ -256,6 +257,11 @@ dev = [
     { name = "ruff", specifier = "~=0.15" },
     { name = "syrupy", specifier = "==5.2.0" },
 ]
+
+[[package]]
+name = "logparser-harness-config"
+version = "0.0.0"
+source = { virtual = "tools/harness_config" }
 
 [[package]]
 name = "logparser-harness-lint"
