@@ -22,7 +22,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: De-specialization & Template Extraction** *(INSERTED — ADR-0002 re-scope)* - Demote the log-parser domain seed to `examples/log-parser/` (ADR + hash re-baseline), turn hardwired .NET+Python into a project-config slot, add a minimal generic default instance, and prove the core is example-free (core→example CODE no-dependency, SCOPE A: data plane). (completed 2026-07-09)
 - [x] **Phase 5.5: Authored-Surface Genericization** *(INSERTED — GEN-05, data-plane follow-up)* - Demote domain skills (`normalization-catalog`, `new-normalization-rule`, `pipeline-patterns`) to the example, derive per-language personas from the `harness/project.toml` slot, sweep residual `libs/dotnet`-style domain prose in core, and extend the GEN-04 guard to prose. (completed 2026-07-09)
 - [x] **Phase 5.7: Lifecycle Completeness** *(INSERTED — LIFE-01..11, adversarial-review reinforcement)* - The authored surface is too thin for an agent to carry a unit of work through the full dev lifecycle. An adversarial audit (2026-07-09) found load-bearing gaps: a dangling `/contract-check`, ZERO golden-mismatch/§4.3-4.6 debug surface, the polyglot Core Value scattered as tribal prose, no neutral language-engineer template, and MISSING plan/onboard/review/integrate assets. Add domain-neutral skills/commands (contract-check, golden-debug, polyglot-boundary, gate-model, two-plane-memory, /orient, /review, /verify-work, language-engineer scaffold) + de-domain `/new-normalization-rule`, so the contract→implement→test→debug inner loop and the full lifecycle are actually executable end-to-end. **DONE 2026-07-09** — 057-RESEARCH/VALIDATION/01-PLAN/02-PLAN; two waves; `EXPECTED_SKILLS` 4→8; non-example suite green (402); GEN-04/05 prose guard clean.
-- [ ] **Phase 6: CI + Gates (generic)** - Non-bypassable CI mirror of the in-session gates plus the human ratification path (CODEOWNERS, PR template), driven by a **config-derived** language matrix rather than hardcoded `dotnet test`/`pytest` jobs; the example instance supplies its own .NET+Python matrix.
+- [x] **Phase 6: CI + Gates (generic)** - Non-bypassable CI mirror of the in-session gates plus the human ratification path (CODEOWNERS, PR template), driven by a **config-derived** language matrix rather than hardcoded `dotnet test`/`pytest` jobs; the example instance supplies its own .NET+Python matrix. (completed 2026-07-09)
 - [ ] **Phase 7: Single-Source Dual-Runtime Emitter** - One authored source compiles into both opencode (primary) + Claude Code (secondary) artifacts, with per-runtime limit validators that fail loud.
 
 ## Phase Details
@@ -188,8 +188,8 @@ Plans:
 
 **Plans**: 3 plans (2 waves)
 - [x] 06-01-PLAN.md — Enabler-1: per-language `test_paths` config slot + loader passthrough + matrix-shape Wave-0 test (Wave 1)
-- [ ] 06-02-PLAN.md — Enabler-2: `--contracts-dir`/`--baseline`/`--manifest` argparse on drift+hash CLIs for example-manifest gating (Wave 1)
-- [ ] 06-03-PLAN.md — Workflow: config-derived `.github/workflows/ci.yml` + CODEOWNERS + PR template (Wave 2)
+- [x] 06-02-PLAN.md — Enabler-2: `--contracts-dir`/`--baseline`/`--manifest` argparse on drift+hash CLIs for example-manifest gating (Wave 1)
+- [x] 06-03-PLAN.md — Workflow: config-derived `.github/workflows/ci.yml` + CODEOWNERS + PR template (Wave 2)
 
 ### Phase 7: Single-Source Dual-Runtime Emitter
 
@@ -219,5 +219,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 4. Plugins + Hooks | 6/6 | Complete   | 2026-07-08 |
 | 5. De-specialization & Template Extraction | 5/5 | Complete   | 2026-07-09 |
 | 5.5. Authored-Surface Genericization (INSERTED) | 3/3 | Complete|  |
-| 6. CI + Gates (generic) | 1/3 | In Progress|  |
+| 6. CI + Gates (generic) | 3/3 | Complete   | 2026-07-09 |
 | 7. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |

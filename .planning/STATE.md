@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 05-03-PLAN.md (GEN-01 domain move to examples/log-parser/)
-last_updated: "2026-07-09T13:18:50.833Z"
-last_activity: 2026-07-09 -- Phase 06 planning complete
+last_updated: "2026-07-09T13:29:22.161Z"
+last_activity: 2026-07-09 -- 06-03 COMPLETE (config-derived ci.yml + CODEOWNERS + PR template)
 progress:
   total_phases: 7
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 32
-  completed_plans: 30
-  percent: 71
+  completed_plans: 32
+  percent: 86
 ---
 
 # Project State
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 Phase: 4 COMPLETE. **Re-scoped (ADR-0002):** project redefined from log-parser-specific harness → general contract-first polyglot agent-harness template; log-parser domain to be demoted to `examples/log-parser/`. New Phase 5 (GEN) inserted; old CI→6, Emitter→7 (re-scoped generic).
 Plan: 05-01 COMPLETE (D-05 commit-gate drift approval path); 05-04 COMPLETE (GEN-03 harness/project.toml language SSOT + consistency gate); 05-02 COMPLETE (GEN-02 generic default instance — greeting sample contract + identity golden case, no .NET); 05-03 COMPLETE (GEN-01 domain move — semiconductor seed + libs/dotnet relocated under examples/log-parser/ via history-preserving git mv; root manifest rebaselined to generics, drift clean; snapshots regenerated; committed through the live gate); 05-05 COMPLETE (GEN-04 core→example no-dependency guard + template docs recast + ADR-0002, landed through the live gate via GOLDEN_APPROVE_HUMAN; full non-example suite 366 passed). **Phase 5 COMPLETE.**
 Status: Ready to execute
-Last activity: 2026-07-09 -- Phase 06 planning complete
+Last activity: 2026-07-09 -- 06-03 COMPLETE (config-derived ci.yml + CODEOWNERS + PR template; workflow schema-valid, full suite 413 passed, no PR opened)
 
-Progress: [█████████░] 94%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -81,6 +81,7 @@ Progress: [█████████░] 94%
 | Phase 05 P03 | 20min | 2 tasks | 36 files |
 | Phase 05 P05 | 15min | 2 tasks | 13 files |
 | Phase 06-ci-gates P01 | 6min | 3 tasks | 5 files |
+| Phase 06-ci-gates P03 | 7min | 4 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -152,6 +153,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-09T13:18:05.235Z
+Last session: 2026-07-09T13:29:22.135Z
 Stopped at: Completed 05-03-PLAN.md (GEN-01 domain move to examples/log-parser/)
 Resume file: None

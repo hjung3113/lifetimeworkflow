@@ -111,7 +111,7 @@
 ### CI — 지속적 통합 & 게이트 (Phase 6, generic)
 
 - [x] **CI-01**: **설정 파생** 폴리글랏 매트릭스 CI(GitHub Actions) — 언어별 테스트 잡 + generic contract-check/drift/golden을 비우회 실행. 잡은 `harness/project.toml` 설정에서 파생(하드코딩 `dotnet test`/`pytest` 아님); 로그파서 예시가 .NET 10 + pytest 레그 공급(.NET egress 유예가 GitHub 러너에서 실제 실행되는 지점)
-- [ ] **CI-02**: CODEOWNERS(`contracts/`·`adr/`·`golden/` + 예시 인스턴스 등가물 게이트) + PR 템플릿(경량 breaking 체크)
+- [x] **CI-02**: CODEOWNERS(`contracts/`·`adr/`·`golden/` + 예시 인스턴스 등가물 게이트) + PR 템플릿(경량 breaking 체크)
 
 ### EMIT — 단일소스 듀얼런타임 산출 (마지막 페이즈)
 
@@ -193,7 +193,7 @@
 | GEN-04 | Phase 5 | Complete |
 | GEN-05 | Phase 5.5 | Complete |
 | CI-01 | Phase 6 | Complete |
-| CI-02 | Phase 6 | Pending |
+| CI-02 | Phase 6 | Complete |
 | EMIT-01 | Phase 7 | Pending |
 | EMIT-02 | Phase 7 | Pending |
 
