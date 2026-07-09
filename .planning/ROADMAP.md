@@ -187,7 +187,7 @@ Plans:
   4. The PR template carries a lightweight breaking-change / golden checklist that surfaces on every pull request.
 
 **Plans**: 3 plans (2 waves)
-- [ ] 06-01-PLAN.md — Enabler-1: per-language `test_paths` config slot + loader passthrough + matrix-shape Wave-0 test (Wave 1)
+- [x] 06-01-PLAN.md — Enabler-1: per-language `test_paths` config slot + loader passthrough + matrix-shape Wave-0 test (Wave 1)
 - [ ] 06-02-PLAN.md — Enabler-2: `--contracts-dir`/`--baseline`/`--manifest` argparse on drift+hash CLIs for example-manifest gating (Wave 1)
 - [ ] 06-03-PLAN.md — Workflow: config-derived `.github/workflows/ci.yml` + CODEOWNERS + PR template (Wave 2)
 
@@ -219,5 +219,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 4. Plugins + Hooks | 6/6 | Complete   | 2026-07-08 |
 | 5. De-specialization & Template Extraction | 5/5 | Complete   | 2026-07-09 |
 | 5.5. Authored-Surface Genericization (INSERTED) | 3/3 | Complete|  |
-| 6. CI + Gates (generic) | 0/TBD | Not started | - |
+| 6. CI + Gates (generic) | 1/3 | In Progress|  |
 | 7. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |
