@@ -23,9 +23,17 @@ examples/log-parser/
   components/    toy-converter/ — the fixture-grade .NET converter spawned across the A-model boundary.
   libs/dotnet/   The example's .NET language-side normalize twin (Normalize + Normalize.Tests).
                  NOT a uv member; no core Python tool imports it — "core is language-neutral" (ADR-0002).
+  skills/        Instance-owned authored skills — normalization-catalog, pipeline-patterns,
+                 dotnet-conventions (domain + instance-language; moved here in GEN-05, Phase 5.5).
+  agents/        Instance-owned personas — dotnet-engineer, the .NET language engineer (moved in GEN-05).
   golden/        repr-only/ (representation-only diff → PASS) + value-regression/ (real diff → FAIL).
   tests/         Python golden-runner cases (repr-only, value-regression, recorded-output compare).
 ```
+
+The `skills/` and `agents/` trees hold authored assets that moved out of the harness core in GEN-05
+(Phase 5.5): they are domain- or instance-language-specific, so they belong to this instance rather
+than the domain-neutral core. This does not change the dependency direction — the instance still
+depends on the core; the core never on the instance.
 
 ## Instance-local rules
 

@@ -37,9 +37,16 @@ contracts/     log-specs/ (standard-log) · normalization/ (correction-rules) ·
                (equipment-master) · state/ (equipment-progress) · .hashes/manifest.json
 components/    toy-converter/ — fixture-grade .NET converter
 libs/dotnet/   Normalize + Normalize.Tests — the example's .NET language-side normalize twin
+skills/        normalization-catalog · pipeline-patterns · dotnet-conventions — instance-owned skills
+agents/        dotnet-engineer — the instance's .NET language persona
 golden/        repr-only/ (representation-only diff → PASS) · value-regression/ (real diff → FAIL)
 tests/         Python golden cases: repr-only, value-regression, recorded-output compare
 ```
+
+This instance now owns its **domain skills** (`normalization-catalog`, `pipeline-patterns`) and its
+**.NET language persona** (`dotnet-engineer`, plus the `dotnet-conventions` skill) — authored assets
+relocated from the harness core during the Phase 5.5 authored-surface de-specialization, because they
+are domain- or instance-language-specific rather than domain-neutral core.
 
 ## Status note — .NET egress deferred (BOOT-01)
 
