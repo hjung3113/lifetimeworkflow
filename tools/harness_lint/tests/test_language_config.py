@@ -1,10 +1,10 @@
 """GEN-03 CONSISTENCY gate (D-03) — the permission-matrix language scopes and the engineer
-personas DERIVE from harness/project.toml (config = SSOT, no codegen).
+personas DERIVE from harness/project.toml (config = SSOT, no codegen). See T-05-04 / T-05-05.
 
 Per D-03 "full codegen is overkill", "derived not hardcoded" is satisfied structurally: rather than
 generating the matrix / personas from the config, this test asserts the existing hardcoded values
 AGREE with the config. A silent divergence — dropping `dotnet *` from the matrix, or a language from
-the config, or a persona reference to a missing file — fails the suite. That makes harness/project.toml
+the config, or a persona reference to a missing file — fails the suite. That makes the project.toml
 authoritative: the log-parser example instance's values are the config's declared values, and the
 hardcoded matrix/persona/command values are reinterpreted as consumers that must match it.
 
@@ -28,8 +28,8 @@ def _matrix_language_allow_scopes() -> set[str]:
 
     The `bash` object encodes last-wins glob rules; the operational rules are the catch-all `*`,
     `git push*`, and `rm -rf*` (mapped to ask/deny). The LANGUAGE scopes are exactly the keys that
-    grant `allow` — `dotnet *`, `uv *`, `pytest *`. Deriving them as "the allow-decision keys" (not a
-    hardcoded literal) keeps this test honest: it reads the same data the resolver enforces.
+    grant `allow` — `dotnet *`, `uv *`, `pytest *`. Deriving them as "the allow-decision keys" (not
+    a hardcoded literal) keeps this test honest: it reads the same data the resolver enforces.
     """
     matrix = load_matrix()
     bash = matrix["bash"]
@@ -39,7 +39,7 @@ def _matrix_language_allow_scopes() -> set[str]:
 def test_matrix_language_scopes_equal_config() -> None:
     """The matrix's language allow-scopes EQUAL the config-derived scope set (SSOT tamper-evidence).
 
-    Divergence in EITHER direction fails: dropping `dotnet *` from the matrix, or removing a language
+    Divergence in EITHER direction fails: dropping `dotnet *` from the matrix, or removing a lang
     from harness/project.toml, breaks the equality — proving the config is authoritative (T-05-04).
     """
     assert _matrix_language_allow_scopes() == language_bash_scopes(load_project())

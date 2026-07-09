@@ -40,7 +40,7 @@ def load_project(path: str | Path = _DEFAULT_PROJECT) -> dict:
 
 
 def languages(cfg: dict | None = None) -> list[dict]:
-    """Return the list of configured ``[[languages]]`` tables (loads the default config if omitted)."""
+    """Return the configured ``[[languages]]`` tables (loads the default config if omitted)."""
     if cfg is None:
         cfg = load_project()
     return list(cfg.get("languages", []))
