@@ -10,22 +10,40 @@
 
 ## Monorepo map
 
-Polyglot, responsibility-separated. **Language boundary = process / file / DB only —
-never in-process object passing** (A-model: CLI-spawn + exit codes).
+This repo is a **reusable, contract-first polyglot agent-harness TEMPLATE**: a domain-neutral
+**harness core** plus one-or-more **instances** under `examples/<name>/`. The core depends on
+**NO** instance — a one-directional invariant enforced by the GEN-04 guard
+(`tools/harness_lint/tests/test_core_no_example_dep.py`); an instance depends on the core, never
+the reverse. **Language boundary = process / file / DB only — never in-process object passing**
+(A-model: CLI-spawn + exit codes).
 
 ```txt
-contracts/    Constitution plane — JSON Schema (Draft 2020-12) + YAML specs. THE single source of truth.
+CORE — domain-neutral, stays on clone ───────────────────────────────────────────────
+contracts/    Constitution plane — the ACTIVE instance's contracts / generic default at root
+              (JSON Schema Draft 2020-12 + YAML specs). THE single source of truth.
 golden/       Constitution plane — approved equivalence baselines (.verified). Human-promoted only.
 docs/         Diátaxis docs + docs/adr/ (append-only MADR) + docs/glossary.md (ubiquitous language).
-libs/python/  Python §4.3–4.6 normalization core (scheduler/collector side lives here).  → see libs/python/AGENTS.md
-libs/dotnet/  .NET normalization core (parser/converter side, CPU-bound).                 → see libs/dotnet/AGENTS.md
-components/   Toy converter + future .NET components (placeholders today).
-tools/        Build/tooling (Python): contract_hash, contract_drift, golden_runner, memory_regen, bootstrap.
+libs/python/  The harness's language-neutral §4.3–4.6 normalization core — STAYS in core.  → see libs/python/AGENTS.md
+libs/         + normalize-spec.md (canonical rule spec) + normalize-fixtures/ (shared (raw,canonical) corpus).
+tools/        The reusable engine (Python): contract_hash, contract_drift, golden_runner,
+              harness_config, harness_lint, memory_regen, bootstrap.
+harness/      The reusable harness config: project.toml (language/instance slot), agents/, commands/,
+              skills/, permission-matrix.json.
 .memory/      Derived/volatile plane. state/ committed; derived/ gitignored + auto-regenerated (never hand-edit).
+
+INSTANCES — domain seeds, the demoted specifics ─────────────────────────────────────
+examples/<instance>/   A domain seed: its own contracts/, golden/, components/, language-side
+                       normalize twin, tests + manifest. Depends on the core; the core never
+                       depends on it. Reference instance = examples/log-parser/ (semiconductor
+                       equipment-log domain).  → see examples/log-parser/AGENTS.md
 ```
 
-Parser/converter = .NET 10 (`libs/dotnet`, `components/`). Scheduler/collector = Python
-(`libs/python`, `tools/`). The two talk only across process/file/DB boundaries.
+The active language/toolchain set is a **DATA slot** in `harness/project.toml` (`[instance]` root +
+`[[languages]]`). The log-parser instance supplies **.NET 10** (parser/converter, CPU-bound) +
+**Python/uv** (scheduler/collector); those two talk only across process/file/DB boundaries. Cloning
+this repo as a fresh template = swap the instance under `examples/` + that config. **Domain
+specifics live with the instance** — see `examples/log-parser/{AGENTS.md,README.md}` and the
+`docs/explanation/template-and-instances.md` narrative.
 
 ## Golden-path commands (Phase-1 tooling)
 

@@ -168,14 +168,40 @@ Use these entry points:
 Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
 <!-- GSD:workflow-end -->
 
+## Template & Instances (ADR-0002)
+
+> The `## Project` block above is the GSD-managed identity source (`PROJECT.md`). This section
+> reframes it per **ADR-0002 (General Template De-specialization)** and is authoritative for how
+> the repo is scoped today.
+
+This repo is a **reusable, contract-first polyglot agent-harness TEMPLATE** — not a
+log-parser-specific harness. The semiconductor equipment-log domain that seeded it is **demoted to
+a reference instance** under **`examples/log-parser/`**. The **core** (`contracts/` generic default,
+`libs/python` language-neutral §4.3–4.6 normalize core + `libs/normalize-{spec.md,fixtures}`,
+`tools/`, `harness/`) is domain-neutral and **depends on no instance** — enforced by the GEN-04
+guard `tools/harness_lint/tests/test_core_no_example_dep.py`. An instance depends on the core.
+
+- **Stack pins** in the *Technology Stack* section above apply to the **harness core** (the engine
+  the template ships). The active instance's language/toolchain set is a **DATA slot** in
+  `harness/project.toml` (`[instance]` + `[[languages]]`); the log-parser instance supplies .NET 10
+  + Python/uv.
+- **The §4.3–4.6 boundary table** applies to the **unmoved** Python normalize core (`libs/python`),
+  which stays in the harness as language-neutral tooling. The .NET twin is the *example's*
+  language-side impl and lives under `examples/log-parser/libs/dotnet/`.
+- **Domain specifics** (log-spec contracts, correction rules, equipment master, toy converter,
+  domain goldens) live under `examples/log-parser/` — see `examples/log-parser/README.md` and
+  `docs/explanation/template-and-instances.md` for the template↔instance split + how to add an
+  instance.
+
 ## Agent Rules — see AGENTS.md
 
 The canonical, nearest-wins rules for working in this repo live in **`AGENTS.md`** (root)
-and the per-package files it points to (`libs/python/AGENTS.md`, `libs/dotnet/AGENTS.md`).
-Read the root `AGENTS.md` first; read a per-package `AGENTS.md` only when you touch that
-package (lazy-load). Non-negotiables (contract-first, §4.3–4.6 boundary invariants,
-constitution-plane-is-gated, derived-not-hand-edited) are restated per-package — never
-inherited-only. This is a pointer, not a duplicate: `AGENTS.md` is the source.
+and the per-package files it points to (`libs/python/AGENTS.md`, and each instance's own
+`AGENTS.md` — e.g. `examples/log-parser/AGENTS.md`). Read the root `AGENTS.md` first; read a
+per-package/per-instance `AGENTS.md` only when you touch that subtree (lazy-load). Non-negotiables
+(contract-first, §4.3–4.6 boundary invariants, constitution-plane-is-gated, derived-not-hand-edited)
+are restated per-package — never inherited-only. This is a pointer, not a duplicate: `AGENTS.md`
+is the source.
 
 <!-- GSD:profile-start -->
 ## Developer Profile

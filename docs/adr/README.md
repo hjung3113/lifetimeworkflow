@@ -28,5 +28,6 @@ be silently rewritten (DOCS-02).
 | ADR | Title | Status |
 |-----|-------|--------|
 | [0001](0001-walking-skeleton-golden-core.md) | Walking-Skeleton Golden Core Architecture | accepted |
+| [0002](0002-general-template-de-specialization.md) | General Template De-specialization | accepted |
 
 *Add a row per ADR. Do not remove rows — mark superseded records in the Status column.*
