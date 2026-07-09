@@ -157,7 +157,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 05-01-PLAN.md — D-05 commit-gate drift approval path: `GOLDEN_APPROVE_HUMAN` warn+pass on drift (polyglot/golden stay hard); core-only, lands first
+- [x] 05-01-PLAN.md — D-05 commit-gate drift approval path: `GOLDEN_APPROVE_HUMAN` warn+pass on drift (polyglot/golden stay hard); core-only, lands first
 - [ ] 05-04-PLAN.md — GEN-03 language config slot: `harness/project.toml` SSOT + thin `tools/harness_config` loader + consistency test (matrix scopes/personas derive from config)
 
 **Wave 2** *(blocked on 05-01)*
@@ -213,7 +213,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 2. Two-Plane Memory + Rules | 5/5 | Complete   | 2026-07-08 |
 | 3. Agents + Commands + Skills | 7/7 | Complete   | 2026-07-08 |
 | 4. Plugins + Hooks | 6/6 | Complete   | 2026-07-08 |
-| 5. De-specialization & Template Extraction | 0/5 | Planned | - |
+| 5. De-specialization & Template Extraction | 1/5 | In Progress|  |
 | 5.5. Authored-Surface Genericization (INSERTED) | 0/TBD | Not started | - |
 | 6. CI + Gates (generic) | 0/TBD | Not started | - |
 | 7. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |

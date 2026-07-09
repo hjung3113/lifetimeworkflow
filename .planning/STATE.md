@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: re-scoped
-stopped_at: Phase 4 complete; ADR-0002 re-scope to general template; Phase 5 (GEN) inserted
-last_updated: "2026-07-08T13:03:52.576Z"
+status: planning
+stopped_at: Phase 4 context gathered
+last_updated: "2026-07-09T03:48:17.242Z"
 last_activity: 2026-07-08
 progress:
   total_phases: 7
   completed_phases: 4
-  total_plans: 24
-  completed_plans: 24
+  total_plans: 29
+  completed_plans: 25
   percent: 57
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 4 COMPLETE. **Re-scoped (ADR-0002):** project redefined from log-parser-specific harness → general contract-first polyglot agent-harness template; log-parser domain to be demoted to `examples/log-parser/`. New Phase 5 (GEN) inserted; old CI→6, Emitter→7 (re-scoped generic).
-Plan: — (Phase 5 not yet planned)
-Status: Planning artifacts recast (PROJECT/ROADMAP/REQUIREMENTS/STATE). Next: write ADR-0002 + plan Phase 5. Actual domain move handled in Phase 5 (touches live drift/contract-guard gates — needs deliberate ADR + hash re-baseline).
+Plan: 05-01 COMPLETE (D-05 commit-gate drift approval path). Next: 05-02 (domain move).
+Status: Phase 5 planned (05-01..05). 05-01 landed core-only (tools/hooks/ only, no contract change) — commit-gate drift now honors GOLDEN_APPROVE_HUMAN (warn+pass) while polyglot/golden stay hard, opening the sanctioned landing path for the 05-02/03/05 domain-move commits. Actual domain move still touches live drift/contract-guard gates — needs deliberate ADR + hash re-baseline.
 Last activity: 2026-07-08
 
-Progress: [███████░░░] 57% (4/7 phases)
+Progress: [█████████░] 86%
 
 ## Performance Metrics
 
@@ -75,6 +75,7 @@ Progress: [███████░░░] 57% (4/7 phases)
 | Phase 04 P04 | 3min | 2 tasks | 3 files |
 | Phase 04 P05 | 5min | 2 tasks | 4 files |
 | Phase 04 P06 | 5min | 3 tasks | 8 files |
+| Phase 05 P01 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,7 @@ Recent decisions affecting current work:
 - [Phase 04]: Golden-parity is dotnet-gated: SKIP-with-log when .NET absent so drift+polyglot always run (D-06)
 - [Phase ?]: 04-06: appended Phase-4 gate slots to .claude/settings.json (append-only, never rewrote GSD objects); coexist test guards all 11 GSD guards + the four new gates (7 PreToolUse / 4 PostToolUse)
 - [Phase ?]: 04-06: opencode plugin stubs authored-only, not registered in opencode.json — execution deferred (D-01); hook names A1 MEDIUM, re-verify at opencode wiring
+- [Phase 05]: [05-01] D-05 commit-gate drift approval path — check_drift honors a non-empty GOLDEN_APPROVE_HUMAN token (drift FAIL -> logged WARN+PASS, verbatim contract_guard:91 mirror); DRIFT-ONLY (polyglot §4.3-4.6 + golden stay hard, proven by test_approval_does_not_bypass_polyglot); empty/blank never authorizes. Core-only commit lands clean with no token — opens the sanctioned landing path for the 05-02/03/05 domain-move commits.
 
 ### Pending Todos
 
@@ -141,6 +143,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-08T13:03:01.258Z
+Last session: 2026-07-09T03:48:17.217Z
 Stopped at: Phase 4 context gathered
 Resume file: None

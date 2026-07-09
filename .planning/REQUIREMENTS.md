@@ -83,7 +83,7 @@
 
 ### GEN — 범용화 & 템플릿 추출 (Phase 5, INSERTED · ADR-0002)
 
-- [ ] **GEN-01**: 로그파서 도메인 시드(`contracts/{log-specs,reference-data,normalization,state}`, `libs/{python/normalize,dotnet/Normalize,normalize-fixtures}`, `components/toy-converter`, 관련 `golden/`)를 `examples/log-parser/`로 이동 — 신규 ADR + contract-hash manifest 재베이스라인 동반, 이동 후 라이브 contract-drift 게이트가 clean
+- [x] **GEN-01**: 로그파서 도메인 시드(`contracts/{log-specs,reference-data,normalization,state}`, `libs/{python/normalize,dotnet/Normalize,normalize-fixtures}`, `components/toy-converter`, 관련 `golden/`)를 `examples/log-parser/`로 이동 — 신규 ADR + contract-hash manifest 재베이스라인 동반, 이동 후 라이브 contract-drift 게이트가 clean
 - [ ] **GEN-02**: 도메인 중립 최소 기본 인스턴스(제네릭 샘플 계약 + 골든 픽스처)를 루트에 제공 — 반도체 콘텐츠 없이 contract→hash→drift→golden 전체 루프가 돎을 증명
 - [ ] **GEN-03**: 참여 언어·툴체인을 단일 프로젝트 설정 슬롯(예: `harness/project.toml`)에서 읽기 — 권한 매트릭스 `dotnet */uv */pytest *` 스코프·엔지니어 페르소나·`/build`·`/test`·`/lint` 본문이 설정에서 파생(하드코딩 아님). 로그파서 예시가 .NET 10 + Python(uv) 값 공급
 - [ ] **GEN-04**: 코어→예시 단방향 의존 가드 테스트 — `tools/`·`harness/`·`libs/`(코어)가 `examples/**`를 import·경로참조 안 함(SCOPE A: 코드 의존만 강제), 추출 후 비-예시 테스트 스위트 그린 유지 + 루트 문서(`CLAUDE.md`·루트 `AGENTS.md`·`docs/`)는 템플릿+인스턴스 추가법 기술, 로그파서 특화는 예시 자체 `AGENTS.md`/README로 이동
@@ -168,7 +168,7 @@
 | HOOK-03 | Phase 4 | Complete |
 | HOOK-04 | Phase 4 | Complete |
 | POLY-01 | Phase 4 | Complete |
-| GEN-01 | Phase 5 | Pending |
+| GEN-01 | Phase 5 | Complete |
 | GEN-02 | Phase 5 | Pending |
 | GEN-03 | Phase 5 | Pending |
 | GEN-04 | Phase 5 | Pending |
