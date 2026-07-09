@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Phase 5 planned (05-01..05). 05-01 landed core-only (tools/hooks/ only, no contract change) — commit-gate drift now honors GOLDEN_APPROVE_HUMAN (warn+pass) while polyglot/golden stay hard, opening the sanctioned landing path for the 05-02/03/05 domain-move commits. Actual domain move still touches live drift/contract-guard gates — needs deliberate ADR + hash re-baseline.
-stopped_at: Completed 05-02-PLAN.md (GEN-02 generic default instance)
-last_updated: "2026-07-09T04:01:17.439Z"
+stopped_at: Completed 05-03-PLAN.md (GEN-01 domain move to examples/log-parser/)
+last_updated: "2026-07-09T00:00:00.000Z"
 last_activity: 2026-07-09
 progress:
   total_phases: 7
   completed_phases: 4
   total_plans: 29
-  completed_plans: 28
+  completed_plans: 29
   percent: 97
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 4 COMPLETE. **Re-scoped (ADR-0002):** project redefined from log-parser-specific harness → general contract-first polyglot agent-harness template; log-parser domain to be demoted to `examples/log-parser/`. New Phase 5 (GEN) inserted; old CI→6, Emitter→7 (re-scoped generic).
-Plan: 05-01 COMPLETE (D-05 commit-gate drift approval path); 05-04 COMPLETE (GEN-03 harness/project.toml language SSOT + consistency gate); 05-02 COMPLETE (GEN-02 generic default instance — greeting sample contract + identity golden case, no .NET). Next: 05-03 (domain move to examples/log-parser/).
+Plan: 05-01 COMPLETE (D-05 commit-gate drift approval path); 05-04 COMPLETE (GEN-03 harness/project.toml language SSOT + consistency gate); 05-02 COMPLETE (GEN-02 generic default instance — greeting sample contract + identity golden case, no .NET); 05-03 COMPLETE (GEN-01 domain move — semiconductor seed + libs/dotnet relocated under examples/log-parser/ via history-preserving git mv; root manifest rebaselined to generics, drift clean; snapshots regenerated; committed through the live gate). Next: 05-05 (ADR + root AGENTS.md recast).
 Status: Phase 5 planned (05-01..05). 05-01 landed core-only (tools/hooks/ only, no contract change) — commit-gate drift now honors GOLDEN_APPROVE_HUMAN (warn+pass) while polyglot/golden stay hard, opening the sanctioned landing path for the 05-02/03/05 domain-move commits. Actual domain move still touches live drift/contract-guard gates — needs deliberate ADR + hash re-baseline.
 Last activity: 2026-07-09
 
-Progress: [█████████░] 97%
+Progress: [██████████] 97%
 
 ## Performance Metrics
 
@@ -78,6 +78,7 @@ Progress: [█████████░] 97%
 | Phase 05 P01 | 2min | 2 tasks | 2 files |
 | Phase 05 P04 | 12min | 2 tasks | 8 files |
 | Phase 05 P02 | 18min | 2 tasks | 11 files |
+| Phase 05 P03 | 20min | 2 tasks | 36 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,7 @@ Recent decisions affecting current work:
 - [Phase ?]: 04-06: opencode plugin stubs authored-only, not registered in opencode.json — execution deferred (D-01); hook names A1 MEDIUM, re-verify at opencode wiring
 - [Phase 05]: [05-01] D-05 commit-gate drift approval path — check_drift honors a non-empty GOLDEN_APPROVE_HUMAN token (drift FAIL -> logged WARN+PASS, verbatim contract_guard:91 mirror); DRIFT-ONLY (polyglot §4.3-4.6 + golden stay hard, proven by test_approval_does_not_bypass_polyglot); empty/blank never authorizes. Core-only commit lands clean with no token — opens the sanctioned landing path for the 05-02/03/05 domain-move commits.
 - [Phase 05]: [05-02] GEN-02 generic default instance — parametrized the golden runner (built-in language-agnostic `run_identity_converter` verbatim stdlib byte-copy + `converter`/`golden_dir` params; §4.3-4.6 `normalize_tsv` compare path untouched, default stays "dotnet"). Added domain-neutral `contracts/sample/greeting.schema.json` (zero semiconductor vocab) + `golden/sample/*` identity golden case whose seed→baseline diff is ROW-ORDER only (R8) so it PASSes without .NET; seed byte-clean (LF/no-BOM) for the ADDED-file polyglot lint. Rebaselined the 6-schema root manifest (drift reads clean), added `greeting` to docs-sync EXPECTED_PAGES + regenerated docs-sync AND memory_regen contracts-index determinism snapshots. Core now points at a generic instance, not a void — precondition for the 05-03 domain move. NOTE: 3 commit_gate drift-block tests fail ONLY while GOLDEN_APPROVE_HUMAN is live in-shell (pre-existing test-isolation gap; green in CI/token-unset: 364 passed); logged as DEF-05-02-1.
+- [Phase 05]: [05-03] GEN-01 domain MOVE — semiconductor seed + the example's .NET language-side impl relocated under `examples/log-parser/` via history-preserving `git mv` (verbatim, renames stay `R` → excluded from commit_gate `--diff-filter=ACM` so the intentionally-dirty BOM/CRLF golden seeds are NOT re-linted, P2). Moved: contracts/{log-specs,reference-data,state} + normalization/correction-rules.*, components/toy-converter, `libs/dotnet` WHOLESALE (not a uv member, no core Python importer; ADR-0002 core-is-language-neutral), golden/{repr-only,value-regression}, + the 3 domain golden_runner tests + tests/recorded/*. STAYED core: libs/python/normalize + libs/normalize-fixtures (uv members / core-imported), format-conventions.schema.json. De-pinned core golden_runner (dropped TOY_CONVERTER_PROJECT default → project required via run_golden_case(project=...); deleted dead toy_converter_project fixture). Rebaselined root manifest to generic only (format-conventions + sample/greeting) → live drift clean; built the example's own manifest. Repointed core tests to surviving material (docs-sync EXPECTED_PAGES→{format-conventions,greeting} + rows() target; test_agents_md drops libs/dotnet as a core plane) + regenerated docs-sync & contracts-index snapshots (repo-map .ambr unchanged, fixture-based). Landed ONE commit (ebe4276) through the LIVE gate with GOLDEN_APPROVE_HUMAN — no --no-verify. Non-example suite green (361 passed).
 - [Phase 05]: [05-04] GEN-03 language/toolchain SSOT — harness/project.toml is a data-only slot ([instance] root + [[languages]] dotnet/python: bash_scope/test/format/persona/sdk_bootstrap) carrying the log-parser EXAMPLE INSTANCE's values (not a core hardcode). tools/harness_config is a new tools/* uv member (package=false, PEP 562 lazy re-export) parsing it with stdlib tomllib; language_bash_scopes() folds the implicit `pytest *`. "Derived-not-hardcoded" satisfied by a CONSISTENCY TEST (D-03 "codegen is overkill"), not codegen: test_language_config asserts permission-matrix allow-scopes == config-derived set + each persona file exists — divergence FAILS (config = SSOT). Existing hardcoded values kept & proven consistent, not ripped out. Zero external deps (uv.lock registers in-repo member only). Precondition for Phase-6 config-derived CI matrix.
 
 ### Pending Todos
@@ -147,6 +149,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-09T04:01:17.371Z
-Stopped at: Completed 05-02-PLAN.md (GEN-02 generic default instance)
+Last session: 2026-07-09T00:00:00.000Z
+Stopped at: Completed 05-03-PLAN.md (GEN-01 domain move to examples/log-parser/)
 Resume file: None
