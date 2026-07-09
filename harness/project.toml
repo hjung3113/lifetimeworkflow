@@ -24,7 +24,7 @@ bash_scope = "dotnet *"                      # matches permission-matrix.json ba
 test = "dotnet test"
 format = "dotnet format"
 sdk_bootstrap = "tools/bootstrap/install.sh" # env has no .NET; bootstrap installs channel 10.0
-persona = "harness/agents/dotnet-engineer.md"
+persona = "examples/log-parser/agents/dotnet-engineer.md"
 
 [[languages]]
 id = "python"

@@ -2,8 +2,8 @@
 description: >-
   Use when migrating exactly one legacy path behind the trusted golden net — strangler-extract a
   single path only, refused outright when no captured legacy golden baseline exists for it. Invoke
-  for one incremental migration step on the .NET parser/converter side; requires /golden parity green.
-agent: dotnet-engineer
+  for one incremental migration step on the instance's language side; requires /golden parity green.
+agent: orchestrator
 subtask: true
 ---
 
