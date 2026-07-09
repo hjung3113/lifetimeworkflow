@@ -186,7 +186,10 @@ Plans:
   3. CODEOWNERS gates `contracts/`, `adr/`, and `golden/` (and the example instances' equivalents) so only a human ratifies constitution-plane and golden-baseline changes.
   4. The PR template carries a lightweight breaking-change / golden checklist that surfaces on every pull request.
 
-**Plans**: TBD
+**Plans**: 3 plans (2 waves)
+- [ ] 06-01-PLAN.md — Enabler-1: per-language `test_paths` config slot + loader passthrough + matrix-shape Wave-0 test (Wave 1)
+- [ ] 06-02-PLAN.md — Enabler-2: `--contracts-dir`/`--baseline`/`--manifest` argparse on drift+hash CLIs for example-manifest gating (Wave 1)
+- [ ] 06-03-PLAN.md — Workflow: config-derived `.github/workflows/ci.yml` + CODEOWNERS + PR template (Wave 2)
 
 ### Phase 7: Single-Source Dual-Runtime Emitter
 
