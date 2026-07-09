@@ -49,7 +49,7 @@ ALLOWED_PERMISSION_KEYS = VALID_PERMISSION_KEYS | WRITE_AFFORDANCE_ALIAS
 VALID_MODES = frozenset({"primary", "subagent", "all"})
 
 # Exactly the four enumerated CORE personas — the instance-language persona dotnet-engineer
-# moved to examples/log-parser/agents/ (Phase 5.5). No more, no less.
+# moved to the log-parser example instance (Phase 5.5). No more, no less.
 EXPECTED_PERSONAS = frozenset({"orchestrator", "python-engineer", "code-reviewer", "explorer"})
 
 # Personas that MUST be read-only in both representations (AGENT-04 reviewer, AGENT-05 explorer).

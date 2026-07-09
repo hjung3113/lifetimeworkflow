@@ -45,7 +45,7 @@ _XML_CHARS = ("<", ">")
 
 # Exactly the four enumerated CORE skills (D-07) — the domain skills
 # (normalization-catalog, pipeline-patterns) and the instance-language skill (dotnet-conventions)
-# moved to examples/log-parser/skills/ (Phase 5.5). No more, no fewer (anti-sprawl).
+# moved to the log-parser example instance (Phase 5.5). No more, no fewer (anti-sprawl).
 EXPECTED_SKILLS = frozenset(
     {
         "python-conventions",
