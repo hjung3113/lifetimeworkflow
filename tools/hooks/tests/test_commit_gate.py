@@ -171,3 +171,59 @@ def test_from_hook_blocks_commit_on_drift(monkeypatch, capsys) -> None:
     # The block decision is the last stdout line (composition PASS/SKIP lines precede it).
     block_line = [ln for ln in out.splitlines() if ln.strip()][-1]
     assert json.loads(block_line)["decision"] == "block"
+
+
+# --- D-05 drift approval-path (GOLDEN_APPROVE_HUMAN) ---------------------------------------------
+# "Machines gate, humans ratify" — the drift component honors a human-set GOLDEN_APPROVE_HUMAN
+# token exactly as contract_guard does (warn+pass), while polyglot/golden stay HARD.
+
+
+def test_drift_present_with_approval_warns_not_blocks(monkeypatch, capsys) -> None:
+    # A non-empty GOLDEN_APPROVE_HUMAN turns a drift FAIL into a logged WARN+PASS (exit 0).
+    _drift_present(monkeypatch)
+    _no_staged(monkeypatch)
+    _dotnet_absent(monkeypatch)
+    monkeypatch.setenv("GOLDEN_APPROVE_HUMAN", "yes")
+
+    assert commit_gate.main([]) == 0
+    combined = capsys.readouterr()
+    log = combined.out + combined.err
+    # The drift line reads as a human-ratified WARN, not a FAIL.
+    assert "GOLDEN_APPROVE_HUMAN" in log
+    assert "ratified" in log
+    assert "FAIL [contract-drift]" not in log
+
+
+def test_drift_present_without_approval_still_blocks(monkeypatch) -> None:
+    # No token -> the pre-existing block behavior is unchanged.
+    _drift_present(monkeypatch)
+    _no_staged(monkeypatch)
+    _dotnet_absent(monkeypatch)
+    monkeypatch.delenv("GOLDEN_APPROVE_HUMAN", raising=False)
+
+    assert commit_gate.main([]) != 0
+
+
+def test_empty_token_does_not_bypass_drift(monkeypatch) -> None:
+    # An empty / whitespace-only value never authorizes (mirrors contract_guard Q1).
+    _drift_present(monkeypatch)
+    _no_staged(monkeypatch)
+    _dotnet_absent(monkeypatch)
+
+    for blank in ("", "   "):
+        monkeypatch.setenv("GOLDEN_APPROVE_HUMAN", blank)
+        assert commit_gate.main([]) != 0
+
+
+def test_approval_does_not_bypass_polyglot(monkeypatch, tmp_path) -> None:
+    # The token weakens drift ONLY: a staged BOM/CRLF TSV still blocks even when approved (T-05-01).
+    bad = tmp_path / "wire.tsv"
+    bad.write_bytes(b"\xef\xbb\xbfid\tval\r\n1\t2\r\n")
+
+    _clean_drift(monkeypatch)  # drift clean; the polyglot violation alone must block
+    _dotnet_absent(monkeypatch)
+    monkeypatch.setattr(commit_gate, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(commit_gate, "staged_files", lambda: ["wire.tsv"])
+    monkeypatch.setenv("GOLDEN_APPROVE_HUMAN", "yes")
+
+    assert commit_gate.main([]) != 0
