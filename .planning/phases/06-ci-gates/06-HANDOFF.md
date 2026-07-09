@@ -6,10 +6,10 @@
 - Phases 1–5, 5.5, 5.7 COMPLETE and pushed (`origin/claude/data-pipeline-harness-8aypct`, tip `355910b`). Non-example `uv run pytest` green (402 passed); GEN-04 guard clean (code+prose).
 - Phase 6 (CI + Gates, generic) is set up: `06-CONTEXT.md` (decisions + two open user decisions) and `06-RESEARCH.md` (HIGH confidence, verified action versions, sequencing).
 
-## ⚠️ TWO USER DECISIONS still open (confirm before/at execution)
-- **D-A CODEOWNERS owner** — who ratifies the constitution plane? Default recommended **`@hjung3113`** (repo owner). If a team/org handle, use that.
-- **D-B Open a real PR to exercise CI?** CI-01 triggers on `pull_request`; the only way to truly verify the workflow (and run .NET for real on GitHub runners) is a real PR (`claude/data-pipeline-harness-8aypct` → default branch, exposes the full diff). Recommended: author + local-validate the workflow this phase; **open the PR only on explicit user approval** (outward-facing).
-- **(Q3) CI secret-scan** — recommend NOT adding a CI secret job (secret-scan is stdin-per-write only, has no batch surface, and is not one of the 4 success criteria). Confirm the user is OK deferring merge-time secret scanning.
+## USER DECISIONS — RESOLVED (2026-07-09)
+- **D-A CODEOWNERS owner = `@hjung3113`** (user: "add just me; I'll change it later if needed"). Author `.github/CODEOWNERS` mapping the constitution-plane globs → `@hjung3113`, and DOCUMENT that hard enforcement requires enabling "require review from code owners" in branch protection (advisory-only otherwise); note the solo-repo self-approval nuance. Do NOT enable branch protection (repo setting, user-controlled).
+- **D-B real PR = deferred to explicit approval.** Author the `pull_request`-triggered workflow + validate its YAML/logic locally this phase, but do NOT open the real PR (`claude/…` → default branch) without the user's explicit go-ahead.
+- **CI secret-scan = deferred** (not in the 4 success criteria; no batch surface). Do not add a CI secret job.
 
 ## Next session — exact steps
 1. **Read** `06-CONTEXT.md` + `06-RESEARCH.md` (no re-research needed).

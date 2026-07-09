@@ -35,10 +35,11 @@
 </decisions>
 
 <open_decisions>
-## Open Decisions — NEED USER CONFIRMATION before execution
+## Open Decisions — RESOLVED (user, 2026-07-09)
 
-- **D-A CODEOWNERS 오너 아이덴티티:** 헌법 평면(contracts/adr/golden)을 누가 비준하나? CODEOWNERS는 GitHub 사용자/팀 핸들 필요. **권장 기본값: `@hjung3113`**(레포 오너). 팀/조직이면 알려줄 것.
-- **D-B CI를 실제로 돌릴 PR 개설 여부:** CI-01은 `pull_request` 트리거 → 실제 검증하려면 PR이 존재해야 함(그리고 .NET이 GH 러너에서 처음 실제 실행됨). **권장: 워크플로 저작 + YAML/로직 로컬 검증**, 그리고 **실제 PR 개설은 사용자 승인 후**(outward-facing). PR을 열면 `claude/data-pipeline-harness-8aypct` → 기본 브랜치 전체 diff가 노출됨.
+- **D-A CODEOWNERS 오너 = `@hjung3113`** (본인만 추가; 필요 시 나중에 수정). CODEOWNERS 파일 저작 + "branch protection에서 require-code-owner-review를 켜면 하드 강제, 안 켜면 advisory(자동 리뷰어 지정)" 안내를 문서화 — 강제 강도는 사용자가 통제. 솔로 레포 self-approval 뉘앙스 문서에 명기.
+- **D-B 실제 PR 개설 = 승인 후.** 이 페이즈에선 워크플로 저작 + 로컬 YAML/로직 검증까지만. `pull_request` 트리거 워크플로는 만들되, 실제 PR(`claude/…` → 기본 브랜치, 전체 diff 노출, .NET 첫 실런) 개설은 **사용자 명시 승인 시에만**.
+- **(부수) CI secret-scan = 제외(deferred).** secret-scan은 stdin-per-write only·배치 표면 없음·4 성공기준 밖 → CI 잡 추가 안 함. 필요 시 후속.
 </open_decisions>
 
 <canonical_refs>
