@@ -1,8 +1,8 @@
 """§4.3–4.6 canonicalization core — Python thin implementation (CONTRACT-02, D-04/D-05).
 
-The RULE is canonical (see ``libs/normalize-spec.md``); this module is one thin implementation
-of it. The .NET core (``libs/dotnet/Normalize``) implements the same rules and both are
-cross-validated by the shared ``libs/normalize-fixtures/*.json`` corpus.
+The RULE is canonical (see ``libs/normalize-spec.md``); this module is one thin, language-neutral
+implementation of it that STAYS in the harness core. An instance's language-side twin implements
+the same rules and both are cross-validated by the shared ``libs/normalize-fixtures/*.json`` corpus.
 
 Do NOT hand-roll number formatting, BOM detection, or timezone math — use stdlib
 ``decimal`` / ``codecs`` (``utf-8-sig``) / ``datetime`` so the deceptively-complex polyglot

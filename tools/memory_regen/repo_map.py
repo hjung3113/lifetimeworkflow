@@ -1,8 +1,8 @@
 """repo-map generator — tree-sitter symbols → networkx PageRank → derived map (MEM-03, Task 2).
 
-The one genuinely new engine of this phase (RESEARCH §Key insight). It walks the monorepo source
-subtrees (``libs/python``, ``libs/dotnet``, ``tools``, ``components`` — code only, D-06, never
-``.planning/``), parses each ``.py``/``.cs``/``.sh`` file into def/ref symbols via the
+The one genuinely new engine of this phase (RESEARCH §Key insight). It walks the harness-core
+source subtrees (``libs/python``, ``tools`` — code only, D-06, never ``.planning/``; an instance's
+own source is mapped from its own tree), parses each ``.py``/``.cs``/``.sh`` file into def/ref symbols via the
 tree-sitter 0.25 layer (:mod:`tools.memory_regen.queries`), builds a directed file→file
 graph (edge A→B when A references a symbol defined in B, weighted by count), ranks files
 by ``networkx.pagerank`` (importance via reference topology, not size/mtime), and renders
@@ -36,7 +36,8 @@ DERIVED_DIR = _REPO_ROOT / ".memory" / "derived"
 OUTPUT_PATH = DERIVED_DIR / "repo-map.md"
 
 # Code-only source subtrees to map (D-06 — NOT .planning/). Confined + symlink-guarded per walk.
-DEFAULT_SOURCE_DIRS = ("libs/python", "libs/dotnet", "tools", "components")
+# Harness-core planes only; a downstream instance maps its own tree separately.
+DEFAULT_SOURCE_DIRS = ("libs/python", "tools")
 
 # --- stable text (part of the derived-plane contract) -----------------------------------------
 DERIVED_HEADER = "DERIVED — do not hand-edit (tools/memory_regen/repo_map.py)"

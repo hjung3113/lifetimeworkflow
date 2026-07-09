@@ -20,7 +20,7 @@ import pytest
 
 ROOT_AGENTS = "AGENTS.md"
 # After the 05-03 domain move (GEN-01), the .NET package (libs/dotnet, incl. its per-package
-# AGENTS.md) relocated under examples/log-parser/. The CORE per-package rules plane is now
+# AGENTS.md) relocated under the log-parser example instance. The CORE per-package rules plane is now
 # Python-only; the .NET per-package rules live with the example (05-05 recasts the root map).
 PER_PACKAGE_AGENTS = ["libs/python/AGENTS.md"]
 
@@ -40,7 +40,7 @@ def test_root_agents_carries_map_goldenpath_contractfirst_lazyload(repo_root: Pa
     text = _read(repo_root, ROOT_AGENTS)
     lower = text.lower()
     # Monorepo map: names the plane/layout members. After the 05-03 domain move (GEN-01),
-    # libs/dotnet relocated under examples/log-parser/, so it is no longer a required CORE
+    # libs/dotnet relocated under the log-parser example instance, so it is no longer a required CORE
     # root-map member (05-05 recasts the root map to the template shape).
     for member in ("contracts/", "golden/", "libs/python", "tools/", ".memory/"):
         assert member in text, f"root AGENTS.md monorepo map missing member: {member}"

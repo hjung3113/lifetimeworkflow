@@ -15,8 +15,9 @@
 - **Lint + format:** `ruff` (lint **and** format — replaces black/isort/flake8).
 - **Types:** `pyright` (LSP-native; not mypy here).
 - **Normalization core:** the §4.3–4.6 canonicalization Python impl lives here
-  (`libs/python/normalize`), cross-validated against `libs/dotnet` via the shared
-  `libs/normalize-fixtures` corpus. Keep it stdlib-only (decimal/codecs/datetime).
+  (`libs/python/normalize`), the harness's language-neutral core; it is cross-validated against
+  an instance's language-side twin via the shared `libs/normalize-fixtures` corpus. Keep it
+  stdlib-only (decimal/codecs/datetime).
 
 ## Non-negotiables (restated per-package — P11 backstop)
 
