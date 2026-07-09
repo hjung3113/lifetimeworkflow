@@ -370,7 +370,7 @@ See Patterns 1-3 above for the full, verified YAML. Additional per-leg toolchain
 | A4 | Adding `test_paths` to `project.toml` won't break the GEN-03 consistency gate | Open Question 1 | `test_language_config.py` asserts scopes/personas agree; a *new* additive field should be ignored, but the planner must run that suite after the schema bump. MEDIUM — verify. |
 | A5 | Default CODEOWNERS owner is `@hjung3113` | §Q5 | This is D-A's *recommended default* (repo owner, user email hjung3113@gmail.com). If a team handle is intended, user confirms at execution. Flagged execution-time. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **`project.toml` needs a per-language `test_paths` field for a truly config-derived matrix.**
    - What we know: `[[languages]]` today = `{id, bash_scope, test, format, sdk_bootstrap?, persona}` (project.toml:21-34). The `test` command is bare (`dotnet test`, `uv run pytest`); the example .NET tests live at `examples/log-parser/libs/dotnet/Normalize.Tests/` (no `.sln`), and example pytest at `examples/log-parser/tests` — neither is on the root `testpaths` (pyproject.toml:39 `testpaths = ["libs/python","tools"]`).
