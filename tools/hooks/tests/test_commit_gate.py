@@ -20,7 +20,21 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from tools.hooks import commit_gate
+
+
+@pytest.fixture(autouse=True)
+def _no_ambient_approval(monkeypatch) -> None:
+    """Strip any ambient ``GOLDEN_APPROVE_HUMAN`` so the drift-block tests are deterministic
+    regardless of the session env. A live ratification token (e.g. during an intentional
+    constitution change) would otherwise route a drift FAIL through the 05-01 warn+pass path
+    and give a false green. The approval-path tests set the token explicitly in their own body,
+    which runs after this autouse fixture, so they are unaffected.
+    """
+    monkeypatch.delenv("GOLDEN_APPROVE_HUMAN", raising=False)
+
 
 # --- helpers ------------------------------------------------------------------------------------
 
