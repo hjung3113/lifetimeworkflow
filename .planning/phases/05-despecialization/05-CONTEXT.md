@@ -27,10 +27,17 @@ Phase 1–4에서 구축한 **durable 코어를 그 도메인 인스턴스(반�
 <decisions>
 ## Implementation Decisions
 
-### D-01 — 도메인 이동 대상 & 목적지 (GEN-01)
-- 이동: `contracts/log-specs/`, `contracts/reference-data/`, `contracts/normalization/`, `contracts/state/` (즉 현재 contracts/ 도메인 스키마 전부), `libs/python/normalize/`, `libs/dotnet/Normalize/`, `libs/dotnet/Normalize.Tests/`, `libs/normalize-fixtures/`, `components/toy-converter/`, 그리고 이들을 참조하는 `golden/` 케이스 → `examples/log-parser/` 아래로 (원 트리 구조 보존: `examples/log-parser/contracts/...`, `examples/log-parser/libs/...`).
-- **재사용 툴(`tools/`)은 이동 안 함** — 코어. 단, 도메인 경로를 하드코딩한 부분(예: golden_runner의 케이스 루트, polyglot_lint의 fixture corpus 참조, contract_hash의 contracts/ 스캔 루트)은 **설정/인자화**해서 코어가 예시를 모르게.
-- `contracts/.hashes/manifest.json`은 재생성(재베이스라인). 이동 후 `contracts/`에는 generic 기본 인스턴스(D-02)만 남음 → manifest는 그것을 반영. 라이브 drift 게이트가 이동 후 clean.
+### D-01 — 도메인 이동 대상 & 목적지 (GEN-01)  *(AMENDED 2026-07-08 per 05-RESEARCH Q1 — normalize 엔진은 범용, 코어 유지)*
+- **이동(도메인)**: `contracts/log-specs/`, `contracts/reference-data/`, `contracts/state/`, `contracts/normalization/correction-rules*`(반도체 보정 카탈로그), `libs/dotnet/Normalize/`, `libs/dotnet/Normalize.Tests/`, `components/toy-converter/`, 그리고 이들을 참조하는 도메인 `golden/` 케이스 + `golden_runner`의 도메인 테스트 → `examples/log-parser/` 아래로 (원 트리 구조 보존).
+- **코어 유지(범용 — 옮기지 않음)**: `libs/python/normalize/`(§4.3-4.6 canonicalizer 엔진 — 반도체 어휘 0, 코어 `polyglot_lint`·`golden_runner`가 import → 옮기면 GEN-04 자기위반 + uv 워크스페이스 파손), `libs/normalize-fixtures/`(코어 corpus-parity 테스트가 참조). 이들은 어떤 polyglot 프로젝트든 필요한 경계 유틸이라 **코어의 일부**다. `contracts/normalization/format-conventions.schema.json`(P14 §4.3-4.6 범용 규약)은 general-leaning — 이동 여부는 planner가 RESEARCH 근거로 결정(기본: generic 기본 인스턴스의 계약으로 코어 잔류 후보).
+- **재사용 툴(`tools/`)은 이동 안 함** — 코어. 단, 도메인 루트를 하드코딩한 부분은 **설정/인자화**해서 코어가 예시를 모르게. (RESEARCH: 대부분 이미 parametrized — 정확 지점은 05-RESEARCH Q1 인벤토리.)
+- 예시→코어 의존은 허용(단방향): 예시의 .NET 테스트가 코어 `libs/normalize-fixtures/`를 참조하는 것은 OK. 코어→예시만 금지(D-04).
+- `contracts/.hashes/manifest.json`은 재생성(재베이스라인). 이동 후 `contracts/`에는 generic 기본 인스턴스(D-02)만 남음 → manifest 반영, 라이브 drift 게이트 clean.
+
+### D-01b — Open Questions 확정 (05-RESEARCH)
+- **Q1 정규화 코어**: **코어 유지**(위). 도메인 계약·.NET impl·toy-converter·도메인 golden만 이동.
+- **Q2 토큰 범위**: commit-gate 승인 우회는 **drift 컴포넌트 한정**. polyglot·secret·golden 컴포넌트는 토큰과 무관하게 hard 유지(안전 위반은 승인으로도 통과 불가). (D-05 참조.)
+- **Q3 generic 컨버터**: generic 기본 인스턴스(D-02)의 골든 케이스는 **언어무관(Python) identity/echo 컨버터**를 써서 **.NET 없이도 green** — 템플릿 clone 직후 즉시 도는 루프. (도메인 예시의 .NET toy-converter는 egress-deferred SKIP 유지.) RESEARCH가 지적한 3개 스냅샷/테스트(docs_sync·memory_regen·golden_runner)는 이동/재생성으로 그린 복구.
 
 ### D-02 — generic 기본 인스턴스 (GEN-02)
 - 루트 `contracts/`에 도메인 중립 최소 샘플: 예) `contracts/sample/greeting.schema.json`(단순 필드 스키마) + 동반 골든 케이스(`golden/sample/...`). 반도체 어휘 0.
