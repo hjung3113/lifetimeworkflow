@@ -3,5 +3,6 @@
   "contracts/normalization/correction-rules.schema.json": "a8f2e41c98c0df0a1c5a9ad380d770d9602ac58c954697f78347391c6bec00b0",
   "contracts/normalization/format-conventions.schema.json": "1af8935bf997faf80939db7228366c311c17f14729a0b9eee914799854d85ffc",
   "contracts/reference-data/equipment-master.schema.json": "982591df28b7b128484baf6938fb2401ac41605365288714e52058a74c69930b",
+  "contracts/sample/greeting.schema.json": "35f71ca2dbeb6b84e093fb4a8dbacde2628974d706aac416d98e595e6c3b55df",
   "contracts/state/equipment-progress.schema.json": "eb4098a8f33a6a3a98f82ea74c1fa2f1f2b0f76d1fdf8cb4037c2cc5d1cebd25"
 }

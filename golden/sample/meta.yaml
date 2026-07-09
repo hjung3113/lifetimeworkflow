@@ -1,0 +1,21 @@
+# sample golden case — generic default instance (GEN-02, 05-02).
+#
+# Domain-neutral PASS demo, run WITHOUT .NET. The built-in language-agnostic identity converter
+# copies input/seed.tsv verbatim; the shared §4.3-4.6 core (normalize_tsv, R8 ordinal row-sort)
+# makes that output equal to expected/baseline.verified.tsv, which is the SAME lines sorted.
+#
+# The ONLY representation difference this case exercises is ROW-ORDER. An identity converter does
+# no decimal/timezone canonicalization, so the diff is deliberately limited to what normalize_tsv
+# neutralizes (R8). A decimal-locale or timezone diff would NOT be neutralized here and would FAIL.
+# Both files are byte-clean (LF, no BOM): the seed is an ADDED file and is polyglot-linted (R1/R2).
+
+case_id: sample
+owner: template
+status: generic default instance
+converter: identity
+
+# The single representation difference this case exercises (what normalize must neutralize):
+allowed_representation_diffs:
+  - row_order   # seed rows unsorted; baseline = the same lines ordinal-sorted (R8)
+
+expected_result: PASS   # normalize_tsv makes identity-output == baseline → golden PASS

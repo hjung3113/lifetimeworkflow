@@ -19,7 +19,8 @@ import pytest
 
 from tools.docs_sync import generate as docs_sync
 
-# The five seed schemas map 1:1 to the five reference pages (DOCS-03).
+# The seed schemas map 1:1 to reference pages (DOCS-03). "greeting" is the domain-neutral
+# generic default instance (GEN-02, 05-02) — it renders a page like any other schema.
 EXPECTED_PAGES = frozenset(
     {
         "standard-log",
@@ -27,6 +28,7 @@ EXPECTED_PAGES = frozenset(
         "format-conventions",
         "equipment-master",
         "equipment-progress",
+        "greeting",
     }
 )
 
@@ -103,8 +105,8 @@ def test_every_page_starts_with_derived_marker(tmp_path: Path) -> None:
         assert "do not hand-edit" in first_line.lower()
 
 
-def test_five_seed_schemas_map_to_five_pages(tmp_path: Path) -> None:
-    """Exactly the five seed schemas produce exactly the five expected reference pages."""
+def test_seed_schemas_map_one_to_one_to_pages(tmp_path: Path) -> None:
+    """Every seed schema (incl. the generic greeting sample) maps 1:1 to a reference page."""
     written = docs_sync.write(out=tmp_path / "reference")
     names = {p.stem for p in written}
     assert names == EXPECTED_PAGES

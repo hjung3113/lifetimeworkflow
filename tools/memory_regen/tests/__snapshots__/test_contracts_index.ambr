@@ -3,7 +3,7 @@
   '''
   # DERIVED — do not hand-edit (tools/memory_regen/contracts_index.py)
   
-  Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reuses tools.contract_hash + tools.contract_drift). 5 contract(s).
+  Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reuses tools.contract_hash + tools.contract_drift). 6 contract(s).
   
   | contract | kind | owner | hash | drift |
   | --- | --- | --- | --- | --- |
@@ -11,6 +11,7 @@
   | contracts/normalization/correction-rules.schema.json | normalization | TBD | a8f2e41c98c0 | clean |
   | contracts/normalization/format-conventions.schema.json | normalization | TBD | 1af8935bf997 | clean |
   | contracts/reference-data/equipment-master.schema.json | reference-data | TBD | 982591df28b7 | clean |
+  | contracts/sample/greeting.schema.json | other | TBD | 35f71ca2dbeb | clean |
   | contracts/state/equipment-progress.schema.json | state | TBD | eb4098a8f33a | clean |
   
   '''
