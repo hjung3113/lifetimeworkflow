@@ -4,12 +4,12 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 05-03-PLAN.md (GEN-01 domain move to examples/log-parser/)
-last_updated: "2026-07-09T05:36:25.875Z"
-last_activity: 2026-07-09
+last_updated: "2026-07-09T11:35:34.791Z"
+last_activity: 2026-07-09 -- Phase 06 planning complete
 progress:
   total_phases: 7
   completed_phases: 5
-  total_plans: 29
+  total_plans: 32
   completed_plans: 29
   percent: 71
 ---
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 
 Phase: 4 COMPLETE. **Re-scoped (ADR-0002):** project redefined from log-parser-specific harness → general contract-first polyglot agent-harness template; log-parser domain to be demoted to `examples/log-parser/`. New Phase 5 (GEN) inserted; old CI→6, Emitter→7 (re-scoped generic).
 Plan: 05-01 COMPLETE (D-05 commit-gate drift approval path); 05-04 COMPLETE (GEN-03 harness/project.toml language SSOT + consistency gate); 05-02 COMPLETE (GEN-02 generic default instance — greeting sample contract + identity golden case, no .NET); 05-03 COMPLETE (GEN-01 domain move — semiconductor seed + libs/dotnet relocated under examples/log-parser/ via history-preserving git mv; root manifest rebaselined to generics, drift clean; snapshots regenerated; committed through the live gate); 05-05 COMPLETE (GEN-04 core→example no-dependency guard + template docs recast + ADR-0002, landed through the live gate via GOLDEN_APPROVE_HUMAN; full non-example suite 366 passed). **Phase 5 COMPLETE.**
-Status: Phase 5 COMPLETE (05-01..05 all landed). **Phase 5.5 IN PROGRESS:** 055-01 COMPLETE (GEN-05 wave 1 — history-preserving git mv of skills normalization-catalog/pipeline-patterns/dotnet-conventions + persona dotnet-engineer to examples/log-parser/; harness_lint anti-sprawl pins reduced to 4 core skills + 4 core personas; strangler-step agent repointed to orchestrator; project.toml dotnet.persona repointed to the moved examples/ path; all 4 R100 renames). 055-02 COMPLETE (GEN-05 wave 2 — genericized the surviving core authored surface data-contracts/new-normalization-rule/orchestrator/explorer/normalize-spec with methodology+order+drift-gate prose byte-identical; swept every core tools/ comment+fixture guard token incl. two extra harness_lint test comments; test_classify fixture renamed equipment_id→record_id/equip_id→rec_id, classification unchanged; instance AGENTS.md+README now record the moved skills+persona). Core guard-token grep over tools/harness/libs now returns ONLY the sanctioned project.toml persona= line. 055-03 COMPLETE (GEN-05 wave 3 — extended the GEN-04 guard to a narrow prose tier `_PROSE_TOKENS` [dotnet-engineer/dotnet-conventions/normalization-catalog/pipeline-patterns/libs/dotnet/equipment/standard-log/correction-rules/wafer/설비], generalized `_is_instance_root_line`→`_is_instance_pointer_line` via shared regex `\s*(root|persona)\s*=` to exempt the sanctioned project.toml persona= pointer, added a parametrized per-token negative control [wafer/설비 = 0-occurrence live anchors] + a positive persona-pointer exemption test; deliberately excluded bare dotnet/.NET/parser/converter/normalize/log-parser to avoid over-reach). **Transient RED CLOSED:** test_core_no_example_dep::test_core_has_no_example_dependency now passes on the real post-move+post-sweep tree; the full non-example suite is **361 passed / 0 failed**. **Phase 5.5 COMPLETE.** BOOT-01 .NET egress-denied still stands.
-Last activity: 2026-07-09
+Status: Ready to execute
+Last activity: 2026-07-09 -- Phase 06 planning complete
 
 Progress: [██████████] 100%
 
