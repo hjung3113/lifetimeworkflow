@@ -1,8 +1,8 @@
 ---
 phase: 6
 slug: ci-gates
-status: draft
-nyquist_compliant: false
+status: ready
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-07-09
 ---
@@ -73,11 +73,13 @@ created: 2026-07-09
 
 ## Validation Sign-Off
 
-- [ ] All tasks have automated verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 30s (local legs)
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies (10/10 tasks carry an `<automated>` command)
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (test_matrix_emit, test_cli_flags, extended test_language_config, workflow self-validation)
+- [x] No watch-mode flags (all invocations use `-x`/`-q`; none use `--watch`)
+- [x] Feedback latency < 30s (local .NET-free legs)
+- [x] `nyquist_compliant: true` set in frontmatter
+- [x] Phase-wide invariant encoded: `uv run pytest` (non-example) green after every plan; bare `contract_drift.drift` stays clean (enablers keep default behavior byte-identical)
+- [x] Security controls are "do not weaken": least-privilege `permissions: contents: read`, pinned+VERIFIED actions, no `github.event.*` in `run:` shells; GEN-04 guard stays live via a negative control (06-01)
 
-**Approval:** pending
+**Approval:** pending plan-check. `wave_0_complete` flips true at execution once the Wave 0 scaffolds (matrix-shape test, drift/hash CLI-flag test, extended consistency gate, workflow self-validation surface) exist.
