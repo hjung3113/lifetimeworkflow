@@ -4,7 +4,11 @@ Composes THREE built-once assets over the staged tree — it re-implements none 
 re-hashing, no byte-diff, no re-rolled §4.3-4.6 rules):
 
   1. **contract-drift** — :func:`tools.contract_drift.drift.run_gate` (live JCS manifest vs the
-     committed baseline). Blocks on any drift. ALWAYS runs.
+     committed baseline). Blocks on any drift, UNLESS a human-set ``GOLDEN_APPROVE_HUMAN`` token is
+     present — then the drift is a logged WARN+PASS ("machines gate, humans ratify", D-05), the
+     verbatim :mod:`tools.hooks.contract_guard` precedent. The bypass is DRIFT-ONLY: polyglot and
+     golden stay HARD (an approval token can never weaken §4.3-4.6 hygiene or golden equivalence).
+     ALWAYS runs.
   2. **polyglot §4.3-4.6** — :func:`tools.polyglot_lint.lint.lint_file` over every staged ``*.tsv``
      (the A-model wire boundary). Blocks on any violation. ALWAYS runs.
   3. **golden-parity** — the :mod:`tools.golden_runner.runner` loop, GATED on .NET availability via
@@ -41,6 +45,17 @@ from tools.polyglot_lint.lint import lint_file
 
 # commit_gate -> hooks -> tools -> repo root (parents[2]). Overridable in tests.
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# Human ratification token; a NON-EMPTY value == human-authorized change. Verbatim mirror of the
+# contract_guard precedent (contract_guard.py:46,91) — agents must never fabricate it. Scoped to
+# the drift component ONLY (D-05): it turns a contract-drift FAIL into a WARN+PASS and never
+# weakens polyglot (§4.3-4.6) or golden (equivalence). Empty/blank does NOT authorize.
+APPROVAL_ENV = "GOLDEN_APPROVE_HUMAN"
+
+
+def _human_approved() -> bool:
+    """True iff a non-empty, non-blank ``GOLDEN_APPROVE_HUMAN`` is set (mirrors contract_guard:91)."""
+    return bool((os.environ.get(APPROVAL_ENV) or "").strip())
 
 
 @dataclass(frozen=True)
@@ -135,11 +150,22 @@ def is_git_subcommand(command: str, subcommand: str) -> bool:
 
 
 def check_drift() -> GateResult:
-    """contract-drift component — reuse ``run_gate`` (D-02). Blocks on any drift."""
+    """contract-drift component — reuse ``run_gate`` (D-02). Blocks on any drift.
+
+    D-05: when drift is present AND a human ``GOLDEN_APPROVE_HUMAN`` token is set, the FAIL becomes
+    a logged WARN+PASS (ratified intentional change) — the verbatim contract_guard precedent. An
+    absent/empty/blank token still BLOCKS. The bypass is confined here; polyglot/golden stay hard.
+    """
     result = run_gate()
     if result["ok"]:
         return GateResult("contract-drift", "PASS", "live manifest matches the committed baseline")
     listed = ", ".join(f"{rel} ({kind}/{cls})" for rel, kind, cls in result["drifted"])
+    if _human_approved():
+        return GateResult(
+            "contract-drift",
+            "PASS",
+            f"WARN (ratified) — GOLDEN_APPROVE_HUMAN set, drift accepted: {listed}",
+        )
     return GateResult("contract-drift", "FAIL", f"unapproved schema change(s): {listed}")
 
 
