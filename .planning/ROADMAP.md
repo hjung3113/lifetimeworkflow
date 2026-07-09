@@ -19,7 +19,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Two-Plane Memory + Rules** - Constitution-vs-derived memory split, auto-regenerated derived artifacts, nearest-wins AGENTS.md, and non-ignorable session-start context injection. (completed 2026-07-08)
 - [x] **Phase 3: Agents + Commands + Skills** - The full authored harness surface — personas, commands, skills — in canonical source, with migration commands gated behind the trusted golden net. (completed 2026-07-08)
 - [x] **Phase 4: Plugins + Hooks** - Runtime enforcement of everything authored in Phases 1-3: contract-guard, polyglot linter, format-on-write, secret protection, commit gate. (completed 2026-07-08)
-- [ ] **Phase 5: De-specialization & Template Extraction** *(INSERTED — ADR-0002 re-scope)* - Demote the log-parser domain seed to `examples/log-parser/` (ADR + hash re-baseline), turn hardwired .NET+Python into a project-config slot, add a minimal generic default instance, and prove the core is example-free (core→example no-dependency).
+- [ ] **Phase 5: De-specialization & Template Extraction** *(INSERTED — ADR-0002 re-scope)* - Demote the log-parser domain seed to `examples/log-parser/` (ADR + hash re-baseline), turn hardwired .NET+Python into a project-config slot, add a minimal generic default instance, and prove the core is example-free (core→example CODE no-dependency, SCOPE A: data plane).
+- [ ] **Phase 5.5: Authored-Surface Genericization** *(INSERTED — GEN-05, data-plane follow-up)* - Demote domain skills (`normalization-catalog`, `new-normalization-rule`, `pipeline-patterns`) to the example, derive per-language personas from the `harness/project.toml` slot, sweep residual `libs/dotnet`-style domain prose in core, and extend the GEN-04 guard to prose. (Deferred out of Phase 5 to keep the data-plane move a coherent increment.)
 - [ ] **Phase 6: CI + Gates (generic)** - Non-bypassable CI mirror of the in-session gates plus the human ratification path (CODEOWNERS, PR template), driven by a **config-derived** language matrix rather than hardcoded `dotnet test`/`pytest` jobs; the example instance supplies its own .NET+Python matrix.
 - [ ] **Phase 7: Single-Source Dual-Runtime Emitter** - One authored source compiles into both opencode (primary) + Claude Code (secondary) artifacts, with per-runtime limit validators that fail loud.
 
@@ -213,5 +214,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 3. Agents + Commands + Skills | 7/7 | Complete   | 2026-07-08 |
 | 4. Plugins + Hooks | 6/6 | Complete   | 2026-07-08 |
 | 5. De-specialization & Template Extraction | 0/5 | Planned | - |
+| 5.5. Authored-Surface Genericization (INSERTED) | 0/TBD | Not started | - |
 | 6. CI + Gates (generic) | 0/TBD | Not started | - |
 | 7. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |

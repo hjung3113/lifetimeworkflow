@@ -98,6 +98,7 @@ Phase 1–4에서 구축한 **durable 코어를 그 도메인 인스턴스(반�
 
 <deferred>
 ## Deferred Ideas
+- **저작 표면 범용화 → Phase 5.5 (GEN-05)** [SCOPE A 결정, 사용자 승인]: 도메인 스킬(normalization-catalog·new-normalization-rule·pipeline-patterns)·언어 특화 페르소나(dotnet/python-engineer)·prose의 잔여 `libs/dotnet` 참조는 Phase 5(데이터 평면)에서 다루지 않음. Phase 5의 GEN-04 가드는 코어 **코드** 의존(`import examples`/`examples/`·moved `components/toy-converter`)만 강제하고 prose는 안 건드림. 데이터-평면 이동을 일관된 증분으로 유지하기 위한 분리.
 - 설정형 CI 매트릭스 → Phase 6.
 - 추가 도메인 예시 → 후속.
 - opencode 런타임 실동작 → opencode 설치 후.

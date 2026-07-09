@@ -86,7 +86,8 @@
 - [ ] **GEN-01**: 로그파서 도메인 시드(`contracts/{log-specs,reference-data,normalization,state}`, `libs/{python/normalize,dotnet/Normalize,normalize-fixtures}`, `components/toy-converter`, 관련 `golden/`)를 `examples/log-parser/`로 이동 — 신규 ADR + contract-hash manifest 재베이스라인 동반, 이동 후 라이브 contract-drift 게이트가 clean
 - [ ] **GEN-02**: 도메인 중립 최소 기본 인스턴스(제네릭 샘플 계약 + 골든 픽스처)를 루트에 제공 — 반도체 콘텐츠 없이 contract→hash→drift→golden 전체 루프가 돎을 증명
 - [ ] **GEN-03**: 참여 언어·툴체인을 단일 프로젝트 설정 슬롯(예: `harness/project.toml`)에서 읽기 — 권한 매트릭스 `dotnet */uv */pytest *` 스코프·엔지니어 페르소나·`/build`·`/test`·`/lint` 본문이 설정에서 파생(하드코딩 아님). 로그파서 예시가 .NET 10 + Python(uv) 값 공급
-- [ ] **GEN-04**: 코어→예시 단방향 의존 가드 테스트 — `tools/`·`harness/`·`libs/`(코어)가 `examples/**`를 import·경로참조 안 함, 추출 후 비-예시 테스트 스위트 그린 유지 + 루트 문서(`CLAUDE.md`·루트 `AGENTS.md`·`docs/`)는 템플릿+인스턴스 추가법 기술, 로그파서 특화는 예시 자체 `AGENTS.md`/README로 이동
+- [ ] **GEN-04**: 코어→예시 단방향 의존 가드 테스트 — `tools/`·`harness/`·`libs/`(코어)가 `examples/**`를 import·경로참조 안 함(SCOPE A: 코드 의존만 강제), 추출 후 비-예시 테스트 스위트 그린 유지 + 루트 문서(`CLAUDE.md`·루트 `AGENTS.md`·`docs/`)는 템플릿+인스턴스 추가법 기술, 로그파서 특화는 예시 자체 `AGENTS.md`/README로 이동
+- [ ] **GEN-05** (Phase 5.5, INSERTED — 저작 표면 범용화, 데이터-평면 de-spec 후속): 도메인 특화 **저작 표면**을 범용화 — 도메인 스킬(`normalization-catalog`·`new-normalization-rule`·`pipeline-patterns`)을 `examples/log-parser/`(또는 예시별 스킬)로 강등, 언어 특화 페르소나(`dotnet-engineer`·`python-engineer`·`dotnet-conventions`)를 `harness/project.toml` 언어 슬롯에서 파생, prose의 `libs/dotnet` 등 잔여 도메인 참조 정리. 어느 스킬이 범용(golden-testing·data-contracts·skill-creator) vs 도메인인지 결정 포함. GEN-04 가드를 prose까지 확장.
 
 ### CI — 지속적 통합 & 게이트 (Phase 6, generic)
 
@@ -171,17 +172,18 @@
 | GEN-02 | Phase 5 | Pending |
 | GEN-03 | Phase 5 | Pending |
 | GEN-04 | Phase 5 | Pending |
+| GEN-05 | Phase 5.5 | Pending |
 | CI-01 | Phase 6 | Pending |
 | CI-02 | Phase 6 | Pending |
 | EMIT-01 | Phase 7 | Pending |
 | EMIT-02 | Phase 7 | Pending |
 
 **Coverage:**
-- v1 requirements: 47 total (43 원본 + GEN-01..04 신규, ADR-0002 re-scope)
-- Mapped to phases: 47 ✓
+- v1 requirements: 48 total (43 원본 + GEN-01..05 신규, ADR-0002 re-scope; GEN-05 = 저작 표면 후속)
+- Mapped to phases: 48 ✓
 - Unmapped: 0 ✓
 
-**Phase distribution:** P1=9, P2=6, P3=19, P4=5, P5=4(GEN), P6=2(CI), P7=2(EMIT)
+**Phase distribution:** P1=9, P2=6, P3=19, P4=5, P5=4(GEN-01..04), P5.5=1(GEN-05), P6=2(CI), P7=2(EMIT)
 
 **Note on POLY-01 / CONTRACT-02:** POLY-01(전체 린터)은 Phase 4에 단일 매핑. 그 정규화 코어는 CONTRACT-02(Phase 1)로 별도 REQ이며 Phase 1에서 한 번 만들어 골든러너·린터가 공유 — 중복 매핑 아님.
 
