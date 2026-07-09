@@ -3,7 +3,7 @@
 Proves success criterion 2 structurally without a runtime: each authored persona carries a
 valid, least-privilege frontmatter and the read-only-reviewer invariant (T-03-09, P-perm) holds
 in BOTH runtime representations — the opencode ``permission`` block AND the Claude ``tools``
-allowlist. The set of personas is pinned to exactly the five enumerated ones (no sprawl, P1/P8).
+allowlist. The set of personas is pinned to exactly the four enumerated core ones (no sprawl, P1/P8).
 
 Parsing is delegated to the shared ``parse_frontmatter`` (Plan 02) — no per-test fence slicing.
 """
@@ -48,10 +48,9 @@ ALLOWED_PERMISSION_KEYS = VALID_PERMISSION_KEYS | WRITE_AFFORDANCE_ALIAS
 
 VALID_MODES = frozenset({"primary", "subagent", "all"})
 
-# Exactly the five enumerated personas (AGENT-01..05) — no more, no less.
-EXPECTED_PERSONAS = frozenset(
-    {"orchestrator", "dotnet-engineer", "python-engineer", "code-reviewer", "explorer"}
-)
+# Exactly the four enumerated CORE personas — the instance-language persona dotnet-engineer
+# moved to examples/log-parser/agents/ (Phase 5.5). No more, no less.
+EXPECTED_PERSONAS = frozenset({"orchestrator", "python-engineer", "code-reviewer", "explorer"})
 
 # Personas that MUST be read-only in both representations (AGENT-04 reviewer, AGENT-05 explorer).
 READ_ONLY_PERSONAS = frozenset({"code-reviewer", "explorer"})
@@ -93,7 +92,7 @@ def is_read_only(fm: dict) -> bool:
 
 
 def test_expected_personas_present_no_sprawl() -> None:
-    """Exactly the five enumerated personas exist — no missing, no extra (P1/P8)."""
+    """Exactly the four enumerated core personas exist — no missing, no extra (P1/P8)."""
     names = {_load(p).get("name") for p in _agent_files()}
     assert names == set(EXPECTED_PERSONAS), (
         f"persona set drift: got {sorted(str(n) for n in names)}, "

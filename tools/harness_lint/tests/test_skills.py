@@ -2,7 +2,7 @@
 
 Proves success criterion 5 structurally, without a runtime: every authored skill stays within the
 shared runtime caps so no loader silently truncates or rejects it (T-03-17), the set is exactly the
-seven enumerated skills with disjoint routing descriptions (anti-sprawl, T-03-18), and no reserved
+four enumerated core skills with disjoint routing descriptions (anti-sprawl, T-03-18), and no reserved
 vendor word or angle-bracket tag leaks into a name/description (T-03-19).
 
 The caps are IDENTICAL for opencode and Claude (RESEARCH §"Skill Format + Caps" — the 200-vs-1024
@@ -43,17 +43,15 @@ _RESERVED_WORDS = ("anthropic", "claude")
 # Angle-bracket XML tags are forbidden in name/description (T-03-19).
 _XML_CHARS = ("<", ">")
 
-# Exactly the seven enumerated skills (D-07) — core + meta + domain.
-# No more, no fewer (anti-sprawl).
+# Exactly the four enumerated CORE skills (D-07) — the domain skills
+# (normalization-catalog, pipeline-patterns) and the instance-language skill (dotnet-conventions)
+# moved to examples/log-parser/skills/ (Phase 5.5). No more, no fewer (anti-sprawl).
 EXPECTED_SKILLS = frozenset(
     {
-        "dotnet-conventions",
         "python-conventions",
         "golden-testing",
         "data-contracts",
         "skill-creator",
-        "normalization-catalog",
-        "pipeline-patterns",
     }
 )
 
@@ -67,7 +65,7 @@ def _load(path: Path) -> tuple[dict, str]:
 
 
 def test_expected_skills_present_no_sprawl() -> None:
-    """Exactly the seven enumerated skill directories exist — no missing, no extra (T-03-18)."""
+    """Exactly the four enumerated core skill directories exist — no missing, no extra (T-03-18)."""
     names = {p.parent.name for p in _skill_files()}
     assert names == set(EXPECTED_SKILLS), (
         f"skill set drift: got {sorted(names)}, expected {sorted(EXPECTED_SKILLS)}"
