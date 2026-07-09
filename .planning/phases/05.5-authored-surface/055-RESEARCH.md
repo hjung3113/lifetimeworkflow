@@ -254,7 +254,7 @@ N/A — self-contained repo refactor; no evolving external ecosystem. The releva
 | A3 | `equipment_id` fixtures in `test_classify.py` are freely renamable to a neutral field without breaking drift-classification logic. | Code Examples | Low — they are arbitrary JSON-schema property names in classification fixtures `[VERIFIED:tools/contract_drift/tests/test_classify.py:23-65]`; the test asserts add/remove/rename *classification*, not the specific name. |
 | A4 | `examples/log-parser/{skills,agents}/` are the right sub-locations (vs a `harness-overlay/`). | Pattern 1 | Low — mirrors the instance's existing `contracts/`,`libs/`,`components/`,`tests/` layout `[VERIFIED:examples/log-parser/ listing]`; no consumer constrains it. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Moved skills/agents lose structural validation.** After the move, `harness_lint`'s caps/frontmatter tests (glob over `harness/skills`,`harness/agents`) no longer cover the 4 moved assets, and the example has no equivalent validator.
    - What we know: `harness_lint` globs core dirs only; the example's `tests/` are golden-runner cases, not frontmatter lints.
