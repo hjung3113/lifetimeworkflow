@@ -25,6 +25,9 @@ test = "dotnet test"
 format = "dotnet format"
 sdk_bootstrap = "tools/bootstrap/install.sh" # env has no .NET; bootstrap installs channel 10.0
 persona = "examples/log-parser/agents/dotnet-engineer.md"
+# CI test target(s) for the Phase-6 matrix: the example has 3 .csproj + NO .sln, so a bare
+# `dotnet test` has no project to resolve and fails — name the test project explicitly.
+test_paths = ["examples/log-parser/libs/dotnet/Normalize.Tests/Normalize.Tests.csproj"]
 
 [[languages]]
 id = "python"
@@ -32,3 +35,6 @@ bash_scope = "uv *"                          # matches permission-matrix.json ba
 test = "uv run pytest"
 format = "ruff format"
 persona = "harness/agents/python-engineer.md"
+# CI test target(s) for the Phase-6 matrix: the example's pytest suite lives OFF the root
+# `testpaths`, so the matrix must point at the example tests dir explicitly.
+test_paths = ["examples/log-parser/tests"]

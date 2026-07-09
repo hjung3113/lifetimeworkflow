@@ -40,7 +40,11 @@ def load_project(path: str | Path = _DEFAULT_PROJECT) -> dict:
 
 
 def languages(cfg: dict | None = None) -> list[dict]:
-    """Return the configured ``[[languages]]`` tables (loads the default config if omitted)."""
+    """Return the configured ``[[languages]]`` tables (loads the default config if omitted).
+
+    Raw passthrough: legs MAY carry an optional ``test_paths`` list (consumed by the Phase-6 CI
+    matrix via ``l.get("test_paths", [])``); it flows through unchanged with no signature change.
+    """
     if cfg is None:
         cfg = load_project()
     return list(cfg.get("languages", []))
