@@ -214,6 +214,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 3. Agents + Commands + Skills | 7/7 | Complete   | 2026-07-08 |
 | 4. Plugins + Hooks | 6/6 | Complete   | 2026-07-08 |
 | 5. De-specialization & Template Extraction | 5/5 | Complete   | 2026-07-09 |
-| 5.5. Authored-Surface Genericization (INSERTED) | 0/TBD | Not started | - |
+| 5.5. Authored-Surface Genericization (INSERTED) | 1/3 | In progress | - |
 | 6. CI + Gates (generic) | 0/TBD | Not started | - |
 | 7. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |

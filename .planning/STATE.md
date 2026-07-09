@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 05-03-PLAN.md (GEN-01 domain move to examples/log-parser/)
-last_updated: "2026-07-09T04:27:20.564Z"
+status: in_progress
+stopped_at: Completed 055-01-PLAN.md (Phase 5.5 authored-surface move — 3 skills + dotnet-engineer persona to examples/log-parser/)
+last_updated: "2026-07-09T05:23:28.106Z"
 last_activity: 2026-07-09
 progress:
-  total_phases: 7
+  total_phases: 8
   completed_phases: 5
-  total_plans: 29
-  completed_plans: 29
+  total_plans: 32
+  completed_plans: 30
   percent: 71
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** ADR-0002 re-scope → general reusable template. Next: Phase 5 (De-specialization & Template Extraction, GEN-01..04).
+**Current focus:** Phase 5.5 (Authored-Surface Genericization, GEN-05) — the domain/instance-language authored surface move landed (055-01); next the prose sweep (055-02) and the GEN-04 guard prose+pointer extension (055-03).
 
 ## Current Position
 
 Phase: 4 COMPLETE. **Re-scoped (ADR-0002):** project redefined from log-parser-specific harness → general contract-first polyglot agent-harness template; log-parser domain to be demoted to `examples/log-parser/`. New Phase 5 (GEN) inserted; old CI→6, Emitter→7 (re-scoped generic).
 Plan: 05-01 COMPLETE (D-05 commit-gate drift approval path); 05-04 COMPLETE (GEN-03 harness/project.toml language SSOT + consistency gate); 05-02 COMPLETE (GEN-02 generic default instance — greeting sample contract + identity golden case, no .NET); 05-03 COMPLETE (GEN-01 domain move — semiconductor seed + libs/dotnet relocated under examples/log-parser/ via history-preserving git mv; root manifest rebaselined to generics, drift clean; snapshots regenerated; committed through the live gate); 05-05 COMPLETE (GEN-04 core→example no-dependency guard + template docs recast + ADR-0002, landed through the live gate via GOLDEN_APPROVE_HUMAN; full non-example suite 366 passed). **Phase 5 COMPLETE.**
-Status: Phase 5 COMPLETE (05-01..05 all landed). GEN-04 guard (tools/harness_lint/tests/test_core_no_example_dep.py) enforces the one-directional core→instance dependency on every run; root docs describe the reusable template + how to add an instance; log-parser specifics live under examples/log-parser/; ADR-0002 (accepted, complements ADR-0001) records the de-specialization. Deferred to GEN-05 (Phase 5.5): authored-surface genericization of bare libs/dotnet prose (personas/skills/commands/spec). BOOT-01 .NET egress-denied still stands (example .NET side proven via recorded-output twin).
+Status: Phase 5 COMPLETE (05-01..05 all landed). **Phase 5.5 IN PROGRESS:** 055-01 COMPLETE (GEN-05 wave 1 — history-preserving git mv of skills normalization-catalog/pipeline-patterns/dotnet-conventions + persona dotnet-engineer to examples/log-parser/; harness_lint anti-sprawl pins reduced to 4 core skills + 4 core personas; strangler-step agent repointed to orchestrator; project.toml dotnet.persona repointed to the moved examples/ path; all 4 R100 renames). **Known transient RED:** test_core_no_example_dep::test_core_has_no_example_dependency is intentionally left failing (1 test) — the project.toml persona pointer needs the guard's pointer-line exemption, which RESEARCH assigns to 055-03; the "Do NOT touch the guard" instruction was honored, so the full non-example suite is 349 passed / 1 failed until 055-03 lands. BOOT-01 .NET egress-denied still stands.
 Last activity: 2026-07-09
 
-Progress: [██████████] 100%
+Progress: [█████████░] 94%
 
 ## Performance Metrics
 
@@ -151,6 +151,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-09T04:26:15.271Z
+Last session: 2026-07-09T05:23:28.082Z
 Stopped at: Completed 05-03-PLAN.md (GEN-01 domain move to examples/log-parser/)
 Resume file: None
