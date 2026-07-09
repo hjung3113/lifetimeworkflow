@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
+status: Phase 5 planned (05-01..05). 05-01 landed core-only (tools/hooks/ only, no contract change) — commit-gate drift now honors GOLDEN_APPROVE_HUMAN (warn+pass) while polyglot/golden stay hard, opening the sanctioned landing path for the 05-02/03/05 domain-move commits. Actual domain move still touches live drift/contract-guard gates — needs deliberate ADR + hash re-baseline.
 stopped_at: Phase 4 context gathered
-last_updated: "2026-07-09T03:48:17.242Z"
+last_updated: "2026-07-09T03:50:45.514Z"
 last_activity: 2026-07-08
 progress:
   total_phases: 7
   completed_phases: 4
   total_plans: 29
-  completed_plans: 25
+  completed_plans: 26
   percent: 57
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 4 COMPLETE. **Re-scoped (ADR-0002):** project redefined from log-parser-specific harness → general contract-first polyglot agent-harness template; log-parser domain to be demoted to `examples/log-parser/`. New Phase 5 (GEN) inserted; old CI→6, Emitter→7 (re-scoped generic).
-Plan: 05-01 COMPLETE (D-05 commit-gate drift approval path). Next: 05-02 (domain move).
+Plan: 05-01 COMPLETE (D-05 commit-gate drift approval path); 05-04 COMPLETE (GEN-03 harness/project.toml language SSOT + consistency gate). Next: 05-02 (domain move).
 Status: Phase 5 planned (05-01..05). 05-01 landed core-only (tools/hooks/ only, no contract change) — commit-gate drift now honors GOLDEN_APPROVE_HUMAN (warn+pass) while polyglot/golden stay hard, opening the sanctioned landing path for the 05-02/03/05 domain-move commits. Actual domain move still touches live drift/contract-guard gates — needs deliberate ADR + hash re-baseline.
 Last activity: 2026-07-08
 
-Progress: [█████████░] 86%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
@@ -76,6 +76,7 @@ Progress: [█████████░] 86%
 | Phase 04 P05 | 5min | 2 tasks | 4 files |
 | Phase 04 P06 | 5min | 3 tasks | 8 files |
 | Phase 05 P01 | 2min | 2 tasks | 2 files |
+| Phase 05 P04 | 12min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -117,6 +118,7 @@ Recent decisions affecting current work:
 - [Phase ?]: 04-06: appended Phase-4 gate slots to .claude/settings.json (append-only, never rewrote GSD objects); coexist test guards all 11 GSD guards + the four new gates (7 PreToolUse / 4 PostToolUse)
 - [Phase ?]: 04-06: opencode plugin stubs authored-only, not registered in opencode.json — execution deferred (D-01); hook names A1 MEDIUM, re-verify at opencode wiring
 - [Phase 05]: [05-01] D-05 commit-gate drift approval path — check_drift honors a non-empty GOLDEN_APPROVE_HUMAN token (drift FAIL -> logged WARN+PASS, verbatim contract_guard:91 mirror); DRIFT-ONLY (polyglot §4.3-4.6 + golden stay hard, proven by test_approval_does_not_bypass_polyglot); empty/blank never authorizes. Core-only commit lands clean with no token — opens the sanctioned landing path for the 05-02/03/05 domain-move commits.
+- [Phase 05]: [05-04] GEN-03 language/toolchain SSOT — harness/project.toml is a data-only slot ([instance] root + [[languages]] dotnet/python: bash_scope/test/format/persona/sdk_bootstrap) carrying the log-parser EXAMPLE INSTANCE's values (not a core hardcode). tools/harness_config is a new tools/* uv member (package=false, PEP 562 lazy re-export) parsing it with stdlib tomllib; language_bash_scopes() folds the implicit `pytest *`. "Derived-not-hardcoded" satisfied by a CONSISTENCY TEST (D-03 "codegen is overkill"), not codegen: test_language_config asserts permission-matrix allow-scopes == config-derived set + each persona file exists — divergence FAILS (config = SSOT). Existing hardcoded values kept & proven consistent, not ripped out. Zero external deps (uv.lock registers in-repo member only). Precondition for Phase-6 config-derived CI matrix.
 
 ### Pending Todos
 
@@ -143,6 +145,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-09T03:48:17.217Z
-Stopped at: Phase 4 context gathered
+Last session: 2026-07-09T03:57:00.000Z
+Stopped at: Completed 05-04-PLAN.md (GEN-03 language config slot)
 Resume file: None
