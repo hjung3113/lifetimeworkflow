@@ -5,8 +5,8 @@ every authored command carries valid frontmatter, a routing-trigger description 
 label), a well-formed non-empty ``agent`` field, and a boolean ``subtask`` when present.
 
 This validator is **glob-driven**: it discovers every ``harness/commands/*.md`` so the migration
-commands added later (Plans 06/07: /new-normalization-rule, /strangler-step, /docs-sync) are
-covered by the SAME test with no edits here — avoiding a cross-wave file overlap.
+commands added later (e.g. /new-contract-rule, /strangler-step, /docs-sync, and the Phase 5.7
+lifecycle commands) are covered by the SAME test with no edits here — avoiding a cross-wave overlap.
 
 STRUCTURAL ONLY: this test does NOT check whether the referenced agent FILE exists under
 ``harness/agents/``. The personas are authored by Plan 03 in the SAME wave 2, so a file-existence

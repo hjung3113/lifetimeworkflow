@@ -1,0 +1,56 @@
+---
+name: two-plane-memory
+description: >-
+  Use when you need to know whether a file is human-owned truth or auto-regenerated, whether to
+  commit or ignore it, and whether it may be hand-edited — maps the constitution vs derived planes
+  and the committed-state vs gitignored-derived split. Consult before editing anything under .memory/.
+---
+
+# two-plane-memory
+
+The repo's memory is split into two planes with opposite rules. Getting the plane wrong is how an
+agent corrupts truth (hand-editing a derived file) or loses work (editing a regenerated file). This
+skill is the map: which plane a file is in, and what that permits.
+
+## Plane 1 — Constitution (human-owned, gated, the source of truth)
+
+- **What:** `contracts/**`, `docs/adr/**`, `golden/**`, plus the language-neutral spec
+  `libs/normalize-spec.md`.
+- **Rule:** human-owned / CODEOWNERS-gated. Agents do **not** write it. Code that disagrees with a
+  contract is the code that is wrong. ADRs are append-only (supersede, never edit).
+- **Committed?** Yes — it *is* the versioned truth.
+- **Changed how?** Only through the gated path: schema-drift + a paired golden update + an ADR, with
+  human ratification (see the `gate-model` skill). Never a silent tweak.
+
+## Plane 2 — Derived / volatile (machine-owned, regenerated)
+
+This plane has two sub-tiers with **different git treatment**:
+
+- **`.memory/state/`** — *committed* volatile state (`activeContext.md`, `progress.md`). It survives
+  the ephemeral container because it is committed (via `/checkpoint`). It is **provisional**:
+  contracts/ and docs/adr/ always override it on conflict. Decisions do NOT live here — they belong
+  in append-only ADRs.
+- **`.memory/derived/`** — *gitignored*, auto-regenerated (`repo-map.md`, `contracts-index.md`).
+  Also `docs/reference/`. **Never hand-edit these.** `tools/memory_regen` rebuilds them; delete +
+  rerun reproduces them byte-identically. A hand edit is lost on the next regeneration and is a lie
+  in the meantime.
+
+## The decision the plane forces
+
+| You want to… | Plane | Allowed? |
+|---|---|---|
+| Change a contract/ADR/golden baseline | Constitution | Only via the gated human-ratified path |
+| Record what you're working on now | `.memory/state/` | Yes — via `/checkpoint` (committed) |
+| "Fix" the repo-map / contracts-index | `.memory/derived/` | No — regenerate it (`/orient` / `tools.memory_regen`) |
+| Record a decision | ADR (constitution) | Yes — append a new ADR, never edit `.memory/state/` |
+
+## Lazy-load (why the derived plane exists)
+
+Do not preload full contract bodies into context. The derived plane exists so a session starts from
+**pointers** (repo-map / contracts-index summaries + the activeContext pointer), and you read a
+specific contract only when the task needs it. The SessionStart injector (and `/orient`) assemble
+that capped, pointer-only, provisional-banner-first payload — never a full schema body.
+
+## Related
+- `harness/skills/gate-model/SKILL.md` — how the constitution plane is enforced.
+- `/orient` — regenerate + surface the derived plane. `/checkpoint` — persist the committed state tier.

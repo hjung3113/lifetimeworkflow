@@ -94,19 +94,19 @@
 > 적대적 감사(2026-07-09)가 확인한 갭: 에이전트가 온보딩→계획→구현→계약검증→테스트→디버그→리뷰→문서→리팩터→통합을 실제로 끌고 갈 저작 자산이 얇음. 상세: `.planning/phases/05.7-lifecycle-completeness/057-CONTEXT.md`.
 
 **MUST-HAVE (내부 루프가 깨짐):**
-- [ ] **LIFE-01** `/contract-check` 커맨드(신규): `check-jsonschema` + 드리프트-해시 비교 래핑(`tools/contract_drift`·`tools/contract_hash` 재사용). 현재 `new-normalization-rule.md`·`CLAUDE.md`가 참조하나 **부재**(dead link) — 계약검증 단계를 실행 가능하게
-- [ ] **LIFE-02** `golden-debug` 스킬(+선택 `/diagnose-golden`): 골든 red → 7 canonicalization 축(BOM/CRLF/InvariantCulture 소수점/float 허용오차/행키 정렬/UTC/TSV-이스케이프-vs-null) 결정트리 — 축별 판별법+수정측. 하네스 존재 이유인데 진단 절차 제로(최대 갭)
-- [ ] **LIFE-03** `polyglot-boundary` 스킬(신규): §4.3-4.6 불변식 단일 정본화(현재 3파일+prose 산재), body는 CLAUDE.md canonicalization 표를 `references/`로. Core Value를 tribal→스킬
-- [ ] **LIFE-04** 중립 language-engineer 템플릿/`/add-language` 스캐폴드: `project.toml [[languages]].persona`가 가리킬 페르소나를 코어가 파생 생성(스코프·contract-first·§4.3-4.6·golden-gate 보일러플레이트). 2번째 인스턴스 언어에서 "채워쓰는 템플릿" 성립
-- [ ] **LIFE-05** `/new-normalization-rule` 탈도메인화: 중립 `/new-contract-rule`로 일반화(코어 잔류) 또는 examples/로 이동 — GEN-05 잔여 + GEN-04 가드 정합
+- [x] **LIFE-01** `/contract-check` 커맨드(신규): `check-jsonschema` + 드리프트-해시 비교 래핑(`tools/contract_drift`·`tools/contract_hash` 재사용). 현재 `new-normalization-rule.md`·`CLAUDE.md`가 참조하나 **부재**(dead link) — 계약검증 단계를 실행 가능하게
+- [x] **LIFE-02** `golden-debug` 스킬(+선택 `/diagnose-golden`): 골든 red → 7 canonicalization 축(BOM/CRLF/InvariantCulture 소수점/float 허용오차/행키 정렬/UTC/TSV-이스케이프-vs-null) 결정트리 — 축별 판별법+수정측. 하네스 존재 이유인데 진단 절차 제로(최대 갭)
+- [x] **LIFE-03** `polyglot-boundary` 스킬(신규): §4.3-4.6 불변식 단일 정본화(현재 3파일+prose 산재), body는 CLAUDE.md canonicalization 표를 `references/`로. Core Value를 tribal→스킬
+- [x] **LIFE-04** 중립 language-engineer 템플릿/`/add-language` 스캐폴드: `project.toml [[languages]].persona`가 가리킬 페르소나를 코어가 파생 생성(스코프·contract-first·§4.3-4.6·golden-gate 보일러플레이트). 2번째 인스턴스 언어에서 "채워쓰는 템플릿" 성립
+- [x] **LIFE-05** `/new-normalization-rule` 탈도메인화: 중립 `/new-contract-rule`로 일반화(코어 잔류) 또는 examples/로 이동 — GEN-05 잔여 + GEN-04 가드 정합
 
 **SHOULD-HAVE (라이프사이클 완성):**
-- [ ] **LIFE-06** `/orient` 커맨드/온보딩 스킬: 결정론적 진입점(읽기 순서 + golden-path), `tools.memory_regen` 산출 래핑, injector deferred 의존 탈피
-- [ ] **LIFE-07** `/review` 워크플로 커맨드: diff → code-reviewer(읽기전용) → 심각도 분류 findings → 스코프 엔지니어 반환 + secret-scan 포스처
-- [ ] **LIFE-08** `gate-model` 스킬: 무엇이·어떻게 gated인지 맵(헌법 평면·machines-gate/humans-ratify·exit-3 거부·훅 표면·path_deny_globs)
-- [ ] **LIFE-09** `two-plane-memory` 스킬: 헌법-vs-파생 / 커밋된-state-vs-gitignored-derived / 파생-손편집-금지(현재 AGENTS.md prose만)
-- [ ] **LIFE-10** `/verify-work` (pre-handoff) 커맨드: 세션 내 복합 게이트(`/lint`+`/test`+`/contract-check`+`/golden` 터치 케이스). CI(Phase6)·checkpoint와 구별
-- [ ] **LIFE-11** orchestrator 라우팅 플레이북 보강(또는 `routing` 스킬): 결정표(작업형태→페르소나/커맨드) + 최소 intake→decompose 절차
+- [x] **LIFE-06** `/orient` 커맨드/온보딩 스킬: 결정론적 진입점(읽기 순서 + golden-path), `tools.memory_regen` 산출 래핑, injector deferred 의존 탈피
+- [x] **LIFE-07** `/review` 워크플로 커맨드: diff → code-reviewer(읽기전용) → 심각도 분류 findings → 스코프 엔지니어 반환 + secret-scan 포스처
+- [x] **LIFE-08** `gate-model` 스킬: 무엇이·어떻게 gated인지 맵(헌법 평면·machines-gate/humans-ratify·exit-3 거부·훅 표면·path_deny_globs)
+- [x] **LIFE-09** `two-plane-memory` 스킬: 헌법-vs-파생 / 커밋된-state-vs-gitignored-derived / 파생-손편집-금지(현재 AGENTS.md prose만)
+- [x] **LIFE-10** `/verify-work` (pre-handoff) 커맨드: 세션 내 복합 게이트(`/lint`+`/test`+`/contract-check`+`/golden` 터치 케이스). CI(Phase6)·checkpoint와 구별
+- [x] **LIFE-11** orchestrator 라우팅 플레이북 보강(또는 `routing` 스킬): 결정표(작업형태→페르소나/커맨드) + 최소 intake→decompose 절차
 
 ### CI — 지속적 통합 & 게이트 (Phase 6, generic)
 

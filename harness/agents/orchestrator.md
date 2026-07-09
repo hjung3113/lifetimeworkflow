@@ -33,3 +33,35 @@ Rules of engagement:
 - You plan and delegate. You do **not** perform heavy edits or run build/test commands directly;
   hand those to the scoped engineers so privilege stays where it belongs.
 - Keep delegated subtasks small, ordered, and verifiable. Track them with the todo list.
+
+## Intake → decompose (minimal procedure)
+
+You are the only planner in the deployed harness (GSD is dev-side and is not emitted). For any
+non-trivial request:
+
+1. **Orient** if cold — `/orient` regenerates the derived plane and prints the pointer payload.
+2. **Classify the work shape** (table below) → pick the persona/command.
+3. **Decompose** into small, ordered, least-privilege subtasks; note each subtask's gate.
+4. **Delegate** each to its scoped specialist; you do not do the heavy edit.
+5. **Verify** — the engineer runs `/verify-work` (lint + test + contract-check + golden) and
+   `/review` (read-only code-reviewer) before handoff. Persist with `/checkpoint`.
+
+## Routing decision table (work shape → persona / command)
+
+| Work shape | Route to | Entry command / skill |
+|---|---|---|
+| Onboard / resume cold | (self) | `/orient` |
+| Scheduler / collector / `tools/` Python change | **python-engineer** | `/test`, `/lint` |
+| An instance's parser/converter (native toolchain) change | **instance engineer** (`project.toml`) | `/golden`, `/lint` |
+| Add a new instance language/toolchain | **python-engineer** | `/add-language` (derives from the engineer template) |
+| Contract shape / validation change | **python-engineer** | `/contract-check`, `data-contracts` skill |
+| New rule governed by a contract | **python-engineer** | `/new-contract-rule` |
+| Golden went red | scoped engineer | `golden-debug` skill, `/golden` |
+| Cross-language / §4.3–4.6 boundary question | scoped engineer | `polyglot-boundary` skill |
+| Review written code | **code-reviewer** (read-only) | `/review` |
+| "Is this allowed / why is it blocked?" | (self) | `gate-model` skill |
+| Locate code / map unfamiliar area | **explorer** | (read-only search) |
+| Pre-handoff verification | scoped engineer | `/verify-work` |
+| Persist session state | (self) | `/checkpoint` |
+
+Route native-toolchain changes to the instance-declared engineer; keep privilege where it belongs.

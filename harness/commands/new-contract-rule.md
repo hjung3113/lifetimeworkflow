@@ -1,17 +1,17 @@
 ---
 description: >-
-  Use when adding a new normalization or correction rule — scaffolds it contract-first in the
-  mandated order (contract entry → data-based (input, expected) case → failing code stub) so the
-  order can never be silently skipped. Invoke when a §4-5 normalization/correction rule is requested.
+  Use when adding a new contract rule — scaffolds it contract-first in the mandated order (contract
+  entry → data-based (input, expected) case → failing code stub) so the order can never be silently
+  skipped. Invoke when a new rule governed by a contract is requested.
 agent: python-engineer
 subtask: true
 ---
 
-# /new-normalization-rule — scaffold a rule contract-first (order-enforced)
+# /new-contract-rule — scaffold a rule contract-first (order-enforced)
 
-Order-enforcing scaffold (Pattern 4). A normalization rule added code-first drifts from the single
-source of truth; this macro forces the **mandated order** and leaves a **failing stub** at the end so
-the sequence cannot be silently skipped (T-03-26). The rule id/intent comes from `$ARGUMENTS`.
+Order-enforcing scaffold (Pattern 4). A rule added code-first drifts from the single source of
+truth; this macro forces the **mandated order** and leaves a **failing stub** at the end so the
+sequence cannot be silently skipped (T-03-26). The rule id/intent comes from `$ARGUMENTS`.
 
 Contracts are the single source of truth — code that disagrees with the contract is the code that is
 wrong. So the contract entry is authored **before** any code exists.
@@ -29,11 +29,11 @@ wrong. So the contract entry is authored **before** any code exists.
    pair — as a `test_cases` entry on the rule (and/or a fixture in `libs/python` normalize-fixtures).
    The behavior is expressed as **data**, not baked into code, so both language sides can be
    cross-validated against the same corpus (D-04). Encode the §4.3–4.6 representation the rule
-   normalizes (BOM/newline/decimal-locale/timezone) as the `input`, and the canonical form as the
+   governs (BOM/newline/decimal-locale/timezone) as the `input`, and the canonical form as the
    `expected`.
 
 3. **Code stub LAST — and it must FAIL until filled.** Only now add the implementation stub
-   (Python `libs/python` §4-5 core, and its .NET counterpart). Leave it as a **failing stub** (e.g.
+   (Python `libs/python` §4-5 core, and its language-side counterpart). Leave it as a **failing stub** (e.g.
    `raise NotImplementedError` / a `test_cases`-driven test that is red) so the rule is provably
    unfinished until real code makes the data case pass. The failing stub is **intentional** (D-06) —
    it is the forcing function, not a reduction in scope. Do not pre-satisfy it with a stub that

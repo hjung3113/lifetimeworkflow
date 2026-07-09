@@ -43,15 +43,20 @@ _RESERVED_WORDS = ("anthropic", "claude")
 # Angle-bracket XML tags are forbidden in name/description (T-03-19).
 _XML_CHARS = ("<", ">")
 
-# Exactly the four enumerated CORE skills (D-07) — the instance's domain skills and its
-# instance-language skill moved to the log-parser example instance (Phase 5.5). No more, no fewer
-# (anti-sprawl).
+# The enumerated CORE skills — the instance's domain skills and its instance-language skill
+# moved to the log-parser example instance (Phase 5.5). Phase 5.7 (Lifecycle Completeness) adds
+# four domain-neutral lifecycle skills: golden-debug, polyglot-boundary, gate-model,
+# two-plane-memory. No more, no fewer (anti-sprawl).
 EXPECTED_SKILLS = frozenset(
     {
         "python-conventions",
         "golden-testing",
         "data-contracts",
         "skill-creator",
+        "golden-debug",
+        "polyglot-boundary",
+        "gate-model",
+        "two-plane-memory",
     }
 )
 

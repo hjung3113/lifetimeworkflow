@@ -43,5 +43,5 @@ enforcement plumbing.
 ## Deeper reference
 
 Keep a worked "add one normalization rule" example under `references/` (contract entry →
-(input,expected) case → code). See `contracts/normalization/` and the `/new-normalization-rule`
+(input,expected) case → code). See `contracts/normalization/` and the `/new-contract-rule`
 command, which scaffolds exactly that order.
