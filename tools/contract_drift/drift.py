@@ -14,6 +14,7 @@ Classification (seed change_policy — the instance's change-policy catalog):
 
 from __future__ import annotations
 
+import argparse
 import json
 import subprocess
 import sys
@@ -163,16 +164,40 @@ def run_gate(
 
 
 def main(argv: list[str] | None = None) -> int:
-    argv = sys.argv[1:] if argv is None else argv  # noqa: F841 (reserved for future flags)
-    result = run_gate()
+    argv = sys.argv[1:] if argv is None else argv
+    parser = argparse.ArgumentParser(
+        prog="python -m tools.contract_drift.drift",
+        description="Gate the live contracts tree against its committed JCS SHA-256 baseline.",
+    )
+    parser.add_argument(
+        "--contracts-dir",
+        default=CONTRACTS_DIR,
+        help="Contracts subtree to hash (default: the root contracts/ tree).",
+    )
+    parser.add_argument(
+        "--baseline",
+        default=MANIFEST_PATH,
+        help="Committed manifest to diff against (default: contracts/.hashes/manifest.json).",
+    )
+    args = parser.parse_args(argv)
+
+    result = run_gate(contracts_dir=args.contracts_dir, baseline_path=args.baseline)
     if result["ok"]:
         print("contract-drift: OK — live manifest matches the committed baseline.")
         return 0
     print("contract-drift: DRIFT DETECTED — unapproved schema change(s):", file=sys.stderr)
     for rel, kind, cls in result["drifted"]:
         print(f"  [{kind:7}] [{cls:12}] {rel}", file=sys.stderr)
+    is_root = Path(args.contracts_dir).resolve() == CONTRACTS_DIR.resolve()
+    if is_root:
+        rebaseline = "`python -m tools.contract_hash.hash --write`"
+    else:
+        rebaseline = (
+            "`python -m tools.contract_hash.hash --write "
+            f"--contracts-dir {args.contracts_dir} --manifest {args.baseline}`"
+        )
     print(
-        "\nIf intended, update the baseline (`python -m tools.contract_hash.hash --write`) "
+        f"\nIf intended, update the baseline ({rebaseline}) "
         "and pair it with a golden/ADR update (CODEOWNERS-gated).",
         file=sys.stderr,
     )
