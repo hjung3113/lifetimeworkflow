@@ -14,8 +14,14 @@ from __future__ import annotations
 from tools.golden_runner.runner import run_golden_case
 
 
-def test_repr_only_passes(require_dotnet, golden_out):
-    result = run_golden_case("repr-only", golden_out, dotnet_exe=require_dotnet)
+def test_repr_only_passes(require_dotnet, golden_out, example_golden_dir, toy_converter_project):
+    result = run_golden_case(
+        "repr-only",
+        golden_out,
+        dotnet_exe=require_dotnet,
+        project=toy_converter_project,
+        golden_dir=example_golden_dir,
+    )
     assert result.passed, (
         "repr-only case must PASS after §4-5 normalization neutralizes the BOM/CRLF/locale/TZ "
         f"representation diffs (P4). Diff was:\n{result.diff}"

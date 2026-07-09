@@ -1,16 +1,11 @@
-"""Shared fixtures for the golden-runner integration tests (CONTRACT-03).
+"""Shared fixtures for the RELOCATED log-parser domain golden tests (GEN-01, 05-03).
 
-Provides the A-model spawn plumbing:
-- ``dotnet_exe``   — the .NET executable resolved via an EXPLICIT absolute path
-                     (``$DOTNET_ROOT/dotnet`` → ``$HOME/.dotnet/dotnet``), NEVER a bare PATH
-                     lookup. The SessionStart bootstrap exports PATH, but that export does NOT
-                     persist across separate tool invocations in the ephemeral session (project
-                     risk P5 / threat T-06-01), so ``shutil.which("dotnet")`` / a bare ``"dotnet"``
-                     string would intermittently fail. Mirror how 01-01 verify.sh hardcodes
-                     ``$HOME/.dotnet/dotnet``.
-- ``golden_out``   — a tmp ``--out`` path (converter writes here; kept out of the repo tree).
-- ``require_dotnet`` — skips the test when the .NET SDK is not installed (egress-blocked env),
-                     so the pure-Python suite (approve gate + recorded comparison) still runs.
+These tests moved out of `tools/golden_runner/tests/` into the example so the core template
+names no domain artifact. They import the core runner (example→core, the one allowed direction)
+and drive it against the EXAMPLE's own golden tree + .NET converter via the 05-02 overrides
+(`golden_dir=`, `project=`). Fixtures mirror the generic core conftest so the .NET-gated cases
+SKIP cleanly when the SDK is absent (egress-blocked env), while the pure-Python recorded-output
+comparison still runs.
 
 All spawns go through ``subprocess.run([list], shell=False)`` (never string+shell) — see runner.py.
 """
@@ -23,7 +18,7 @@ from pathlib import Path
 import pytest
 
 # --- import path wiring (virtual uv workspace members, not pip-installed) ---------------------
-# tests -> golden_runner -> tools -> repo root
+# tests -> log-parser -> examples -> repo root
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _LIBS_PYTHON = _REPO_ROOT / "libs" / "python"
 for _p in (str(_REPO_ROOT), str(_LIBS_PYTHON)):
@@ -32,10 +27,27 @@ for _p in (str(_REPO_ROOT), str(_LIBS_PYTHON)):
 
 from tools.golden_runner.runner import resolve_dotnet  # noqa: E402
 
+# The example's own relocated golden tree + .NET converter project (05-03 move set).
+_EXAMPLE_ROOT = Path(__file__).resolve().parents[1]  # examples/log-parser
+EXAMPLE_GOLDEN_DIR = _EXAMPLE_ROOT / "golden"
+EXAMPLE_CONVERTER_PROJECT = _EXAMPLE_ROOT / "components" / "toy-converter" / "ToyConverter.csproj"
+
 
 @pytest.fixture(scope="session")
 def repo_root() -> Path:
     return _REPO_ROOT
+
+
+@pytest.fixture(scope="session")
+def example_golden_dir() -> Path:
+    """Case root for the relocated domain golden cases (repr-only / value-regression)."""
+    return EXAMPLE_GOLDEN_DIR
+
+
+@pytest.fixture(scope="session")
+def toy_converter_project() -> Path:
+    """The example's relocated .NET converter project (spawn target)."""
+    return EXAMPLE_CONVERTER_PROJECT
 
 
 @pytest.fixture(scope="session")

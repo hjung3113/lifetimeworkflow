@@ -14,10 +14,18 @@ from __future__ import annotations
 from tools.golden_runner.runner import baseline_path, run_golden_case, verified_path
 
 
-def test_value_regression_fails(require_dotnet, golden_out):
-    verified_before = verified_path("value-regression").read_bytes()
+def test_value_regression_fails(
+    require_dotnet, golden_out, example_golden_dir, toy_converter_project
+):
+    verified_before = verified_path("value-regression", example_golden_dir).read_bytes()
 
-    result = run_golden_case("value-regression", golden_out, dotnet_exe=require_dotnet)
+    result = run_golden_case(
+        "value-regression",
+        golden_out,
+        dotnet_exe=require_dotnet,
+        project=toy_converter_project,
+        golden_dir=example_golden_dir,
+    )
 
     assert not result.passed, (
         "value-regression must FAIL — a genuine value change must survive normalization "
@@ -26,4 +34,4 @@ def test_value_regression_fails(require_dotnet, golden_out):
     # runner wrote a machine-proposed .received ...
     assert result.received_path is not None and result.received_path.exists()
     # ... and NEVER touched the human-approved .verified baseline (P9).
-    assert baseline_path("value-regression").read_bytes() == verified_before
+    assert baseline_path("value-regression", example_golden_dir).read_bytes() == verified_before

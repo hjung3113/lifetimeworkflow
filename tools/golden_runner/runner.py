@@ -34,7 +34,6 @@ if str(_LIBS_PYTHON) not in sys.path:
 from normalize.core import normalize_tsv  # noqa: E402
 
 GOLDEN_DIR = REPO_ROOT / "golden"
-TOY_CONVERTER_PROJECT = REPO_ROOT / "components" / "toy-converter" / "ToyConverter.csproj"
 
 
 class GoldenRunnerError(RuntimeError):
@@ -163,12 +162,18 @@ def run_converter(
     dotnet_exe: str | None = None,
     project: Path | None = None,
 ) -> int:
-    """Spawn the .NET toy converter over the A-model CLI boundary; return its exit code.
+    """Spawn a .NET converter over the A-model CLI boundary; return its exit code.
 
     subprocess.run([list], shell=False) — never string+shell (T-06-01). Paths are confined.
+    The core names no domain converter: ``project`` is REQUIRED (the caller — e.g. an example's
+    ``run_golden_case(project=...)`` — supplies the .csproj); there is no relocated-domain default.
     """
     dotnet_exe = dotnet_exe or resolve_dotnet()
-    project = project or TOY_CONVERTER_PROJECT
+    if project is None:
+        raise GoldenRunnerError(
+            "run_converter requires an explicit converter project (.csproj); the core template "
+            "names no domain converter — pass project=... (e.g. from the example's tests)."
+        )
     seed = _confine(seed)
     out_path = _confine(out_path)
 

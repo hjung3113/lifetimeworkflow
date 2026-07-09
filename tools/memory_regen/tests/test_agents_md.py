@@ -19,7 +19,10 @@ from pathlib import Path
 import pytest
 
 ROOT_AGENTS = "AGENTS.md"
-PER_PACKAGE_AGENTS = ["libs/python/AGENTS.md", "libs/dotnet/AGENTS.md"]
+# After the 05-03 domain move (GEN-01), the .NET package (libs/dotnet, incl. its per-package
+# AGENTS.md) relocated under examples/log-parser/. The CORE per-package rules plane is now
+# Python-only; the .NET per-package rules live with the example (05-05 recasts the root map).
+PER_PACKAGE_AGENTS = ["libs/python/AGENTS.md"]
 
 
 def _read(repo_root: Path, rel: str) -> str:
@@ -36,8 +39,10 @@ def test_all_three_agents_md_exist(repo_root: Path) -> None:
 def test_root_agents_carries_map_goldenpath_contractfirst_lazyload(repo_root: Path) -> None:
     text = _read(repo_root, ROOT_AGENTS)
     lower = text.lower()
-    # Monorepo map: names the plane/layout members.
-    for member in ("contracts/", "golden/", "libs/python", "libs/dotnet", "tools/", ".memory/"):
+    # Monorepo map: names the plane/layout members. After the 05-03 domain move (GEN-01),
+    # libs/dotnet relocated under examples/log-parser/, so it is no longer a required CORE
+    # root-map member (05-05 recasts the root map to the template shape).
+    for member in ("contracts/", "golden/", "libs/python", "tools/", ".memory/"):
         assert member in text, f"root AGENTS.md monorepo map missing member: {member}"
     # At least one golden-path command reference.
     assert any(

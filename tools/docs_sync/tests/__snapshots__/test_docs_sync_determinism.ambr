@@ -1,45 +1,6 @@
 # serializer version: 1
 # name: test_render_matches_committed_snapshot
   '''
-  ===== standard-log =====
-  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
-  
-  # standard-log TSV spec (SEED PLACEHOLDER companion schema)
-  
-  > DERIVED reference — regenerated from `contracts/log-specs/standard-log.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
-  
-  Draft 2020-12 companion schema for standard-log.spec.yaml. Validates the spec structure (format block + columns array) while allowing TBD placeholder values. Seed/example — domain-confirmed values Out of Scope (CONTRACT-01).
-  
-  | Property | Type | Required | Enum / Const | Description |
-  | --- | --- | --- | --- | --- |
-  | carryover | object | no |  |  |
-  | change_policy | object | no |  |  |
-  | columns | array | yes |  |  |
-  | description | string | no |  |  |
-  | format | object | yes |  |  |
-  | id | string | yes |  |  |
-  | owner | string | no |  |  |
-  | version | string | no |  |  |
-  
-  ===== correction-rules =====
-  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
-  
-  # normalization + correction rules catalog (SEED PLACEHOLDER companion schema)
-  
-  > DERIVED reference — regenerated from `contracts/normalization/correction-rules.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
-  
-  Draft 2020-12 companion schema for correction-rules.catalog.yaml. Validates normalization_rules + correction_rules array shapes while allowing TBD placeholder values. Seed/example — domain rules Out of Scope (CONTRACT-01).
-  
-  | Property | Type | Required | Enum / Const | Description |
-  | --- | --- | --- | --- | --- |
-  | change_policy | object | no |  |  |
-  | correction_rules | array | yes |  |  |
-  | description | string | no |  |  |
-  | id | string | yes |  |  |
-  | normalization_rules | array | yes |  |  |
-  | owner | string | no |  |  |
-  | version | string | no |  |  |
-  
   ===== format-conventions =====
   <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
   
@@ -76,24 +37,6 @@
   - **timezone** = `utc-iso8601` — §4.4 timezone/time format — UTC, fixed ISO-8601 string. Guards .NET DateTime.Kind vs Python naive/aware serialization divergence.
   - **tsv_escape** = `backslash` — §4.3 TSV escaping of tab/newline-in-value — EXAMPLE agreed rule (backslash-escape). Domain rule TBD.
   
-  ===== equipment-master =====
-  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
-  
-  # equipment-master reference data (SEED PLACEHOLDER companion schema)
-  
-  > DERIVED reference — regenerated from `contracts/reference-data/equipment-master.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
-  
-  Draft 2020-12 companion schema for equipment-master.yaml. Validates the entities block (equipment/model/alias key+field shapes) while allowing TBD placeholder values. Seed/example — master data Out of Scope (CONTRACT-01).
-  
-  | Property | Type | Required | Enum / Const | Description |
-  | --- | --- | --- | --- | --- |
-  | change_policy | object | no |  |  |
-  | description | string | no |  |  |
-  | entities | object | yes |  |  |
-  | id | string | yes |  |  |
-  | owner | string | no |  |  |
-  | version | string | no |  |  |
-  
   ===== greeting =====
   <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
   
@@ -107,26 +50,6 @@
   | --- | --- | --- | --- | --- |
   | greeting | string | no | hello | The fixed greeting word. |
   | name | string | yes |  | Who to greet. |
-  
-  ===== equipment-progress =====
-  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
-  
-  # equipment-progress state + carryover (SEED PLACEHOLDER companion schema)
-  
-  > DERIVED reference — regenerated from `contracts/state/equipment-progress.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
-  
-  Draft 2020-12 companion schema for equipment-progress.yaml. Validates storage/progress/carryover shapes while allowing TBD placeholder values. Seed/example — state model Out of Scope (CONTRACT-01).
-  
-  | Property | Type | Required | Enum / Const | Description |
-  | --- | --- | --- | --- | --- |
-  | carryover | object | no |  |  |
-  | change_policy | object | no |  |  |
-  | description | string | no |  |  |
-  | id | string | yes |  |  |
-  | owner | string | no |  |  |
-  | progress | object | yes |  |  |
-  | storage | object | yes |  |  |
-  | version | string | no |  |  |
   
   '''
 # ---
