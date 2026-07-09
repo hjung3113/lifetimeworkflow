@@ -54,26 +54,26 @@ class GoldenResult:
 # --- path helpers -----------------------------------------------------------------------------
 
 
-def case_dir(case: str) -> Path:
-    return GOLDEN_DIR / case
+def case_dir(case: str, golden_dir: Path | None = None) -> Path:
+    return (golden_dir or GOLDEN_DIR) / case
 
 
-def seed_path(case: str) -> Path:
-    return case_dir(case) / "input" / "seed.tsv"
+def seed_path(case: str, golden_dir: Path | None = None) -> Path:
+    return case_dir(case, golden_dir) / "input" / "seed.tsv"
 
 
-def verified_path(case: str) -> Path:
+def verified_path(case: str, golden_dir: Path | None = None) -> Path:
     """The human-approved baseline the runner diffs against and NEVER overwrites (P9)."""
-    return case_dir(case) / "expected" / "baseline.verified.tsv"
+    return case_dir(case, golden_dir) / "expected" / "baseline.verified.tsv"
 
 
 # ``baseline`` and ``verified`` are the same file; the alias reads naturally in both contexts.
 baseline_path = verified_path
 
 
-def received_path(case: str) -> Path:
+def received_path(case: str, golden_dir: Path | None = None) -> Path:
     """The machine-proposed baseline written on FAIL; /golden-approve may later promote it."""
-    return case_dir(case) / "expected" / "baseline.received.tsv"
+    return case_dir(case, golden_dir) / "expected" / "baseline.received.tsv"
 
 
 def resolve_dotnet() -> str:
@@ -106,14 +106,17 @@ def _confine(path: Path) -> Path:
 # --- pure comparison logic (no .NET needed) ---------------------------------------------------
 
 
-def compare(output_bytes: bytes, case: str) -> GoldenResult:
+def compare(output_bytes: bytes, case: str, golden_dir: Path | None = None) -> GoldenResult:
     """Normalize the converter output AND the approved baseline via the §4-5 core, then diff.
 
     On mismatch, write ``expected/baseline.received.tsv`` (the raw converter output — the exact
     bytes a human would review) and return FAIL. NEVER touch ``baseline.verified.tsv``.
+
+    ``golden_dir`` overrides the case root (default ``REPO_ROOT/golden``) so the identical
+    §4.3-4.6 compare path serves both the domain golden tree and a tmp/generic instance.
     """
     normalized_new = normalize_tsv(output_bytes)
-    normalized_baseline = normalize_tsv(verified_path(case).read_bytes())
+    normalized_baseline = normalize_tsv(verified_path(case, golden_dir).read_bytes())
 
     if normalized_new == normalized_baseline:
         return GoldenResult(case=case, passed=True, diff="", received_path=None)
@@ -128,10 +131,27 @@ def compare(output_bytes: bytes, case: str) -> GoldenResult:
         )
     )
 
-    rec = received_path(case)
+    rec = received_path(case, golden_dir)
     rec.parent.mkdir(parents=True, exist_ok=True)
     rec.write_bytes(output_bytes)  # machine-proposed; .verified is left untouched (P9)
     return GoldenResult(case=case, passed=False, diff=diff, received_path=rec)
+
+
+# --- built-in language-agnostic converter (no .NET — the template's generic default) ----------
+
+
+def run_identity_converter(seed: Path, out_path: Path) -> None:
+    """Copy the seed bytes verbatim to ``out_path`` — pure stdlib, zero canonicalization.
+
+    This is the language-agnostic converter the template ships: it performs NO decimal/timezone
+    canonicalization (that is the domain converter's job), so a case driven by it PASSes only when
+    the seed→baseline diff is limited to what ``normalize_tsv`` neutralizes (R1 BOM / R2 CRLF /
+    R8 row-order). No ``dotnet``, no subprocess. Paths are confined (T-06-02).
+    """
+    src = _confine(seed)
+    dst = _confine(out_path)
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_bytes(src.read_bytes())
 
 
 # --- .NET spawn (A-model boundary) ------------------------------------------------------------
@@ -182,11 +202,23 @@ def run_golden_case(
     out_path: Path,
     dotnet_exe: str | None = None,
     project: Path | None = None,
+    converter: str = "dotnet",
+    golden_dir: Path | None = None,
 ) -> GoldenResult:
-    """Full loop for one case: spawn converter → read --out → normalize both sides → diff."""
-    run_converter(seed_path(case), out_path, dotnet_exe=dotnet_exe, project=project)
+    """Full loop for one case: run converter → read --out → normalize both sides → diff.
+
+    ``converter`` selects the boundary implementation: ``"identity"`` uses the built-in
+    language-agnostic :func:`run_identity_converter` (no .NET, no ``resolve_dotnet``); any other
+    value keeps the default .NET spawn (backward-compatible). ``golden_dir`` overrides the case
+    root so the generic instance (or a tmp fixture) runs the identical §4.3-4.6 loop.
+    """
+    seed = seed_path(case, golden_dir)
+    if converter == "identity":
+        run_identity_converter(seed, out_path)
+    else:
+        run_converter(seed, out_path, dotnet_exe=dotnet_exe, project=project)
     output_bytes = Path(out_path).read_bytes()
-    return compare(output_bytes, case)
+    return compare(output_bytes, case, golden_dir=golden_dir)
 
 
 def main(argv: list[str] | None = None) -> int:
