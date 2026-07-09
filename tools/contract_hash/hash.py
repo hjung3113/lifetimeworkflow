@@ -12,6 +12,7 @@ convention change trips the drift gate exactly like a column reorder (PITFALLS P
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import sys
@@ -59,9 +60,16 @@ def build_manifest(contracts_dir: str | Path = CONTRACTS_DIR) -> dict[str, str]:
     return manifest
 
 
-def write_manifest(manifest_path: str | Path = MANIFEST_PATH) -> Path:
-    """Build the manifest over the real contracts/ tree and write the committed baseline."""
-    manifest = build_manifest()
+def write_manifest(
+    manifest_path: str | Path = MANIFEST_PATH,
+    contracts_dir: str | Path = CONTRACTS_DIR,
+) -> Path:
+    """Build the manifest over ``contracts_dir`` (defaults to the real tree) and write it.
+
+    Threading ``contracts_dir`` lets ``--write --contracts-dir <D>`` rebaseline the flagged tree
+    with D-rooted hashes instead of silently writing root-tree content into it.
+    """
+    manifest = build_manifest(contracts_dir)
     out = Path(manifest_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -70,12 +78,39 @@ def write_manifest(manifest_path: str | Path = MANIFEST_PATH) -> Path:
 
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
-    if "--write" in argv:
-        out = write_manifest()
+    parser = argparse.ArgumentParser(
+        prog="python -m tools.contract_hash.hash",
+        description="Emit or (re)write the per-schema JCS SHA-256 manifest for a contracts tree.",
+    )
+    parser.add_argument(
+        "--write",
+        action="store_true",
+        help="Write the manifest to --manifest (default: contracts/.hashes/manifest.json).",
+    )
+    parser.add_argument(
+        "--contracts-dir",
+        default=CONTRACTS_DIR,
+        help="Contracts subtree to hash (default: the root contracts/ tree).",
+    )
+    parser.add_argument(
+        "--manifest",
+        default=MANIFEST_PATH,
+        help="Manifest path to write when --write is given.",
+    )
+    args = parser.parse_args(argv)
+
+    if args.write:
+        out = write_manifest(manifest_path=args.manifest, contracts_dir=args.contracts_dir)
         manifest = json.loads(out.read_text(encoding="utf-8"))
-        print(f"wrote {out.relative_to(REPO_ROOT)} ({len(manifest)} schemas hashed)")
+        try:
+            shown = out.resolve().relative_to(REPO_ROOT)
+        except ValueError:
+            shown = out  # --manifest may target a path outside the repo (e.g. a tmp rebaseline)
+        print(f"wrote {shown} ({len(manifest)} schemas hashed)")
     else:
-        print(json.dumps(build_manifest(), indent=2, sort_keys=True))
+        print(
+            json.dumps(build_manifest(contracts_dir=args.contracts_dir), indent=2, sort_keys=True)
+        )
     return 0
 
 
