@@ -151,7 +151,25 @@ Plans:
   4. A guard test proves **core→example single-direction dependency**: nothing under `tools/`, `harness/`, `libs/` (core) imports or path-references `examples/**`; the full non-example test suite stays green after extraction.
   5. Root docs (`CLAUDE.md`, root `AGENTS.md`, `docs/`) describe the template + how to add an instance, with log-parser specifics moved into the example's own `AGENTS.md`/README.
 
-**Plans**: TBD
+**Plans**: 5 plans (4 waves)
+
+Plans:
+**Wave 1**
+
+- [ ] 05-01-PLAN.md — D-05 commit-gate drift approval path: `GOLDEN_APPROVE_HUMAN` warn+pass on drift (polyglot/golden stay hard); core-only, lands first
+- [ ] 05-04-PLAN.md — GEN-03 language config slot: `harness/project.toml` SSOT + thin `tools/harness_config` loader + consistency test (matrix scopes/personas derive from config)
+
+**Wave 2** *(blocked on 05-01)*
+
+- [ ] 05-02-PLAN.md — GEN-02 generic default instance: `contracts/sample/greeting.schema.json` + `golden/sample/**` + golden_runner identity converter/golden_dir; full loop runs .NET-free; rebaseline root manifest
+
+**Wave 3** *(blocked on 05-01, 05-02)*
+
+- [ ] 05-03-PLAN.md — GEN-01 domain MOVE: `git mv` seed → `examples/log-parser/`; rebaseline root + example manifests (drift clean); move domain golden tests; regen 3 snapshots
+
+**Wave 4** *(blocked on 05-03, 05-04)*
+
+- [ ] 05-05-PLAN.md — GEN-04 core→example no-dependency guard + root docs recast (template + instance) + ADR-0002 (via approval path)
 
 ### Phase 6: CI + Gates (generic)
 
@@ -194,6 +212,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 2. Two-Plane Memory + Rules | 5/5 | Complete   | 2026-07-08 |
 | 3. Agents + Commands + Skills | 7/7 | Complete   | 2026-07-08 |
 | 4. Plugins + Hooks | 6/6 | Complete   | 2026-07-08 |
-| 5. De-specialization & Template Extraction | 0/TBD | Not started | - |
+| 5. De-specialization & Template Extraction | 0/5 | Planned | - |
 | 6. CI + Gates (generic) | 0/TBD | Not started | - |
 | 7. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |
