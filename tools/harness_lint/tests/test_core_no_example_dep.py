@@ -71,15 +71,18 @@ _PROSE_TOKENS = (
 _IMPORT_EXAMPLES = re.compile(r"^\s*(from|import)\s+examples\b")
 
 # The single sanctioned instance-pointer file: ``harness/project.toml``. Its ``[instance] root``
-# value and its per-language ``persona =`` values are the ONE place a core-plane file names an
-# instance-owned asset (ADR-0002 (c)). The ``dotnet.persona`` line points at
-# ``examples/log-parser/agents/dotnet-engineer.md`` — a single line that legitimately contains BOTH
-# the SCOPE-A ``examples/`` token AND the GEN-05 ``dotnet-engineer`` token — so the whole pointer
-# line is exempted.
+# value, its per-language ``persona =`` values, and its per-language ``test_paths =`` CI test-target
+# data slot are the ONE place a core-plane file names an instance-owned asset (ADR-0002 (c)). The
+# ``dotnet.persona`` line points at ``examples/log-parser/agents/dotnet-engineer.md`` — a single line
+# that legitimately contains BOTH the SCOPE-A ``examples/`` token AND the GEN-05 ``dotnet-engineer``
+# token — so the whole pointer line is exempted. The ``dotnet.test_paths`` line is the same precedent:
+# it names ``examples/log-parser/libs/dotnet/...`` — carrying BOTH an ``examples/`` token AND the
+# GEN-05 ``libs/dotnet`` prose token on one line — so it is exempted identically.
 _INSTANCE_ROOT_FILE = "harness/project.toml"
 
-# Matches the sanctioned instance-pointer lines in project.toml: ``root = ...`` and ``persona = ...``.
-_INSTANCE_POINTER_LINE = re.compile(r"\s*(root|persona)\s*=")
+# Matches the sanctioned instance-pointer lines in project.toml: ``root = ...``, ``persona = ...``,
+# and ``test_paths = ...`` (the Phase-6 CI test-target data slot — ADR-0002 (c)).
+_INSTANCE_POINTER_LINE = re.compile(r"\s*(root|persona|test_paths)\s*=")
 
 
 def _tracked_core_files() -> list[Path]:
@@ -104,8 +107,9 @@ def _tracked_core_files() -> list[Path]:
 
 
 def _is_instance_pointer_line(rel_path: str, line: str) -> bool:
-    """The one sanctioned exemption: the ``root =`` / ``persona =`` instance-pointer lines in
-    harness/project.toml (ADR-0002 (c)) — the only core-plane place that may name an instance asset."""
+    """The one sanctioned exemption: the ``root =`` / ``persona =`` / ``test_paths =`` instance-pointer
+    lines in harness/project.toml (ADR-0002 (c)) — the only core-plane place that may name an instance
+    asset. ``test_paths`` is the Phase-6 CI test-target data slot, same precedent as ``persona``."""
     return rel_path == _INSTANCE_ROOT_FILE and _INSTANCE_POINTER_LINE.match(line) is not None
 
 
@@ -191,3 +195,25 @@ def test_instance_pointer_persona_is_exempt() -> None:
         _INSTANCE_ROOT_FILE, 'persona = "examples/log-parser/agents/dotnet-engineer.md"'
     )
     assert not hits, "the sanctioned dotnet.persona instance pointer must be exempt from the guard"
+
+
+def test_instance_pointer_test_paths_is_exempt() -> None:
+    """The sanctioned harness/project.toml test_paths pointer is exempt even though the dotnet leg's
+    value carries BOTH an ``examples/`` (SCOPE-A) and a ``libs/dotnet`` (GEN-05) token on one line —
+    the same precedent as the persona pointer (ADR-0002 (c))."""
+    hits = _scan_lines(
+        _INSTANCE_ROOT_FILE,
+        'test_paths = ["examples/log-parser/libs/dotnet/Normalize.Tests/Normalize.Tests.csproj"]',
+    )
+    assert not hits, (
+        "the sanctioned dotnet.test_paths instance pointer must be exempt from the guard"
+    )
+
+
+def test_negative_control_flags_nonexempt_project_toml_leak() -> None:
+    """Scan stays LIVE in project.toml: an ``examples/`` leak on a NON-pointer key (not
+    root/persona/test_paths) is still flagged — the exemption is key-scoped, not a blanket file pass."""
+    hits = _scan_lines(_INSTANCE_ROOT_FILE, 'sdk_bootstrap = "examples/leak/x.sh"')
+    assert hits, (
+        "negative control failed: a non-pointer examples/ leak in project.toml must be flagged"
+    )

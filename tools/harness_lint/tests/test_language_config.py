@@ -56,3 +56,19 @@ def test_each_configured_language_has_test_command() -> None:
     """Every language declares a non-empty `test` command (the /test golden-path invocation)."""
     for lang in languages():
         assert str(lang.get("test", "")).strip(), f"{lang['id']!r}: empty test command"
+
+
+def test_each_configured_language_has_test_paths() -> None:
+    """Every language declares a non-empty `test_paths` list[str] whose entries exist on disk.
+
+    The Phase-6 CI matrix fans out over these config-declared targets (CI-01, config-derived not
+    hardcoded). Use `.exists()` (NOT `.is_file()` like the persona check): the dotnet leg names a
+    `.csproj` file but the python leg names a tests directory.
+    """
+    for lang in languages():
+        paths = lang.get("test_paths", [])
+        assert isinstance(paths, list), f"{lang['id']!r}: test_paths is not a list"
+        assert paths, f"{lang['id']!r}: empty test_paths"
+        for p in paths:
+            assert isinstance(p, str), f"{lang['id']!r}: non-str test_paths entry {p!r}"
+            assert (_REPO_ROOT / p).exists(), f"{lang['id']!r}: test_paths {p} not found on disk"
