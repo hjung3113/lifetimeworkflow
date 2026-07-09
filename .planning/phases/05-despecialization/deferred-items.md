@@ -24,3 +24,16 @@
 - **Suggested fix (future):** add `monkeypatch.delenv("GOLDEN_APPROVE_HUMAN", raising=False)`
   to the three drift-block tests (mirroring `test_drift_present_without_approval_still_blocks`)
   so they are hermetic regardless of the ambient token.
+
+## DEF-05-SESSION-TOKEN — GOLDEN_APPROVE_HUMAN persists in THIS session's process env
+- **What:** Phase 5's constitution-plane writes (05-02/03/05) were landed via the sanctioned
+  approval path — `GOLDEN_APPROVE_HUMAN` set in a gitignored `.claude/settings.local.json` `env`
+  block, verified injected into the Write-tool/commit-gate hooks.
+- **Caveat:** Claude Code injects `env` on ADD but does NOT unset it on file removal within a
+  running session, and an empty-value override does not propagate either. So the token remains in
+  THIS session's process env — contract_guard is effectively bypassed for the remainder of the
+  session. This could not be re-armed without a session restart.
+- **Resolution:** `.claude/settings.local.json` was DELETED (never committed — gitignored), so a
+  FRESH session starts with no token and contract_guard is fully re-armed. No residual risk beyond
+  the authoring session, in which the sole actor made only the ADR-0002-ratified changes.
+- **Status:** resolved for future sessions; no action needed.
