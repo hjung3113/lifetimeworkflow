@@ -1,6 +1,6 @@
 """Breaking-vs-non-breaking classification (CONTRACT-04, D-07, seed change_policy).
 
-Per correction-rules.catalog.yaml change_policy: a purely additive edit (a new optional column, a
+Per the change-policy catalog: a purely additive edit (a new optional column, a
 new rule case, a new enum value) is NON-BREAKING; removing/renaming a required field or changing a
 fixed expected value (const/enum narrowing) is BREAKING.
 """
@@ -20,10 +20,10 @@ from tools.contract_drift.drift import classify  # noqa: E402
 # A representative TSV-spec-shaped schema: required columns + a fixed convention const + an enum.
 _BASE = {
     "type": "object",
-    "required": ["timestamp", "equipment_id"],
+    "required": ["timestamp", "record_id"],
     "properties": {
         "timestamp": {"type": "string"},
-        "equipment_id": {"type": "string"},
+        "record_id": {"type": "string"},
         "newline": {"const": "lf"},
         "tsv_escape": {"enum": ["backslash", "forbid"]},
     },
@@ -55,14 +55,14 @@ def test_identical_schema_is_non_breaking():
 def test_removed_required_column_is_breaking():
     new = copy.deepcopy(_BASE)
     new["required"] = ["timestamp"]
-    del new["properties"]["equipment_id"]
+    del new["properties"]["record_id"]
     assert classify(_BASE, new) == "breaking"
 
 
 def test_renamed_required_column_is_breaking():
     new = copy.deepcopy(_BASE)
-    new["required"] = ["timestamp", "equip_id"]
-    new["properties"]["equip_id"] = new["properties"].pop("equipment_id")
+    new["required"] = ["timestamp", "rec_id"]
+    new["properties"]["rec_id"] = new["properties"].pop("record_id")
     assert classify(_BASE, new) == "breaking"
 
 

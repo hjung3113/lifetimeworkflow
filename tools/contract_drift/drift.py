@@ -7,7 +7,7 @@ classifies the change breaking vs non-breaking by diffing the two schema documen
 gate. The CLI (``check.sh`` → ``python -m tools.contract_drift.drift``) exits 0 iff the live tree
 matches the baseline.
 
-Classification (seed change_policy — correction-rules.catalog.yaml):
+Classification (seed change_policy — the instance's change-policy catalog):
   * purely additive (new optional property / new enum case) → ``non-breaking``
   * removed/renamed required field, or a changed/narrowed fixed value (const/enum) → ``breaking``
 """

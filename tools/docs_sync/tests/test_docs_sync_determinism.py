@@ -20,9 +20,9 @@ import pytest
 from tools.docs_sync import generate as docs_sync
 
 # The seed schemas map 1:1 to reference pages (DOCS-03). After the 05-03 domain move (GEN-01) the
-# domain schemas (standard-log/correction-rules/equipment-*) relocated to the log-parser example, so
-# the CORE contracts tree now holds only the generic §4.3–4.6 convention page (format-conventions)
-# and the domain-neutral generic default instance (greeting, GEN-02, 05-02).
+# relocated domain schemas moved to the log-parser example, so the CORE contracts tree now holds only
+# the generic §4.3–4.6 convention page (format-conventions) and the domain-neutral generic default
+# instance (greeting, GEN-02, 05-02).
 EXPECTED_PAGES = frozenset(
     {
         "format-conventions",
@@ -126,7 +126,7 @@ def test_rows_are_sorted_and_typed() -> None:
 
     Names sorted, required bool.
     """
-    # Repointed off the relocated "standard-log" (05-03 domain move) to a schema that STAYS in the
+    # Repointed off a relocated domain schema (05-03 domain move) to a schema that STAYS in the
     # core tree — format-conventions carries top-level const props, so rows() coverage is preserved.
     _, schema = next((n, s) for n, s in docs_sync.iter_schemas() if n == "format-conventions")
     table = docs_sync.rows(schema)

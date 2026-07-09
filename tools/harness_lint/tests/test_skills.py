@@ -43,9 +43,9 @@ _RESERVED_WORDS = ("anthropic", "claude")
 # Angle-bracket XML tags are forbidden in name/description (T-03-19).
 _XML_CHARS = ("<", ">")
 
-# Exactly the four enumerated CORE skills (D-07) — the domain skills
-# (normalization-catalog, pipeline-patterns) and the instance-language skill (dotnet-conventions)
-# moved to the log-parser example instance (Phase 5.5). No more, no fewer (anti-sprawl).
+# Exactly the four enumerated CORE skills (D-07) — the instance's domain skills and its
+# instance-language skill moved to the log-parser example instance (Phase 5.5). No more, no fewer
+# (anti-sprawl).
 EXPECTED_SKILLS = frozenset(
     {
         "python-conventions",
