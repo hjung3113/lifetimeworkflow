@@ -18,11 +18,12 @@ wrong. So the contract entry is authored **before** any code exists.
 
 ## Mandated order (do NOT skip or reorder a step)
 
-1. **Contract entry FIRST.** Add the rule to the contract — an entry under `normalization_rules`
-   (or `correction_rules`) in `contracts/normalization/correction-rules.catalog.yaml`, conforming to
-   `contracts/normalization/correction-rules.schema.json` (an `id`, its `scope`/`target_field`,
-   `kind`, and a human `description`). Validate with `/contract-check`. If the schema itself must
-   change, that is a gated constitution-plane edit (schema-hash drift + ADR) — not a silent tweak.
+1. **Contract entry FIRST.** Add the rule to the contract — an entry under the instance's rule set
+   (e.g. the generic default's `contracts/sample/<rule-catalog>.yaml`, conforming to its companion
+   `contracts/sample/<rule-catalog>.schema.json`) — an abstract rule carrying an `id`, its
+   `scope`/`target_field`, `kind`, and a human `description`. Validate with `/contract-check`. If the
+   schema itself must change, that is a gated constitution-plane edit (schema-hash drift + ADR) — not
+   a silent tweak.
 
 2. **Data-based (input, expected) case SECOND.** Add a *data* case — an explicit `(input, expected)`
    pair — as a `test_cases` entry on the rule (and/or a fixture in `libs/python` normalize-fixtures).

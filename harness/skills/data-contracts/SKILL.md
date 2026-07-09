@@ -17,12 +17,17 @@ gates.
 
 ```
 contracts/
-├── log-specs/        standard-log.spec.yaml + .schema.json
-├── normalization/    correction-rules.catalog.yaml + .schema.json
-│                     format-conventions.schema.json   (§4.3–4.6 materialized, P14 hash target)
-├── reference-data/   equipment-master.yaml + .schema.json
-└── state/            equipment-progress.yaml + .schema.json
+├── sample/           greeting.schema.json             (generic default instance, GEN-02)
+├── format-conventions.schema.json                     (§4.3–4.6 materialized, P14 hash target)
+├── <domain-spec>/    <name>.spec.yaml + .schema.json
+├── <rules>/          <name>.catalog.yaml + .schema.json
+├── <reference>/      <name>.master.yaml + .schema.json
+└── <state>/          <name>.progress.yaml + .schema.json
 ```
+
+The `<…>/` dirs are an instance's own domain contracts; the shipped generic default is
+`contracts/sample/greeting.schema.json`, and `format-conventions.schema.json` is the language-neutral
+core convention target.
 
 - **YAML spec** = human-readable skeleton. **Companion `.schema.json`** (JSON Schema Draft
   2020-12) = the validated, hashed source of truth.

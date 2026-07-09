@@ -3,8 +3,8 @@
 **Requirement:** CONTRACT-02 · **Decision:** D-04 / D-05 · **Plane:** constitution (human-owned)
 
 > **The rule is canonical, not any one language.** This document is the single source of
-> truth for the §4.3–4.6 TSV canonicalization. The Python core (`libs/python/normalize`) and
-> the .NET core (`libs/dotnet/Normalize`) are each a *thin* implementation of these rules.
+> truth for the §4.3–4.6 TSV canonicalization. The Python core (`libs/python/normalize`) and an
+> instance's language-side twin are each a *thin* implementation of these rules.
 > A shared `(raw, canonical)` fixture corpus (`libs/normalize-fixtures/*.json`) is loaded by
 > **both** test suites; any per-language drift fails the parity test. This core is reused by the
 > Phase-4 polyglot linter (POLY-01) — it is a clean, shared library, not a private helper.
