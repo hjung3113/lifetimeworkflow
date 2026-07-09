@@ -162,7 +162,7 @@ Plans:
 
 **Wave 2** *(blocked on 05-01)*
 
-- [ ] 05-02-PLAN.md — GEN-02 generic default instance: `contracts/sample/greeting.schema.json` + `golden/sample/**` + golden_runner identity converter/golden_dir; full loop runs .NET-free; rebaseline root manifest
+- [x] 05-02-PLAN.md — GEN-02 generic default instance: `contracts/sample/greeting.schema.json` + `golden/sample/**` + golden_runner identity converter/golden_dir; full loop runs .NET-free; rebaseline root manifest
 
 **Wave 3** *(blocked on 05-01, 05-02)*
 
@@ -213,7 +213,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 2. Two-Plane Memory + Rules | 5/5 | Complete   | 2026-07-08 |
 | 3. Agents + Commands + Skills | 7/7 | Complete   | 2026-07-08 |
 | 4. Plugins + Hooks | 6/6 | Complete   | 2026-07-08 |
-| 5. De-specialization & Template Extraction | 2/5 | In Progress|  |
+| 5. De-specialization & Template Extraction | 3/5 | In Progress|  |
 | 5.5. Authored-Surface Genericization (INSERTED) | 0/TBD | Not started | - |
 | 6. CI + Gates (generic) | 0/TBD | Not started | - |
 | 7. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |
