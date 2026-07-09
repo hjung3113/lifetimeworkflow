@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in_progress
-stopped_at: Completed 055-01-PLAN.md (Phase 5.5 authored-surface move — 3 skills + dotnet-engineer persona to examples/log-parser/)
-last_updated: "2026-07-09T05:23:28.106Z"
+status: executing
+stopped_at: Completed 055-02-PLAN.md (GEN-05 wave 2 — core prose sweep + tools/ token sweep + instance docs)
+last_updated: "2026-07-09T05:31:41.511Z"
 last_activity: 2026-07-09
 progress:
-  total_phases: 8
+  total_phases: 7
   completed_phases: 5
-  total_plans: 32
-  completed_plans: 30
+  total_plans: 29
+  completed_plans: 29
   percent: 71
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 5.5 (Authored-Surface Genericization, GEN-05) — the domain/instance-language authored surface move landed (055-01); next the prose sweep (055-02) and the GEN-04 guard prose+pointer extension (055-03).
+**Current focus:** Phase 5.5 (Authored-Surface Genericization, GEN-05) — the domain/instance-language authored surface move landed (055-01) and the core prose+tools/ token sweep landed (055-02); next the GEN-04 guard prose+pointer extension (055-03) that exempts the project.toml persona= line.
 
 ## Current Position
 
 Phase: 4 COMPLETE. **Re-scoped (ADR-0002):** project redefined from log-parser-specific harness → general contract-first polyglot agent-harness template; log-parser domain to be demoted to `examples/log-parser/`. New Phase 5 (GEN) inserted; old CI→6, Emitter→7 (re-scoped generic).
 Plan: 05-01 COMPLETE (D-05 commit-gate drift approval path); 05-04 COMPLETE (GEN-03 harness/project.toml language SSOT + consistency gate); 05-02 COMPLETE (GEN-02 generic default instance — greeting sample contract + identity golden case, no .NET); 05-03 COMPLETE (GEN-01 domain move — semiconductor seed + libs/dotnet relocated under examples/log-parser/ via history-preserving git mv; root manifest rebaselined to generics, drift clean; snapshots regenerated; committed through the live gate); 05-05 COMPLETE (GEN-04 core→example no-dependency guard + template docs recast + ADR-0002, landed through the live gate via GOLDEN_APPROVE_HUMAN; full non-example suite 366 passed). **Phase 5 COMPLETE.**
-Status: Phase 5 COMPLETE (05-01..05 all landed). **Phase 5.5 IN PROGRESS:** 055-01 COMPLETE (GEN-05 wave 1 — history-preserving git mv of skills normalization-catalog/pipeline-patterns/dotnet-conventions + persona dotnet-engineer to examples/log-parser/; harness_lint anti-sprawl pins reduced to 4 core skills + 4 core personas; strangler-step agent repointed to orchestrator; project.toml dotnet.persona repointed to the moved examples/ path; all 4 R100 renames). **Known transient RED:** test_core_no_example_dep::test_core_has_no_example_dependency is intentionally left failing (1 test) — the project.toml persona pointer needs the guard's pointer-line exemption, which RESEARCH assigns to 055-03; the "Do NOT touch the guard" instruction was honored, so the full non-example suite is 349 passed / 1 failed until 055-03 lands. BOOT-01 .NET egress-denied still stands.
+Status: Phase 5 COMPLETE (05-01..05 all landed). **Phase 5.5 IN PROGRESS:** 055-01 COMPLETE (GEN-05 wave 1 — history-preserving git mv of skills normalization-catalog/pipeline-patterns/dotnet-conventions + persona dotnet-engineer to examples/log-parser/; harness_lint anti-sprawl pins reduced to 4 core skills + 4 core personas; strangler-step agent repointed to orchestrator; project.toml dotnet.persona repointed to the moved examples/ path; all 4 R100 renames). 055-02 COMPLETE (GEN-05 wave 2 — genericized the surviving core authored surface data-contracts/new-normalization-rule/orchestrator/explorer/normalize-spec with methodology+order+drift-gate prose byte-identical; swept every core tools/ comment+fixture guard token incl. two extra harness_lint test comments; test_classify fixture renamed equipment_id→record_id/equip_id→rec_id, classification unchanged; instance AGENTS.md+README now record the moved skills+persona). Core guard-token grep over tools/harness/libs now returns ONLY the sanctioned project.toml persona= line. **Known transient RED (unchanged):** test_core_no_example_dep::test_core_has_no_example_dependency remains the single expected failure — the project.toml persona pointer needs the guard's pointer-line exemption, which RESEARCH assigns to 055-03; the full non-example suite is 349 passed / 1 failed until 055-03 lands. BOOT-01 .NET egress-denied still stands.
 Last activity: 2026-07-09
 
-Progress: [█████████░] 94%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
