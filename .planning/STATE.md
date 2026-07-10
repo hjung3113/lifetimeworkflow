@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 05-03-PLAN.md (GEN-01 domain move to examples/log-parser/)
-last_updated: "2026-07-10T23:29:19.165Z"
+last_updated: "2026-07-10T23:34:38.426Z"
 last_activity: 2026-07-10
 progress:
   total_phases: 8
   completed_phases: 6
   total_plans: 38
-  completed_plans: 34
+  completed_plans: 35
   percent: 75
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 08 (pipeline-topology-conductor-per-component-agents) — EXECUTING
-Plan: 3 of 6
+Plan: 4 of 6
 Status: Ready to execute
 Last activity: 2026-07-10
 
-Progress: [█████████░] 89%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
@@ -84,6 +84,7 @@ Progress: [█████████░] 89%
 | Phase 06-ci-gates P03 | 7min | 4 tasks | 3 files |
 | Phase 08 P01 | 6min | 2 tasks | 5 files |
 | Phase 08 P02 | 9min | 2 tasks | 3 files |
+| Phase 08 P03 | 7min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -135,6 +136,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [05-05] GEN-04 core→example guard + ADR-0002 de-specialization; SCOPE A guard scans tools/harness/libs for examples/ refs + import examples + moved components/toy-converter (self-excluded, [instance] root exempt, live negative controls); bare libs/dotnet prose deferred to GEN-05; ADR-0002 (accepted, complements 0001) records generic re-scope + normalize split (python normalize+fixtures STAY as language-neutral core, libs/dotnet MOVES because core-is-language-neutral) + project.toml language slot + GOLDEN_APPROVE_HUMAN drift-only path; landed via live gate, non-example suite 366 passed; Phase 5 COMPLETE.
 - [Phase ?]: [Phase 08]: [08-01] PIPE-01 generic pipeline-topology DATA slot — cloned the [[languages]] -> loader.languages() -> test_language_config.py triad verbatim: harness/project.toml gains a banner-scoped GENERIC-ONLY source/sink/sample-record default ([[components]] + [pipeline]); loader.components()/pipeline() are pure passthrough (no enforcement); consistency lives in the gate test_pipeline_config.py (component.language in declared languages, ids unique, edges well-formed: endpoints declared + contract in from.produces AND to.consumes). Concrete multi-component topology deferred to instance overlay (Plan 04) to keep core GEN-04 green. Non-example suite 418 passed.
 - [Phase ?]: [Phase 08]: [08-02] PIPE-02 conductor evolved IN PLACE — the primary orchestrator now reads the declared [[components]]/[pipeline] topology (tools.harness_config) and routes by pipeline stage/component (not only language): new 'Trace the topology' intake step + stage/component routing rows + /pipeline entry; test_orchestrator_topology.py pins single-primary + topology-intake + stage/component routing. EXPECTED_PERSONAS stays 4 (no second primary). Fixed a pre-existing GEN-04 prose leak in 08-01's test_pipeline_config.py (literal examples/ token slipped the guard which scans git ls-files, file committed after guard ran). Full non-example suite 421 passed.
+- [Phase ?]: [Phase 08]: [08-03] PIPE-03 neutral component-engineer template (anti-sprawl-EXEMPT under harness/agents/templates/ like engineer.md) — stage-keyed fill-in-the-blanks persona; /component gains a mandated-order+all-three-or-none section deriving the agent into the instance agents/ and registering the [[components]]/[pipeline] slot; new test_agent_templates.py closes the templates/*.md gap (EXPECTED_TEMPLATES={engineer,component-engineer}, imports VALID_MODES/ALLOWED_PERMISSION_KEYS from test_agents). EXPECTED_PERSONAS stays 4; GEN-04 green; full non-example suite 430 passed.
 
 ### Pending Todos
 
@@ -161,6 +163,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-10T23:29:11.543Z
+Last session: 2026-07-10T23:34:17.767Z
 Stopped at: Completed 05-03-PLAN.md (GEN-01 domain move to examples/log-parser/)
 Resume file: None
