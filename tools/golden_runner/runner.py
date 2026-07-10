@@ -196,9 +196,10 @@ def run_converter(
         text=True,
     )
     if proc.returncode != 0:
-        raise GoldenRunnerError(
-            f"toy-converter exited {proc.returncode}: {proc.stderr.strip() or proc.stdout.strip()}"
-        )
+        # Surface BOTH streams: a failed `dotnet run` prints CS build errors to stdout while the
+        # terse "The build failed" line goes to stderr — showing only stderr masks the real cause.
+        detail = "\n".join(s for s in (proc.stdout.strip(), proc.stderr.strip()) if s)
+        raise GoldenRunnerError(f"toy-converter exited {proc.returncode}: {detail}")
     return proc.returncode
 
 
