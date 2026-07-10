@@ -4,7 +4,8 @@ harness/project.toml is well-formed and internally agrees (config = SSOT, no cod
 Mirrors test_language_config.py's structural-scan idiom (repo root via parents[3], real config
 loaded through the shared loader, iterate-config / assert-agreement / fail-loud). These checks run
 against the GENERIC core default ONLY (source/sink/sample-record) — they must NOT reference any
-`examples/` instance. A malformed topology (component naming an undeclared language, an edge with an
+instance overlay (an instance's own topology lives under its own tree, never the core default).
+A malformed topology (component naming an undeclared language, an edge with an
 unknown endpoint, or a contract absent from the from-component's produces / to-component's consumes)
 fails the suite loud so a broken config never resolves silently (T-8-01).
 """
