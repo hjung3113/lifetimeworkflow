@@ -123,7 +123,7 @@
 > 에이전트 모델을 per-**언어**에서 파이프라인-**인식**으로 진화시킨다. 코어(`harness/`)에는 재사용 가능한 **메커니즘**(토폴로지 슬롯 + 지휘자 + 컴포넌트 엔지니어 템플릿)만, 구체적 4-컴포넌트 시연은 `examples/log-parser/`에 둔다(ADR-0002 / GEN-04: 코어는 예제에 의존 금지).
 
 - [x] **PIPE-01**: `harness/project.toml`에 범용 **파이프라인-토폴로지 슬롯** — 각 컴포넌트의 id·stage·language 참조·edge 계약(consumes/produces)을 선언하는 순수 DATA 테이블(`[[components]]`/`[pipeline]`). `tools/harness_config/loader.py` passthrough + GEN-03-스타일 consistency 게이트. 예제 의존 0 (GEN-04 green).
-- [ ] **PIPE-02**: 기존 primary `orchestrator` 페르소나를 **토폴로지-인식 지휘자**로 진화 — 선언된 토폴로지를 읽어 parser→converter→scheduler→collector 데이터흐름 + edge 계약을 모델링하고, 언어가 아니라 파이프라인 stage/컴포넌트로 라우팅. 라우팅 테이블 + intake 절차 갱신 (primary는 하나로 유지).
+- [x] **PIPE-02**: 기존 primary `orchestrator` 페르소나를 **토폴로지-인식 지휘자**로 진화 — 선언된 토폴로지를 읽어 parser→converter→scheduler→collector 데이터흐름 + edge 계약을 모델링하고, 언어가 아니라 파이프라인 stage/컴포넌트로 라우팅. 라우팅 테이블 + intake 절차 갱신 (primary는 하나로 유지).
 - [ ] **PIPE-03**: `harness/agents/templates/`에 중립 **`component-engineer` 템플릿**(engineer.md처럼 persona anti-sprawl 게이트 예외) + 선언된 토폴로지 컴포넌트에 바인딩된 per-컴포넌트 에이전트를 인스턴스화하는 scaffold/register 커맨드(`/component` 확장 또는 보완).
 - [ ] **PIPE-04**: `examples/log-parser/`에서 메커니즘 **엔드투엔드 시연** — 4개 구체 컴포넌트 에이전트(parser·converter·scheduler·collector) + 인스턴스 `project.toml` 슬롯에 선언된 로그파서 파이프라인 토폴로지; 지휘자가 전체 흐름을 추적.
 - [ ] **PIPE-05**: 파이프라인 모델을 실행 가능하게 하는 스킬/커맨드 — 토폴로지-trace `pipeline-map` 스킬 + 데이터흐름을 시각화·추적하고 올바른 컴포넌트 에이전트를 찾아주는 `/pipeline` 커맨드.
@@ -208,7 +208,7 @@
 | EMIT-01 | Phase 7 | Pending |
 | EMIT-02 | Phase 7 | Pending |
 | PIPE-01 | Phase 8 | Complete |
-| PIPE-02 | Phase 8 | Pending |
+| PIPE-02 | Phase 8 | Complete |
 | PIPE-03 | Phase 8 | Pending |
 | PIPE-04 | Phase 8 | Pending |
 | PIPE-05 | Phase 8 | Pending |

@@ -222,7 +222,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 5.5. Authored-Surface Genericization (INSERTED) | 3/3 | Complete|  |
 | 6. CI + Gates (generic) | 3/3 | Complete   | 2026-07-09 |
 | 7. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |
-| 8. Pipeline-Topology Conductor + Per-Component Agents | 1/6 | In Progress|  |
+| 8. Pipeline-Topology Conductor + Per-Component Agents | 2/6 | In Progress|  |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
 
