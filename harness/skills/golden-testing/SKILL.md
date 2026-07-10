@@ -1,0 +1,53 @@
+---
+name: golden-testing
+description: >-
+  Use when running, diffing, or promoting golden/approval snapshots across the .NET and Python
+  sides. Covers the tools.golden_runner run + normalized-equivalence compare (no byte-diff), the
+  Verify.XunitV3 / syrupy `.received`/`.verified` workflow, and the human-gated /golden-approve
+  promotion — machines gate, humans ratify.
+---
+
+# golden-testing
+
+How cross-language equivalence is proven in this repo. Golden testing is the linchpin that lets a
+.NET rewrite and the legacy/Python behavior be declared equivalent — but only through a
+canonicalizing comparator, never a naive `diff`.
+
+## The discipline: normalized-equivalence, not byte-diff
+
+A raw `diff` fails on exactly the polyglot bugs this project exists to catch — BOM, CRLF,
+locale decimals, float last-digit repr, unordered rows, timezone kind. Equivalence is compared
+**only after** the shared §4.3–4.6 canonicalization core:
+
+- UTF-8 BOM stripped · forced LF · InvariantCulture `.` decimals · tolerance-aware float compare ·
+  deterministic key/row ordering · UTC ISO-8601 timestamps · explicit TSV escape + null token.
+
+Representation-only differences PASS; a value regression FAILs. This is the run/compare contract
+of `tools.golden_runner.runner`.
+
+## Running
+
+- Run a case: `uv run python -m tools.golden_runner.runner <case>`. It spawns the .NET converter
+  (subprocess, `shell=False`, absolute dotnet path), normalizes both sides through the one shared
+  core, and diffs against the approved `.verified`.
+- .NET-side snapshots use **Verify.XunitV3** (`.received`/`.verified`); Python-side determinism
+  uses **syrupy** (`.ambr`, `--snapshot-update`).
+
+## Promotion — machines gate, humans ratify
+
+- Never let an agent self-bless a golden. Promotion is `/golden-approve`, which wraps
+  `tools.golden_runner.approve` and **refuses** (exit 3) without an explicit human
+  `--approve` + `--adr <id>` + token.
+- `golden/` is a top-level constitution-plane sibling of `contracts/` — CODEOWNERS-gated, never
+  agent-writable.
+
+## When a golden goes red
+
+Golden red is a signal, not a chore: either the code regressed (fix the code) or the behavior
+intentionally changed (capture a data case, get human approval + ADR). Do not update `.verified`
+to make red go away.
+
+## Deeper reference
+
+Put a worked run-and-approve transcript under `references/`. See `CLAUDE.md`
+§"Golden-Equivalence Comparator" for the full canonicalization rule table.

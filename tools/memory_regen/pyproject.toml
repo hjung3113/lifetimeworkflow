@@ -1,0 +1,23 @@
+[project]
+name = "logparser-memory-regen"
+version = "0.0.0"
+description = "Derived-plane generators (repo-map via tree-sitter + networkx PageRank, contracts-index via the Phase-1 hash/drift modules) + the shared session-start injection assembler. Outputs to .memory/derived/ (gitignored, regenerated); invoked as `python -m tools.memory_regen.<entry>`."
+requires-python = ">=3.11"
+# Supply-chain T-02-SC: pin EXACT versions — no floating ranges. All five verdict [OK] in
+# 02-RESEARCH §Package Legitimacy Audit (slopcheck + functional import in-session). Individual
+# grammar wheels only — NOT tree-sitter-language-pack (it downloads parser binaries at runtime,
+# breaking determinism + offline/ephemeral operation). Declared here so uv.lock resolves ONCE in
+# Wave 1; Wave-2 plans (repo-map / contracts-index) never contend on the lock.
+dependencies = [
+    "tree-sitter==0.25.2",
+    "tree-sitter-python==0.25.0",
+    "tree-sitter-c-sharp==0.23.5",
+    "tree-sitter-bash==0.25.1",
+    "networkx==3.6.1",
+]
+
+[tool.uv]
+# Virtual member: no build-system, nothing to package. Imported by module path from the shared
+# uv workspace environment (`python -m tools.memory_regen.<entry>`); no wheel is built. Mirrors
+# tools/contract_hash + tools/golden_runner.
+package = false

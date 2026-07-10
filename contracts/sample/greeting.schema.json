@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harness.local/contracts/sample/greeting.schema.json",
+  "title": "greeting (generic default sample contract)",
+  "description": "Domain-neutral Draft 2020-12 sample contract shipped as the template's generic default instance (GEN-02). Carries zero domain vocabulary — it exists only to prove the contract->hash->drift->docs loop runs on a blank domain.",
+  "type": "object",
+  "required": ["name"],
+  "additionalProperties": false,
+  "properties": {
+    "name": { "type": "string", "description": "Who to greet." },
+    "greeting": { "type": "string", "const": "hello", "description": "The fixed greeting word." }
+  }
+}

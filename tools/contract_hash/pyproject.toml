@@ -1,0 +1,13 @@
+[project]
+name = "logparser-contract-hash"
+version = "0.0.0"
+description = "Python-only RFC 8785 (JCS) canonicalize + SHA-256 per-schema hasher → contracts/.hashes/manifest.json baseline (CONTRACT-04, D-07). Covers format-conventions.schema.json so §4-5 convention changes trip the drift gate (P14)."
+requires-python = ">=3.11"
+# rfc8785 0.1.4 (Trail of Bits) is pinned in the workspace-root pyproject and resolved into the
+# shared uv environment; never hand-roll canonicalization or the hash (RESEARCH §Don't Hand-Roll).
+dependencies = ["rfc8785==0.1.4"]
+
+[tool.uv]
+# Virtual member: no build-system, nothing to package. Imported by module path from the shared
+# uv workspace environment (invoked as `python -m tools.contract_hash.hash`); no wheel is built.
+package = false

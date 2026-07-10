@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harness.local/contracts/normalization/format-conventions.schema.json",
+  "title": "Cross-cutting format conventions (§4.3-4.6) — materialized, hashable (P14)",
+  "description": "SEED PLACEHOLDER. Materializes the integration_contracts_design §4.3-4.6 cross-cutting canonicalization conventions as explicit const/enum fields so the contract-drift hash (Plan 05, RFC 8785 -> SHA-256) covers convention changes — not only column reorders (PITFALLS P14). Flipping any const here (e.g. bom false->true) MUST bump the drift hash. All values are EXAMPLE placeholders (A4); domain-confirmed values are Out of Scope (CONTRACT-01).",
+  "type": "object",
+  "required": [
+    "encoding",
+    "bom",
+    "newline",
+    "decimal_sep",
+    "culture",
+    "float_compare",
+    "row_ordering",
+    "timezone",
+    "null_token",
+    "tsv_escape",
+    "interval"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "encoding": {
+      "description": "§4.3 character encoding — unified UTF-8.",
+      "const": "utf-8"
+    },
+    "bom": {
+      "description": "§4.3 byte-order-mark presence — stripped/absent (recommended). .NET may emit a BOM; Python then misreads the first column.",
+      "const": false
+    },
+    "newline": {
+      "description": "§4.3 line ending — force LF (no CRLF). .NET default may be CRLF.",
+      "const": "lf",
+      "enum": ["lf"]
+    },
+    "decimal_sep": {
+      "description": "§4.6 decimal separator — '.' fixed (locale ',' accident guard).",
+      "const": ".",
+      "enum": [".", ","]
+    },
+    "culture": {
+      "description": "§4.6 number formatting culture — InvariantCulture forced (.NET ToString is locale-dependent).",
+      "const": "invariant"
+    },
+    "float_compare": {
+      "description": "§4 numeric comparison — tolerance-aware float compare (avoid last-digit repr diffs).",
+      "type": "object",
+      "required": ["mode", "tolerance"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "const": "tolerance" },
+        "tolerance": { "const": 1e-9 }
+      }
+    },
+    "row_ordering": {
+      "description": "§4 key/row ordering — deterministic sort before diff (unordered sets must not cause false diffs).",
+      "const": "deterministic-sort"
+    },
+    "timezone": {
+      "description": "§4.4 timezone/time format — UTC, fixed ISO-8601 string. Guards .NET DateTime.Kind vs Python naive/aware serialization divergence.",
+      "const": "utc-iso8601"
+    },
+    "null_token": {
+      "description": "§4.3 explicit null-vs-empty token — EXAMPLE placeholder ('' empty string is distinct from this null token). Domain value TBD.",
+      "const": "\\N"
+    },
+    "tsv_escape": {
+      "description": "§4.3 TSV escaping of tab/newline-in-value — EXAMPLE agreed rule (backslash-escape). Domain rule TBD.",
+      "const": "backslash",
+      "enum": ["backslash", "forbid"]
+    },
+    "interval": {
+      "description": "§4 interval half-open convention [start,end) for time/file ranges.",
+      "const": "[start,end)"
+    }
+  }
+}

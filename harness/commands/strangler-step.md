@@ -1,0 +1,50 @@
+---
+description: >-
+  Use when migrating exactly one legacy path behind the trusted golden net — strangler-extract a
+  single path only, refused outright when no captured legacy golden baseline exists for it. Invoke
+  for one incremental migration step on the instance's language side; requires /golden parity green.
+agent: orchestrator
+subtask: true
+---
+
+# /strangler-step — extract ONE legacy path behind the golden net
+
+Thin macro over the **runnable** baseline-refusal gate. Do NOT re-implement the refusal logic —
+`tools.strangler_guard` already encodes the "machines gate, humans ratify" discipline (it mirrors
+`tools.golden_runner.approve`'s exit-3 refusal). A strangler extraction with no trusted equivalence
+reference silently regresses (Pitfall P10 / T-03-24), so the gate runs **first** and aborts the step.
+
+## Step 0 — refuse without a captured baseline (gate FIRST)
+
+The target legacy path is taken from `$ARGUMENTS` and passed **positionally** to the guard. It is
+invoked as a list-form subprocess CLI — arguments are never concatenated into a shell string
+(command-injection guard, T-03-27):
+
+!`python -m tools.strangler_guard $ARGUMENTS`
+
+- **exit 0** → a captured legacy golden `.verified` baseline exists for the path; proceed to Step 1.
+- **exit 3 (REFUSED)** → **STOP.** No baseline = no equivalence reference. Capture a legacy golden
+  baseline first (run `/golden` on the case, then human `/golden-approve`), then re-run this step.
+  The gate never fabricates a baseline — an agent must not route around the refusal (P10).
+
+## Step 1 — extract ONE path only
+
+- Extract **a single legacy path** — the one named in `$ARGUMENTS`. One step = one path. Do **not**
+  batch multiple paths, and do **not** attempt a big-bang rewrite (the `/rewrite-legacy` anti-feature
+  is forbidden by construction, T-03-25).
+- Keep the change minimal and reviewable: strangle the one seam, leave the rest of the legacy path
+  in place for subsequent steps.
+
+## Step 2 — /golden parity is MANDATORY (D-05, success criterion 4)
+
+- After the extraction, run `/golden` for the captured case and require it **green** (normalized
+  parity against the human-approved `.verified` baseline via the shared §4-5 core).
+- A red `/golden` means the extraction changed behavior — the step is **not accepted**. Fix until
+  parity is restored, or revert. Never self-bless a new baseline to make the step pass (that is a
+  human-only `/golden-approve` action, P9).
+
+## Anti-features (forbidden)
+
+- **Multi-path / big-bang extraction** — one path per step, always parity-gated.
+- **Migrating without a baseline** — the runnable gate above refuses it (non-zero exit).
+- **Agent self-approving a baseline** to get to green — promotion is human-only (`/golden-approve`).

@@ -1,0 +1,8 @@
+[
+  { "name": "comma-decimal-separator", "kind": "decimal", "raw": "1,5", "canonical": "1.5" },
+  { "name": "dot-decimal-separator", "kind": "decimal", "raw": "1.5", "canonical": "1.5" },
+  { "name": "trailing-zero-stripped", "kind": "decimal", "raw": "1.50", "canonical": "1.5" },
+  { "name": "comma-trailing-zero", "kind": "decimal", "raw": "2,50", "canonical": "2.5" },
+  { "name": "integer-no-thousands", "kind": "decimal", "raw": "100", "canonical": "100" },
+  { "name": "multi-fraction-comma", "kind": "decimal", "raw": "3,14159", "canonical": "3.14159" }
+]

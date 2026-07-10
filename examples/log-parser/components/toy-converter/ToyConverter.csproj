@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Fixture-grade .NET toy converter (CONTRACT-03, D-01/D-02) — the "new" side of the A-model
+    boundary. Reads a seed TSV named by the "in" CLI option, runs each cell through the SHARED
+    §4-5 Normalizer (libs/dotnet/Normalize — NO duplicated normalization logic, D-02: no real
+    parse/correction), and writes the normalized result to the "out" option as no-BOM / LF. It
+    proves the polyglot plumbing, not
+    domain behavior.
+
+    Targets net10.0 (CLAUDE.md pin). Project-references the shared core; no NuGet deps.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>toy-converter</AssemblyName>
+    <RootNamespace>ToyConverter</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../libs/dotnet/Normalize/Normalize.csproj" />
+  </ItemGroup>
+
+</Project>

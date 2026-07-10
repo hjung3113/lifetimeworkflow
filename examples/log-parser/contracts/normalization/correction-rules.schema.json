@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harness.local/contracts/normalization/correction-rules.schema.json",
+  "title": "normalization + correction rules catalog (SEED PLACEHOLDER companion schema)",
+  "description": "Draft 2020-12 companion schema for correction-rules.catalog.yaml. Validates normalization_rules + correction_rules array shapes while allowing TBD placeholder values. Seed/example — domain rules Out of Scope (CONTRACT-01).",
+  "type": "object",
+  "required": ["id", "normalization_rules", "correction_rules"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string" },
+    "description": { "type": "string" },
+    "owner": { "type": "string" },
+    "version": { "type": "string" },
+    "normalization_rules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rule" }
+    },
+    "correction_rules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rule" }
+    },
+    "change_policy": { "type": "object" }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "scope": { "type": "object" },
+        "target_field": { "type": "string" },
+        "kind": { "type": "string" },
+        "description": { "type": "string" },
+        "mapping": { "type": "object" },
+        "test_cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "input": {},
+              "expected": {}
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+# value-regression golden case — walking-skeleton FAIL demo (CONTRACT-03, ROADMAP 성공기준 3, P4)
+#
+# ⚠️ SEED PLACEHOLDER — 예시 값(비민감 소량 샘플), 도메인 확정값 아님.
+# input/seed.tsv 는 표현 노이즈(BOM+CRLF+locale+TZ)를 담으면서 **진짜 값 회귀**를 하나 포함한다:
+# 첫 데이터 행 param_value 가 9,99 (baseline 은 1.5). 정규화가 표현차는 중화하지만 실차이는 살아남아
+# 골든 FAIL — 정규화가 실회귀를 삼키지 않음을 증명(P4). 실패 시 runner 는 .received 를 쓰되 .verified 는
+# 절대 덮지 않는다 (machines gate, humans ratify — P9).
+
+case_id: value-regression
+owner: TBD
+status: draft (seed placeholder)
+equipment: { maker: TBD, model: TBD }
+
+# 표현만 다른 항목(정규화가 중화) — 아래 실회귀와 구분됨
+allowed_representation_diffs:
+  - encoding_bom
+  - newline_crlf
+  - decimal_locale
+  - timezone_offset
+
+# 정규화 후에도 남는 진짜 차이 (골든이 살려야 하는 것)
+intended_value_regression:
+  row: 1
+  column: param_value
+  baseline: "1.5"
+  new: "9.99"
+
+expected_result: FAIL   # 실값 회귀 → 골든 실패

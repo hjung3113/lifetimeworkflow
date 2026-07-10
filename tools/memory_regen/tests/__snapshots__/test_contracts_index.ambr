@@ -1,0 +1,14 @@
+# serializer version: 1
+# name: test_render_matches_committed_snapshot
+  '''
+  # DERIVED — do not hand-edit (tools/memory_regen/contracts_index.py)
+  
+  Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reuses tools.contract_hash + tools.contract_drift). 2 contract(s).
+  
+  | contract | kind | owner | hash | drift |
+  | --- | --- | --- | --- | --- |
+  | contracts/normalization/format-conventions.schema.json | normalization | TBD | 1af8935bf997 | clean |
+  | contracts/sample/greeting.schema.json | other | TBD | 35f71ca2dbeb | clean |
+  
+  '''
+# ---

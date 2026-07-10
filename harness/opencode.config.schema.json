@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://logparser-harness/opencode.config.subset.schema.json",
+  "title": "opencode.json CONFIG-01 hermetic subset schema",
+  "description": "VENDORED SUBSET schema — a validation AID for the hermetic structural gate (D-02), NOT the opencode runtime's own schema. The test asserts jsonschema.validate(harness/opencode.json, this) so opencode.json drift/typos are caught with no network (never fetch opencode.ai — 403 + non-hermetic, T-03-08). `additionalProperties: true` so unknown/future opencode keys never fail the gate; this schema only pins the CONFIG-01 keys this phase must carry.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["model", "small_model", "instructions", "formatter", "mcp", "permission"],
+  "properties": {
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Expensive implementer default tier (placeholder token, no real model ID)."
+    },
+    "small_model": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Cheap explorer/summarization tier (placeholder token; key name A1-deferred to Phase 6)."
+    },
+    "instructions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Glob pointers to AGENTS.md rules — pointers only, not contracts/** payloads (P2)."
+    },
+    "formatter": {
+      "type": "object",
+      "description": "name -> { command, extensions } formatter wiring (ruff for .py, dotnet format for .cs)."
+    },
+    "mcp": {
+      "type": "object",
+      "description": "MCP server wiring, config-only (D-03). Empty object is valid."
+    },
+    "permission": {
+      "type": "object",
+      "required": ["bash"],
+      "description": "Coarse project-default permission block; the detailed 15-key matrix lives in harness/permission-matrix.json.",
+      "properties": {
+        "bash": {
+          "description": "Either a coarse decision or an insertion-ordered glob->decision object (last-wins, `*` first).",
+          "oneOf": [
+            { "type": "string", "enum": ["allow", "ask", "deny"] },
+            { "type": "object" }
+          ]
+        }
+      }
+    }
+  }
+}

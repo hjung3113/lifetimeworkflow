@@ -1,0 +1,13 @@
+[project]
+name = "logparser-harness-config"
+version = "0.0.0"
+description = "GEN-03 project-config core (D-03): thin stdlib tomllib loader over harness/project.toml — the language/toolchain SSOT slot. Exposes load_project() + language_bash_scopes(); zero external deps, no I/O beyond reading the TOML. Imported by module path `tools.harness_config`; the consistency gate lives in tools.harness_lint.tests.test_language_config."
+requires-python = ">=3.11"
+# Stdlib-only (tomllib, guaranteed by requires-python >=3.11). NO external deps — this member must
+# never mutate uv.lock (T-05-SC).
+dependencies = []
+
+[tool.uv]
+# Virtual member: no build-system, nothing to package. Imported by module path from the shared uv
+# workspace environment. Mirrors tools/harness_perms + tools/harness_lint (package = false).
+package = false

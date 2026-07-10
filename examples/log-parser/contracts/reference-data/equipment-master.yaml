@@ -1,0 +1,28 @@
+# ⚠️ SEED PLACEHOLDER — 예시 시드, 도메인 확정값 아님 (CONTRACT-01)
+# parserimprove monorepo_skeleton에서 복사한 골격. 모든 TBD/예시 값은 example placeholder일 뿐
+# 도메인 진실이 아니다. 동반 정본은 equipment-master.schema.json.
+#
+# 기준정보 마스터 — 스켈레톤
+# 설비/모델/메이커 식별·매핑 + 모듈타입·alias. 파서 동작을 좌우하는 마스터 데이터.
+# 정본은 DB(스키마가 계약). 이 파일은 스키마 계약을 문서화.
+
+id: reference.equipment-master
+description: 설비/모델/메이커/모듈타입/alias 기준정보
+owner: TBD
+version: 0.1.0
+
+# ⚠️ 값 형식 일관성 필수: 단일값/리스트 혼용 금지 (레거시 2.4 문제 해소)
+entities:
+  equipment:
+    keys: [equipment_id]
+    fields: [model_id, maker_id, process_id]   # TBD
+  model:
+    keys: [model_id]
+    fields: [maker_id, module_types]           # list 형식 명시
+  alias:
+    description: 메이커·모델별 표현 → 표준 표현 매핑 (값 정규화 입력)
+    keys: [maker_id, model_id, raw_value]
+    fields: [normalized_value]
+
+change_policy:
+  ref: ../../docs/01-contracts-and-change-policy.md

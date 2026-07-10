@@ -1,0 +1,46 @@
+---
+name: skill-creator
+description: >-
+  Use when about to create or add a new skill to harness/skills. Guides authoring a
+  progressive-disclosure SKILL.md within the shared caps (name and description limits, concise
+  body) and FIRST forces the anti-sprawl question "why not extend an existing skill?" before any
+  new skill directory is created.
+---
+
+# skill-creator
+
+The meta-skill for authoring skills. Its first job is to stop skill sprawl; its second is to make
+the new skill well-formed.
+
+## Step 0 (mandatory): why not an existing skill?
+
+Before creating anything, answer out loud: **"Why can't this live in one of the existing skills?"**
+The enumerated set is small and each description is deliberately disjoint. A new skill is justified
+only when its routing trigger does not overlap any existing skill's trigger. If the knowledge fits
+an existing skill's domain, extend that skill's body or `references/` instead — do not add a
+directory. Overlapping descriptions poison routing (the agent can't choose).
+
+## Step 1: shape
+
+Create `harness/skills/<name>/SKILL.md` where the directory name equals the frontmatter `name`.
+
+- **name:** 1–64 chars, `^[a-z0-9]+(-[a-z0-9]+)*$`, equals the parent directory, no reserved
+  vendor words, no angle-bracket tags.
+- **description:** non-empty, up to 1024 chars, verb-first "Use when… + does…" with a concrete
+  routing trigger, disjoint from every other skill. No angle-bracket tags.
+- **body:** progressive disclosure — the always-loaded frontmatter carries routing; the body is
+  concise (well under ~500 lines, a warn threshold) and points to `references/` for depth rather
+  than inlining everything. Optional subdirs: `references/`, `scripts/`, `assets/`.
+
+The SAME caps apply to both opencode and Claude runtimes (name ≤64, description ≤1024) — there is
+no per-runtime size divergence to author around.
+
+## Step 2: verify
+
+Run `uv run pytest tools/harness_lint/tests/test_skills.py -x -q`. It enforces the caps, the
+regex, the dir-name match, the routing-trigger token, the reserved-word/tag bans, and the pinned
+set of skill names (so adding an un-enumerated skill fails loudly).
+
+## Deeper reference
+
+Keep a template SKILL.md and a checklist under `references/`.

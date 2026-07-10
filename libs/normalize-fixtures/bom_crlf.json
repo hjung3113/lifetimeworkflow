@@ -1,0 +1,9 @@
+[
+  {
+    "name": "bom-strip-crlf-to-lf-sorted",
+    "kind": "tsv",
+    "raw_b64": "77u/ZGVsdGEJMg0KYWxwaGEJMQ0K",
+    "canonical": "alpha\t1\ndelta\t2",
+    "note": "raw = UTF-8 BOM + rows 'delta\\t2' then 'alpha\\t1', each CRLF-terminated. Canonical = BOM stripped, CRLF->LF, rows ordinal-sorted (alpha before delta)."
+  }
+]

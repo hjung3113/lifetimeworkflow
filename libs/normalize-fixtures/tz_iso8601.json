@@ -1,0 +1,7 @@
+[
+  { "name": "space-sep-plus9", "kind": "datetime", "raw": "2026-07-07 00:00:00+09:00", "canonical": "2026-07-06T15:00:00Z" },
+  { "name": "t-sep-plus9", "kind": "datetime", "raw": "2026-07-07T00:00:00+09:00", "canonical": "2026-07-06T15:00:00Z" },
+  { "name": "already-utc-z", "kind": "datetime", "raw": "2026-07-06T15:00:00Z", "canonical": "2026-07-06T15:00:00Z" },
+  { "name": "utc-offset-zero", "kind": "datetime", "raw": "2026-01-01 12:30:00+00:00", "canonical": "2026-01-01T12:30:00Z" },
+  { "name": "naive-assumed-utc", "kind": "datetime", "raw": "2026-07-07 00:00:00", "canonical": "2026-07-07T00:00:00Z" }
+]

@@ -1,0 +1,44 @@
+---
+description: >-
+  Use when contract schemas under contracts/ change (or a reference page looks stale) to
+  regenerate the DERIVED Diátaxis reference quadrant from the single source of truth. Runs the
+  runnable docs_sync generator; reference/ is machine-owned, never hand-authored (DOCS-03).
+agent: python-engineer
+subtask: true
+---
+
+# /docs-sync — regenerate docs/reference/ from contracts/
+
+Thin macro over the **existing** runnable generator. Do NOT hand-write or hand-edit reference
+pages, and do NOT re-implement schema reading/hashing — `tools.docs_sync` reads
+`contracts/**/*.schema.json` via the stdlib `json` module on the SAME path as `tools.contract_hash`
+(a second read/hash impl could silently disagree with the drift gate, T-03-23 / P14).
+
+## Invocation
+
+The generator takes no arguments — it always regenerates every reference page from the full
+contracts tree. It writes one `docs/reference/<name>.md` per schema, confined under
+`docs/reference/` (a traversal-shaped path is refused, T-03-21):
+
+!`python -m tools.docs_sync`
+
+## Semantics
+
+- **exit 0** → the reference quadrant was regenerated; delete + rerun is **byte-identical**
+  (deterministic — no timestamps/floats; proven by a committed syrupy snapshot, not git diff).
+- Each generated page begins with the `DERIVED — do not hand-edit` marker.
+
+## Derived-only invariant (DOCS-03 anti-feature)
+
+- **`docs/reference/` is DERIVED** — its content is generated from `contracts/`, the single source
+  of truth. Editing a reference page by hand forks it from the contracts and defeats the
+  contract-first invariant. To change reference, change the **contract** and re-run `/docs-sync`.
+- **Only `reference/` is regenerated.** The other Diátaxis quadrants — `tutorials/`, `how-to/`,
+  `explanation/` — stay **human-authored** (the *why*, workflows, narrative). `docs/reference/README.md`
+  is left intact.
+
+## Notes
+
+- Zero new dependencies (stdlib `json` only); `uv sync` must not mutate `uv.lock` for external
+  packages. The generator's determinism + reference-only confinement are pytest-covered
+  (`tools/docs_sync/tests/test_docs_sync_determinism.py`).

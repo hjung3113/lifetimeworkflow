@@ -1,0 +1,13 @@
+[project]
+name = "logparser-polyglot-lint"
+version = "0.0.0"
+description = "POLY-01 polyglot-boundary linter (D-03): encodes the integration_contracts §4.3-4.6 checklist (BOM · CRLF/LF · TSV column-shift · decimal-locale · timezone/datetime · null-vs-empty) as fail-loud executable rules. Detects violations by diffing raw vs the shared libs/python normalize.core output (NO second normalizer). The §4.3-4.6 rule engine HOOK-04 (on-write) + HOOK-03 (commit-gate) both call; imported by module path `tools.polyglot_lint`."
+requires-python = ">=3.11"
+# Reuses libs/python normalize core (workspace member) + stdlib only. NO external deps — this
+# member must never mutate uv.lock (T-04-SC: zero install surface, dependency supply chain = accept).
+dependencies = []
+
+[tool.uv]
+# Virtual member: no build-system, nothing to package. Invoked as `python -m tools.polyglot_lint.lint`;
+# the normalize core is imported by path from the workspace (mirrors tools/golden_runner, package = false).
+package = false
