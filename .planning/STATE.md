@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-03-PLAN.md (GEN-01 domain move to examples/log-parser/)
-last_updated: "2026-07-10T23:38:21.877Z"
+stopped_at: Completed 08-04-PLAN.md
+last_updated: "2026-07-10T23:44:59.497Z"
 last_activity: 2026-07-10
 progress:
   total_phases: 8
   completed_phases: 6
   total_plans: 38
-  completed_plans: 35
+  completed_plans: 36
   percent: 75
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 08 (pipeline-topology-conductor-per-component-agents) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-07-10
 
-Progress: [█████████░] 92%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -86,6 +86,7 @@ Progress: [█████████░] 92%
 | Phase 08 P02 | 9min | 2 tasks | 3 files |
 | Phase 08 P03 | 7min | 3 tasks | 3 files |
 | Phase 08 P05 | 10min | 2 tasks | 3 files |
+| Phase 08 P04 | 10min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -138,6 +139,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [Phase 08]: [08-01] PIPE-01 generic pipeline-topology DATA slot — cloned the [[languages]] -> loader.languages() -> test_language_config.py triad verbatim: harness/project.toml gains a banner-scoped GENERIC-ONLY source/sink/sample-record default ([[components]] + [pipeline]); loader.components()/pipeline() are pure passthrough (no enforcement); consistency lives in the gate test_pipeline_config.py (component.language in declared languages, ids unique, edges well-formed: endpoints declared + contract in from.produces AND to.consumes). Concrete multi-component topology deferred to instance overlay (Plan 04) to keep core GEN-04 green. Non-example suite 418 passed.
 - [Phase ?]: [Phase 08]: [08-02] PIPE-02 conductor evolved IN PLACE — the primary orchestrator now reads the declared [[components]]/[pipeline] topology (tools.harness_config) and routes by pipeline stage/component (not only language): new 'Trace the topology' intake step + stage/component routing rows + /pipeline entry; test_orchestrator_topology.py pins single-primary + topology-intake + stage/component routing. EXPECTED_PERSONAS stays 4 (no second primary). Fixed a pre-existing GEN-04 prose leak in 08-01's test_pipeline_config.py (literal examples/ token slipped the guard which scans git ls-files, file committed after guard ran). Full non-example suite 421 passed.
 - [Phase ?]: [Phase 08]: [08-03] PIPE-03 neutral component-engineer template (anti-sprawl-EXEMPT under harness/agents/templates/ like engineer.md) — stage-keyed fill-in-the-blanks persona; /component gains a mandated-order+all-three-or-none section deriving the agent into the instance agents/ and registering the [[components]]/[pipeline] slot; new test_agent_templates.py closes the templates/*.md gap (EXPECTED_TEMPLATES={engineer,component-engineer}, imports VALID_MODES/ALLOWED_PERMISSION_KEYS from test_agents). EXPECTED_PERSONAS stays 4; GEN-04 green; full non-example suite 430 passed.
+- [Phase 08]: [08-04] PIPE-04 instance overlay demonstration: examples/log-parser/project.toml declares the concrete parser(1,.NET)→converter(2,.NET)→scheduler(3,py)→collector(4,py) topology with real domain-contract edges (standard-log, equipment-progress x2) as an OVERLAY of the neutral core slot (loaded path-locally via load_project(path=); core [instance] root stays ""). 4 per-stage component agents instantiate the component-engineer template (mode:subagent, name==component.id, least-privilege bash). Instance topology gate runs ONLY in the example leg (off root testpaths, no GEN-04 trip). Core 439 passed; example leg 9 passed/2 skipped.
 
 ### Pending Todos
 
@@ -164,6 +166,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-10T23:38:11.519Z
-Stopped at: Completed 05-03-PLAN.md (GEN-01 domain move to examples/log-parser/)
+Last session: 2026-07-10T23:44:59.469Z
+Stopped at: Completed 08-04-PLAN.md
 Resume file: None
