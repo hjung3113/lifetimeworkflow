@@ -24,6 +24,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5.7: Lifecycle Completeness** *(INSERTED — LIFE-01..11, adversarial-review reinforcement)* - The authored surface is too thin for an agent to carry a unit of work through the full dev lifecycle. An adversarial audit (2026-07-09) found load-bearing gaps: a dangling `/contract-check`, ZERO golden-mismatch/§4.3-4.6 debug surface, the polyglot Core Value scattered as tribal prose, no neutral language-engineer template, and MISSING plan/onboard/review/integrate assets. Add domain-neutral skills/commands (contract-check, golden-debug, polyglot-boundary, gate-model, two-plane-memory, /orient, /review, /verify-work, language-engineer scaffold) + de-domain `/new-normalization-rule`, so the contract→implement→test→debug inner loop and the full lifecycle are actually executable end-to-end. **DONE 2026-07-09** — 057-RESEARCH/VALIDATION/01-PLAN/02-PLAN; two waves; `EXPECTED_SKILLS` 4→8; non-example suite green (402); GEN-04/05 prose guard clean.
 - [x] **Phase 6: CI + Gates (generic)** - Non-bypassable CI mirror of the in-session gates plus the human ratification path (CODEOWNERS, PR template), driven by a **config-derived** language matrix rather than hardcoded `dotnet test`/`pytest` jobs; the example instance supplies its own .NET+Python matrix. (completed 2026-07-09)
 - [ ] **Phase 7: Single-Source Dual-Runtime Emitter** - One authored source compiles into both opencode (primary) + Claude Code (secondary) artifacts, with per-runtime limit validators that fail loud.
+- [ ] **Phase 8: Pipeline-Topology Conductor + Per-Component Agents** *(ADDED — post-Phase-6 user request; independent of Phase 7)* - Evolve the agent model from per-language to pipeline-aware: a generic pipeline-topology slot in the neutral core, an `orchestrator` upgraded into a dataflow-aware conductor that routes by pipeline stage/component, a neutral `component-engineer` template, and a concrete 4-component demonstration in `examples/log-parser/` (parser→converter→scheduler→collector).
 
 ## Phase Details
 
@@ -221,3 +222,19 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 5.5. Authored-Surface Genericization (INSERTED) | 3/3 | Complete|  |
 | 6. CI + Gates (generic) | 3/3 | Complete   | 2026-07-09 |
 | 7. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |
+| 8. Pipeline-Topology Conductor + Per-Component Agents | 0/TBD | Not started | - |
+
+### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
+
+**Goal**: Evolve the harness agent model from per-**language** to pipeline-**aware**. Today the primary `orchestrator` routes by work-shape and delegates to per-language specialists (`python-engineer` + a derived `dotnet-engineer`); it has no model of the pipeline dataflow, and agents don't map to pipeline components (parser/converter both collapse into "dotnet-engineer"). This phase adds a generic pipeline-topology declaration to the neutral core, evolves the `orchestrator` into a topology-aware **conductor** that understands the end-to-end dataflow (stage→stage, edge contracts) and routes to per-**component** specialists, adds a neutral `component-engineer` template, and demonstrates it concretely in `examples/log-parser/`. Locked with the user: build BOTH the neutral core mechanism AND the concrete example; EVOLVE the existing primary `orchestrator` (no second primary/tier).
+**Mode:** standard
+**Depends on**: Phase 6 (merged). Independent of Phase 7 — the emitter is a pure function of the authored source and can compile this phase's new agents, but does not block it.
+**Requirements**: PIPE-01, PIPE-02, PIPE-03, PIPE-04, PIPE-05, PIPE-06
+**Success Criteria** (what must be TRUE):
+
+  1. `harness/project.toml` declares a generic pipeline-topology slot (component id + stage + language ref + edge contracts consumes/produces); `tools/harness_config/loader.py` exposes it and a GEN-03-style consistency gate fails on divergence — with ZERO example dependency in core (GEN-04 guard green).
+  2. The primary `orchestrator` is topology-aware: it reads the declared topology and routes by pipeline stage/component (not only language) with an updated routing table + dataflow-aware intake; a neutral `component-engineer` template exists under `harness/agents/templates/` and is persona-anti-sprawl-exempt.
+  3. `examples/log-parser/` demonstrates the mechanism end-to-end — 4 component agents (parser / converter / scheduler / collector) + the log-parser pipeline topology declared in the instance's `project.toml` slot; the conductor can trace a request across the full parser→converter→scheduler→collector flow.
+  4. New skill(s)/command(s) make the pipeline model executable (topology-trace / `/pipeline`); full non-example `uv run pytest` green; GEN-04/05 + persona guards clean; the Phase 7 emit surface is unaffected.
+
+**Plans**: TBD

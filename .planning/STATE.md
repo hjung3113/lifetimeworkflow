@@ -85,6 +85,10 @@ Progress: [██████████] 100%
 
 ## Accumulated Context
 
+### Roadmap Evolution
+
+- Phase 8 added (2026-07-10): **Pipeline-Topology Conductor + Per-Component Agents** (PIPE-01..06). Post-Phase-6 user request — evolve the agent model from per-language to pipeline-aware. Independent of Phase 7 (emitter). Locked with user: build BOTH neutral core mechanism AND concrete `examples/log-parser/` demo; EVOLVE the existing primary `orchestrator` (no second primary/tier); formal GSD phase.
+
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
