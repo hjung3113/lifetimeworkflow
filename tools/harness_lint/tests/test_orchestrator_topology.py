@@ -9,7 +9,7 @@ only by language. This gate keeps that evolution from silently regressing:
 - its routing section keys on stage/component (or the component role words) and references ``/pipeline``.
 
 Parsing is delegated to the shared ``parse_frontmatter`` — no hand-sliced ``---`` fences. Kept
-domain-neutral (no ``examples/`` / domain-contract tokens) so the GEN-04 core→example guard stays green.
+domain-neutral (no instance-overlay path or domain-contract tokens) so the GEN-04 core-plane guard stays green.
 """
 
 from __future__ import annotations
