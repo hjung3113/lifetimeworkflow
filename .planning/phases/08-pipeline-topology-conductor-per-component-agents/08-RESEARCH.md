@@ -462,10 +462,16 @@ def test_templates_no_sprawl() -> None:
 | A5 | "Extend persona anti-sprawl to the template" = add a **new** `templates/` validation test (templates are currently unvalidated). | Pitfall 3, Code Examples | If the intent was only to keep `component-engineer` out of the persona count, a lighter change suffices. Recommend the new test regardless (closes a real gap). |
 | A6 | Phase 7 emitter is not yet built, so "Phase 7 emit surface unaffected" = the new authored artifacts follow the existing `harness/{agents,commands,skills}` shape so a future emitter can consume them unchanged. | User Constraints | Low — additive markdown in the canonical dirs is exactly what the emitter will target. |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> All four resolved at plan-authoring time by adopting each stated recommendation:
+> Q1 → **(a)** adopted (Plan 08-04: `examples/log-parser/project.toml` overlay; generic default in core).
+> Q2 → keep `[instance] root=""`, example test reads overlay path-locally (Plan 08-04 Task 1).
+> Q3 → extend `/component` for binding; `/pipeline` is trace-only (Plans 08-03, 08-05).
+> Q4 → `/pipeline` is a deterministic read+render of loader output, no execution (Plan 08-05 Task 2).
 
 1. **Where does the concrete log-parser topology live, and how does the loader find it?** *(the one
-   load-bearing decision — surface in discuss-phase)*
+   load-bearing decision — surface in discuss-phase)* — **RESOLVED → (a), see Plan 08-04.**
    - What we know: edge contracts bind to domain schema names (`standard-log`, `equipment-progress`)
      which GEN-04 flags anywhere in core; the phase text says "the instance's project.toml slot"; the
      current loader reads only the single `harness/project.toml` (`[instance] root=""`).
