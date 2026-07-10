@@ -126,7 +126,7 @@
 - [x] **PIPE-02**: 기존 primary `orchestrator` 페르소나를 **토폴로지-인식 지휘자**로 진화 — 선언된 토폴로지를 읽어 parser→converter→scheduler→collector 데이터흐름 + edge 계약을 모델링하고, 언어가 아니라 파이프라인 stage/컴포넌트로 라우팅. 라우팅 테이블 + intake 절차 갱신 (primary는 하나로 유지).
 - [x] **PIPE-03**: `harness/agents/templates/`에 중립 **`component-engineer` 템플릿**(engineer.md처럼 persona anti-sprawl 게이트 예외) + 선언된 토폴로지 컴포넌트에 바인딩된 per-컴포넌트 에이전트를 인스턴스화하는 scaffold/register 커맨드(`/component` 확장 또는 보완).
 - [ ] **PIPE-04**: `examples/log-parser/`에서 메커니즘 **엔드투엔드 시연** — 4개 구체 컴포넌트 에이전트(parser·converter·scheduler·collector) + 인스턴스 `project.toml` 슬롯에 선언된 로그파서 파이프라인 토폴로지; 지휘자가 전체 흐름을 추적.
-- [ ] **PIPE-05**: 파이프라인 모델을 실행 가능하게 하는 스킬/커맨드 — 토폴로지-trace `pipeline-map` 스킬 + 데이터흐름을 시각화·추적하고 올바른 컴포넌트 에이전트를 찾아주는 `/pipeline` 커맨드.
+- [x] **PIPE-05**: 파이프라인 모델을 실행 가능하게 하는 스킬/커맨드 — 토폴로지-trace `pipeline-map` 스킬 + 데이터흐름을 시각화·추적하고 올바른 컴포넌트 에이전트를 찾아주는 `/pipeline` 커맨드.
 - [ ] **PIPE-06**: 가드/테스트 — GEN-04 코어→예제 no-dependency 가드 + persona anti-sprawl 게이트를 지휘자·`component-engineer` 템플릿까지 확장; 토폴로지 슬롯 consistency 게이트.
 
 ## v2 Requirements
@@ -211,7 +211,7 @@
 | PIPE-02 | Phase 8 | Complete |
 | PIPE-03 | Phase 8 | Complete |
 | PIPE-04 | Phase 8 | Pending |
-| PIPE-05 | Phase 8 | Pending |
+| PIPE-05 | Phase 8 | Complete |
 | PIPE-06 | Phase 8 | Pending |
 
 **Coverage:**
