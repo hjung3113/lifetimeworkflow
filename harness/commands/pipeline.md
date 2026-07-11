@@ -73,13 +73,14 @@ one contract. Chain them tail-to-head to see the full path from entry stage to t
 
 Each stage `id` is owned by a component agent derived from
 `harness/agents/templates/component-engineer.md`, living in the active instance's `agents/`
-directory (declared by `harness/project.toml` `[instance] root`) as `<id>-engineer.md`. For every
-component:
+directory (declared by `harness/project.toml` `[instance] root`) as `<id>.md` — the derived agent's
+`name` equals the component `id` (the `-engineer` suffix names the *template*, not the derived
+per-component agents). For every component:
 
-1. Compute the expected agent path `<instance-root>/agents/<id>-engineer.md`.
-2. Report `stage <id> -> <id>-engineer.md` when it exists.
+1. Compute the expected agent path `<instance-root>/agents/<id>.md`.
+2. Report `stage <id> -> <id>.md` when it exists.
 3. **Flag any stage whose agent file is missing** — a stage with no bound owner is a topology gap
-   (`stage <id>: NO OWNING AGENT (<id>-engineer.md not found)`).
+   (`stage <id>: NO OWNING AGENT (<id>.md not found)`).
 
 The generic core default carries no derived instance agents, so on the core config every stage is
 reported as an unbound gap by design — the concrete owners come from the instance overlay.

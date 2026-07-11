@@ -98,3 +98,42 @@ def test_pipeline_edges_well_formed() -> None:
             f"edge {edge!r}: contract {contract!r} not in {dst!r}.consumes "
             f"({by_id[dst].get('consumes', [])})"
         )
+
+
+# The stage->agent resolution CONVENTION lives in the core (domain-neutral) docs; the concrete agents
+# live in THIS instance. A drift between the two (core documents one filename pattern, the instance
+# ships another) silently breaks `/pipeline` — it reports "NO OWNING AGENT" for every stage while all
+# gates stay green. This example-leg guard reads the core docs (example->core is the ALLOWED direction;
+# GEN-04 only forbids core->example) and pins both sides to the `<id>.md` convention so future drift
+# fails loud. Regression: gap surfaced by Phase-8 verification (08-05 documented `<id>-engineer.md`
+# while 08-04 shipped `<id>.md`).
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_CORE_RESOLUTION_DOCS = (
+    _REPO_ROOT / "harness" / "commands" / "pipeline.md",
+    _REPO_ROOT / "harness" / "skills" / "pipeline-map" / "SKILL.md",
+)
+
+
+def test_core_resolution_convention_matches_instance_agents() -> None:
+    """The core-documented stage->agent path convention resolves to this instance's real agents.
+
+    Computes, per the `<id>.md` convention the core docs declare, the owning-agent path for every
+    stage and asserts the file exists — the exact resolution `/pipeline` performs. Also asserts the
+    core docs no longer carry the stale `<id>-engineer.md` stage-resolution token, so reintroducing
+    the mismatch fails here instead of silently producing an all-gaps trace.
+    """
+    for comp in components(_overlay()):
+        owner = _AGENTS_DIR / f"{comp['id']}.md"  # the documented `<id>.md` convention
+        assert owner.is_file(), (
+            f"stage {comp['id']!r}: core `<id>.md` convention resolves to {owner}, which does not "
+            f"exist — /pipeline would report NO OWNING AGENT (core-vs-instance naming drift)"
+        )
+    for doc in _CORE_RESOLUTION_DOCS:
+        text = doc.read_text()
+        assert "<id>.md" in text, (
+            f"{doc}: core docs must document the `<id>.md` resolution convention"
+        )
+        assert "<id>-engineer.md" not in text, (
+            f"{doc}: stale `<id>-engineer.md` stage-resolution token — the derived per-component "
+            f"agent is `<id>.md` (the `-engineer` suffix names the template, not the agents)"
+        )

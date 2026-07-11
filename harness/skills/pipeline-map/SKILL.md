@@ -76,24 +76,25 @@ receiver — the edge whose `contract == X` names both.
 Each `[[components]]` stage is implemented by a **component agent** derived from the neutral
 template `harness/agents/templates/component-engineer.md`. The derived agent lives in the active
 instance's own `agents/` directory (the instance root is declared by `harness/project.toml`
-`[instance] root`) as `<id>-engineer.md`.
+`[instance] root`) as `<id>.md` — the derived agent's `name` equals the component `id` (the
+`-engineer` suffix names the *template*, not the derived per-component agents).
 
 To find the owner of a stage:
 
 1. Take the component `id`.
-2. Look for `<id>-engineer.md` under the instance's `agents/` directory.
+2. Look for `<id>.md` under the instance's `agents/` directory.
 3. If it is missing, the stage has no bound owner — that is a gap to report (the `/pipeline` command
    flags exactly this).
 
 Routing by stage (not by language) means: identify the stage a request belongs to from the
-contract it carries, then dispatch to that stage's `<id>-engineer` agent.
+contract it carries, then dispatch to that stage's `<id>` agent.
 
 ## Reasoning from the map
 
 - **"Where does this contract come from?"** → the component whose `produces` lists it.
 - **"What breaks if I change this edge's contract?"** → the `from` producer and the `to` consumer
   both, plus the `contracts/` schema — change all together or the gate goes red.
-- **"Who do I route this to?"** → resolve the stage `id` → `<id>-engineer.md` in the instance.
+- **"Who do I route this to?"** → resolve the stage `id` → `<id>.md` in the instance.
 - **"Is the flow complete?"** → every non-terminal component is some edge's `from`; every
   non-entry component is some edge's `to`. A dangling stage is a topology gap.
 
