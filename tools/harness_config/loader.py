@@ -50,6 +50,30 @@ def languages(cfg: dict | None = None) -> list[dict]:
     return list(cfg.get("languages", []))
 
 
+def components(cfg: dict | None = None) -> list[dict]:
+    """Return the configured ``[[components]]`` tables (loads the default config if omitted).
+
+    Raw passthrough (mirrors ``languages()``): the pipeline-topology DATA slot flows through
+    unchanged — NO enforcement here. The topology consistency gate
+    (``tools/harness_lint/tests/test_pipeline_config.py``) owns the well-formedness checks.
+    """
+    if cfg is None:
+        cfg = load_project()
+    return list(cfg.get("components", []))
+
+
+def pipeline(cfg: dict | None = None) -> dict:
+    """Return the ``[pipeline]`` table (loads the default config if omitted).
+
+    Raw passthrough: the ``edges`` list (and any future additive keys) flow through unchanged.
+    Consistency (endpoints declared, contract in produces/consumes) is enforced by the gate, not
+    here.
+    """
+    if cfg is None:
+        cfg = load_project()
+    return dict(cfg.get("pipeline", {}))
+
+
 def language_bash_scopes(cfg: dict | None = None) -> set[str]:
     """Return the derived set of bash allow-scopes: union of ``languages[*].bash_scope`` + implicit
     ``"pytest *"``. This is the set the permission-matrix language allow-scopes must equal."""

@@ -2,7 +2,7 @@
 
 Public API downstream consumers import::
 
-    from tools.harness_config import load_project, languages, language_bash_scopes
+    from tools.harness_config import load_project, languages, language_bash_scopes, components, pipeline
 
 Re-export is LAZY (PEP 562 ``__getattr__``) on purpose: ``tools`` is a namespace package (no
 ``tools/__init__.py``) imported by module path, and an eager top-level import here would run during
@@ -13,7 +13,7 @@ without that ordering hazard (mirrors tools/harness_perms + tools/harness_lint).
 
 from __future__ import annotations
 
-__all__ = ["language_bash_scopes", "languages", "load_project"]
+__all__ = ["components", "language_bash_scopes", "languages", "load_project", "pipeline"]
 
 
 def __getattr__(name: str):  # PEP 562 — lazy re-export from the loader submodule.

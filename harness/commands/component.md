@@ -33,3 +33,46 @@ or its test harness (Pattern 4, P11). The component name comes from `$ARGUMENTS`
 - The order is enforced: structure → self-sufficient AGENTS.md → tests. A member without its
   per-package rules or without a test harness is incomplete.
 - Stage new files individually when committing; do not blanket-add the working tree.
+
+## Mandated order (keep the three in sync) — when the package maps to a topology component
+
+If the new package is a declared **pipeline component** (it has a `[[components]]` entry in
+`harness/project.toml` — an `id`/`stage`/`language` with `consumes`/`produces` edge contracts),
+it also needs a per-component agent bound from the neutral template, the topology slot registered,
+and the topology consistency gate (`tools/harness_lint/tests/test_pipeline_config.py`) kept green.
+Like `/add-language`, the component agent is a **derivation of the neutral template**, not a
+hand-authored persona: the core ships `harness/agents/templates/component-engineer.md`, and
+`/component` fills it in from the component's declared topology entry.
+
+1. **Derive the component agent from the template.** Copy
+   `harness/agents/templates/component-engineer.md` into the active instance's own `agents/`
+   directory (the instance root is declared by `harness/project.toml [instance] root`) as
+   `<component>.md` — the frontmatter `name` equals the component `id`, because the conductor
+   resolver (`/pipeline`, `pipeline-map`) binds each stage to `agents/<id>.md`. Fill every
+   `<PLACEHOLDER>` from the component's `[[components]]` entry:
+   `<COMPONENT>` (`id`), `<STAGE>` (its ordinal in `[pipeline]`), `<LANG>`/`<TOOLCHAIN>`/`<TEST_CMD>`
+   (from the matching `[[languages]]` toolchain the `language` ref names), `<CONSUMES>`/`<PRODUCES>`
+   (its edge contracts), and `<BASH_SCOPE>` (the language's allow-scope). The agent lands in the
+   **instance**, not the core — so the core persona anti-sprawl set stays fixed.
+
+2. **Register/verify the component in the topology slot.** Ensure the component has a
+   `[[components]]` table (`id`, `stage`, `language`, `consumes`, `produces`) and that every edge it
+   participates in is present in the `[pipeline]` `edges` list — endpoints declared, and each
+   `contract` in the producer's `produces` AND the consumer's `consumes`.
+
+3. **Keep the topology consistency gate green.** Run `/test` (or
+   `tools/harness_lint/tests/test_pipeline_config.py`): every `component.language` must be a declared
+   `[[languages]].id`, component `id`s unique, and every edge well-formed. A silent divergence fails
+   the suite.
+
+## Guard — component binding
+
+- **All three or none.** A component agent whose `<BASH_SCOPE>` is not its language's declared scope,
+  a `[[components]]` entry with no `[pipeline]` edge, or a `[pipeline]` edge naming an undeclared
+  endpoint red-flags the topology gate. Make the three edits together, then run `/test`.
+- **Least privilege.** The derived component agent allows only its language's `<BASH_SCOPE>`;
+  everything else stays `ask`. Do not grant a broad bash allow.
+- **Domain-neutral core stays neutral.** The derived agent and its content live in the instance; the
+  core template (`component-engineer.md`) must not gain instance/domain vocabulary.
+- Validate the derived agent/template shape against the same rules the core personas follow
+  (subagent mode, valid permission keys, routing description) before committing.

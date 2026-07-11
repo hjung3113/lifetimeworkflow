@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 05-03-PLAN.md (GEN-01 domain move to examples/log-parser/)
-last_updated: "2026-07-09T13:29:22.161Z"
-last_activity: 2026-07-09 -- 06-03 COMPLETE (config-derived ci.yml + CODEOWNERS + PR template)
+status: phase_complete
+stopped_at: Phase 08 complete + verified (6/6 plans, VERIFICATION passed)
+last_updated: "2026-07-11T12:59:29.368Z"
+last_activity: 2026-07-11 -- Phase 08 executed + verified (passed); gap closed
 progress:
-  total_phases: 7
-  completed_phases: 6
-  total_plans: 32
-  completed_plans: 32
-  percent: 86
+  total_phases: 8
+  completed_phases: 7
+  total_plans: 38
+  completed_plans: 38
+  percent: 88
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 5.5 (Authored-Surface Genericization, GEN-05) **COMPLETE** — the authored-surface move (055-01), the core prose+tools/ token sweep (055-02), and the GEN-04 guard prose+pointer extension (055-03) all landed; the guard now exempts the project.toml persona= line and the full non-example suite is green (361 passed, 0 failed).
+**Current focus:** Phase 08 — pipeline-topology-conductor-per-component-agents
 
 ## Current Position
 
-Phase: 4 COMPLETE. **Re-scoped (ADR-0002):** project redefined from log-parser-specific harness → general contract-first polyglot agent-harness template; log-parser domain to be demoted to `examples/log-parser/`. New Phase 5 (GEN) inserted; old CI→6, Emitter→7 (re-scoped generic).
-Plan: 05-01 COMPLETE (D-05 commit-gate drift approval path); 05-04 COMPLETE (GEN-03 harness/project.toml language SSOT + consistency gate); 05-02 COMPLETE (GEN-02 generic default instance — greeting sample contract + identity golden case, no .NET); 05-03 COMPLETE (GEN-01 domain move — semiconductor seed + libs/dotnet relocated under examples/log-parser/ via history-preserving git mv; root manifest rebaselined to generics, drift clean; snapshots regenerated; committed through the live gate); 05-05 COMPLETE (GEN-04 core→example no-dependency guard + template docs recast + ADR-0002, landed through the live gate via GOLDEN_APPROVE_HUMAN; full non-example suite 366 passed). **Phase 5 COMPLETE.**
-Status: Ready to execute
-Last activity: 2026-07-09 -- 06-03 COMPLETE (config-derived ci.yml + CODEOWNERS + PR template; workflow schema-valid, full suite 413 passed, no PR opened)
+Phase: 08 (pipeline-topology-conductor-per-component-agents) — EXECUTING
+Plan: 6 of 6
+Status: Phase complete — ready for verification
+Last activity: 2026-07-11
 
-Progress: [██████████] 100%
+Progress: [██████████] 97%
 
 ## Performance Metrics
 
@@ -82,8 +82,18 @@ Progress: [██████████] 100%
 | Phase 05 P05 | 15min | 2 tasks | 13 files |
 | Phase 06-ci-gates P01 | 6min | 3 tasks | 5 files |
 | Phase 06-ci-gates P03 | 7min | 4 tasks | 3 files |
+| Phase 08 P01 | 6min | 2 tasks | 5 files |
+| Phase 08 P02 | 9min | 2 tasks | 3 files |
+| Phase 08 P03 | 7min | 3 tasks | 3 files |
+| Phase 08 P05 | 10min | 2 tasks | 3 files |
+| Phase 08 P04 | 10min | 3 tasks | 6 files |
+| Phase 08 P06 | 12min | 2 tasks | 3 files |
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 8 added (2026-07-10): **Pipeline-Topology Conductor + Per-Component Agents** (PIPE-01..06). Post-Phase-6 user request — evolve the agent model from per-language to pipeline-aware. Independent of Phase 7 (emitter). Locked with user: build BOTH neutral core mechanism AND concrete `examples/log-parser/` demo; EVOLVE the existing primary `orchestrator` (no second primary/tier); formal GSD phase.
 
 ### Decisions
 
@@ -127,6 +137,11 @@ Recent decisions affecting current work:
 - [Phase 05]: [05-03] GEN-01 domain MOVE — semiconductor seed + the example's .NET language-side impl relocated under `examples/log-parser/` via history-preserving `git mv` (verbatim, renames stay `R` → excluded from commit_gate `--diff-filter=ACM` so the intentionally-dirty BOM/CRLF golden seeds are NOT re-linted, P2). Moved: contracts/{log-specs,reference-data,state} + normalization/correction-rules.*, components/toy-converter, `libs/dotnet` WHOLESALE (not a uv member, no core Python importer; ADR-0002 core-is-language-neutral), golden/{repr-only,value-regression}, + the 3 domain golden_runner tests + tests/recorded/*. STAYED core: libs/python/normalize + libs/normalize-fixtures (uv members / core-imported), format-conventions.schema.json. De-pinned core golden_runner (dropped TOY_CONVERTER_PROJECT default → project required via run_golden_case(project=...); deleted dead toy_converter_project fixture). Rebaselined root manifest to generic only (format-conventions + sample/greeting) → live drift clean; built the example's own manifest. Repointed core tests to surviving material (docs-sync EXPECTED_PAGES→{format-conventions,greeting} + rows() target; test_agents_md drops libs/dotnet as a core plane) + regenerated docs-sync & contracts-index snapshots (repo-map .ambr unchanged, fixture-based). Landed ONE commit (ebe4276) through the LIVE gate with GOLDEN_APPROVE_HUMAN — no --no-verify. Non-example suite green (361 passed).
 - [Phase 05]: [05-04] GEN-03 language/toolchain SSOT — harness/project.toml is a data-only slot ([instance] root + [[languages]] dotnet/python: bash_scope/test/format/persona/sdk_bootstrap) carrying the log-parser EXAMPLE INSTANCE's values (not a core hardcode). tools/harness_config is a new tools/* uv member (package=false, PEP 562 lazy re-export) parsing it with stdlib tomllib; language_bash_scopes() folds the implicit `pytest *`. "Derived-not-hardcoded" satisfied by a CONSISTENCY TEST (D-03 "codegen is overkill"), not codegen: test_language_config asserts permission-matrix allow-scopes == config-derived set + each persona file exists — divergence FAILS (config = SSOT). Existing hardcoded values kept & proven consistent, not ripped out. Zero external deps (uv.lock registers in-repo member only). Precondition for Phase-6 config-derived CI matrix.
 - [Phase ?]: [05-05] GEN-04 core→example guard + ADR-0002 de-specialization; SCOPE A guard scans tools/harness/libs for examples/ refs + import examples + moved components/toy-converter (self-excluded, [instance] root exempt, live negative controls); bare libs/dotnet prose deferred to GEN-05; ADR-0002 (accepted, complements 0001) records generic re-scope + normalize split (python normalize+fixtures STAY as language-neutral core, libs/dotnet MOVES because core-is-language-neutral) + project.toml language slot + GOLDEN_APPROVE_HUMAN drift-only path; landed via live gate, non-example suite 366 passed; Phase 5 COMPLETE.
+- [Phase ?]: [Phase 08]: [08-01] PIPE-01 generic pipeline-topology DATA slot — cloned the [[languages]] -> loader.languages() -> test_language_config.py triad verbatim: harness/project.toml gains a banner-scoped GENERIC-ONLY source/sink/sample-record default ([[components]] + [pipeline]); loader.components()/pipeline() are pure passthrough (no enforcement); consistency lives in the gate test_pipeline_config.py (component.language in declared languages, ids unique, edges well-formed: endpoints declared + contract in from.produces AND to.consumes). Concrete multi-component topology deferred to instance overlay (Plan 04) to keep core GEN-04 green. Non-example suite 418 passed.
+- [Phase ?]: [Phase 08]: [08-02] PIPE-02 conductor evolved IN PLACE — the primary orchestrator now reads the declared [[components]]/[pipeline] topology (tools.harness_config) and routes by pipeline stage/component (not only language): new 'Trace the topology' intake step + stage/component routing rows + /pipeline entry; test_orchestrator_topology.py pins single-primary + topology-intake + stage/component routing. EXPECTED_PERSONAS stays 4 (no second primary). Fixed a pre-existing GEN-04 prose leak in 08-01's test_pipeline_config.py (literal examples/ token slipped the guard which scans git ls-files, file committed after guard ran). Full non-example suite 421 passed.
+- [Phase ?]: [Phase 08]: [08-03] PIPE-03 neutral component-engineer template (anti-sprawl-EXEMPT under harness/agents/templates/ like engineer.md) — stage-keyed fill-in-the-blanks persona; /component gains a mandated-order+all-three-or-none section deriving the agent into the instance agents/ and registering the [[components]]/[pipeline] slot; new test_agent_templates.py closes the templates/*.md gap (EXPECTED_TEMPLATES={engineer,component-engineer}, imports VALID_MODES/ALLOWED_PERMISSION_KEYS from test_agents). EXPECTED_PERSONAS stays 4; GEN-04 green; full non-example suite 430 passed.
+- [Phase 08]: [08-04] PIPE-04 instance overlay demonstration: examples/log-parser/project.toml declares the concrete parser(1,.NET)→converter(2,.NET)→scheduler(3,py)→collector(4,py) topology with real domain-contract edges (standard-log, equipment-progress x2) as an OVERLAY of the neutral core slot (loaded path-locally via load_project(path=); core [instance] root stays ""). 4 per-stage component agents instantiate the component-engineer template (mode:subagent, name==component.id, least-privilege bash). Instance topology gate runs ONLY in the example leg (off root testpaths, no GEN-04 trip). Core 439 passed; example leg 9 passed/2 skipped.
+- [Phase ?]: [Phase 08]: [08-06] PIPE-06 closeout — extended persona anti-sprawl to the conductor (test_single_primary_carries_conductor_signal; EXPECTED_PERSONAS stays 4). Full guard surface green: core 440 passed/3 snapshots + instance leg 9 passed/2 skipped (expected .NET egress). ADR-0003 (accepted, complements ADR-0002) records pipeline-topology pure-DATA slot + instance overlay: generic default in core, concrete parser→converter→scheduler→collector topology in examples/log-parser/project.toml, GEN-04 as PRIMARY driver; landed via human GOLDEN_APPROVE_HUMAN gate. Phase 8 COMPLETE (6/6).
 
 ### Pending Todos
 
@@ -153,6 +168,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-09T13:29:22.135Z
-Stopped at: Completed 05-03-PLAN.md (GEN-01 domain move to examples/log-parser/)
+Last session: 2026-07-11T12:59:20.951Z
+Stopped at: Completed 08-04-PLAN.md
 Resume file: None

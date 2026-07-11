@@ -46,7 +46,8 @@ _XML_CHARS = ("<", ">")
 # The enumerated CORE skills — the instance's domain skills and its instance-language skill
 # moved to the log-parser example instance (Phase 5.5). Phase 5.7 (Lifecycle Completeness) adds
 # four domain-neutral lifecycle skills: golden-debug, polyglot-boundary, gate-model,
-# two-plane-memory. No more, no fewer (anti-sprawl).
+# two-plane-memory. Phase 8 (Pipeline Topology) adds one topology-trace skill: pipeline-map.
+# No more, no fewer (anti-sprawl).
 EXPECTED_SKILLS = frozenset(
     {
         "python-conventions",
@@ -57,6 +58,7 @@ EXPECTED_SKILLS = frozenset(
         "polyglot-boundary",
         "gate-model",
         "two-plane-memory",
+        "pipeline-map",
     }
 )
 

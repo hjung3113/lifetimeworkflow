@@ -11,7 +11,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from tools.harness_config import language_bash_scopes, languages, load_project
+from tools.harness_config import (
+    components,
+    language_bash_scopes,
+    languages,
+    load_project,
+    pipeline,
+)
 
 # test_loader.py -> tests -> harness_config -> tools -> repo root (parents[3]).
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -48,3 +54,15 @@ def test_language_bash_scopes_union_includes_implicit_pytest() -> None:
     """The derived scope set is the union of bash_scope values plus the implicit `pytest *`."""
     scopes = language_bash_scopes()
     assert scopes == {"dotnet *", "uv *", "pytest *"}
+
+
+def test_components_passthrough() -> None:
+    """The generic-default topology declares exactly the source/sink components (raw passthrough)."""
+    assert {c["id"] for c in components()} == {"source", "sink"}
+
+
+def test_pipeline_passthrough() -> None:
+    """The [pipeline] table carries the single generic source→sink `greeting` edge."""
+    edges = pipeline()["edges"]
+    assert len(edges) == 1
+    assert edges[0]["contract"] == "greeting"

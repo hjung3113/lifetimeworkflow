@@ -118,6 +118,17 @@
 - [ ] **EMIT-01**: 정본 하네스 소스 포맷(`harness/`) — agents/commands/skills/plugins의 단일 소스
 - [ ] **EMIT-02**: emitter — 소스에서 opencode(1차) + Claude Code(`.claude/`) 아티팩트를 생성, per-runtime 제약 검증기(스킬 크기 상한 등)가 truncate 대신 loud-fail
 
+### PIPE — 파이프라인 토폴로지 지휘자 & 컴포넌트 에이전트 (Phase 8, ADDED · post-Phase-6 요청, 전부 도메인 중립)
+
+> 에이전트 모델을 per-**언어**에서 파이프라인-**인식**으로 진화시킨다. 코어(`harness/`)에는 재사용 가능한 **메커니즘**(토폴로지 슬롯 + 지휘자 + 컴포넌트 엔지니어 템플릿)만, 구체적 4-컴포넌트 시연은 `examples/log-parser/`에 둔다(ADR-0002 / GEN-04: 코어는 예제에 의존 금지).
+
+- [x] **PIPE-01**: `harness/project.toml`에 범용 **파이프라인-토폴로지 슬롯** — 각 컴포넌트의 id·stage·language 참조·edge 계약(consumes/produces)을 선언하는 순수 DATA 테이블(`[[components]]`/`[pipeline]`). `tools/harness_config/loader.py` passthrough + GEN-03-스타일 consistency 게이트. 예제 의존 0 (GEN-04 green).
+- [x] **PIPE-02**: 기존 primary `orchestrator` 페르소나를 **토폴로지-인식 지휘자**로 진화 — 선언된 토폴로지를 읽어 parser→converter→scheduler→collector 데이터흐름 + edge 계약을 모델링하고, 언어가 아니라 파이프라인 stage/컴포넌트로 라우팅. 라우팅 테이블 + intake 절차 갱신 (primary는 하나로 유지).
+- [x] **PIPE-03**: `harness/agents/templates/`에 중립 **`component-engineer` 템플릿**(engineer.md처럼 persona anti-sprawl 게이트 예외) + 선언된 토폴로지 컴포넌트에 바인딩된 per-컴포넌트 에이전트를 인스턴스화하는 scaffold/register 커맨드(`/component` 확장 또는 보완).
+- [x] **PIPE-04**: `examples/log-parser/`에서 메커니즘 **엔드투엔드 시연** — 4개 구체 컴포넌트 에이전트(parser·converter·scheduler·collector) + 인스턴스 `project.toml` 슬롯에 선언된 로그파서 파이프라인 토폴로지; 지휘자가 전체 흐름을 추적.
+- [x] **PIPE-05**: 파이프라인 모델을 실행 가능하게 하는 스킬/커맨드 — 토폴로지-trace `pipeline-map` 스킬 + 데이터흐름을 시각화·추적하고 올바른 컴포넌트 에이전트를 찾아주는 `/pipeline` 커맨드.
+- [x] **PIPE-06**: 가드/테스트 — GEN-04 코어→예제 no-dependency 가드 + persona anti-sprawl 게이트를 지휘자·`component-engineer` 템플릿까지 확장; 토폴로지 슬롯 consistency 게이트.
+
 ## v2 Requirements
 
 검증 후 또는 도메인 프로젝트 진행에 따라 추가. 현재 로드맵 밖.
@@ -196,10 +207,16 @@
 | CI-02 | Phase 6 | Complete |
 | EMIT-01 | Phase 7 | Pending |
 | EMIT-02 | Phase 7 | Pending |
+| PIPE-01 | Phase 8 | Complete |
+| PIPE-02 | Phase 8 | Complete |
+| PIPE-03 | Phase 8 | Complete |
+| PIPE-04 | Phase 8 | Complete |
+| PIPE-05 | Phase 8 | Complete |
+| PIPE-06 | Phase 8 | Complete |
 
 **Coverage:**
-- v1 requirements: 48 total (43 원본 + GEN-01..05 신규, ADR-0002 re-scope; GEN-05 = 저작 표면 후속)
-- Mapped to phases: 48 ✓
+- v1 requirements: 54 total (43 원본 + GEN-01..05 + PIPE-01..06 신규; GEN-05 = 저작 표면 후속, PIPE = Phase 8 파이프라인 지휘자)
+- Mapped to phases: 54 ✓
 - Unmapped: 0 ✓
 
 **Phase distribution:** P1=9, P2=6, P3=19, P4=5, P5=4(GEN-01..04), P5.5=1(GEN-05), P6=2(CI), P7=2(EMIT)

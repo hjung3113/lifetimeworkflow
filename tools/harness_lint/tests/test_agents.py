@@ -61,6 +61,12 @@ _WRITE_TOOL_TOKENS = ("Write", "Bash", "Edit")
 # A routing-signal description must carry an invocation trigger token (P7 guard).
 _ROUTING_TRIGGERS = ("use", "when")
 
+# The single primary persona is the CONDUCTOR — the evolved orchestrator that routes by pipeline
+# stage/component/topology, not only by language (PIPE-02/06). Its authored body/description must
+# carry at least one of these routing signals so the anti-sprawl gate also proves the conductor
+# role landed on the one primary (no second primary, EXPECTED_PERSONAS stays 4).
+_CONDUCTOR_SIGNAL_TOKENS = ("topology", "stage", "component", "pipeline")
+
 
 def _agent_files() -> list[Path]:
     return sorted(_AGENTS_DIR.glob("*.md"))
@@ -97,6 +103,28 @@ def test_expected_personas_present_no_sprawl() -> None:
     assert names == set(EXPECTED_PERSONAS), (
         f"persona set drift: got {sorted(str(n) for n in names)}, "
         f"expected {sorted(EXPECTED_PERSONAS)}"
+    )
+
+
+def test_single_primary_carries_conductor_signal() -> None:
+    """Exactly one primary persona exists and it carries the conductor/topology routing signal.
+
+    PIPE-02/06 — the conductor is the EVOLVED orchestrator (no second primary); its authored
+    description/body must route by pipeline stage/component/topology, not only by language. This
+    extends the persona anti-sprawl gate to the conductor role while keeping ``EXPECTED_PERSONAS``
+    a 4-member set (a second ``mode: primary`` would fail ``test_expected_personas_present_no_sprawl``).
+    """
+    primaries = [p for p in _agent_files() if _load(p).get("mode") == "primary"]
+    assert len(primaries) == 1, (
+        f"expected exactly one primary persona (the conductor), got "
+        f"{sorted(p.stem for p in primaries)}"
+    )
+    primary = primaries[0]
+    fm = _load(primary)
+    haystack = (str(fm.get("description", "")) + "\n" + primary.read_text(encoding="utf-8")).lower()
+    assert any(tok in haystack for tok in _CONDUCTOR_SIGNAL_TOKENS), (
+        f"{primary.stem}: the single primary persona lacks a conductor routing signal "
+        f"{_CONDUCTOR_SIGNAL_TOKENS} — the conductor must route by pipeline stage/component/topology"
     )
 
 

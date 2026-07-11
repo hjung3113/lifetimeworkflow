@@ -1,0 +1,72 @@
+# log-parser INSTANCE topology overlay (PIPE-04) — the concrete demonstration of the neutral-core
+# pipeline mechanism (harness/project.toml PIPE-01 generic slot) on a real 4-component pipeline.
+#
+# This file lives under examples/ ON PURPOSE: it may name REAL domain contracts
+# (standard-log / equipment-progress) because the GEN-04 core→example guard
+# (tools/harness_lint/tests/test_core_no_example_dep.py) NEVER scans examples/. The neutral core
+# default (harness/project.toml) stays a generic source→sink line; THIS overlay supplies the
+# concrete parser→converter→scheduler→collector topology the conductor traces for this instance.
+#
+# It is an OVERLAY, not a replacement: the [[languages]] slot (dotnet + python) stays in the core
+# harness/project.toml (the active-instance slot). Loaded path-locally by the example topology gate:
+#   from tools.harness_config import components, pipeline, load_project
+#   load_project(Path(".../examples/log-parser/project.toml"))
+#
+# Consumers:
+#   * examples/log-parser/tests/test_pipeline_topology.py — the INSTANCE topology gate (example leg
+#     ONLY; root `testpaths` excludes examples/). Proves each of the 4 stages binds a real component
+#     agent file + a declared language, and the 3 edges are well-formed.
+#
+# Dataflow (stage 1..4, linear):
+#   raw log files ──parser(1,.NET)──▶ standard-log ──converter(2,.NET)──▶ equipment-progress
+#     ──scheduler(3,py)──▶ equipment-progress ──collector(4,py)──▶ persisted records
+#
+# Each component's `language` MUST be one the instance declares in harness/project.toml [[languages]]
+# (`dotnet` for the CPU-bound parser/converter, `python` for the scheduler/collector).
+
+[instance]
+# The active instance rooted at this directory. The core harness/project.toml keeps `root = ""`
+# (its `test_instance_root_is_generic_default` asserts the generic default); this overlay names its
+# own instance root and is read path-locally, never as the core default.
+root = "examples/log-parser"
+
+# Stage 1 — parser (.NET 10, CPU-bound): parses raw equipment logs into the standard-log contract.
+[[components]]
+id = "parser"
+stage = 1
+language = "dotnet"
+consumes = []
+produces = ["standard-log"]
+
+# Stage 2 — converter (.NET 10, CPU-bound): converts standard-log into equipment-progress state.
+[[components]]
+id = "converter"
+stage = 2
+language = "dotnet"
+consumes = ["standard-log"]
+produces = ["equipment-progress"]
+
+# Stage 3 — scheduler (Python/uv): schedules/batches equipment-progress for collection.
+[[components]]
+id = "scheduler"
+stage = 3
+language = "python"
+consumes = ["equipment-progress"]
+produces = ["equipment-progress"]
+
+# Stage 4 — collector (Python/uv): collects the scheduled equipment-progress into persisted records.
+[[components]]
+id = "collector"
+stage = 4
+language = "python"
+consumes = ["equipment-progress"]
+produces = []
+
+# Linear parser→converter→scheduler→collector chain; each edge `contract` is in the upstream
+# `produces` AND the downstream `consumes` (well-formed, per test_pipeline_edges_well_formed).
+[pipeline]
+edges = [
+  { from = "parser", to = "converter", contract = "standard-log" },
+  { from = "converter", to = "scheduler", contract = "equipment-progress" },
+  { from = "scheduler", to = "collector", contract = "equipment-progress" },
+]
