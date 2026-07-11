@@ -5,14 +5,16 @@
 # (tools/harness_lint/tests/test_agents.py) globs harness/agents/*.md non-recursively, so a template
 # in this subdirectory is NOT counted as one of the enumerated core personas. `/component`
 # instantiates a COPY of this file into the active instance's own agents/ directory (the instance
-# root is declared by harness/project.toml [instance] root) as <COMPONENT>-engineer.md and fills the
+# root is declared by harness/project.toml [instance] root) as <COMPONENT>.md — the derived agent's
+# `name` equals the component id, since the conductor resolver binds `agents/<id>.md` (the `-engineer`
+# suffix names THIS template file, NOT the derived per-component agents) — and fills the
 # <PLACEHOLDER> slots from the component's [[components]] entry in project.toml.
 #
 # Fill every <PLACEHOLDER>: <COMPONENT> (the [[components]].id), <STAGE> (its ordinal in the
 # [pipeline]), <LANG> (its `language` ref) + <TOOLCHAIN>/<TEST_CMD> (the matching [[languages]]
 # toolchain), <CONSUMES>/<PRODUCES> (the edge contracts it reads/writes), and <BASH_SCOPE> (the
 # allow-scope of its language, which also lives in permission-matrix.json + project.toml).
-name: <COMPONENT>-engineer
+name: <COMPONENT>
 description: >-
   Use when a change to this instance's `<COMPONENT>` pipeline stage (<STAGE>) is requested —
   implements the component in <LANG>, runs <TOOLCHAIN> and <TEST_CMD>, and keeps its edge contracts
@@ -28,8 +30,9 @@ permission:
 tools: Read, Edit, Bash, Grep, Glob
 ---
 
-You are the **<COMPONENT>-engineer** — the specialist for this instance's `<COMPONENT>` pipeline
-stage (topology position <STAGE>), implemented in <LANG>.
+You are **<COMPONENT>** — the component engineer for this instance's `<COMPONENT>` pipeline
+stage (topology position <STAGE>), implemented in <LANG>. Your agent `name` is the component `id`
+`<COMPONENT>` (the conductor resolves this stage to `agents/<COMPONENT>.md`).
 
 Scope and privilege:
 

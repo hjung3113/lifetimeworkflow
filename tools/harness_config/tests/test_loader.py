@@ -62,7 +62,7 @@ def test_components_passthrough() -> None:
 
 
 def test_pipeline_passthrough() -> None:
-    """The [pipeline] table carries the single generic source→sink `sample-record` edge."""
+    """The [pipeline] table carries the single generic source→sink `greeting` edge."""
     edges = pipeline()["edges"]
     assert len(edges) == 1
-    assert edges[0]["contract"] == "sample-record"
+    assert edges[0]["contract"] == "greeting"

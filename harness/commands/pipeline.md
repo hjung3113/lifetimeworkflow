@@ -48,8 +48,8 @@ stage <stage>: <id> (<language>) consumes=[<consumes...>] produces=[<produces...
 For the core default this reads:
 
 ```
-stage 1: source (python) consumes=[] produces=[sample-record]
-stage 2: sink (python) consumes=[sample-record] produces=[]
+stage 1: source (python) consumes=[] produces=[greeting]
+stage 2: sink (python) consumes=[greeting] produces=[]
 ```
 
 ## 3. Print the edge chain (the dataflow)
@@ -63,7 +63,7 @@ Walk `edges` in order and print each directed hop with the contract that crosses
 For the core default:
 
 ```
-source -> sink (sample-record)
+source -> sink (greeting)
 ```
 
 Each edge is a `{from, to, contract}` — a request flows from `from` to `to` carrying exactly that

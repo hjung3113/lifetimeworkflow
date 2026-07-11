@@ -3,7 +3,7 @@ harness/project.toml is well-formed and internally agrees (config = SSOT, no cod
 
 Mirrors test_language_config.py's structural-scan idiom (repo root via parents[3], real config
 loaded through the shared loader, iterate-config / assert-agreement / fail-loud). These checks run
-against the GENERIC core default ONLY (source/sink/sample-record) — they must NOT reference any
+against the GENERIC core default ONLY (source/sink carrying the `greeting` contract) — they must NOT reference any
 instance overlay (an instance's own topology lives under its own tree, never the core default).
 A malformed topology (component naming an undeclared language, an edge with an
 unknown endpoint, or a contract absent from the from-component's produces / to-component's consumes)
@@ -12,7 +12,13 @@ fails the suite loud so a broken config never resolves silently (T-8-01).
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from tools.harness_config import components, languages, load_project, pipeline
+
+# test_pipeline_config.py -> tests -> harness_lint -> tools -> repo root.
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_CONTRACTS_DIR = _REPO_ROOT / "contracts"
 
 
 def _component_ids(cfg: dict) -> set[str]:
@@ -61,4 +67,22 @@ def test_pipeline_edges_are_well_formed() -> None:
         assert contract in by_id[dst].get("consumes", []), (
             f"edge {edge!r}: contract {contract!r} not in {dst!r}.consumes "
             f"({by_id[dst].get('consumes', [])})"
+        )
+
+
+def test_edge_contracts_have_a_tracked_schema() -> None:
+    """Every core edge `contract` resolves to a tracked `contracts/**/<contract>.schema.json`.
+
+    The well-formedness gate above only proves the contract STRING appears in both endpoint lists —
+    it does not prove the contract actually exists. The core `/pipeline` flow tells users to open the
+    edge contract under `contracts/`, so a default topology naming a contract with no schema (e.g. the
+    old `sample-record`, which had no `contracts/**/sample-record.schema.json`) points component
+    agents at a dead reference. Pin each core edge contract to a real tracked schema — fail loud.
+    """
+    schemas = {p.name.removesuffix(".schema.json") for p in _CONTRACTS_DIR.rglob("*.schema.json")}
+    for edge in pipeline(load_project()).get("edges", []):
+        contract = edge["contract"]
+        assert contract in schemas, (
+            f"edge {edge!r}: contract {contract!r} has no tracked schema "
+            f"contracts/**/{contract}.schema.json (found schemas: {sorted(schemas)})"
         )

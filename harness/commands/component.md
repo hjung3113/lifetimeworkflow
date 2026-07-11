@@ -47,7 +47,9 @@ hand-authored persona: the core ships `harness/agents/templates/component-engine
 1. **Derive the component agent from the template.** Copy
    `harness/agents/templates/component-engineer.md` into the active instance's own `agents/`
    directory (the instance root is declared by `harness/project.toml [instance] root`) as
-   `<component>-engineer.md`. Fill every `<PLACEHOLDER>` from the component's `[[components]]` entry:
+   `<component>.md` — the frontmatter `name` equals the component `id`, because the conductor
+   resolver (`/pipeline`, `pipeline-map`) binds each stage to `agents/<id>.md`. Fill every
+   `<PLACEHOLDER>` from the component's `[[components]]` entry:
    `<COMPONENT>` (`id`), `<STAGE>` (its ordinal in `[pipeline]`), `<LANG>`/`<TOOLCHAIN>`/`<TEST_CMD>`
    (from the matching `[[languages]]` toolchain the `language` ref names), `<CONSUMES>`/`<PRODUCES>`
    (its edge contracts), and `<BASH_SCOPE>` (the language's allow-scope). The agent lands in the

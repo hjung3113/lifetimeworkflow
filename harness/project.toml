@@ -43,7 +43,8 @@ test_paths = ["examples/log-parser/tests"]
 # PIPE-01 pipeline-topology DATA slot — the GENERIC-DEFAULT topology every later plan reads
 # (conductor routing, /pipeline trace, instance overlay). Pure DATA, no enforcement (mirrors the
 # [[languages]] posture above). This is the domain-NEUTRAL default: a two-stage source→sink line
-# carrying one `sample-record` contract. The concrete multi-component topology is supplied by an
+# carrying the generic `greeting` contract (the tracked sample schema contracts/sample/greeting.schema.json).
+# The concrete multi-component topology is supplied by an
 # INSTANCE overlay (Plan 04), NOT here — the core must stay generic (GEN-04).
 #
 # Consumers:
@@ -58,7 +59,7 @@ test_paths = ["examples/log-parser/tests"]
 id = "source"
 stage = 1
 language = "python"
-produces = ["sample-record"]
+produces = ["greeting"]
 consumes = []
 
 [[components]]
@@ -66,10 +67,10 @@ id = "sink"
 stage = 2
 language = "python"
 produces = []
-consumes = ["sample-record"]
+consumes = ["greeting"]
 
 [pipeline]
 edges = [
-  { from = "source", to = "sink", contract = "sample-record" },
+  { from = "source", to = "sink", contract = "greeting" },
 ]
 # END PIPE-01 topology
