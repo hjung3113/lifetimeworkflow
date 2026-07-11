@@ -24,7 +24,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5.7: Lifecycle Completeness** *(INSERTED — LIFE-01..11, adversarial-review reinforcement)* - The authored surface is too thin for an agent to carry a unit of work through the full dev lifecycle. An adversarial audit (2026-07-09) found load-bearing gaps: a dangling `/contract-check`, ZERO golden-mismatch/§4.3-4.6 debug surface, the polyglot Core Value scattered as tribal prose, no neutral language-engineer template, and MISSING plan/onboard/review/integrate assets. Add domain-neutral skills/commands (contract-check, golden-debug, polyglot-boundary, gate-model, two-plane-memory, /orient, /review, /verify-work, language-engineer scaffold) + de-domain `/new-normalization-rule`, so the contract→implement→test→debug inner loop and the full lifecycle are actually executable end-to-end. **DONE 2026-07-09** — 057-RESEARCH/VALIDATION/01-PLAN/02-PLAN; two waves; `EXPECTED_SKILLS` 4→8; non-example suite green (402); GEN-04/05 prose guard clean.
 - [x] **Phase 6: CI + Gates (generic)** - Non-bypassable CI mirror of the in-session gates plus the human ratification path (CODEOWNERS, PR template), driven by a **config-derived** language matrix rather than hardcoded `dotnet test`/`pytest` jobs; the example instance supplies its own .NET+Python matrix. (completed 2026-07-09)
 - [ ] **Phase 7: Single-Source Dual-Runtime Emitter** - One authored source compiles into both opencode (primary) + Claude Code (secondary) artifacts, with per-runtime limit validators that fail loud.
-- [ ] **Phase 8: Pipeline-Topology Conductor + Per-Component Agents** *(ADDED — post-Phase-6 user request; independent of Phase 7)* - Evolve the agent model from per-language to pipeline-aware: a generic pipeline-topology slot in the neutral core, an `orchestrator` upgraded into a dataflow-aware conductor that routes by pipeline stage/component, a neutral `component-engineer` template, and a concrete 4-component demonstration in `examples/log-parser/` (parser→converter→scheduler→collector).
+- [x] **Phase 8: Pipeline-Topology Conductor + Per-Component Agents** *(ADDED — post-Phase-6 user request; independent of Phase 7)* - Evolve the agent model from per-language to pipeline-aware: a generic pipeline-topology slot in the neutral core, an `orchestrator` upgraded into a dataflow-aware conductor that routes by pipeline stage/component, a neutral `component-engineer` template, and a concrete 4-component demonstration in `examples/log-parser/` (parser→converter→scheduler→collector). (completed 2026-07-11)
 
 ## Phase Details
 
@@ -222,7 +222,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 5.5. Authored-Surface Genericization (INSERTED) | 3/3 | Complete|  |
 | 6. CI + Gates (generic) | 3/3 | Complete   | 2026-07-09 |
 | 7. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |
-| 8. Pipeline-Topology Conductor + Per-Component Agents | 4/6 | In Progress|  |
+| 8. Pipeline-Topology Conductor + Per-Component Agents | 6/6 | Complete   | 2026-07-11 |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
 

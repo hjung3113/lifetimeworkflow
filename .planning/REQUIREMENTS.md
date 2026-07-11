@@ -127,7 +127,7 @@
 - [x] **PIPE-03**: `harness/agents/templates/`에 중립 **`component-engineer` 템플릿**(engineer.md처럼 persona anti-sprawl 게이트 예외) + 선언된 토폴로지 컴포넌트에 바인딩된 per-컴포넌트 에이전트를 인스턴스화하는 scaffold/register 커맨드(`/component` 확장 또는 보완).
 - [x] **PIPE-04**: `examples/log-parser/`에서 메커니즘 **엔드투엔드 시연** — 4개 구체 컴포넌트 에이전트(parser·converter·scheduler·collector) + 인스턴스 `project.toml` 슬롯에 선언된 로그파서 파이프라인 토폴로지; 지휘자가 전체 흐름을 추적.
 - [x] **PIPE-05**: 파이프라인 모델을 실행 가능하게 하는 스킬/커맨드 — 토폴로지-trace `pipeline-map` 스킬 + 데이터흐름을 시각화·추적하고 올바른 컴포넌트 에이전트를 찾아주는 `/pipeline` 커맨드.
-- [ ] **PIPE-06**: 가드/테스트 — GEN-04 코어→예제 no-dependency 가드 + persona anti-sprawl 게이트를 지휘자·`component-engineer` 템플릿까지 확장; 토폴로지 슬롯 consistency 게이트.
+- [x] **PIPE-06**: 가드/테스트 — GEN-04 코어→예제 no-dependency 가드 + persona anti-sprawl 게이트를 지휘자·`component-engineer` 템플릿까지 확장; 토폴로지 슬롯 consistency 게이트.
 
 ## v2 Requirements
 
@@ -212,7 +212,7 @@
 | PIPE-03 | Phase 8 | Complete |
 | PIPE-04 | Phase 8 | Complete |
 | PIPE-05 | Phase 8 | Complete |
-| PIPE-06 | Phase 8 | Pending |
+| PIPE-06 | Phase 8 | Complete |
 
 **Coverage:**
 - v1 requirements: 54 total (43 원본 + GEN-01..05 + PIPE-01..06 신규; GEN-05 = 저작 표면 후속, PIPE = Phase 8 파이프라인 지휘자)
