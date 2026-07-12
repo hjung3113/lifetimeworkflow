@@ -159,6 +159,17 @@ def iter_commands(commands_dir: str | Path) -> list[tuple[str, dict, str]]:
     return result
 
 
+def iter_plugins(plugins_dir: str | Path) -> list[Path]:
+    """Yield each ``plugins/*.ts`` source path, sorted by name.
+
+    The ``.ts`` is authored source consumed by the opencode RUNTIME (deferred), never by the emitter:
+    it is copied BYTE-FOR-BYTE (``read_bytes``/``write_bytes``) and is NEVER parsed, transformed,
+    re-serialized, imported, or executed at emit (D-01; Elevation mitigation T-07-04). No DERIVED
+    marker is injected — it is verbatim source, not generated Markdown.
+    """
+    return sorted(Path(plugins_dir).glob("*.ts"))
+
+
 def iter_skills(skills_dir: str | Path) -> list[tuple[str, dict, str, Path]]:
     """Yield ``(name, frontmatter, body, skill_dir)`` for every ``skills/<name>/SKILL.md``, sorted.
 
@@ -267,6 +278,20 @@ def emit(
                     dest.write_bytes(data)
                     written.append(dest)
 
+    # --- plugins: 5 .ts copied BYTE-FOR-BYTE to .opencode/plugin (D-01; NEVER parsed/executed) ---
+    # The one Elevation-risk surface (T-07-04): the .ts is read as bytes and written as bytes — the
+    # emitter never parses/imports/executes it (execution is opencode-runtime, deferred). There is NO
+    # Claude plugin target (Claude uses settings.json hooks) and NO .opencode/tool/ dir (no source).
+    plugins = iter_plugins(harness_dir / "plugins")
+    if plugins:
+        opencode_plugin_dir = Path(opencode_dir) / "plugin"
+        opencode_plugin_dir.mkdir(parents=True, exist_ok=True)
+        for plugin in plugins:
+            data = plugin.read_bytes()  # bytes in → bytes out; no parse/transform/execute (T-07-04)
+            target = _confine(opencode_plugin_dir / plugin.name, opencode_plugin_dir)
+            target.write_bytes(data)
+            written.append(target)
+
     # --- ownership manifest (prune stale, write current) ---
     manifest.prune_then_write(written, manifest_path=manifest_path, root=Path(root))
     return written
@@ -284,7 +309,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"wrote {rel}")
     print(
         f"harness-emit: {len(written)} artifact(s) emitted to "
-        f".opencode/ + .claude/ (agents + commands + skills)"
+        f".opencode/ + .claude/ + opencode.json (agents + commands + skills + plugins + config)"
     )
     return 0
 
