@@ -31,6 +31,11 @@ def _fail(message: str) -> None:
     raise HarnessEmitError(message)
 
 
+def _fold(text: str) -> str:
+    """Collapse whitespace runs (incl. newlines from a ``>-`` block) to one space — match emit."""
+    return " ".join(str(text).split())
+
+
 def check_agent(name: str, fm: dict) -> None:
     """Validate one authored agent's frontmatter — raise on any HARD violation, writing nothing.
 
@@ -90,3 +95,30 @@ def check_projections(name: str, opencode_fm: dict, claude_fm: dict) -> None:
             _fail(f"agent {name!r}: read-only invariant broke in the opencode projection")
         if not is_read_only(claude_fm):
             _fail(f"agent {name!r}: read-only invariant broke in the Claude projection")
+
+
+def check_command(name: str, fm: dict) -> None:
+    """Validate one authored command's frontmatter — raise on any HARD violation, writing nothing.
+
+    Mirrors ``tools.harness_lint.tests.test_commands``: a non-empty ``description`` within the ≤1024
+    cap (over-cap → FAIL, never truncate, T-07-05), a well-formed ``agent`` slug, and — when present
+    — a boolean ``subtask``. STRUCTURAL only (no cross-file agent-existence check).
+    """
+    desc = _fold(fm.get("description", ""))
+    if not desc:
+        _fail(f"command {name!r}: description is missing or empty")
+    if len(desc) > _DESC_MAX:
+        _fail(
+            f"command {name!r}: description length {len(desc)} exceeds {_DESC_MAX} "
+            f"— loud-fail, NEVER truncate"
+        )
+
+    agent = fm.get("agent")
+    if not isinstance(agent, str) or not agent.strip() or not _NAME_RE.match(agent.strip()):
+        _fail(
+            f"command {name!r}: agent {agent!r} is not a well-formed slug "
+            f"(^[a-z0-9]+(-[a-z0-9]+)*$)"
+        )
+
+    if "subtask" in fm and not isinstance(fm["subtask"], bool):
+        _fail(f"command {name!r}: subtask must be a boolean, got {type(fm['subtask']).__name__}")

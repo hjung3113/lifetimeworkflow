@@ -22,7 +22,7 @@ import re
 import sys
 from pathlib import Path
 
-from tools.harness_emit import manifest, project_agent, validate
+from tools.harness_emit import manifest, project_agent, project_command, validate
 from tools.harness_lint import parse_frontmatter
 
 # --- paths (tools/harness_emit/generate.py → parents[2] == repo root) -------------------------
@@ -104,12 +104,14 @@ def _emit_entry(key: str, value: object, indent: int) -> list[str]:
     return [f"{pad}{ky}: {_emit_scalar(key, value)}"]
 
 
-def render_agent(projected_fm: dict, body: str) -> str:
-    """Render one projected agent to a deterministic ``.md`` (DERIVED marker + frontmatter + body).
+def render_markdown(projected_fm: dict, body: str) -> str:
+    """Render one projected artifact to a deterministic ``.md`` (marker + frontmatter + body).
 
-    Layout: ``---`` fence, the DERIVED YAML-comment marker, the projected frontmatter in its fixed
-    template order, the closing ``---``, a blank line, then the persona body normalized to LF with a
-    single trailing newline. No timestamp/float → re-render is byte-identical.
+    Generic across artifact types (agents, commands, skills): the frontmatter dict is already
+    projected to its per-runtime shape and fixed key order; this only serializes it. Layout: ``---``
+    fence, the DERIVED YAML-comment marker, the projected frontmatter in order, the closing ``---``,
+    a blank line, then the body normalized to LF with a single trailing newline. No timestamp/float,
+    so re-render is byte-identical (the CI ``emit-drift`` gate depends on it).
     """
     lines = ["---", f"# {DERIVED_MARKER}"]
     for key, value in projected_fm.items():
@@ -118,6 +120,11 @@ def render_agent(projected_fm: dict, body: str) -> str:
     body_norm = body.replace("\r\n", "\n").replace("\r", "\n").strip("\n")
     lines.extend(["", body_norm])
     return "\n".join(lines).rstrip("\n") + "\n"
+
+
+# Backward-compatible alias — the agent walking skeleton (07-01) named this ``render_agent``; the
+# serializer is artifact-neutral, so commands/skills reuse it under its generic name.
+render_agent = render_markdown
 
 
 # --- discovery --------------------------------------------------------------------------------
@@ -137,6 +144,21 @@ def iter_agents(agents_dir: str | Path) -> list[tuple[str, dict, str]]:
     return result
 
 
+def iter_commands(commands_dir: str | Path) -> list[tuple[str, dict, str]]:
+    """Yield ``(name, frontmatter, body)`` for every ``commands/*.md``, sorted by path.
+
+    The glob is NON-recursive (top-level ``*.md`` only). Frontmatter is read via the shared
+    ``parse_frontmatter``; the ``` !`shell` ``` + ``$ARGUMENTS`` body is returned unchanged and is
+    shared verbatim by BOTH runtime projections.
+    """
+    root = Path(commands_dir)
+    result: list[tuple[str, dict, str]] = []
+    for path in sorted(root.glob("*.md")):
+        fm, body = parse_frontmatter(path.read_text(encoding="utf-8"))
+        result.append((path.stem, fm, body))
+    return result
+
+
 # --- emit -------------------------------------------------------------------------------------
 
 
@@ -147,36 +169,56 @@ def emit(
     manifest_path: str | Path = MANIFEST_PATH,
     root: str | Path = REPO_ROOT,
 ) -> list[Path]:
-    """Emit the harness agents to BOTH runtime trees; return the written paths (manifest excluded).
+    """Emit the harness agents + commands to BOTH runtime trees; return the written paths.
 
-    VALIDATE-THEN-WRITE (loud-fail): every source agent and BOTH of its projections are validated
-    BEFORE any file is written, so a cap/shape violation aborts having written nothing. Each target
-    path is ``_confine``d before writing. Finally the ownership manifest is prune-then-written.
+    VALIDATE-THEN-WRITE (loud-fail): every source artifact and its projection(s) are validated
+    BEFORE any file is written, so a cap/shape violation anywhere aborts having written nothing.
+    Each target path is ``_confine``d before writing. Finally the ownership manifest is
+    prune-then-written (the manifest path is excluded from the returned list).
     """
-    agents = iter_agents(Path(harness_dir) / "agents")
+    harness_dir = Path(harness_dir)
 
-    # --- validate everything up front (write nothing on failure) ---
-    projected: list[tuple[str, dict, dict, str]] = []
-    for name, fm, body in agents:
+    # --- validate EVERYTHING up front (write nothing on any failure) ---
+    agent_plan: list[tuple[str, dict, dict, str]] = []
+    for name, fm, body in iter_agents(harness_dir / "agents"):
         validate.check_agent(name, fm)
         opencode_fm = project_agent.to_opencode(fm)
         claude_fm = project_agent.to_claude(fm)
         validate.check_projections(name, opencode_fm, claude_fm)
-        projected.append((name, opencode_fm, claude_fm, body))
+        agent_plan.append((name, opencode_fm, claude_fm, body))
+
+    command_plan: list[tuple[str, dict, dict, str]] = []
+    for name, fm, body in iter_commands(harness_dir / "commands"):
+        validate.check_command(name, fm)
+        opencode_fm = project_command.to_opencode(fm)
+        claude_fm = project_command.to_claude(fm)
+        command_plan.append((name, opencode_fm, claude_fm, body))
 
     # --- write both trees ---
+    written: list[Path] = []
+
     opencode_agent_dir = Path(opencode_dir) / "agent"
     claude_agent_dir = Path(claude_dir) / "agents"
     opencode_agent_dir.mkdir(parents=True, exist_ok=True)
     claude_agent_dir.mkdir(parents=True, exist_ok=True)
-
-    written: list[Path] = []
-    for name, opencode_fm, claude_fm, body in projected:
+    for name, opencode_fm, claude_fm, body in agent_plan:
         opencode_target = _confine(opencode_agent_dir / f"{name}.md", opencode_agent_dir)
         claude_target = _confine(claude_agent_dir / f"{name}.md", claude_agent_dir)
-        opencode_target.write_text(render_agent(opencode_fm, body), encoding="utf-8")
-        claude_target.write_text(render_agent(claude_fm, body), encoding="utf-8")
+        opencode_target.write_text(render_markdown(opencode_fm, body), encoding="utf-8")
+        claude_target.write_text(render_markdown(claude_fm, body), encoding="utf-8")
         written.extend((opencode_target, claude_target))
+
+    if command_plan:
+        opencode_command_dir = Path(opencode_dir) / "command"
+        claude_command_dir = Path(claude_dir) / "commands"
+        opencode_command_dir.mkdir(parents=True, exist_ok=True)
+        claude_command_dir.mkdir(parents=True, exist_ok=True)
+        for name, opencode_fm, claude_fm, body in command_plan:
+            opencode_target = _confine(opencode_command_dir / f"{name}.md", opencode_command_dir)
+            claude_target = _confine(claude_command_dir / f"{name}.md", claude_command_dir)
+            opencode_target.write_text(render_markdown(opencode_fm, body), encoding="utf-8")
+            claude_target.write_text(render_markdown(claude_fm, body), encoding="utf-8")
+            written.extend((opencode_target, claude_target))
 
     # --- ownership manifest (prune stale, write current) ---
     manifest.prune_then_write(written, manifest_path=manifest_path, root=Path(root))
@@ -184,7 +226,7 @@ def emit(
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI: emit the harness agents to ``.opencode/agent`` + ``.claude/agents`` and the manifest."""
+    """CLI: emit the harness agents + commands to ``.opencode/`` + ``.claude/`` and the manifest."""
     argv = sys.argv[1:] if argv is None else argv  # noqa: F841 (reserved for future flags)
     written = emit()
     for path in written:
@@ -194,8 +236,8 @@ def main(argv: list[str] | None = None) -> int:
             rel = path
         print(f"wrote {rel}")
     print(
-        f"harness-emit: {len(written)} agent artifact(s) emitted to "
-        f".opencode/agent + .claude/agents"
+        f"harness-emit: {len(written)} artifact(s) emitted to "
+        f".opencode/ + .claude/ (agents + commands)"
     )
     return 0
 
