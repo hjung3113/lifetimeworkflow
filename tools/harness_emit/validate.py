@@ -12,11 +12,17 @@ lands in exactly one place.
 
 from __future__ import annotations
 
+import warnings
+
 from tools.harness_lint.caps import (
+    _BODY_WARN_LINES,
     _DESC_MAX,
     _NAME_MAX,
     _NAME_RE,
+    _RESERVED_WORDS,
+    _XML_CHARS,
     ALLOWED_PERMISSION_KEYS,
+    EXPECTED_SKILLS,
     PLACEHOLDER_MODEL,
     READ_ONLY_PERSONAS,
     VALID_MODES,
@@ -122,3 +128,59 @@ def check_command(name: str, fm: dict) -> None:
 
     if "subtask" in fm and not isinstance(fm["subtask"], bool):
         _fail(f"command {name!r}: subtask must be a boolean, got {type(fm['subtask']).__name__}")
+
+
+def check_skill(name: str, fm: dict, body: str = "") -> None:
+    """Validate one authored skill's frontmatter — HARD caps on name/description, body-cap WARNS.
+
+    Mirrors ``tools.harness_lint.tests.test_skills`` (the caps are IDENTICAL for both runtimes, the
+    200-vs-1024 correction): ``name`` ≤64 + slug + == dir + no reserved/XML; ``description`` ≤1024
+    non-empty + no reserved/XML. Over-cap name/description raise (T-07-05, NEVER truncate). A body
+    over ~500 lines only ``warnings.warn`` (D-07) — it MUST still emit, never a hard fail.
+    """
+    fm_name = str(fm.get("name", ""))
+    if not fm_name:
+        _fail(f"skill {name!r}: name is missing or empty")
+    if len(fm_name) > _NAME_MAX:
+        _fail(f"skill {name!r}: name length {len(fm_name)} exceeds {_NAME_MAX} — NEVER truncate")
+    if not _NAME_RE.match(fm_name):
+        _fail(f"skill {name!r}: name {fm_name!r} is not a valid slug (^[a-z0-9]+(-[a-z0-9]+)*$)")
+    if fm_name != name:
+        _fail(f"skill {name!r}: frontmatter name {fm_name!r} != directory {name!r}")
+    lowered_name = fm_name.lower()
+    if any(w in lowered_name for w in _RESERVED_WORDS):
+        _fail(f"skill {name!r}: name contains a reserved vendor word {_RESERVED_WORDS}")
+    if any(c in fm_name for c in _XML_CHARS):
+        _fail(f"skill {name!r}: name contains an angle-bracket/XML char")
+
+    desc = _fold(fm.get("description", ""))
+    if not desc:
+        _fail(f"skill {name!r}: description is missing or empty")
+    if len(desc) > _DESC_MAX:
+        _fail(
+            f"skill {name!r}: description length {len(desc)} exceeds {_DESC_MAX} "
+            f"— loud-fail, NEVER truncate"
+        )
+    lowered_desc = desc.lower()
+    if any(w in lowered_desc for w in _RESERVED_WORDS):
+        _fail(f"skill {name!r}: description contains a reserved vendor word {_RESERVED_WORDS}")
+    if any(c in desc for c in _XML_CHARS):
+        _fail(f"skill {name!r}: description contains an angle-bracket/XML char")
+
+    line_count = len(body.splitlines())
+    if line_count > _BODY_WARN_LINES:
+        warnings.warn(
+            f"skill {name!r}: SKILL.md body is {line_count} lines "
+            f"(> {_BODY_WARN_LINES} recommended) — consider moving depth into references/ "
+            f"(advisory, still emits)",
+            stacklevel=2,
+        )
+
+
+def check_skill_set(names: set[str]) -> None:
+    """Assert the discovered skill set equals ``EXPECTED_SKILLS`` exactly (anti-drift/no-sprawl)."""
+    expected = set(EXPECTED_SKILLS)
+    if set(names) != expected:
+        missing = sorted(expected - set(names))
+        extra = sorted(set(names) - expected)
+        _fail(f"skill set drift — missing {missing}, unexpected {extra}")

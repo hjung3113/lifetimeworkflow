@@ -22,7 +22,7 @@ import re
 import sys
 from pathlib import Path
 
-from tools.harness_emit import manifest, project_agent, project_command, validate
+from tools.harness_emit import manifest, project_agent, project_command, project_skill, validate
 from tools.harness_lint import parse_frontmatter
 
 # --- paths (tools/harness_emit/generate.py → parents[2] == repo root) -------------------------
@@ -159,6 +159,20 @@ def iter_commands(commands_dir: str | Path) -> list[tuple[str, dict, str]]:
     return result
 
 
+def iter_skills(skills_dir: str | Path) -> list[tuple[str, dict, str, Path]]:
+    """Yield ``(name, frontmatter, body, skill_dir)`` for every ``skills/<name>/SKILL.md``, sorted.
+
+    ``skill_dir`` is the skill's source dir so the emitter can find its ``references/`` subtree.
+    ``name`` is the directory name (== the frontmatter ``name``, enforced by the validator).
+    """
+    root = Path(skills_dir)
+    result: list[tuple[str, dict, str, Path]] = []
+    for skill_md in sorted(root.glob("*/SKILL.md")):
+        fm, body = parse_frontmatter(skill_md.read_text(encoding="utf-8"))
+        result.append((skill_md.parent.name, fm, body, skill_md.parent))
+    return result
+
+
 # --- emit -------------------------------------------------------------------------------------
 
 
@@ -169,12 +183,13 @@ def emit(
     manifest_path: str | Path = MANIFEST_PATH,
     root: str | Path = REPO_ROOT,
 ) -> list[Path]:
-    """Emit the harness agents + commands to BOTH runtime trees; return the written paths.
+    """Emit the harness agents + commands + skills to BOTH runtime trees; return the written paths.
 
     VALIDATE-THEN-WRITE (loud-fail): every source artifact and its projection(s) are validated
     BEFORE any file is written, so a cap/shape violation anywhere aborts having written nothing.
-    Each target path is ``_confine``d before writing. Finally the ownership manifest is
-    prune-then-written (the manifest path is excluded from the returned list).
+    Each target path is ``_confine``d before writing (incl. every recursive ``references/`` copy).
+    Finally the ownership manifest is prune-then-written (the manifest path is excluded from the
+    returned list).
     """
     harness_dir = Path(harness_dir)
 
@@ -193,6 +208,14 @@ def emit(
         opencode_fm = project_command.to_opencode(fm)
         claude_fm = project_command.to_claude(fm)
         command_plan.append((name, opencode_fm, claude_fm, body))
+
+    skill_plan: list[tuple[str, dict, str, Path]] = []
+    skills = iter_skills(harness_dir / "skills")
+    for name, fm, body, skill_dir in skills:
+        validate.check_skill(name, fm, body)
+        skill_plan.append((name, project_skill.project(fm), body, skill_dir))
+    if skills:  # anti-drift: the emitted set must equal EXPECTED_SKILLS exactly (real tree = 9)
+        validate.check_skill_set({name for name, _, _, _ in skills})
 
     # --- write both trees ---
     written: list[Path] = []
@@ -220,13 +243,37 @@ def emit(
             claude_target.write_text(render_markdown(claude_fm, body), encoding="utf-8")
             written.extend((opencode_target, claude_target))
 
+    if skill_plan:
+        opencode_skill_root = Path(opencode_dir) / "skill"
+        claude_skill_root = Path(claude_dir) / "skills"
+        for name, projected_fm, body, skill_dir in skill_plan:
+            opencode_dir_ = opencode_skill_root / name
+            claude_dir_ = claude_skill_root / name
+            opencode_dir_.mkdir(parents=True, exist_ok=True)
+            claude_dir_.mkdir(parents=True, exist_ok=True)
+            opencode_skill = _confine(opencode_dir_ / "SKILL.md", opencode_dir_)
+            claude_skill = _confine(claude_dir_ / "SKILL.md", claude_dir_)
+            rendered = render_markdown(projected_fm, body)
+            opencode_skill.write_text(rendered, encoding="utf-8")
+            claude_skill.write_text(rendered, encoding="utf-8")
+            written.extend((opencode_skill, claude_skill))
+            # references/** — copied BYTE-FOR-BYTE to both trees (no normalize), each _confine'd.
+            for rel in project_skill.iter_reference_files(skill_dir / "references"):
+                data = (skill_dir / "references" / rel).read_bytes()
+                for dest_root in (opencode_dir_, claude_dir_):
+                    dest_refs = dest_root / "references"
+                    dest = _confine(dest_refs / rel, dest_refs)
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    dest.write_bytes(data)
+                    written.append(dest)
+
     # --- ownership manifest (prune stale, write current) ---
     manifest.prune_then_write(written, manifest_path=manifest_path, root=Path(root))
     return written
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI: emit the harness agents + commands to ``.opencode/`` + ``.claude/`` and the manifest."""
+    """CLI: emit harness agents + commands + skills to ``.opencode/`` + ``.claude/`` + manifest."""
     argv = sys.argv[1:] if argv is None else argv  # noqa: F841 (reserved for future flags)
     written = emit()
     for path in written:
@@ -237,7 +284,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"wrote {rel}")
     print(
         f"harness-emit: {len(written)} artifact(s) emitted to "
-        f".opencode/ + .claude/ (agents + commands)"
+        f".opencode/ + .claude/ (agents + commands + skills)"
     )
     return 0
 

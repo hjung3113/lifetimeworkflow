@@ -95,7 +95,7 @@ def test_read_only_persona_gaining_write_aborts_writing_nothing(tmp_path: Path) 
 
 
 def _run_with_skill(tmp_path: Path, name: str, skill_md: str) -> list[Path]:
-    """Emit a tmp harness holding exactly one skill (<name>/SKILL.md) into an isolated tmp target."""
+    """Emit a tmp harness holding exactly one skill (<name>/SKILL.md) into an isolated target."""
     skill_dir = tmp_path / "harness" / "skills" / name
     skill_dir.mkdir(parents=True)
     (skill_dir / "SKILL.md").write_text(skill_md, encoding="utf-8")
