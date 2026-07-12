@@ -68,7 +68,8 @@
     ".opencode/skill/polyglot-boundary/references/canonicalization-table.md",
     ".opencode/skill/python-conventions/SKILL.md",
     ".opencode/skill/skill-creator/SKILL.md",
-    ".opencode/skill/two-plane-memory/SKILL.md"
+    ".opencode/skill/two-plane-memory/SKILL.md",
+    "opencode.json"
   ],
   "tool": "tools.harness_emit"
 }

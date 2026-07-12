@@ -2471,5 +2471,66 @@
   - `harness/skills/gate-model/SKILL.md` — how the constitution plane is enforced.
   - `/orient` — regenerate + surface the derived plane. `/checkpoint` — persist the committed state tier.
   
+  ===== opencode.json =====
+  {
+    "$schema": "https://opencode.ai/config.json",
+    "_note": "CONFIG-01 runtime config (D-03), authored single-source. `model`/`small_model` carry PLACEHOLDER tier tokens only — never real model IDs (model-identity constraint); the exact `small_model` key name is A1-deferred to Phase 6 wiring. `instructions` are AGENTS.md POINTERS, never contracts/** payloads (Pitfall P2). `plugin` registers the Phase-2 harness/plugins/session-inject.ts (authored wiring only; runtime execution deferred D-02). RE-VERIFY at Phase 6 (A6): the injector's opencode hook names — `chat.system.transform` vs `experimental.chat.system.transform` and the `event` session.created name — before live loading.",
+    "formatter": {
+      "dotnet": {
+        "command": [
+          "dotnet",
+          "format"
+        ],
+        "extensions": [
+          ".cs"
+        ]
+      },
+      "ruff": {
+        "command": [
+          "ruff",
+          "format",
+          "$FILE"
+        ],
+        "extensions": [
+          ".py"
+        ]
+      }
+    },
+    "instructions": [
+      "AGENTS.md",
+      "**/AGENTS.md"
+    ],
+    "mcp": {},
+    "model": "provider/implementer-tier",
+    "permission": {
+      "bash": {
+        "*": "ask",
+        "dotnet *": "allow",
+        "uv *": "allow",
+        "pytest *": "allow",
+        "git push*": "ask",
+        "rm -rf*": "deny"
+      },
+      "doom_loop": "ask",
+      "edit": "ask",
+      "external_directory": "ask",
+      "glob": "allow",
+      "grep": "allow",
+      "list": "allow",
+      "lsp": "allow",
+      "question": "allow",
+      "read": "allow",
+      "skill": "allow",
+      "task": "allow",
+      "todowrite": "allow",
+      "webfetch": "ask",
+      "websearch": "ask"
+    },
+    "plugin": [
+      "harness/plugins/session-inject.ts"
+    ],
+    "small_model": "provider/explorer-tier"
+  }
+  
   '''
 # ---

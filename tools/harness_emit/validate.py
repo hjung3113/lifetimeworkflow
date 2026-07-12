@@ -12,6 +12,7 @@ lands in exactly one place.
 
 from __future__ import annotations
 
+import re
 import warnings
 
 from tools.harness_lint.caps import (
@@ -184,3 +185,38 @@ def check_skill_set(names: set[str]) -> None:
         missing = sorted(expected - set(names))
         extra = sorted(set(names) - expected)
         _fail(f"skill set drift — missing {missing}, unexpected {extra}")
+
+
+# A placeholder model tier token — the ONLY shape a ``model``/``*_model`` value may take, so no real
+# provider model identifier can leak into an emitted artifact (model-identity constraint, T-07-03).
+_PLACEHOLDER_MODEL_RE = re.compile(r"^provider/[a-z0-9]+(-[a-z0-9]+)*-tier$")
+
+
+def check_opencode_config(config: dict, schema: dict) -> None:
+    """Validate the emitted ``opencode.json`` — schema conformance + no real model identifier.
+
+    Two HARD gates, both raising :class:`HarnessEmitError` BEFORE any write (loud-fail, no partial
+    tree):
+      * ``jsonschema.validate`` against the vendored subset schema
+        (``harness/opencode.config.schema.json``) — a malformed/typo'd config fails here (T-07-07),
+        never silently emitted;
+      * every ``model``/``*_model`` value MUST be a placeholder tier token
+        (``provider/<...>-tier``) — a real provider model identifier is refused (T-07-03).
+
+    jsonschema is imported locally (already a workspace dependency) to keep the module import-light.
+    """
+    import jsonschema
+
+    try:
+        jsonschema.validate(config, schema)
+    except jsonschema.ValidationError as exc:
+        _fail(f"opencode.json fails the vendored subset schema: {exc.message}")
+
+    for key, value in config.items():
+        if key == "model" or key.endswith("_model"):
+            if not _PLACEHOLDER_MODEL_RE.match(str(value)):
+                _fail(
+                    f"opencode.json {key}={value!r} is not a placeholder tier token "
+                    f"(provider/<tier>-tier) — no real model identifier may leak into an "
+                    f"emitted artifact"
+                )

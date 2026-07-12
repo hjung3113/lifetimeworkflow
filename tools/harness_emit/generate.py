@@ -18,12 +18,21 @@ Entrypoint: ``python -m tools.harness_emit``.
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
 
-from tools.harness_emit import manifest, project_agent, project_command, project_skill, validate
+from tools.harness_emit import (
+    manifest,
+    permissions,
+    project_agent,
+    project_command,
+    project_skill,
+    validate,
+)
 from tools.harness_lint import parse_frontmatter
+from tools.harness_perms.resolver import load_matrix
 
 # --- paths (tools/harness_emit/generate.py → parents[2] == repo root) -------------------------
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -162,7 +171,7 @@ def iter_commands(commands_dir: str | Path) -> list[tuple[str, dict, str]]:
 def iter_plugins(plugins_dir: str | Path) -> list[Path]:
     """Yield each ``plugins/*.ts`` source path, sorted by name.
 
-    The ``.ts`` is authored source consumed by the opencode RUNTIME (deferred), never by the emitter:
+    The ``.ts`` is authored source consumed by the opencode RUNTIME (deferred), not the emitter:
     it is copied BYTE-FOR-BYTE (``read_bytes``/``write_bytes``) and is NEVER parsed, transformed,
     re-serialized, imported, or executed at emit (D-01; Elevation mitigation T-07-04). No DERIVED
     marker is injected — it is verbatim source, not generated Markdown.
@@ -182,6 +191,25 @@ def iter_skills(skills_dir: str | Path) -> list[tuple[str, dict, str, Path]]:
         fm, body = parse_frontmatter(skill_md.read_text(encoding="utf-8"))
         result.append((skill_md.parent.name, fm, body, skill_md.parent))
     return result
+
+
+# --- opencode.json config (the one genuine transform: matrix → 15-key permission block) -------
+
+
+def build_opencode_config(harness_dir: str | Path = HARNESS_DIR) -> dict:
+    """Build the emitter-owned root ``opencode.json`` = authored config + full 15-key permission.
+
+    The emitter OWNS ``opencode.json`` wholesale: it starts from authored ``harness/opencode.json``
+    (model tiers, formatter, instructions, mcp, plugin) and REPLACES its PARTIAL ``permission``
+    block with the full 15-key block projected from ``harness/permission-matrix.json``
+    (:func:`permissions.build_permission_block` strips ``_note`` + ``path_deny_globs``). Every other
+    authored key passes through verbatim. Serialize with :func:`permissions.dumps_config`.
+    """
+    harness_dir = Path(harness_dir)
+    config = json.loads((harness_dir / "opencode.json").read_text(encoding="utf-8"))
+    matrix = load_matrix(harness_dir / "permission-matrix.json")
+    config["permission"] = permissions.build_permission_block(matrix)
+    return config
 
 
 # --- emit -------------------------------------------------------------------------------------
@@ -227,6 +255,14 @@ def emit(
         skill_plan.append((name, project_skill.project(fm), body, skill_dir))
     if skills:  # anti-drift: the emitted set must equal EXPECTED_SKILLS exactly (real tree = 9)
         validate.check_skill_set({name for name, _, _, _ in skills})
+
+    # opencode.json — the one genuine transform. Build + validate BEFORE any write (loud-fail):
+    # a schema-invalid config or a leaked real model id aborts having written nothing (T-07-07/03).
+    opencode_config = build_opencode_config(harness_dir)
+    config_schema = json.loads(
+        (harness_dir / "opencode.config.schema.json").read_text(encoding="utf-8")
+    )
+    validate.check_opencode_config(opencode_config, config_schema)
 
     # --- write both trees ---
     written: list[Path] = []
@@ -280,8 +316,8 @@ def emit(
 
     # --- plugins: 5 .ts copied BYTE-FOR-BYTE to .opencode/plugin (D-01; NEVER parsed/executed) ---
     # The one Elevation-risk surface (T-07-04): the .ts is read as bytes and written as bytes — the
-    # emitter never parses/imports/executes it (execution is opencode-runtime, deferred). There is NO
-    # Claude plugin target (Claude uses settings.json hooks) and NO .opencode/tool/ dir (no source).
+    # emitter never parses/imports/executes it (execution is opencode-runtime, deferred). There is
+    # NO Claude plugin target (Claude uses settings.json hooks) and NO .opencode/tool/ dir (no src).
     plugins = iter_plugins(harness_dir / "plugins")
     if plugins:
         opencode_plugin_dir = Path(opencode_dir) / "plugin"
@@ -291,6 +327,11 @@ def emit(
             target = _confine(opencode_plugin_dir / plugin.name, opencode_plugin_dir)
             target.write_bytes(data)
             written.append(target)
+
+    # --- root opencode.json (emitter-owned wholesale; opencode's documented project-config path) --
+    config_target = _confine(Path(root) / "opencode.json", Path(root))
+    config_target.write_text(permissions.dumps_config(opencode_config), encoding="utf-8")
+    written.append(config_target)
 
     # --- ownership manifest (prune stale, write current) ---
     manifest.prune_then_write(written, manifest_path=manifest_path, root=Path(root))

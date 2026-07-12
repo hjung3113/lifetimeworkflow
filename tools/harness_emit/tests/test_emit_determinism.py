@@ -20,6 +20,7 @@ from tools.harness_lint.caps import EXPECTED_SKILLS
 
 # test_emit_determinism.py -> tests -> harness_emit -> tools -> repo root (parents[3]).
 _REPO_ROOT = Path(__file__).resolve().parents[3]
+_HARNESS_DIR = _REPO_ROOT / "harness"
 _AGENTS_DIR = _REPO_ROOT / "harness" / "agents"
 _COMMANDS_DIR = _REPO_ROOT / "harness" / "commands"
 _SKILLS_DIR = _REPO_ROOT / "harness" / "skills"
@@ -72,6 +73,11 @@ def test_projected_tree_matches_committed_snapshot(snapshot) -> None:
     for name, fm, body, _ in harness_emit.iter_skills(_SKILLS_DIR):
         skill_md = harness_emit.render_markdown(project_skill.project(fm), body)
         parts.append(f"===== skill/{name} =====\n{skill_md}")
+    # opencode.json — the one genuine transform (matrix → 15-key block); pin its serialized form.
+    from tools.harness_emit import permissions
+
+    config = harness_emit.build_opencode_config(_HARNESS_DIR)
+    parts.append(f"===== opencode.json =====\n{permissions.dumps_config(config)}")
     assert "\n".join(parts) == snapshot
 
 
