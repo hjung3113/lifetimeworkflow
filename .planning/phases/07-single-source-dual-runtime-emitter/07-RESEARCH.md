@@ -426,18 +426,21 @@ CI: re-emit → git diff --exit-code (emit-drift job → gate fan-in)   [D-02, c
 
 **These A-items are planner/discuss inputs, not locked facts.** A1/A2/A6-class items carry existing in-repo RESUME-note precedent (defer live verification to opencode install).
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **`.opencode/opencode.json` location — repo root or `.opencode/`?**
    - Known: ROADMAP criterion 1 lists "`.opencode/{...}` + `opencode.json`" — reads as a sibling at repo root (opencode reads root `opencode.json`).
    - Unclear: whether a `.opencode/opencode.json` is also honored.
    - Recommendation: emit root `opencode.json` (opencode's documented project config location); own it wholesale via manifest (no GSD conflict).
+   - **RESOLVED:** emit root `opencode.json`, owned wholesale via manifest — carried by **07-03 Task 2**.
 
 2. **Does Phase 7 take ownership of the Phase 2/4 settings.json/hooks wiring, or just coexist idempotently?** (A5)
    - Recommendation: coexist idempotently in the MVP (reproduce byte-for-byte); consider migrating to emit-ownership as a later, explicit task that also updates `test_hook_wiring.py`. Decide in planning.
+   - **RESOLVED:** coexist idempotently (order-preserving, byte-for-byte reproduction of the live file; NO ownership migration) — locked as the MVP decision (A5) in **07-05** (`<interfaces>` MVP decision + Regime B-json order-preserving merge). Ownership migration is explicitly out of scope for this phase.
 
 3. **`.opencode/tool/` — emit empty dir, or omit until a tool source exists?**
    - Recommendation: omit (don't emit empty dirs; git doesn't track them anyway). Add a tool projector when the first `harness/tool*` source lands.
+   - **RESOLVED:** omit `.opencode/tool/` (no empty-dir emit) until the first `harness/tool*` source lands — carried by **07-03 Task 1**.
 
 ## Environment Availability
 
