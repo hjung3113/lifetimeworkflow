@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 08-04-PLAN.md
-last_updated: "2026-07-12T07:41:45.669Z"
+last_updated: "2026-07-12T07:58:29.199Z"
 last_activity: 2026-07-12
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 43
-  completed_plans: 39
+  completed_plans: 40
   percent: 88
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 07 (single-source-dual-runtime-emitter) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-07-12
 
-Progress: [█████████░] 91%
+Progress: [█████████░] 93%
 
 ## Performance Metrics
 
@@ -89,6 +89,7 @@ Progress: [█████████░] 91%
 | Phase 08 P04 | 10min | 3 tasks | 6 files |
 | Phase 08 P06 | 12min | 2 tasks | 3 files |
 | Phase 07 P01 | 24min | 3 tasks | 20 files |
+| Phase 07 P02 | 9min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -146,6 +147,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [07-01] EMIT-01/02 agent-first emit walking skeleton (D-05): tools/harness_emit projects runtime-neutral harness/agents to .opencode/agent (mode+permission) + .claude/agents (tools); DERIVED marker on line 2 so first line stays --- and frontmatter loads; permission.bash kept in authored last-wins order (P3); byte-identical re-emit proven by sha256 + committed syrupy .ambr.
 - [Phase ?]: [07-01] Caps + is_read_only + READ_ONLY_PERSONAS extracted to tools/harness_lint/caps.py as single source shared by lints AND emit validate.py; validate-then-write raises HarnessEmitError writing nothing on over-cap desc / invalid permission key / real model ID / read-only-gains-write (never truncate).
 - [Phase ?]: [07-01] emit-manifest.json prune-then-write owns ONLY harness paths with gsd-* exclusion (D-03); emit-drift CI job (re-emit + git diff --exit-code over full documented path set) in non-bypassable gate.needs — later-wave paths pre-covered.
+- [Phase ?]: [07-02] EMIT commands+skills widening: project_command (opencode keeps agent/subtask, Claude description-only) + project_skill (identical both runtimes, references/** byte-copied to both trees). Loud-fail check_command/check_skill/check_skill_set from caps.py; test_coexist proves gsd/ non-collision; re-emit byte-identical.
 
 ### Pending Todos
 
@@ -172,6 +174,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-12T07:41:35.035Z
+Last session: 2026-07-12T07:58:03.482Z
 Stopped at: Completed 08-04-PLAN.md
 Resume file: None

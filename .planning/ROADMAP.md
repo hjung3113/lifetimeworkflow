@@ -214,7 +214,7 @@ Plans:
 
 **Wave 2** *(blocked on 07-01)*
 
-- [ ] 07-02-PLAN.md — Widen: commands (17) + skills (9, references/ byte-copy); GSD command non-collision (EMIT-01/02)
+- [x] 07-02-PLAN.md — Widen: commands (17) + skills (9, references/ byte-copy); GSD command non-collision (EMIT-01/02)
 
 **Wave 3** *(blocked on 07-02)*
 
@@ -242,7 +242,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 5. De-specialization & Template Extraction | 5/5 | Complete   | 2026-07-09 |
 | 5.5. Authored-Surface Genericization (INSERTED) | 3/3 | Complete|  |
 | 6. CI + Gates (generic) | 3/3 | Complete   | 2026-07-09 |
-| 7. Single-Source Dual-Runtime Emitter | 1/5 | In Progress|  |
+| 7. Single-Source Dual-Runtime Emitter | 2/5 | In Progress|  |
 | 8. Pipeline-Topology Conductor + Per-Component Agents | 6/6 | Complete   | 2026-07-11 |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
