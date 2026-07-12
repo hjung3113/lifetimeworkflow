@@ -115,8 +115,8 @@
 
 ### EMIT — 단일소스 듀얼런타임 산출 (마지막 페이즈)
 
-- [ ] **EMIT-01**: 정본 하네스 소스 포맷(`harness/`) — agents/commands/skills/plugins의 단일 소스
-- [ ] **EMIT-02**: emitter — 소스에서 opencode(1차) + Claude Code(`.claude/`) 아티팩트를 생성, per-runtime 제약 검증기(스킬 크기 상한 등)가 truncate 대신 loud-fail
+- [x] **EMIT-01**: 정본 하네스 소스 포맷(`harness/`) — agents/commands/skills/plugins의 단일 소스
+- [x] **EMIT-02**: emitter — 소스에서 opencode(1차) + Claude Code(`.claude/`) 아티팩트를 생성, per-runtime 제약 검증기(스킬 크기 상한 등)가 truncate 대신 loud-fail
 
 ### PIPE — 파이프라인 토폴로지 지휘자 & 컴포넌트 에이전트 (Phase 8, ADDED · post-Phase-6 요청, 전부 도메인 중립)
 
@@ -205,8 +205,8 @@
 | GEN-05 | Phase 5.5 | Complete |
 | CI-01 | Phase 6 | Complete |
 | CI-02 | Phase 6 | Complete |
-| EMIT-01 | Phase 7 | Pending |
-| EMIT-02 | Phase 7 | Pending |
+| EMIT-01 | Phase 7 | Complete |
+| EMIT-02 | Phase 7 | Complete |
 | PIPE-01 | Phase 8 | Complete |
 | PIPE-02 | Phase 8 | Complete |
 | PIPE-03 | Phase 8 | Complete |

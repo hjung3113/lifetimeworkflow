@@ -210,7 +210,7 @@ Plans:
 Plans:
 **Wave 1** *(agent-first walking slice — D-05: through EVERY mechanic)*
 
-- [ ] 07-01-PLAN.md — Agents walking slice: emit spine + agent projection + loud-fail validators + ownership manifest + committed .opencode/agent + .claude/agents + emit-drift CI gate (EMIT-01/02)
+- [x] 07-01-PLAN.md — Agents walking slice: emit spine + agent projection + loud-fail validators + ownership manifest + committed .opencode/agent + .claude/agents + emit-drift CI gate (EMIT-01/02)
 
 **Wave 2** *(blocked on 07-01)*
 
@@ -242,7 +242,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 5. De-specialization & Template Extraction | 5/5 | Complete   | 2026-07-09 |
 | 5.5. Authored-Surface Genericization (INSERTED) | 3/3 | Complete|  |
 | 6. CI + Gates (generic) | 3/3 | Complete   | 2026-07-09 |
-| 7. Single-Source Dual-Runtime Emitter | 0/5 | Planned | - |
+| 7. Single-Source Dual-Runtime Emitter | 1/5 | In Progress|  |
 | 8. Pipeline-Topology Conductor + Per-Component Agents | 6/6 | Complete   | 2026-07-11 |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents

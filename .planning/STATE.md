@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 08-04-PLAN.md
-last_updated: "2026-07-12T07:20:12.595Z"
-last_activity: 2026-07-12 -- Phase 07 execution started
+last_updated: "2026-07-12T07:41:45.669Z"
+last_activity: 2026-07-12
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 43
-  completed_plans: 38
+  completed_plans: 39
   percent: 88
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 07 (single-source-dual-runtime-emitter) — EXECUTING
-Plan: 1 of 5
-Status: Executing Phase 07
-Last activity: 2026-07-12 -- Phase 07 execution started
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-07-12
 
-Progress: [██████████] 97%
+Progress: [█████████░] 91%
 
 ## Performance Metrics
 
@@ -88,6 +88,7 @@ Progress: [██████████] 97%
 | Phase 08 P05 | 10min | 2 tasks | 3 files |
 | Phase 08 P04 | 10min | 3 tasks | 6 files |
 | Phase 08 P06 | 12min | 2 tasks | 3 files |
+| Phase 07 P01 | 24min | 3 tasks | 20 files |
 
 ## Accumulated Context
 
@@ -142,6 +143,9 @@ Recent decisions affecting current work:
 - [Phase ?]: [Phase 08]: [08-03] PIPE-03 neutral component-engineer template (anti-sprawl-EXEMPT under harness/agents/templates/ like engineer.md) — stage-keyed fill-in-the-blanks persona; /component gains a mandated-order+all-three-or-none section deriving the agent into the instance agents/ and registering the [[components]]/[pipeline] slot; new test_agent_templates.py closes the templates/*.md gap (EXPECTED_TEMPLATES={engineer,component-engineer}, imports VALID_MODES/ALLOWED_PERMISSION_KEYS from test_agents). EXPECTED_PERSONAS stays 4; GEN-04 green; full non-example suite 430 passed.
 - [Phase 08]: [08-04] PIPE-04 instance overlay demonstration: examples/log-parser/project.toml declares the concrete parser(1,.NET)→converter(2,.NET)→scheduler(3,py)→collector(4,py) topology with real domain-contract edges (standard-log, equipment-progress x2) as an OVERLAY of the neutral core slot (loaded path-locally via load_project(path=); core [instance] root stays ""). 4 per-stage component agents instantiate the component-engineer template (mode:subagent, name==component.id, least-privilege bash). Instance topology gate runs ONLY in the example leg (off root testpaths, no GEN-04 trip). Core 439 passed; example leg 9 passed/2 skipped.
 - [Phase ?]: [Phase 08]: [08-06] PIPE-06 closeout — extended persona anti-sprawl to the conductor (test_single_primary_carries_conductor_signal; EXPECTED_PERSONAS stays 4). Full guard surface green: core 440 passed/3 snapshots + instance leg 9 passed/2 skipped (expected .NET egress). ADR-0003 (accepted, complements ADR-0002) records pipeline-topology pure-DATA slot + instance overlay: generic default in core, concrete parser→converter→scheduler→collector topology in examples/log-parser/project.toml, GEN-04 as PRIMARY driver; landed via human GOLDEN_APPROVE_HUMAN gate. Phase 8 COMPLETE (6/6).
+- [Phase ?]: [07-01] EMIT-01/02 agent-first emit walking skeleton (D-05): tools/harness_emit projects runtime-neutral harness/agents to .opencode/agent (mode+permission) + .claude/agents (tools); DERIVED marker on line 2 so first line stays --- and frontmatter loads; permission.bash kept in authored last-wins order (P3); byte-identical re-emit proven by sha256 + committed syrupy .ambr.
+- [Phase ?]: [07-01] Caps + is_read_only + READ_ONLY_PERSONAS extracted to tools/harness_lint/caps.py as single source shared by lints AND emit validate.py; validate-then-write raises HarnessEmitError writing nothing on over-cap desc / invalid permission key / real model ID / read-only-gains-write (never truncate).
+- [Phase ?]: [07-01] emit-manifest.json prune-then-write owns ONLY harness paths with gsd-* exclusion (D-03); emit-drift CI job (re-emit + git diff --exit-code over full documented path set) in non-bypassable gate.needs — later-wave paths pre-covered.
 
 ### Pending Todos
 
@@ -168,6 +172,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-11T12:59:20.951Z
+Last session: 2026-07-12T07:41:35.035Z
 Stopped at: Completed 08-04-PLAN.md
 Resume file: None
