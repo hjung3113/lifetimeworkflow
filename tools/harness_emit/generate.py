@@ -267,6 +267,27 @@ def build_claude_block() -> str:
     )
 
 
+def _merge_settings_json(claude_dir: Path) -> None:
+    """Signature-merge the harness hook groups into ``.claude/settings.json`` (Regime B-json).
+
+    Reads the CURRENT on-disk settings, calls :func:`merge.merge_settings` (append-or-replace ONLY
+    the harness-signature hook groups in place, de-dup, never touch/reorder GSD hooks), and writes
+    the ORDER-PRESERVING result — ``json.dumps(..., indent=2, ensure_ascii=False) + "\\n"``, NO
+    ``sort_keys`` (the live file is SessionStart-first / insertion-ordered; a global sort flaps
+    ~274 lines — T-07-11). NEVER a template overwrite (Pitfall 2). NOT added to the ownership
+    manifest (Regime B, not Regime A). The ``.exists()`` guard keeps tmp-root emit tests (no seeded
+    settings.json) green.
+    """
+    settings_path = claude_dir / "settings.json"
+    if not settings_path.exists():
+        return
+    existing = json.loads(settings_path.read_text(encoding="utf-8"))
+    merged = merge.merge_settings(existing)
+    settings_path.write_text(
+        json.dumps(merged, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+
+
 def _merge_shared_markdown(
     root: Path,
     agent_names: list[str],
@@ -426,6 +447,11 @@ def emit(
         sorted(name for name, _, _, _ in command_plan),
         sorted(name for name, _, _, _ in skill_plan),
     )
+
+    # --- Regime B-json: signature-merge harness hook groups into .claude/settings.json ---
+    # Read → merge_settings → write (order-preserving, no sort_keys); NEVER template-overwrite
+    # (Pitfall 2) and NEVER manifest-owned (Regime B). Reproduces the Phase-2/4 wiring byte-for-byte.
+    _merge_settings_json(Path(claude_dir))
 
     # --- ownership manifest (prune stale, write current) ---
     manifest.prune_then_write(written, manifest_path=manifest_path, root=Path(root))

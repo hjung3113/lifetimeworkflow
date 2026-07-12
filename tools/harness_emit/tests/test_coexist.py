@@ -77,3 +77,131 @@ def test_seeded_gsd_command_survives_byte_unchanged_and_unlisted(tmp_path: Path)
     assert not any("commands/gsd/" in p for p in listed), (
         "the manifest enumerated a gsd/ command — the harness owns only top-level commands"
     )
+
+
+# --- settings.json / GSD-subtree coexistence (Regime B-json, T-07-02 / T-07-10) ------------------
+
+# The GSD-owned .claude/ files the emitter must NEVER read, write, or prune. Seeded into the tmp
+# tree and asserted byte-unchanged after a full emit (and absent from the ownership manifest).
+_GSD_SEEDS = {
+    ".claude/get-shit-done/config.json": '{"gsd": "owned — never touched"}\n',
+    ".claude/hooks/gsd-session-state.sh": "#!/usr/bin/env bash\necho gsd-owned\n",
+    ".claude/gsd-state.json": '{"phase": "gsd-owned"}\n',
+    ".claude/package.json": '{"name": "gsd-package"}\n',
+    ".claude/settings.local.json": '{"local": "gsd-owned"}\n',
+    ".claude/agents/gsd-planner.md": "GSD-owned agent — never emitted over\n",
+}
+
+# A minimal but structurally-real settings.json: 4 SessionStart groups (3 GSD + injector) plus the
+# already-wired harness hook groups — exactly the shape merge_settings must reproduce in place.
+_SEED_SETTINGS = {
+    "hooks": {
+        "SessionStart": [
+            {"hooks": [{"type": "command", "command": "node .claude/hooks/gsd-check-update.js"}]},
+            {"hooks": [{"type": "command", "command": "bash .claude/hooks/gsd-session-state.sh"}]},
+            {"hooks": [{"type": "command", "command": "bash tools/bootstrap/install.sh"}]},
+            {"hooks": [{"type": "command", "command": "bash .claude/hooks/memory-inject.sh"}]},
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "Write|Edit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "bash .claude/hooks/gsd-phase-boundary.sh",
+                        "timeout": 5,
+                    }
+                ],
+            },
+            {
+                "matcher": "Write|Edit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "uv run python -m tools.hooks.format_on_write",
+                        "timeout": 30,
+                    }
+                ],
+            },
+        ],
+        "PreToolUse": [
+            {
+                "matcher": "Write|Edit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "uv run python -m tools.hooks.contract_guard",
+                        "timeout": 10,
+                    }
+                ],
+            },
+            {
+                "matcher": "Read|Write|Edit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "uv run python -m tools.hooks.secret_scan",
+                        "timeout": 10,
+                    }
+                ],
+            },
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "uv run python -m tools.hooks.commit_gate --from-hook",
+                        "timeout": 120,
+                    }
+                ],
+            },
+        ],
+    }
+}
+
+
+def _seed_gsd_tree(tmp_path: Path) -> dict[str, str]:
+    """Write the GSD-owned fixtures + a real-shaped settings.json; return their original bytes."""
+    originals: dict[str, str] = {}
+    for rel, content in _GSD_SEEDS.items():
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+        originals[rel] = content
+    settings = tmp_path / ".claude" / "settings.json"
+    settings.parent.mkdir(parents=True, exist_ok=True)
+    settings.write_text(json.dumps(_SEED_SETTINGS, indent=2, ensure_ascii=False) + "\n", "utf-8")
+    return originals
+
+
+def test_gsd_owned_claude_files_untouched_and_unlisted(tmp_path: Path) -> None:
+    """Every seeded GSD-owned .claude/ file is byte-unchanged after emit and absent from manifest."""
+    originals = _seed_gsd_tree(tmp_path)
+
+    _, manifest_path = _emit(tmp_path)
+
+    for rel, original in originals.items():
+        path = tmp_path / rel
+        assert path.exists(), f"GSD-owned file was deleted: {rel}"
+        assert path.read_text(encoding="utf-8") == original, f"GSD-owned file was mutated: {rel}"
+    listed = set(json.loads(manifest_path.read_text(encoding="utf-8"))["paths"])
+    for rel in originals:
+        assert rel not in listed, f"manifest enumerated a GSD-owned file: {rel}"
+    # settings.json is Regime B (merge, not own) — must never be manifest-listed either.
+    assert not any("settings.json" in p for p in listed), (
+        "settings.json is a Regime-B merge target — it must not be in the ownership manifest"
+    )
+
+
+def test_seeded_settings_json_reproduced_byte_for_byte(tmp_path: Path) -> None:
+    """A full emit over a seeded settings.json reproduces it byte-for-byte (idempotent coexist)."""
+    _seed_gsd_tree(tmp_path)
+    settings = tmp_path / ".claude" / "settings.json"
+    before = settings.read_text(encoding="utf-8")
+
+    _emit(tmp_path)
+
+    after = settings.read_text(encoding="utf-8")
+    assert after == before, "the emit mutated settings.json — merge must reproduce it byte-for-byte"
+    parsed = json.loads(after)
+    assert len(parsed["hooks"]["SessionStart"]) == 4, "SessionStart group count drifted from 4"
