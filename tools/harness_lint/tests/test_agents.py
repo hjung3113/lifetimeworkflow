@@ -16,47 +16,24 @@ import pytest
 
 from tools.harness_lint import parse_frontmatter
 
+# Cap constants + the read-only predicate now live in ONE place (tools/harness_lint/caps.py) so the
+# emit-time validators (tools/harness_emit) and this gate share a single definition (07-01, D-04).
+# Re-imported here so the existing assertions — and downstream importers of these names via
+# ``test_agents`` (e.g. test_agent_templates) — stay green with values UNCHANGED.
+from tools.harness_lint.caps import (  # noqa: F401  (re-exported for test_agent_templates)
+    ALLOWED_PERMISSION_KEYS,
+    EXPECTED_PERSONAS,
+    READ_ONLY_PERSONAS,
+    VALID_MODES,
+    VALID_PERMISSION_KEYS,
+    WRITE_AFFORDANCE_ALIAS,
+    _permission,
+    is_read_only,
+)
+
 # test_agents.py -> tests -> harness_lint -> tools -> repo root (parents[3]).
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _AGENTS_DIR = _REPO_ROOT / "harness" / "agents"
-
-# The 15 valid opencode permission keys (CONFIG-02, mirrors harness/permission-matrix.json).
-VALID_PERMISSION_KEYS = frozenset(
-    {
-        "read",
-        "edit",
-        "bash",
-        "glob",
-        "grep",
-        "list",
-        "task",
-        "external_directory",
-        "todowrite",
-        "question",
-        "webfetch",
-        "websearch",
-        "lsp",
-        "skill",
-        "doom_loop",
-    }
-)
-
-# "write" is NOT a native opencode key (file writes fall under "edit"); it is tolerated ONLY as an
-# explicit deny authored defensively for the read-only invariant — never as an "allow".
-WRITE_AFFORDANCE_ALIAS = frozenset({"write"})
-ALLOWED_PERMISSION_KEYS = VALID_PERMISSION_KEYS | WRITE_AFFORDANCE_ALIAS
-
-VALID_MODES = frozenset({"primary", "subagent", "all"})
-
-# Exactly the four enumerated CORE personas — the instance-language persona
-# moved to the log-parser example instance (Phase 5.5). No more, no less.
-EXPECTED_PERSONAS = frozenset({"orchestrator", "python-engineer", "code-reviewer", "explorer"})
-
-# Personas that MUST be read-only in both representations (AGENT-04 reviewer, AGENT-05 explorer).
-READ_ONLY_PERSONAS = frozenset({"code-reviewer", "explorer"})
-
-# Write/shell affordance tokens forbidden from a read-only persona's Claude tools allowlist.
-_WRITE_TOOL_TOKENS = ("Write", "Bash", "Edit")
 
 # A routing-signal description must carry an invocation trigger token (P7 guard).
 _ROUTING_TRIGGERS = ("use", "when")
@@ -75,26 +52,6 @@ def _agent_files() -> list[Path]:
 def _load(path: Path) -> dict:
     fm, _ = parse_frontmatter(path.read_text(encoding="utf-8"))
     return fm
-
-
-def _permission(fm: dict) -> dict:
-    perm = fm.get("permission", {})
-    return perm if isinstance(perm, dict) else {}
-
-
-def is_read_only(fm: dict) -> bool:
-    """True iff the persona grants NO write/shell affordance in EITHER representation.
-
-    Checks BOTH the opencode ``permission`` block (``edit``/``bash``/``write`` must not resolve to
-    an "allow" — present-and-deny or absent are both fine) AND the Claude ``tools`` allowlist string
-    (must contain none of Write/Bash/Edit).
-    """
-    perm = _permission(fm)
-    for key in ("edit", "bash", "write"):
-        if str(perm.get(key, "deny")) == "allow":
-            return False
-    tools = str(fm.get("tools", ""))
-    return not any(tok in tools for tok in _WRITE_TOOL_TOKENS)
 
 
 def test_expected_personas_present_no_sprawl() -> None:

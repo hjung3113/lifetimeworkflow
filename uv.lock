@@ -10,6 +10,7 @@ members = [
     "logparser-golden-runner",
     "logparser-harness",
     "logparser-harness-config",
+    "logparser-harness-emit",
     "logparser-harness-lint",
     "logparser-harness-perms",
     "logparser-hooks",
@@ -262,6 +263,11 @@ dev = [
 name = "logparser-harness-config"
 version = "0.0.0"
 source = { virtual = "tools/harness_config" }
+
+[[package]]
+name = "logparser-harness-emit"
+version = "0.0.0"
+source = { virtual = "tools/harness_emit" }
 
 [[package]]
 name = "logparser-harness-lint"
