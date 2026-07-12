@@ -107,7 +107,8 @@ None.
 - The Markdown Regime-B splice is proven safe; Plan 05 tackles the second risky surface — `.claude/settings.json` **signature merge** (JSON, no comment markers), which must stay idempotent against the Phase-2/4 hand-wired SessionStart hooks (`test_hook_wiring.py`: 4 groups, 3 GSD survive) — do NOT double-wire.
 
 ## Self-Check: PASSED
-(see appended verification below)
+
+All created files verified present on disk (`tools/harness_emit/merge.py`, `tools/harness_emit/tests/test_merge_idempotent.py`); all three task commits (`f7ec3bd`, `038bb9f`, `0ffe54b`) verified in git history. Committed-then-re-emit produces a clean `git diff` over the full emit-drift path set; the manifest lists zero of `AGENTS.md`/`CLAUDE.md`.
 
 ---
 *Phase: 07-single-source-dual-runtime-emitter*
