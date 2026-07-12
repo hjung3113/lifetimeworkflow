@@ -1,32 +1,44 @@
 {
   "version": "1.0",
-  "timestamp": "2026-07-10T16:10:00.000Z",
-  "phase": "08",
-  "phase_name": "pipeline-topology-conductor-per-component-agents",
-  "phase_dir": ".planning/phases/08-pipeline-topology-conductor-per-component-agents",
+  "timestamp": "2026-07-12T11:24:02.369Z",
+  "phase": null,
+  "phase_name": "Milestone boundary — v2.0 Long-Horizon opened, no phase in execution",
+  "phase_dir": null,
   "plan": null,
   "task": null,
   "total_tasks": null,
-  "status": "phase_boundary_pause",
+  "status": "paused",
+  "milestone": "v2.0",
+  "milestone_name": "Long-Horizon",
   "completed_tasks": [
-    {"id": "phase-6", "name": "CI + Gates (generic) — config-derived polyglot CI matrix + core-suite + fan-in gate + CODEOWNERS + PR template", "status": "done", "note": "MERGED to main (PR #1, sha 8b9f875); all CI green incl. first real .NET run"},
-    {"id": "phase-8-planning", "name": "Phase 8 planned by a parallel session — 6 plans, plan-checker clean, marked ready to execute", "status": "done"}
+    {"id": 1, "name": "Confirm v1.0 complete (8/8 phases, Phase-7 emitter verified) — sequencing gate for v2.0 satisfied", "status": "done"},
+    {"id": 2, "name": "Update PROJECT.md — Current Milestone v2.0 section + active MAINT/ECON/MREPO requirements + footer", "status": "done", "commit": "3ae3640"},
+    {"id": 3, "name": "Reset STATE.md to v2.0 planning via gsd-sdk state.milestone-switch (Accumulated Context preserved)", "status": "done", "commit": "3ae3640"},
+    {"id": 4, "name": "Define 11 v2.0 requirements in REQUIREMENTS.md (MAINT-01..04, ECON-01..03, MREPO-01..04); disambiguated old 'v2 Requirements' backlog heading", "status": "done", "commit": "e2b3a6b"},
+    {"id": 5, "name": "Delete consumed MILESTONE-CONTEXT.md", "status": "done", "commit": "324847c"},
+    {"id": 6, "name": "Roadmapper: append phases 9/10/11 to ROADMAP.md, update STATE.md + REQUIREMENTS.md traceability (11/11 mapped, v1.0 rows untouched)", "status": "done", "commit": "81f8c61"},
+    {"id": 7, "name": "Push branch claude/data-pipeline-harness-8aypct to origin", "status": "done"}
   ],
   "remaining_tasks": [
-    {"id": "phase-8-execute", "name": "EXECUTE Phase 8 (Pipeline-Topology Conductor + Per-Component Agents) — the user's post-Phase-6 new request; 6 plans already planned + checked", "status": "not_started"},
-    {"id": "phase-7", "name": "Phase 7 — Single-Source Dual-Runtime Emitter (EMIT-01/02); still pending, independent of Phase 8", "status": "not_started"}
+    {"id": 8, "name": "Plan Phase 9 (alpha) — Self-Maintaining Derived Artifacts + Curator", "status": "not_started"},
+    {"id": 9, "name": "Plan + execute Phase 10 (beta) — Context-Economy Fan-out/Synthesize", "status": "not_started"},
+    {"id": 10, "name": "Plan + execute Phase 11 (gamma) — Multi-Repo Workspace", "status": "not_started"}
   ],
-  "blockers": [],
-  "human_actions_pending": [
-    {"action": "Enable the `gate` job as a required status check in branch protection on `main`", "context": "Makes the Phase-6 CI mirror truly non-bypassable at merge (D-02). Repo setting — agent cannot toggle it.", "blocking": false},
-    {"action": "Set repo default branch to `main`", "context": "`main` was created at the root scaffold commit as the PR base; repo default may still be `claude/data-pipeline-harness-8aypct`.", "blocking": false}
+  "blockers": [
+    {"description": "Commits show as Unverified on GitHub — SSH signing key at /home/claude/.ssh/commit_signing_key.pub is a 0-byte placeholder, no private key, ssh-keygen absent. Cannot sign in this container.", "type": "external", "workaround": "Author identity is correct (Claude <noreply@anthropic.com>); accept unverified as env limitation, or sign from an environment with the real key."},
+    {"description": "BOOT-01 (v1.0): .NET 10 SDK install egress-denied — does NOT block v2.0 planning (phases 9/10/11 are harness/agent/CI infra, no .NET compile needed).", "type": "external", "workaround": "Human: allowlist .NET download hosts, then run tools/bootstrap/install.sh. Not needed to plan/execute v2.0."}
   ],
+  "human_actions_pending": [],
   "decisions": [
-    {"decision": "Merged Phase 6 via PR #1 (claude/… -> main), base `main` created at root commit b60729d", "rationale": "Repo had only the feature branch; basing at the GSD scaffold keeps tooling out of the PR diff.", "phase": "06"},
-    {"decision": "Fixed 3 latent .NET bugs surfaced by the first real CI compile (missing `using Xunit;`, golden-runner masked build errors, ToyConverter.csproj `--` in XML comment -> MSB4025)", "rationale": ".NET was egress-deferred through Phases 1-5, so the example .NET had never compiled until CI.", "phase": "06"},
-    {"decision": "Phase 8 was ADDED as an independent post-Phase-6 user request and planned by a parallel session on the shared branch", "rationale": "Pipeline-aware agent model (conductor + per-component agents); independent of the still-pending Phase 7 emitter.", "phase": "08"}
+    {"decision": "Skip domain research for v2.0", "rationale": "MILESTONE-CONTEXT already maps reuse + open decisions; features are internal harness patterns, not a new domain to survey", "phase": "milestone-open"},
+    {"decision": "Continue phase numbering (9/10/11), not reset", "rationale": "Single continuous phase history after v1.0 phases 1-8; MILESTONE-CONTEXT leans continue", "phase": "milestone-open"},
+    {"decision": "Deliberately SKIP the workflow's phases.clear --confirm step", "rationale": "With continued numbering and no phase_archive_path, clearing would irreversibly delete the executed phase 1-8 records that phases 9/10/11 build on. phases.clear is for the reset-numbering path only.", "phase": "milestone-open"}
+  ],
+  "deferred_decisions": [
+    {"decision": "(alpha / Phase 9) which derived artifacts flip gitignored-derived -> committed-derived for PR refresh (committed set = what the stale-derived gate guards)", "resolve_at": "plan-phase 9"},
+    {"decision": "(gamma / Phase 11) workspace model a/b/c", "lean": "b: workspace manifest (raise project.toml slot one level)", "resolve_at": "plan-phase 11"}
   ],
   "uncommitted_files": [],
-  "next_action": "Confirm with the user: execute Phase 8 (planned + ready) via /gsd:execute-phase 8, or start Phase 7. `git fetch` first — this branch is shared and moved to Phase 8 planning while Phase 6 was being merged.",
-  "context_notes": "SHARED-BRANCH environment: a parallel session advanced claude/data-pipeline-harness-8aypct to Phase 8 planning (HEAD ca94a92) while this session merged Phase 6. Local containers are ephemeral — uncommitted files are lost on reset (this handoff itself was lost once and rewritten). ALWAYS git fetch before acting. Local .NET is egress-blocked (dotnet-install 403) — cannot build .NET locally; rely on CI. Non-example `uv run pytest` was 413 passed at Phase 6 close. Roadmap: Phases 1-6 done (6 merged to main); Phase 8 planned/ready; Phase 7 pending."
+  "next_action": "/clear then /gsd:discuss-phase 9 (surface the committed-derived vs session-derived KEY DECISION) — or /gsd:plan-phase 9 to plan directly.",
+  "context_notes": "Milestone v2.0 Long-Horizon is fully opened and pushed; git tree clean. No phase is in execution. All v2.0 work reuses existing machinery (tools/memory_regen, /docs-sync, orchestrator, Phase-6 CI, Phase-7 emitter, project.toml slot) — do NOT rebuild. Non-negotiables per phase: derived-never-hand-edited (machine-write + CI-verify OK), machines-gate/humans-ratify for constitution plane, GEN-04 core->example no-dependency, every new agent/skill/hook round-trips the Phase-7 emitter to both runtimes, no model identifiers in artifacts."
 }
