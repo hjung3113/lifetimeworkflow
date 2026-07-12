@@ -204,7 +204,7 @@ def diff_manifests(live, baseline) -> dict[str, list[str]]:
 ```
 Replace ONLY between markers; preserve outside verbatim; append once if markers absent (idempotent thereafter). Hand-roll as a small string splice (two markers, no lib).
 
-**Regime B-json (`.claude/settings.json`)** — signature-matched hook-group replacement. Parse JSON → remove any hook group whose command matches a harness signature → re-insert harness groups in deterministic order → write `json.dumps(sort_keys=True, indent=2)` + trailing LF. **The coexistence contract this MUST preserve** (test_hook_wiring.py:15-40):
+**Regime B-json (`.claude/settings.json`)** — signature-matched hook-group replacement. Parse JSON → remove any hook group whose command matches a harness signature → re-insert harness groups in deterministic order → write with **order-preserving** serialization `json.dumps(merged, indent=2, ensure_ascii=False) + "\n"` — **NO `sort_keys=True`**. The live file is authored `SessionStart`-first with non-alphabetical inner-key order (`type→command→timeout`); a global key-sort would NOT reproduce it (empirically ~274-line diff) and would fail the byte-for-byte drift gate on Day 1. This is a distinct regime from the emitter's wholesale-owned JSON (`opencode.json`, which DOES sort keys) — do not unify them. **The coexistence contract this MUST preserve** (test_hook_wiring.py:15-40):
 ```python
 EXISTING_COMMANDS = ["gsd-check-update.js", "gsd-session-state.sh", "tools/bootstrap/install.sh"]
 INJECTOR_COMMAND = "memory-inject.sh"
