@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
+status: verifying
 stopped_at: Completed 07-03-PLAN.md
-last_updated: "2026-07-12T08:17:38.265Z"
+last_updated: "2026-07-12T08:26:27.330Z"
 last_activity: 2026-07-12
 progress:
   total_phases: 8
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 43
-  completed_plans: 42
-  percent: 88
+  completed_plans: 43
+  percent: 100
 ---
 
 # Project State
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 
 Phase: 07 (single-source-dual-runtime-emitter) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-12
 
-Progress: [██████████] 98%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -92,6 +92,7 @@ Progress: [██████████] 98%
 | Phase 07 P02 | 9min | 2 tasks | 10 files |
 | Phase 07 P03 | 10min | 2 tasks | 8 files |
 | Phase 07 P04 | 9min | 2 tasks | 5 files |
+| Phase 07 P05 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -152,6 +153,8 @@ Recent decisions affecting current work:
 - [Phase ?]: [07-02] EMIT commands+skills widening: project_command (opencode keeps agent/subtask, Claude description-only) + project_skill (identical both runtimes, references/** byte-copied to both trees). Loud-fail check_command/check_skill/check_skill_set from caps.py; test_coexist proves gsd/ non-collision; re-emit byte-identical.
 - [Phase ?]: [07-03] EMIT plugins+config: 5 harness .ts plugins byte-verbatim-copied to .opencode/plugin (never parsed/executed, D-01/T-07-04); permission-matrix.json projected to opencode.json full 15-key block via permissions.build_permission_block (strips _note+path_deny_globs), bash *-first last-wins order preserved (P3/T-07-06); emitter owns root opencode.json wholesale; check_opencode_config loud-fails on jsonschema-invalid (T-07-07) + any real model id (placeholder-tier regex, T-07-03); re-emit byte-identical.
 - [Phase ?]: [Phase 07]: [07-04] EMIT-02 Regime B-md managed-block merge — merge.splice_managed_block is a hand-rolled two-marker (BEGIN/END HTML-comment) string splice: replaces ONLY inside the fence, preserves outside verbatim (T-07-02), appends once when markers absent (idempotent), LF/no-BOM/single trailing newline, fails loud (ValueError) on a single/malformed marker. generate.emit() reads->splices->writes root AGENTS.md (deterministic sorted agent/command/skill index) + CLAUDE.md (emitter pointer); NEVER full-write; both EXCLUDED from emit-manifest.json (Regime B not A). GSD Project/Developer-Profile + nearest-wins rules preserved byte-for-byte; committed-then-re-emit clean over the full emit-drift path set; 38 harness_emit tests green.
+- [Phase ?]: settings.json signature merge is order-preserving (Regime B-json, no sort_keys) — reproduces live bytes byte-for-byte; opencode.json/frontmatter stay globally sorted
+- [Phase ?]: Harness hook groups coexist idempotently with GSD wiring (no ownership migration); SessionStart pinned at 4 groups
 
 ### Pending Todos
 
@@ -178,6 +181,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-12T08:16:57.821Z
+Last session: 2026-07-12T08:25:11.237Z
 Stopped at: Completed 07-03-PLAN.md
 Resume file: None
