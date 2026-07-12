@@ -52,6 +52,31 @@ def test_stale_prior_path_is_pruned_on_re_emit(tmp_path: Path) -> None:
     assert ".opencode/agent/removed.md" not in _listed(manifest_path)
 
 
+def test_prune_never_deletes_outside_emit_root(tmp_path: Path) -> None:
+    """A prior-manifest entry that traverses outside ``root`` is NOT deleted (confinement guard).
+
+    The prune loop's paths come from the on-disk prior manifest (external data). A tampered
+    ``../`` entry must never let ``unlink`` reach beyond the emit root.
+    """
+    outside = tmp_path / "outside-secret.txt"
+    outside.write_text("must survive — outside the emit root", encoding="utf-8")
+    emit_root = tmp_path / "repo"
+    emit_root.mkdir()
+    # A malicious/corrupt prior entry that escapes ``root`` via traversal.
+    prior = {"tool": "tools.harness_emit", "paths": ["../outside-secret.txt"]}
+    manifest_path = emit_root / "emit-manifest.json"
+    manifest_path.write_text(json.dumps(prior), encoding="utf-8")
+    harness_emit.emit(
+        opencode_dir=emit_root / ".opencode",
+        claude_dir=emit_root / ".claude",
+        manifest_path=manifest_path,
+        root=emit_root,
+    )
+
+    assert outside.exists(), "prune deleted a file OUTSIDE the emit root — confinement guard failed"
+    assert outside.read_text(encoding="utf-8") == "must survive — outside the emit root"
+
+
 def test_gsd_sibling_is_never_pruned_or_enumerated(tmp_path: Path) -> None:
     """A seeded gsd-* sibling survives re-emit and never appears in the manifest (GSD lane safe)."""
     gsd = tmp_path / ".claude" / "agents" / "gsd-researcher.md"

@@ -45,6 +45,23 @@ def _rel(path: Path, root: Path) -> str:
     return Path(path).resolve().relative_to(Path(root).resolve()).as_posix()
 
 
+def _confined(path: Path, root: Path) -> Path | None:
+    """Resolved ``path`` iff it stays under ``root``; ``None`` if it would escape.
+
+    The prune loop DELETES, and its input paths come from the on-disk prior manifest (external
+    data). A tampered/corrupt entry (``../../etc/passwd``, an absolute path, or a symlink that
+    resolves outside) must never let ``unlink`` reach beyond the emit root — mirror the
+    ``generate._confine`` traversal guard, but skip (return ``None``) rather than raise so one bad
+    entry cannot abort the whole emit. ``.resolve()`` collapses symlinks, so symlink escapes fail
+    confinement too.
+    """
+    resolved = path.resolve()
+    root_resolved = Path(root).resolve()
+    if root_resolved != resolved and root_resolved not in resolved.parents:
+        return None
+    return resolved
+
+
 def prune_then_write(
     written: list[Path],
     manifest_path: str | Path,
@@ -64,7 +81,9 @@ def prune_then_write(
     for rel in load_manifest(manifest_path):
         if rel in current_set or is_gsd_owned(rel):
             continue
-        stale = root / rel
+        stale = _confined(root / rel, root)
+        if stale is None:
+            continue  # manifest entry escapes the emit root — never delete outside confinement
         if stale.exists():
             stale.unlink()
 
