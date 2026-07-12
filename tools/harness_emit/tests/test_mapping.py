@@ -14,17 +14,22 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from tools.harness_emit import project_agent
+from tools.harness_emit import project_agent, project_command
 from tools.harness_lint import parse_frontmatter
 from tools.harness_lint.caps import is_read_only
 
 # test_mapping.py -> tests -> harness_emit -> tools -> repo root (parents[3]).
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _AGENTS_DIR = _REPO_ROOT / "harness" / "agents"
+_COMMANDS_DIR = _REPO_ROOT / "harness" / "commands"
 
 
 def _load(name: str) -> tuple[dict, str]:
     return parse_frontmatter((_AGENTS_DIR / f"{name}.md").read_text(encoding="utf-8"))
+
+
+def _load_command(name: str) -> tuple[dict, str]:
+    return parse_frontmatter((_COMMANDS_DIR / f"{name}.md").read_text(encoding="utf-8"))
 
 
 def test_opencode_agent_shape() -> None:
@@ -54,3 +59,28 @@ def test_read_only_invariant_both() -> None:
     fm, _ = _load("code-reviewer")
     assert is_read_only(project_agent.to_opencode(fm)), "read-only broke in opencode projection"
     assert is_read_only(project_agent.to_claude(fm)), "read-only broke in Claude projection"
+
+
+def test_opencode_command_shape() -> None:
+    """opencode command projection keeps description/agent/subtask verbatim."""
+    fm, _ = _load_command("build")
+    proj = project_command.to_opencode(fm)
+    assert str(proj["description"]).strip()
+    assert proj["agent"] == "orchestrator"
+    assert proj["subtask"] is True
+
+
+def test_claude_command_shape() -> None:
+    """Claude command projection keeps description only; drops agent + subtask (no equivalent)."""
+    fm, _ = _load_command("build")
+    proj = project_command.to_claude(fm)
+    assert str(proj["description"]).strip()
+    assert "agent" not in proj, "Claude command projection leaked the opencode-only 'agent' key"
+    assert "subtask" not in proj, "Claude command projection leaked the opencode-only 'subtask' key"
+
+
+def test_claude_command_shape_when_subtask_absent() -> None:
+    """A command without ``subtask`` (e.g. /adr) still projects to a bare description for Claude."""
+    fm, _ = _load_command("adr")
+    proj = project_command.to_claude(fm)
+    assert set(proj) == {"description"}, f"Claude command projection has stray keys: {sorted(proj)}"
