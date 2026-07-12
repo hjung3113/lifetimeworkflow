@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 08-04-PLAN.md
-last_updated: "2026-07-12T07:58:29.199Z"
+stopped_at: Completed 07-03-PLAN.md
+last_updated: "2026-07-12T08:10:03.247Z"
 last_activity: 2026-07-12
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 43
-  completed_plans: 40
+  completed_plans: 41
   percent: 88
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 07 (single-source-dual-runtime-emitter) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-07-12
 
-Progress: [█████████░] 93%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -90,6 +90,7 @@ Progress: [█████████░] 93%
 | Phase 08 P06 | 12min | 2 tasks | 3 files |
 | Phase 07 P01 | 24min | 3 tasks | 20 files |
 | Phase 07 P02 | 9min | 2 tasks | 10 files |
+| Phase 07 P03 | 10min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -148,6 +149,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [07-01] Caps + is_read_only + READ_ONLY_PERSONAS extracted to tools/harness_lint/caps.py as single source shared by lints AND emit validate.py; validate-then-write raises HarnessEmitError writing nothing on over-cap desc / invalid permission key / real model ID / read-only-gains-write (never truncate).
 - [Phase ?]: [07-01] emit-manifest.json prune-then-write owns ONLY harness paths with gsd-* exclusion (D-03); emit-drift CI job (re-emit + git diff --exit-code over full documented path set) in non-bypassable gate.needs — later-wave paths pre-covered.
 - [Phase ?]: [07-02] EMIT commands+skills widening: project_command (opencode keeps agent/subtask, Claude description-only) + project_skill (identical both runtimes, references/** byte-copied to both trees). Loud-fail check_command/check_skill/check_skill_set from caps.py; test_coexist proves gsd/ non-collision; re-emit byte-identical.
+- [Phase ?]: [07-03] EMIT plugins+config: 5 harness .ts plugins byte-verbatim-copied to .opencode/plugin (never parsed/executed, D-01/T-07-04); permission-matrix.json projected to opencode.json full 15-key block via permissions.build_permission_block (strips _note+path_deny_globs), bash *-first last-wins order preserved (P3/T-07-06); emitter owns root opencode.json wholesale; check_opencode_config loud-fails on jsonschema-invalid (T-07-07) + any real model id (placeholder-tier regex, T-07-03); re-emit byte-identical.
 
 ### Pending Todos
 
@@ -174,6 +176,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-12T07:58:03.482Z
-Stopped at: Completed 08-04-PLAN.md
+Last session: 2026-07-12T08:10:03.225Z
+Stopped at: Completed 07-03-PLAN.md
 Resume file: None
