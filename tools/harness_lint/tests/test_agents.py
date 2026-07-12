@@ -136,3 +136,19 @@ def test_read_only_personas_have_no_write_affordance(name: str) -> None:
         f"permission block (no edit/bash/write allow) AND the Claude tools list "
         f"(no Write/Bash/Edit)"
     )
+
+
+def test_read_only_sees_through_per_glob_permission_dict() -> None:
+    """A per-glob permission dict granting ``allow`` is a write affordance — not read-only.
+
+    opencode permission values may be a mapping (``{"git *": "allow", "*": "deny"}``), not just a
+    bare string. ``str({...}) == "allow"`` is always False, so a naive check would wrongly report
+    such a persona as read-only. Guard against that dict-bypass regression.
+    """
+    granting = {"permission": {"bash": {"git *": "allow", "*": "deny"}}}
+    assert not is_read_only(granting), (
+        "a per-glob permission dict granting bash 'allow' slipped past is_read_only (dict-bypass)"
+    )
+    # An all-deny mapping (and the string 'deny') remain genuinely read-only.
+    denying = {"permission": {"bash": {"git *": "deny", "*": "deny"}, "edit": "deny"}}
+    assert is_read_only(denying), "an all-deny permission mapping must still read as read-only"

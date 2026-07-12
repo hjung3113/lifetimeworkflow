@@ -68,16 +68,29 @@ def _permission(fm: dict) -> dict:
     return perm if isinstance(perm, dict) else {}
 
 
+def _grants_allow(value: object) -> bool:
+    """True iff an opencode permission VALUE grants ``allow``.
+
+    A permission value is either a bare string (``"allow"``/``"deny"``) OR a per-glob mapping
+    (e.g. ``{"git *": "allow", "*": "deny"}``). ``str({...}) == "allow"`` is always False, so a
+    dict granting ``allow`` for any glob would slip past a naive string check — enumerate the
+    mapping's values so a per-glob allow still counts as a write/shell affordance.
+    """
+    if isinstance(value, dict):
+        return any(str(v) == "allow" for v in value.values())
+    return str(value) == "allow"
+
+
 def is_read_only(fm: dict) -> bool:
     """True iff the persona grants NO write/shell affordance in EITHER representation.
 
     Checks BOTH the opencode ``permission`` block (``edit``/``bash``/``write`` must not resolve to
-    an "allow" — present-and-deny or absent are both fine) AND the Claude ``tools`` allowlist string
-    (must contain none of Write/Bash/Edit).
+    an "allow" — present-and-deny or absent are both fine, in bare-string OR per-glob-dict form)
+    AND the Claude ``tools`` allowlist string (must contain none of Write/Bash/Edit).
     """
     perm = _permission(fm)
     for key in ("edit", "bash", "write"):
-        if str(perm.get(key, "deny")) == "allow":
+        if _grants_allow(perm.get(key, "deny")):
             return False
     tools = str(fm.get("tools", ""))
     return not any(tok in tools for tok in _WRITE_TOOL_TOKENS)
