@@ -15,6 +15,11 @@ import hashlib
 from pathlib import Path
 
 from tools.harness_emit import generate as harness_emit
+from tools.harness_emit import project_agent
+
+# test_emit_determinism.py -> tests -> harness_emit -> tools -> repo root (parents[3]).
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_AGENTS_DIR = _REPO_ROOT / "harness" / "agents"
 
 
 def _sha256(path: Path) -> str:
@@ -41,3 +46,19 @@ def test_emit_twice_byte_identical(tmp_path: Path) -> None:
     digest_2 = {p.relative_to(tmp_path / "b").as_posix(): _sha256(p) for p in second}
 
     assert digest_1 == digest_2
+
+
+def test_projected_tree_matches_committed_snapshot(snapshot) -> None:
+    """A committed syrupy .ambr pins the projected agent tree — determinism WITHOUT git diff.
+
+    Mirrors the tools/docs_sync committed-snapshot idiom: renders every agent to BOTH runtime shapes
+    and compares to the checked-in .ambr, so a projection/serialization regression is caught in the
+    unit suite (not only by the CI re-emit-diff gate).
+    """
+    parts: list[str] = []
+    for name, fm, body in harness_emit.iter_agents(_AGENTS_DIR):
+        opencode_md = harness_emit.render_agent(project_agent.to_opencode(fm), body)
+        claude_md = harness_emit.render_agent(project_agent.to_claude(fm), body)
+        parts.append(f"===== opencode/{name} =====\n{opencode_md}")
+        parts.append(f"===== claude/{name} =====\n{claude_md}")
+    assert "\n".join(parts) == snapshot

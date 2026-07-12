@@ -169,6 +169,25 @@ jobs:
       - name: Harness core suite (tools/ + libs/python — GEN-03/04 guards included)
         run: uv run pytest
 
+  # ── emit-drift ─────────────────────────────────────────────────────────────────────────────
+  # Single-source dual-runtime re-emit-diff gate (EMIT-02, D-02). Re-runs the emitter and fails on
+  # ANY hand-edited generated-artifact drift — mirrors the `drift` job's recompute→compare shape.
+  # The committed .opencode/ + .claude/{agents,commands,skills} trees (and the shared config/marker
+  # files) are machine-written derivatives; a divergence between source and committed output is a
+  # gate FAIL. The full documented path set is diffed so later waves are already covered — paths
+  # not yet emitted stay clean (empty diff), never a false positive.
+  emit-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.0
+      - uses: astral-sh/setup-uv@v8.3.2
+      - name: Sync workspace (all packages)
+        run: uv sync --all-packages
+      - name: Re-emit the harness surface
+        run: uv run python -m tools.harness_emit
+      - name: Fail on any hand-edited generated-artifact drift
+        run: git diff --exit-code -- .opencode opencode.json .claude/agents .claude/commands .claude/skills AGENTS.md CLAUDE.md .claude/settings.json
+
   # ── gate ───────────────────────────────────────────────────────────────────────────────────
   # Fan-in. Depends on every upstream job; runs even when one fails (if: always()) and FAILS if
   # any upstream job failed or was cancelled. This is the single job a human enables as a REQUIRED
@@ -176,7 +195,7 @@ jobs:
   # here). needs.*.result values are workflow-computed enums (success/failure/cancelled/skipped),
   # NOT event input — safe to interpolate.
   gate:
-    needs: [setup, lang-tests, contract-check, drift, golden, core-suite]
+    needs: [setup, lang-tests, contract-check, drift, golden, core-suite, emit-drift]
     if: always()
     runs-on: ubuntu-latest
     steps:

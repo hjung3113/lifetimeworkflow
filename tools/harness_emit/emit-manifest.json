@@ -1,0 +1,13 @@
+{
+  "paths": [
+    ".claude/agents/code-reviewer.md",
+    ".claude/agents/explorer.md",
+    ".claude/agents/orchestrator.md",
+    ".claude/agents/python-engineer.md",
+    ".opencode/agent/code-reviewer.md",
+    ".opencode/agent/explorer.md",
+    ".opencode/agent/orchestrator.md",
+    ".opencode/agent/python-engineer.md"
+  ],
+  "tool": "tools.harness_emit"
+}
