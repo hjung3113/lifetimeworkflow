@@ -129,9 +129,36 @@
 - [x] **PIPE-05**: 파이프라인 모델을 실행 가능하게 하는 스킬/커맨드 — 토폴로지-trace `pipeline-map` 스킬 + 데이터흐름을 시각화·추적하고 올바른 컴포넌트 에이전트를 찾아주는 `/pipeline` 커맨드.
 - [x] **PIPE-06**: 가드/테스트 — GEN-04 코어→예제 no-dependency 가드 + persona anti-sprawl 게이트를 지휘자·`component-engineer` 템플릿까지 확장; 토폴로지 슬롯 consistency 게이트.
 
-## v2 Requirements
+## Milestone v2.0 Requirements — Long-Horizon
 
-검증 후 또는 도메인 프로젝트 진행에 따라 추가. 현재 로드맵 밖.
+**Defined:** 2026-07-12. Active milestone. Phases 9(α)/10(β)/11(γ), 넘버링 연속(v1.0 = phases 1–8).
+**Goal:** 멀티-프로젝트 작업을 여러 세션·긴 시간에 걸쳐 이어가되 프로젝트 컨텍스트(코드 그래프·메모리·문서·결정)가 자동으로 신선 — 기계가 유지, 사람이 재가. 모든 항목은 기존 기계를 **재사용**(재구축 금지).
+
+### MAINT — Self-Maintaining Derived Artifacts + Curator (Phase 9 / α)
+
+- [ ] **MAINT-01**: `curator` 에이전트 — read-mostly, 파생물(repo-map·contracts-index·docs `reference/`·memory)을 재생성만 하고 절대 손으로 편집하지 않는 "파생 신선도" 단일 소유자. (재사용: `tools/memory_regen`, `/docs-sync`, two-plane-memory)
+- [ ] **MAINT-02**: CI "stale-derived" 게이트 — PR에서 repo-map·contracts-index·docs `reference/`를 재생성하고 **diff 시 실패**(Phase-7 re-emit-diff 미러). 어떤 파생물이 *committed-and-PR-refreshed* vs *session-regenerated-and-gitignored*가 될지 결정(플랜-타임 KEY DECISION).
+- [ ] **MAINT-03**: 훅 포스처 — write 시 저렴한 refresh(format-on-write 계열), 무거운 regen은 PR/CI로 지연(per-commit 금지 — 느리고 시끄러움).
+- [ ] **MAINT-04**: `/refresh-memory`(또는 curator 호출) 커맨드 — 핸드오프 전 로컬에서 전체 regen 세트를 돌려 `/verify-work`가 신선도 체크를 포함할 수 있게 한다.
+
+### ECON — Context-Economy Fan-out/Synthesize Orchestration (Phase 10 / β)
+
+- [ ] **ECON-01**: `fan-out-synthesize` skill/command (deep-research / `Workflow` 형태) — 작업 분해 → N개 분석 서브에이전트 디스패치 → schema-bounded 요약 회수 → 합성. 사람과 지휘자 모두 재사용.
+- [ ] **ECON-02**: 요약/반환 계약 — 서브에이전트가 compact, citation-bearing 결과(경로 + 주장, 파일 덤프 아님)를 반환해 지휘자가 raw 파일을 다시 읽지 않는다.
+- [ ] **ECON-03**: delegate-vs-inline 가이드/스킬(컨텍스트-예산 휴리스틱) — orchestrator 페르소나 + `/orient`에 배선.
+
+### MREPO — Multi-Repo Workspace (Phase 11 / γ)
+
+- [ ] **MREPO-01**: 워크스페이스 모델 + 매니페스트 — `harness/project.toml` 슬롯 패턴을 한 단계 올려 멤버 레포 + 크로스-레포 edge(어느 레포가 어느 계약을 생산/소비)를 선언. (플랜-타임 KEY DECISION: 모델 a/b/c, lean **b: workspace manifest**)
+- [ ] **MREPO-02**: repo-scoped 서브에이전트 + β 팬아웃/합성을 레포 전반에 적용(per-repo 분석 → 워크스페이스-레벨 합성) — 단일 컨텍스트가 모든 레포를 담지 않는다.
+- [ ] **MREPO-03**: 크로스-레포 contract drift/golden 게이트 — Phase-6 CI + `contract_drift`를 워크스페이스 전반으로 확장.
+- [ ] **MREPO-04**: 파이프라인 토폴로지(Phase 8)를 일반화해 edge가 레포 경계를 넘을 수 있게 한다.
+
+**Cross-cutting (non-negotiable, all phases):** two-plane memory 준수(derived 손편집 금지 — 기계-write + CI-verify는 OK); machines gate / humans ratify(헌법 평면 사람 재가 유지); GEN-04 core→example(γ는 core→workspace-member) 무의존 유지; 모든 신규 agent/skill/hook은 Phase-7 emitter 왕복(opencode 1차 / Claude 2차, 모델 식별자 미포함); 무거운 것은 per-commit 로컬 훅보다 PR/CI 강제 선호.
+
+## Future / Deferred (backlog)
+
+검증 후 또는 도메인 프로젝트 진행에 따라 추가. 현재 로드맵 밖. (이전 "v2 Requirements" 백로그 — 밀스톤 v2.0과 무관.)
 
 ### 운영·확장
 
