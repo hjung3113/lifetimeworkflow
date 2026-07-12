@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: complete
-stopped_at: Phase 07 verified — 11/11 must-haves passed
-last_updated: "2026-07-12T08:26:27.330Z"
+milestone: v2.0
+milestone_name: Long-Horizon
+status: planning
+last_updated: "2026-07-12T11:13:23.065Z"
 last_activity: 2026-07-12
 progress:
-  total_phases: 8
-  completed_phases: 8
-  total_plans: 43
-  completed_plans: 43
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,12 +24,10 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 
 ## Current Position
 
-Phase: 07 (single-source-dual-runtime-emitter) — COMPLETE ✓
-Plan: 5 of 5
-Status: Verified — 11/11 must-haves passed (2 guard-hardening gaps closed: commits c741804, 7f43aaa)
-Last activity: 2026-07-12
-
-Progress: [██████████] 100%
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-07-12 — Milestone v2.0 started
 
 ## Performance Metrics
 

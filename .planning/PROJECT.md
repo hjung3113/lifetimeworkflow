@@ -10,6 +10,17 @@
 
 **계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·전환 리스크를 하네스가 자동으로 강제·검증한다 — 그리고 이 강제 구조가 특정 도메인·언어에 묶이지 않고 어느 프로젝트에나 재사용된다.** 에이전트가 레포에서 "어떻게 개발·유지보수·리팩토링하는가"가 부족(tribal knowledge)이 아니라 실행 가능한 스킬·커맨드·훅으로 박혀 있고, 그 박힌 구조를 도메인만 갈아끼워 다음 프로젝트로 가져갈 수 있어야 한다.
 
+## Current Milestone: v2.0 Long-Horizon
+
+**Goal:** 에이전트(그리고 사람)가 *멀티-프로젝트* 작업을 *여러 세션·긴 달력 시간*에 걸쳐 이어가되, 프로젝트 자신의 컨텍스트(코드 그래프·메모리·문서·결정)가 자동으로 신선하게 유지된다 — 기계가 유지보수하고, 사람이 재가한다.
+
+**Target features (phases 9→10→11, 넘버링 연속):**
+- **Self-Maintaining Derived Artifacts + Curator (Phase 9 / α)** — 파생물(repo-map·contracts-index·docs `reference/`·memory)이 머지 시점에 CI로 자동 신선화; Phase-7 re-emit-diff를 미러하는 "stale-derived" 게이트 + `curator` 에이전트가 유지 소유.
+- **Context-Economy Fan-out/Synthesize (Phase 10 / β)** — 팬아웃 → 요약만 회수 → 합성하는 1급 워크플로로 장수 세션의 컨텍스트를 작게 유지. γ의 재사용 기반.
+- **Multi-Repo Workspace (Phase 11 / γ)** — 여러 레포를 하나의 워크스페이스로 선언·조작; repo-scoped 서브에이전트 + 크로스-레포 contract drift/golden 게이트.
+
+**Key context:** 모두 기존 기계(two-plane memory·`tools/memory_regen`·`/docs-sync`·orchestrator·Phase-6 CI·Phase-7 emitter·project.toml 슬롯)를 **재사용**하며 재구축 금지. 비협상 제약: derived는 손으로 편집 금지(기계가 쓰고 CI가 검증하는 것은 허용), 헌법 평면(contracts/adr/golden)은 사람 재가 유지(machines gate, humans ratify), GEN-04 core→example 무의존 유지, 모든 신규 agent/skill/hook은 Phase-7 emitter를 왕복. Open decisions(플랜 타임 해결): (α) committed-derived vs session-derived split, (γ) workspace model a/b/c (lean b: workspace manifest).
+
 ## Requirements
 
 ### Validated
@@ -19,6 +30,14 @@
 ### Active
 
 <!-- 하네스 산출물. 모두 검증 전까지 가설. -->
+
+<!-- v2.0 Long-Horizon (phases 9/10/11) — see REQUIREMENTS.md for MAINT-/ECON-/MREPO- detail -->
+
+- [ ] **Self-maintaining derived artifacts + curator (v2.0 α)**: `curator` 에이전트 + CI stale-derived 게이트(repo-map·contracts-index·docs `reference/` 재생성 후 diff 실패) + write-시 저렴/PR-시 무거운 훅 포스처 + `/refresh-memory` 로컬 프리핸드오프 재생성.
+- [ ] **Context-economy fan-out/synthesize (v2.0 β)**: 팬아웃→요약회수→합성 skill/command + compact citation-bearing 요약 반환 계약 + delegate-vs-inline 컨텍스트-예산 가이드(orchestrator·`/orient` 배선).
+- [ ] **Multi-repo workspace (v2.0 γ)**: 워크스페이스 매니페스트/모델(project.toml 슬롯을 한 단계 올림) + repo-scoped 서브에이전트에 β 팬아웃 적용 + 크로스-레포 contract drift/golden 게이트 + Phase-8 topology의 레포 경계 일반화.
+
+<!-- v1.0 하네스 표면 (shipped in phases 1–8; complete-milestone 시 Validated로 이동) -->
 
 - [ ] **opencode 하네스 표면**: agents(orchestrator·dotnet·python·reviewer·golden-runner·polyglot-auditor·explorer), commands(/golden·/golden-approve·/contract-check·/new-normalization-rule·/adr·/strangler-step·/docs-sync·/component·/checkpoint), skills(dotnet·python·pipeline-patterns·data-contracts·golden-testing·normalization-catalog·skill-creator), plugins(contract-guard·session-start 주입기·format-on-write·polyglot-boundary 린터)
 - [ ] **opencode.json**: 모델·15키 권한 매트릭스(bash glob last-wins)·instructions glob·MCP·formatter
@@ -88,4 +107,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-08 — re-scoped to general reusable template (ADR-0002); log-parser domain demoted to `examples/log-parser/`. Phases 1–4 durable core retained.*
+*Last updated: 2026-07-12 — opened milestone v2.0 Long-Horizon (self-maintaining memory + context-economy orchestration + multi-repo workspace); phases 9/10/11 continue numbering after v1.0 (phases 1–8) complete.*
