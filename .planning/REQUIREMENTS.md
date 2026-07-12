@@ -240,6 +240,17 @@
 | PIPE-04 | Phase 8 | Complete |
 | PIPE-05 | Phase 8 | Complete |
 | PIPE-06 | Phase 8 | Complete |
+| MAINT-01 | Phase 9 | Pending |
+| MAINT-02 | Phase 9 | Pending |
+| MAINT-03 | Phase 9 | Pending |
+| MAINT-04 | Phase 9 | Pending |
+| ECON-01 | Phase 10 | Pending |
+| ECON-02 | Phase 10 | Pending |
+| ECON-03 | Phase 10 | Pending |
+| MREPO-01 | Phase 11 | Pending |
+| MREPO-02 | Phase 11 | Pending |
+| MREPO-03 | Phase 11 | Pending |
+| MREPO-04 | Phase 11 | Pending |
 
 **Coverage:**
 - v1 requirements: 54 total (43 원본 + GEN-01..05 + PIPE-01..06 신규; GEN-05 = 저작 표면 후속, PIPE = Phase 8 파이프라인 지휘자)

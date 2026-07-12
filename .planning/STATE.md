@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Long-Horizon
 status: planning
-last_updated: "2026-07-12T11:13:23.065Z"
+last_updated: "2026-07-12T12:00:00.000Z"
 last_activity: 2026-07-12
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 07 — single-source-dual-runtime-emitter
+**Current focus:** Phase 09 — self-maintaining-derived-artifacts-curator (v2.0 α)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 9 — Self-Maintaining Derived Artifacts + Curator (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-07-12 — Milestone v2.0 started
+Status: Roadmap created — ready to plan Phase 9
+Last activity: 2026-07-12 — Milestone v2.0 roadmap created (phases 9/10/11, numbering continued)
 
 ## Performance Metrics
 
@@ -95,6 +95,7 @@ Last activity: 2026-07-12 — Milestone v2.0 started
 
 ### Roadmap Evolution
 
+- Milestone v2.0 roadmap created (2026-07-12): **phases 9/10/11** appended, numbering continued after v1.0 (phases 1–8). Phase 9 (α) Self-Maintaining Derived Artifacts + Curator (MAINT-01..04); Phase 10 (β) Context-Economy Fan-out/Synthesize (ECON-01..03); Phase 11 (γ) Multi-Repo Workspace (MREPO-01..04). Sequencing locked 9→10→11 (β is the reusable fan-out substrate γ builds on). All 11 v2.0 requirements mapped 1:1; coverage 11/11. Two plan-time KEY DECISIONS carried, unresolved: (α) which derived artifacts flip gitignored-derived → committed-derived for PR refresh; (γ) workspace model a/b/c (lean b: workspace manifest). Cross-cutting non-negotiables reasserted: derived-never-hand-edited (machine-write + CI-verify OK), machines-gate/humans-ratify on the constitution plane, GEN-04 core→example/workspace-member no-dependency, every new agent/skill/hook round-trips the Phase-7 emitter to both runtimes, PR/CI enforcement preferred over heavy per-commit hooks.
 - Phase 8 added (2026-07-10): **Pipeline-Topology Conductor + Per-Component Agents** (PIPE-01..06). Post-Phase-6 user request — evolve the agent model from per-language to pipeline-aware. Independent of Phase 7 (emitter). Locked with user: build BOTH neutral core mechanism AND concrete `examples/log-parser/` demo; EVOLVE the existing primary `orchestrator` (no second primary/tier); formal GSD phase.
 
 ### Decisions
