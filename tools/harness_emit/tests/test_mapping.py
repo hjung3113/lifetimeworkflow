@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from tools.harness_emit import project_agent, project_command
+from tools.harness_emit import project_agent, project_command, project_skill
 from tools.harness_lint import parse_frontmatter
 from tools.harness_lint.caps import is_read_only
 
@@ -22,6 +22,7 @@ from tools.harness_lint.caps import is_read_only
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _AGENTS_DIR = _REPO_ROOT / "harness" / "agents"
 _COMMANDS_DIR = _REPO_ROOT / "harness" / "commands"
+_SKILLS_DIR = _REPO_ROOT / "harness" / "skills"
 
 
 def _load(name: str) -> tuple[dict, str]:
@@ -30,6 +31,10 @@ def _load(name: str) -> tuple[dict, str]:
 
 def _load_command(name: str) -> tuple[dict, str]:
     return parse_frontmatter((_COMMANDS_DIR / f"{name}.md").read_text(encoding="utf-8"))
+
+
+def _load_skill(name: str) -> tuple[dict, str]:
+    return parse_frontmatter((_SKILLS_DIR / name / "SKILL.md").read_text(encoding="utf-8"))
 
 
 def test_opencode_agent_shape() -> None:
@@ -84,3 +89,14 @@ def test_claude_command_shape_when_subtask_absent() -> None:
     fm, _ = _load_command("adr")
     proj = project_command.to_claude(fm)
     assert set(proj) == {"description"}, f"Claude command projection has stray keys: {sorted(proj)}"
+
+
+def test_skill_projection_is_identical_for_both_runtimes() -> None:
+    """A skill keeps name+description identically for BOTH runtimes (divergence = None, D-04)."""
+    fm, _ = _load_skill("data-contracts")
+    opencode_proj = project_skill.to_opencode(fm)
+    claude_proj = project_skill.to_claude(fm)
+    assert opencode_proj == claude_proj, "skill projection must be identical across runtimes"
+    assert opencode_proj["name"] == "data-contracts"
+    assert str(opencode_proj["description"]).strip()
+    assert set(opencode_proj) == {"name", "description"}, "skill projection has stray keys"

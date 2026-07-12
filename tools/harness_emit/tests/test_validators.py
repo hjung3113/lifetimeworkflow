@@ -8,11 +8,13 @@ gate runs on the source AND both projections BEFORE any write.
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 
 import pytest
 
 from tools.harness_emit import generate as harness_emit
+from tools.harness_emit import validate
 from tools.harness_emit.generate import HarnessEmitError
 
 
@@ -90,3 +92,44 @@ def test_read_only_persona_gaining_write_aborts_writing_nothing(tmp_path: Path) 
     with pytest.raises(HarnessEmitError):
         _run_with_agent(tmp_path, "code-reviewer", agent)
     assert _target_is_empty(tmp_path)
+
+
+def _run_with_skill(tmp_path: Path, name: str, skill_md: str) -> list[Path]:
+    """Emit a tmp harness holding exactly one skill (<name>/SKILL.md) into an isolated tmp target."""
+    skill_dir = tmp_path / "harness" / "skills" / name
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(skill_md, encoding="utf-8")
+    return harness_emit.emit(
+        harness_dir=tmp_path / "harness",
+        opencode_dir=tmp_path / ".opencode",
+        claude_dir=tmp_path / ".claude",
+        manifest_path=tmp_path / "emit-manifest.json",
+        root=tmp_path,
+    )
+
+
+def test_over_cap_skill_description_aborts_writing_nothing(tmp_path: Path) -> None:
+    """A >1024-char skill description FAILS loudly (never sliced to 1024) — target stays empty."""
+    huge = "Use when " + ("x" * 1100)  # well over the 1024 hard cap
+    skill = f"---\nname: data-contracts\ndescription: {huge}\n---\n\nbody\n"
+    with pytest.raises(HarnessEmitError):
+        _run_with_skill(tmp_path, "data-contracts", skill)
+    for tree in (tmp_path / ".opencode", tmp_path / ".claude"):
+        assert not (tree.exists() and any(tree.rglob("SKILL.md"))), (
+            "an over-cap skill description wrote a (truncated?) artifact"
+        )
+
+
+def test_skill_body_over_500_lines_warns_but_still_emits(tmp_path: Path) -> None:
+    """A 600-line skill body WARNS (D-07 recommendation) but still emits — never a hard fail."""
+    body = "\n".join(f"line {i}" for i in range(600))
+    fm = {
+        "name": "data-contracts",
+        "description": "Use when validating anything under contracts/ for the drift gate",
+    }
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        validate.check_skill("data-contracts", fm, body=body)
+    assert any("500" in str(w.message) or "line" in str(w.message).lower() for w in caught), (
+        "an over-500-line skill body did not emit a warning"
+    )
