@@ -34,7 +34,7 @@
 <!-- v2.0 Long-Horizon (phases 9/10/11) — see REQUIREMENTS.md for MAINT-/ECON-/MREPO- detail -->
 
 - [x] **Self-maintaining derived artifacts + curator (v2.0 α)**: `curator` 에이전트 + CI stale-derived 게이트(repo-map·contracts-index·docs `reference/` 재생성 후 diff 실패) + write-시 저렴/PR-시 무거운 훅 포스처 + `/refresh-memory` 로컬 프리핸드오프 재생성. *(Validated in Phase 9)*
-- [ ] **Context-economy fan-out/synthesize (v2.0 β)**: 팬아웃→요약회수→합성 skill/command + compact citation-bearing 요약 반환 계약 + delegate-vs-inline 컨텍스트-예산 가이드(orchestrator·`/orient` 배선).
+- [x] **Context-economy fan-out/synthesize (v2.0 β)**: 팬아웃→요약회수→합성 skill/command + compact citation-bearing 요약 반환 계약 + delegate-vs-inline 컨텍스트-예산 가이드(orchestrator·`/orient` 배선). *(Validated in Phase 10)*
 - [ ] **Multi-repo workspace (v2.0 γ)**: 워크스페이스 매니페스트/모델(project.toml 슬롯을 한 단계 올림) + repo-scoped 서브에이전트에 β 팬아웃 적용 + 크로스-레포 contract drift/golden 게이트 + Phase-8 topology의 레포 경계 일반화.
 
 <!-- v1.0 하네스 표면 (shipped in phases 1–8; complete-milestone 시 Validated로 이동) -->
@@ -107,4 +107,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-12 — opened milestone v2.0 Long-Horizon (self-maintaining memory + context-economy orchestration + multi-repo workspace); phases 9/10/11 continue numbering after v1.0 (phases 1–8) complete.*
+*Last updated: 2026-07-13 — Phase 10 (v2.0 β) complete: context-economy fan-out/synthesize orchestration shipped (fan-out-synthesize + context-budget skills, /fan-out-synthesize command, citation-bearing return contract, orchestrator·/orient wiring, emitted to both runtimes). Milestone v2.0: α+β done, γ (Phase 11 multi-repo workspace) remaining.*
