@@ -14,9 +14,14 @@ __pycache__/
 # Golden machine-proposed baselines (transient; promoted to .verified only by /golden-approve, P9)
 golden/**/baseline.received.tsv
 
-# Two-plane memory: DERIVED plane is machine-regenerated every session (D-03/D-04) — never commit.
+# Two-plane memory: DERIVED plane is machine-regenerated every session (D-03/D-04).
 # STATE plane (.memory/state/**) and .memory/README.md stay TRACKED (small state survives sessions).
-.memory/derived/
+# Session-ephemeral derived (repo-map.md etc.) stays IGNORED via the contents-form `*`.
+# EXCEPTION: contracts-index.md is committed-derived (machine-write + CI-verify, D-01/D-03) so the
+# stale-derived gate can guard it — re-included below. The contents-form `/*` (NOT the directory
+# form `/`) is required: git cannot re-include a file under an excluded DIRECTORY (P3).
+.memory/derived/*
+!.memory/derived/contracts-index.md
 
 # Local-only settings (never commit — may hold GOLDEN_APPROVE_HUMAN ratification token)
 .claude/settings.local.json
