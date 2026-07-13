@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import json
+
 import pytest
 
 from tools.harness_lint import parse_frontmatter
@@ -34,6 +36,13 @@ from tools.harness_lint.caps import (  # noqa: F401  (re-exported for test_agent
 # test_agents.py -> tests -> harness_lint -> tools -> repo root (parents[3]).
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _AGENTS_DIR = _REPO_ROOT / "harness" / "agents"
+_PERMISSION_MATRIX = _REPO_ROOT / "harness" / "permission-matrix.json"
+
+# The constitution-plane globs that MUST be denied for every persona (including curator's
+# derived-only write boundary — MAINT-01/D-05). opencode's `edit` key is not path-globbable, so the
+# curator's "never write the constitution" boundary is a fact of this GLOBAL data + the Phase-4
+# contract-guard hook, not a per-persona frontmatter list.
+_CONSTITUTION_DENY_GLOBS = ("contracts/**", "docs/adr/**", "golden/**")
 
 # A routing-signal description must carry an invocation trigger token (P7 guard).
 _ROUTING_TRIGGERS = ("use", "when")
@@ -152,3 +161,39 @@ def test_read_only_sees_through_per_glob_permission_dict() -> None:
     # An all-deny mapping (and the string 'deny') remain genuinely read-only.
     denying = {"permission": {"bash": {"git *": "deny", "*": "deny"}, "edit": "deny"}}
     assert is_read_only(denying), "an all-deny permission mapping must still read as read-only"
+
+
+def test_curator_is_admitted_persona() -> None:
+    """The curator (MAINT-01) is the 5th enumerated persona and exists on disk."""
+    assert "curator" in EXPECTED_PERSONAS, "curator must be an enumerated core persona"
+    assert (_AGENTS_DIR / "curator.md").is_file(), "harness/agents/curator.md must exist"
+
+
+def test_curator_is_not_read_only_but_denies_write() -> None:
+    """Curator writes DERIVED (edit+bash allow) so is NOT read-only, yet denies the write alias.
+
+    MAINT-01/D-05: curator needs edit+bash to write the derived plane and run generators, so it is
+    deliberately excluded from READ_ONLY_PERSONAS and is_read_only() must return False. But it still
+    authors an explicit ``write: deny`` — a defensive floor, distinct from the derived edits it makes.
+    """
+    assert "curator" not in READ_ONLY_PERSONAS, (
+        "curator must stay OUT of READ_ONLY_PERSONAS — it writes the derived plane"
+    )
+    fm = _load(_AGENTS_DIR / "curator.md")
+    assert not is_read_only(fm), "curator has edit+bash allow, so is_read_only() must be False"
+    assert fm["mode"] == "subagent", "curator is a subagent — orchestrator stays the sole primary"
+    perm = _permission(fm)
+    assert str(perm.get("write")) == "deny", "curator must author an explicit write: deny floor"
+
+
+def test_constitution_paths_denied_globally() -> None:
+    """Constitution paths are denied in permission-matrix path_deny_globs (curator's write boundary).
+
+    The curator's derived-only boundary is enforced by this GLOBAL deny + the contract-guard hook,
+    not a per-persona glob (opencode's ``edit`` key is not path-globbable). Assert the constitution
+    globs are present so the boundary that keeps curator out of contracts/adr/golden holds.
+    """
+    matrix = json.loads(_PERMISSION_MATRIX.read_text(encoding="utf-8"))
+    deny = set(matrix.get("path_deny_globs", []))
+    missing = set(_CONSTITUTION_DENY_GLOBS) - deny
+    assert not missing, f"constitution globs missing from path_deny_globs: {sorted(missing)}"

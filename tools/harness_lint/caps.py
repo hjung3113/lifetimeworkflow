@@ -49,11 +49,18 @@ ALLOWED_PERMISSION_KEYS = VALID_PERMISSION_KEYS | WRITE_AFFORDANCE_ALIAS
 
 VALID_MODES = frozenset({"primary", "subagent", "all"})
 
-# Exactly the four enumerated CORE personas — the instance-language persona
-# moved to the log-parser example instance (Phase 5.5). No more, no less.
-EXPECTED_PERSONAS = frozenset({"orchestrator", "python-engineer", "code-reviewer", "explorer"})
+# Exactly the five enumerated CORE personas — the instance-language persona
+# moved to the log-parser example instance (Phase 5.5). Phase 9 (v2.0 α) adds `curator`, the
+# read-mostly owner of derived freshness (MAINT-01): it writes the DERIVED plane only and
+# regenerates by invoking existing generators (tools.memory_regen / tools.docs_sync), never its
+# own derivation logic. No more, no less.
+EXPECTED_PERSONAS = frozenset(
+    {"orchestrator", "python-engineer", "code-reviewer", "explorer", "curator"}
+)
 
 # Personas that MUST be read-only in both representations (AGENT-04 reviewer, AGENT-05 explorer).
+# `curator` is deliberately NOT here — it needs edit+bash to write derived + run generators, so
+# is_read_only() correctly returns False for it.
 READ_ONLY_PERSONAS = frozenset({"code-reviewer", "explorer"})
 
 # The ONLY model token any persona may pin — a placeholder tier, never a real model ID (Pitfall 5).
