@@ -110,6 +110,34 @@ def test_seed_schemas_map_one_to_one_to_pages(tmp_path: Path) -> None:
     assert names == EXPECTED_PAGES
 
 
+# ---- (d) prune-then-write: orphaned pages removed, README.md preserved ------------------------
+
+
+def test_prune_removes_orphan_pages_preserves_readme(tmp_path: Path) -> None:
+    """write() prunes a schema-less <name>.md but PRESERVES README.md (and non-page files).
+
+    Reconciles the pre-existing docs/reference drift (RESEARCH P2): a page whose backing schema no
+    longer exists must be deleted on regen so the stale-derived gate can be green, while README.md
+    (the human-authored quadrant index) is exempt by exact name — a delete never escapes the out dir.
+    """
+    out = tmp_path / "reference"
+    out.mkdir()
+    # A stray page with NO backing schema — must be pruned.
+    stray = out / "no-such-schema.md"
+    stray.write_text("orphan\n", encoding="utf-8")
+    # README.md is human-authored, not a <schema>.md page — must be preserved.
+    readme = out / "README.md"
+    readme.write_text("# Reference index\n", encoding="utf-8")
+
+    written = docs_sync.write(out=out)
+
+    assert not stray.exists(), "orphaned page with no backing schema was not pruned"
+    assert readme.exists(), "README.md must be preserved by the prune step"
+    assert readme.read_text(encoding="utf-8") == "# Reference index\n", "README.md was modified"
+    # Only the current schema set is written; the stray stem is gone from the result.
+    assert {p.stem for p in written} == EXPECTED_PAGES
+
+
 def test_format_conventions_page_has_conventions_block(tmp_path: Path) -> None:
     """The format-conventions page carries the §4.3–4.6 canonicalization block (BOM/LF/decimal…)."""
     out = tmp_path / "reference"
