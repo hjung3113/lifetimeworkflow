@@ -1,6 +1,6 @@
 """EMIT-02 command coexistence — the harness command surface must never collide with GSD (T-07-02).
 
-The emitter writes its 18 harness commands as TOP-LEVEL ``.claude/commands/*.md`` (Claude) and
+The emitter writes its 19 harness commands as TOP-LEVEL ``.claude/commands/*.md`` (Claude) and
 ``.opencode/command/*.md`` (opencode). GSD owns the ``.claude/commands/gsd/**`` subtree; the two
 sets must be provably DISJOINT — a harness command must never land under ``gsd/`` and a seeded
 ``gsd/`` fixture must survive an emit byte-for-byte and never be enumerated by the ownership
@@ -36,11 +36,12 @@ def _claude_commands(tmp_path: Path, written: list[Path]) -> list[Path]:
     return [p for p in written if commands_dir in p.parents and p.suffix == ".md"]
 
 
-def test_all_18_commands_emit_to_both_trees(tmp_path: Path) -> None:
-    """18 commands land in .opencode/command/*.md AND .claude/commands/*.md (top-level).
+def test_all_19_commands_emit_to_both_trees(tmp_path: Path) -> None:
+    """19 commands land in .opencode/command/*.md AND .claude/commands/*.md (top-level).
 
     Phase 9 adds /refresh-memory (the curator's local derived-freshness macro), taking the count
-    from 17 → 18.
+    from 17 → 18; Phase 10 adds /fan-out-synthesize (the context-economy fan-out entry point),
+    taking it 18 → 19.
     """
     written, _ = _emit(tmp_path)
     opencode_cmds = [
@@ -49,8 +50,8 @@ def test_all_18_commands_emit_to_both_trees(tmp_path: Path) -> None:
         if (tmp_path / ".opencode" / "command") in p.parents and p.suffix == ".md"
     ]
     claude_cmds = _claude_commands(tmp_path, written)
-    assert len(opencode_cmds) == 18, f"expected 18 opencode commands, got {len(opencode_cmds)}"
-    assert len(claude_cmds) == 18, f"expected 18 Claude commands, got {len(claude_cmds)}"
+    assert len(opencode_cmds) == 19, f"expected 19 opencode commands, got {len(opencode_cmds)}"
+    assert len(claude_cmds) == 19, f"expected 19 Claude commands, got {len(claude_cmds)}"
 
 
 def test_harness_commands_are_top_level_never_under_gsd(tmp_path: Path) -> None:
