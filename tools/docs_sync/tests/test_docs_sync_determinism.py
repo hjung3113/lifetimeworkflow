@@ -20,7 +20,7 @@ import pytest
 from tools.docs_sync import generate as docs_sync
 
 # The seed schemas map 1:1 to reference pages (DOCS-03). After the 05-03 domain move (GEN-01) the
-# relocated domain schemas moved to the log-parser example, so the CORE contracts tree now holds only
+# relocated domain schemas moved to the log-parser example, so the CORE contracts tree now holds
 # the generic §4.3–4.6 convention page (format-conventions) and the domain-neutral generic default
 # instance (greeting, GEN-02, 05-02).
 EXPECTED_PAGES = frozenset(
@@ -118,7 +118,7 @@ def test_prune_removes_orphan_pages_preserves_readme(tmp_path: Path) -> None:
 
     Reconciles the pre-existing docs/reference drift (RESEARCH P2): a page whose backing schema no
     longer exists must be deleted on regen so the stale-derived gate can be green, while README.md
-    (the human-authored quadrant index) is exempt by exact name — a delete never escapes the out dir.
+    (the human-authored quadrant index) is exempt by exact name — a delete never escapes out_dir.
     """
     out = tmp_path / "reference"
     out.mkdir()
