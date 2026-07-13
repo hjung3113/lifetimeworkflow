@@ -16,7 +16,7 @@ Distinct from:
 - **`/checkpoint`** — persists `.memory/state/` so work survives the container. Orthogonal: verify
   proves correctness, checkpoint saves context.
 
-Run the four gates in order; stop at the first hard failure and fix before proceeding.
+Run the five gates in order; stop at the first hard failure and fix before proceeding.
 
 ## 1. Lint + format + polyglot boundary (`/lint`)
 
@@ -41,9 +41,19 @@ when it DOES run is a signal — do not edit `.verified`; use the `golden-debug`
 
 !`shopt -s nullglob; cases=(golden/*/); if [ ${#cases[@]} -eq 0 ]; then echo 'SKIP: no golden cases — no-op (exit 0).'; elif [ ! -x "$HOME/.dotnet/dotnet" ]; then echo "SKIP: .NET SDK not found at \$HOME/.dotnet/dotnet — golden equivalence needs the instance converter; skipping (non-fatal). Run 'bash tools/bootstrap/install.sh' once egress is allowed."; else fail=0; for d in "${cases[@]}"; do c=$(basename "$d"); echo "golden: $c"; uv run python -m tools.golden_runner.runner "$c" || fail=1; done; [ "$fail" -eq 0 ] || { echo 'FAIL: golden red — use golden-debug, do NOT edit .verified.'; exit 1; }; fi`
 
+## 5. Derived freshness (mirror of the CI stale-derived gate) — presence-safe
+
+Regenerates the committed-derived set (`docs/reference/**` + `contracts-index.md`) and fails if the
+tree is stale — the in-session preview of the CI `stale-derived` gate. Invokes ONLY the existing
+generators (D-06); it never re-implements derivation. **Presence-safe:** a bare tree with no
+contracts regenerates to the same bytes, so `git add -A` + `git diff --cached --exit-code` sees no
+change and exits 0. Uses `git add -A` (not bare `git diff`) so a NEW untracked page is caught too.
+
+!`uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index; git add -A -- docs/reference .memory/derived/contracts-index.md; git diff --cached --exit-code -- docs/reference .memory/derived/contracts-index.md || { echo 'FAIL: derived plane stale — commit the regenerated docs/reference + contracts-index (or run /refresh-memory)'; exit 1; }`
+
 ## Notes
 
-- All four must be green before handoff. The .NET side of lint/test is presence-gated (announced
+- All five must be green before handoff. The .NET side of lint/test is presence-gated (announced
   skip when the SDK is absent — BOOT-01 egress deferral), so this stays runnable in-container.
 - Green here is a *preview*, not a substitute for CI + human ratification of any constitution-plane
   change (see `gate-model`).

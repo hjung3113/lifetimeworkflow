@@ -1,6 +1,7 @@
 {
   "paths": [
     ".claude/agents/code-reviewer.md",
+    ".claude/agents/curator.md",
     ".claude/agents/explorer.md",
     ".claude/agents/orchestrator.md",
     ".claude/agents/python-engineer.md",
@@ -17,6 +18,7 @@
     ".claude/commands/new-contract-rule.md",
     ".claude/commands/orient.md",
     ".claude/commands/pipeline.md",
+    ".claude/commands/refresh-memory.md",
     ".claude/commands/review.md",
     ".claude/commands/strangler-step.md",
     ".claude/commands/test.md",
@@ -33,6 +35,7 @@
     ".claude/skills/skill-creator/SKILL.md",
     ".claude/skills/two-plane-memory/SKILL.md",
     ".opencode/agent/code-reviewer.md",
+    ".opencode/agent/curator.md",
     ".opencode/agent/explorer.md",
     ".opencode/agent/orchestrator.md",
     ".opencode/agent/python-engineer.md",
@@ -49,6 +52,7 @@
     ".opencode/command/new-contract-rule.md",
     ".opencode/command/orient.md",
     ".opencode/command/pipeline.md",
+    ".opencode/command/refresh-memory.md",
     ".opencode/command/review.md",
     ".opencode/command/strangler-step.md",
     ".opencode/command/test.md",
