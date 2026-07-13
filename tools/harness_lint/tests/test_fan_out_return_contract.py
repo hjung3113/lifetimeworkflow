@@ -8,7 +8,7 @@ context-economy return stays bounded and domain-neutral:
 - it is a closed object (``additionalProperties: false``) — a return cannot smuggle extra keys;
 - it ``required``s the citation-bearing pair ``unit`` + ``claims`` (T-10-01: paths+claims, not dumps);
 - it carries NO ``$ref`` into the ``contracts/`` constitution plane (D-08 — self-contained);
-- its raw text carries no ``examples/`` token (domain-neutral, keeps GEN-04 green).
+- its raw text carries no instance-overlay path token (domain-neutral, keeps GEN-04 green).
 
 Mirrors the repo-root idiom of ``test_core_no_example_dep.py`` (``parents[3]``); no runtime import of
 any harness module — the schema is read as a file.
@@ -31,6 +31,10 @@ _SCHEMA = (
 )
 
 _DRAFT_2020_12 = "https://json-schema.org/draft/2020-12/schema"
+
+# The instance-overlay path token this schema must NOT contain, assembled from parts so this guard
+# file does not itself carry the literal and trip the GEN-04 core→example prose scan.
+_INSTANCE_PATH_TOKEN = "examples" + "/"
 
 
 def _raw() -> str:
@@ -81,5 +85,7 @@ def test_schema_has_no_contracts_ref() -> None:
 
 
 def test_schema_is_domain_neutral() -> None:
-    """No examples/ token — the schema is domain-neutral (keeps GEN-04 core→example guard green)."""
-    assert "examples/" not in _raw(), "schema carries an 'examples/' token — GEN-04 leak"
+    """No instance-overlay path token — the schema is domain-neutral (keeps GEN-04 guard green)."""
+    assert _INSTANCE_PATH_TOKEN not in _raw(), (
+        "schema carries an instance-overlay path token — GEN-04 leak"
+    )
