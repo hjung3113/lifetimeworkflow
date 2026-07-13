@@ -41,13 +41,19 @@ non-trivial request:
 
 1. **Orient** if cold — `/orient` regenerates the derived plane and prints the pointer payload.
 2. **Classify the work shape** (table below) → pick the persona/command.
-3. **Trace the topology** — read `[[components]]`/`[pipeline]` via `tools.harness_config`
+3. **Budget the context (delegate vs inline)** — apply the `context-budget` skill: size the surface
+   the request would pull in, and decide *where the reading happens*. A large surface that would
+   balloon one context is fanned out via the `fan-out-synthesize` skill (`/fan-out-synthesize`) so
+   read-only workers absorb the reading and you synthesize compact returns; a small surface is worked
+   inline. Making this an explicit, named step keeps the delegate-vs-inline decision observable and
+   repeatable.
+4. **Trace the topology** — read `[[components]]`/`[pipeline]` via `tools.harness_config`
    (`components()` / `pipeline()`); identify which stage/component the request touches and its
    upstream/downstream edge contracts, so you route to the owning component engineer (or the
    language engineer when the component declares none) and know which contracts a change can break.
-4. **Decompose** into small, ordered, least-privilege subtasks; note each subtask's gate.
-5. **Delegate** each to its scoped specialist; you do not do the heavy edit.
-6. **Verify** — the engineer runs `/verify-work` (lint + test + contract-check + golden) and
+5. **Decompose** into small, ordered, least-privilege subtasks; note each subtask's gate.
+6. **Delegate** each to its scoped specialist; you do not do the heavy edit.
+7. **Verify** — the engineer runs `/verify-work` (lint + test + contract-check + golden) and
    `/review` (read-only code-reviewer) before handoff. Persist with `/checkpoint`.
 
 ## Routing decision table (work shape → persona / command)
@@ -72,6 +78,8 @@ pipeline stage/component, resolve the owner from the topology first, then fall b
 | Cross-language / §4.3–4.6 boundary question | scoped engineer | `polyglot-boundary` skill |
 | Review written code | **code-reviewer** (read-only) | `/review` |
 | "Is this allowed / why is it blocked?" | (self) | `gate-model` skill |
+| "Should I delegate this or work inline?" | (self) | `context-budget` skill |
+| Large surface to cover / would balloon one context | (self) fan out | `fan-out-synthesize` skill, `/fan-out-synthesize` |
 | Locate code / map unfamiliar area | **explorer** | (read-only search) |
 | Pre-handoff verification | scoped engineer | `/verify-work` |
 | Persist session state | (self) | `/checkpoint` |

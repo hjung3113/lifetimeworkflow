@@ -33,7 +33,8 @@ After the payload above, read in this order — shallow first, deep only on dema
 2. **`.memory/state/activeContext.md`** — what was in flight (provisional; contracts/ADR override it).
 3. A specific **`contracts/`** schema — only when the task needs it (never preload all bodies).
 4. The relevant **skill** for the work shape: `polyglot-boundary` (§4.3–4.6), `golden-debug` (red
-   golden), `data-contracts` (contracts/), `gate-model` (what's gated), `two-plane-memory` (planes).
+   golden), `data-contracts` (contracts/), `gate-model` (what's gated), `two-plane-memory` (planes),
+   `context-budget` (delegate-vs-inline), `fan-out-synthesize` (large-surface coverage).
 
 ## Notes
 
