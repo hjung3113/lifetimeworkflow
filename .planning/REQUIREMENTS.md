@@ -136,10 +136,10 @@
 
 ### MAINT — Self-Maintaining Derived Artifacts + Curator (Phase 9 / α)
 
-- [ ] **MAINT-01**: `curator` 에이전트 — read-mostly, 파생물(repo-map·contracts-index·docs `reference/`·memory)을 재생성만 하고 절대 손으로 편집하지 않는 "파생 신선도" 단일 소유자. (재사용: `tools/memory_regen`, `/docs-sync`, two-plane-memory)
+- [x] **MAINT-01**: `curator` 에이전트 — read-mostly, 파생물(repo-map·contracts-index·docs `reference/`·memory)을 재생성만 하고 절대 손으로 편집하지 않는 "파생 신선도" 단일 소유자. (재사용: `tools/memory_regen`, `/docs-sync`, two-plane-memory)
 - [x] **MAINT-02**: CI "stale-derived" 게이트 — PR에서 repo-map·contracts-index·docs `reference/`를 재생성하고 **diff 시 실패**(Phase-7 re-emit-diff 미러). 어떤 파생물이 *committed-and-PR-refreshed* vs *session-regenerated-and-gitignored*가 될지 결정(플랜-타임 KEY DECISION).
-- [ ] **MAINT-03**: 훅 포스처 — write 시 저렴한 refresh(format-on-write 계열), 무거운 regen은 PR/CI로 지연(per-commit 금지 — 느리고 시끄러움).
-- [ ] **MAINT-04**: `/refresh-memory`(또는 curator 호출) 커맨드 — 핸드오프 전 로컬에서 전체 regen 세트를 돌려 `/verify-work`가 신선도 체크를 포함할 수 있게 한다.
+- [x] **MAINT-03**: 훅 포스처 — write 시 저렴한 refresh(format-on-write 계열), 무거운 regen은 PR/CI로 지연(per-commit 금지 — 느리고 시끄러움).
+- [x] **MAINT-04**: `/refresh-memory`(또는 curator 호출) 커맨드 — 핸드오프 전 로컬에서 전체 regen 세트를 돌려 `/verify-work`가 신선도 체크를 포함할 수 있게 한다.
 
 ### ECON — Context-Economy Fan-out/Synthesize Orchestration (Phase 10 / β)
 
@@ -240,10 +240,10 @@
 | PIPE-04 | Phase 8 | Complete |
 | PIPE-05 | Phase 8 | Complete |
 | PIPE-06 | Phase 8 | Complete |
-| MAINT-01 | Phase 9 | Pending |
+| MAINT-01 | Phase 9 | Complete |
 | MAINT-02 | Phase 9 | Complete |
-| MAINT-03 | Phase 9 | Pending |
-| MAINT-04 | Phase 9 | Pending |
+| MAINT-03 | Phase 9 | Complete |
+| MAINT-04 | Phase 9 | Complete |
 | ECON-01 | Phase 10 | Pending |
 | ECON-02 | Phase 10 | Pending |
 | ECON-03 | Phase 10 | Pending |

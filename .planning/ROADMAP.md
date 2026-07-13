@@ -250,7 +250,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 6. CI + Gates (generic) | 3/3 | Complete   | 2026-07-09 |
 | 7. Single-Source Dual-Runtime Emitter | 5/5 | Complete   | 2026-07-12 |
 | 8. Pipeline-Topology Conductor + Per-Component Agents | 6/6 | Complete   | 2026-07-11 |
-| 9. Self-Maintaining Derived Artifacts + Curator | 2/4 | In Progress|  |
+| 9. Self-Maintaining Derived Artifacts + Curator | 3/4 | In Progress|  |
 | 10. Context-Economy Fan-out/Synthesize Orchestration | 0/? | Not started | - |
 | 11. Multi-Repo Workspace | 0/? | Not started | - |
 
@@ -293,7 +293,7 @@ Plans:
 
 **Wave 2** *(blocked on 09-01, 09-02 — the sole emitter-round-trip owner)*
 
-- [ ] 09-03-PLAN.md — Curator persona + /refresh-memory + /verify-work freshness + two-plane doc + caps bump 4→5; re-emit both runtimes (MAINT-01, MAINT-03, MAINT-04)
+- [x] 09-03-PLAN.md — Curator persona + /refresh-memory + /verify-work freshness + two-plane doc + caps bump 4→5; re-emit both runtimes (MAINT-01, MAINT-03, MAINT-04)
 
 **Wave 3** *(blocked on 09-01, 09-02, 09-03 — lands last so CI is green on arrival)*
 

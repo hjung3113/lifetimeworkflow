@@ -4,13 +4,13 @@ milestone: v2.0
 milestone_name: Long-Horizon
 status: executing
 stopped_at: Phase 9 context gathered
-last_updated: "2026-07-13T15:42:01.338Z"
+last_updated: "2026-07-13T15:53:00.763Z"
 last_activity: 2026-07-13
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 09 (self-maintaining-derived-artifacts-curator-v2-0) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-07-13
 
@@ -93,6 +93,7 @@ Last activity: 2026-07-13
 | Phase 07 P05 | 4min | 2 tasks | 4 files |
 | Phase 09 P01 | 12min | 2 tasks | 7 files |
 | Phase 09 P02 | 3min | 2 tasks | 2 files |
+| Phase 09 P03 | 9min | 3 tasks | 18 files |
 
 ## Accumulated Context
 
@@ -158,6 +159,7 @@ Recent decisions affecting current work:
 - [Phase ?]: Harness hook groups coexist idempotently with GSD wiring (no ownership migration); SessionStart pinned at 4 groups
 - [Phase ?]: [09-01] docs_sync.write() gains prune-then-write: orphaned <name>.md pages deleted under _confine(page,out_dir), README.md exempt by exact name; docs/reference reconciled to {README, format-conventions, greeting} — precondition for the Plan-04 stale-derived gate.
 - [Phase ?]: [09-02] MAINT-02 committed-derived flip: contracts-index.md flipped gitignored->tracked via .gitignore contents-form (.memory/derived/* + !.memory/derived/contracts-index.md); directory-form CANNOT re-include (P3). repo-map.md stays session-ephemeral. Generator INDEX_PATH + inject.py UNCHANGED (D-03/A1). Byte-identical regen preserved; now guarded by the Plan-04 stale-derived gate.
+- [Phase ?]: [09-03] curator persona admitted as 5th EXPECTED_PERSONA (read-mostly: edit+bash allow + write:deny, no model id, domain-neutral); writes DERIVED only, regenerates ONLY via tools.memory_regen.*/tools.docs_sync (D-06); constitution deny is GLOBAL path_deny_globs + contract-guard hook. /refresh-memory (agent: curator) + /verify-work step 5 freshness; two-plane-memory documents committed-derived (machine-write+CI-verify) tier for contracts-index + docs/reference; no on-write regen hook (MAINT-03/D-09); emitter round-tripped ONCE to both runtimes, byte-identical, GEN-04 green (D-11).
 
 ### Pending Todos
 
@@ -184,6 +186,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-13T15:41:18.159Z
+Last session: 2026-07-13T15:52:39.617Z
 Stopped at: Phase 9 context gathered
 Resume file: None
