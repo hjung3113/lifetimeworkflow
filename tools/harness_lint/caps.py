@@ -123,7 +123,8 @@ _XML_CHARS = ("<", ">")
 # moved to the log-parser example instance (Phase 5.5). Phase 5.7 (Lifecycle Completeness) adds
 # four domain-neutral lifecycle skills: golden-debug, polyglot-boundary, gate-model,
 # two-plane-memory. Phase 8 (Pipeline Topology) adds one topology-trace skill: pipeline-map.
-# Phase 10 (Context-Economy) adds the fan-out-synthesize skill (the sibling plan adds context-budget).
+# Phase 10 (Context-Economy) adds two skills: fan-out-synthesize (the fan-out substrate) and
+# context-budget (the delegate-vs-inline heuristic that routes into it).
 # No more, no fewer (anti-sprawl).
 EXPECTED_SKILLS = frozenset(
     {
@@ -137,5 +138,6 @@ EXPECTED_SKILLS = frozenset(
         "two-plane-memory",
         "pipeline-map",
         "fan-out-synthesize",
+        "context-budget",
     }
 )
