@@ -4,13 +4,13 @@ milestone: v2.0
 milestone_name: Long-Horizon
 status: executing
 stopped_at: Phase 9 context gathered
-last_updated: "2026-07-13T15:28:41.687Z"
-last_activity: 2026-07-13 -- Phase 09 planning complete
+last_updated: "2026-07-13T15:37:40.125Z"
+last_activity: 2026-07-13
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 4
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 09 — self-maintaining-derived-artifacts-curator (v2.0 α)
+**Current focus:** Phase 09 — self-maintaining-derived-artifacts-curator-v2-0
 
 ## Current Position
 
-Phase: 9 — Self-Maintaining Derived Artifacts + Curator (not started)
-Plan: —
+Phase: 09 (self-maintaining-derived-artifacts-curator-v2-0) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-07-13 -- Phase 09 planning complete
+Last activity: 2026-07-13
 
 ## Performance Metrics
 
@@ -91,6 +91,7 @@ Last activity: 2026-07-13 -- Phase 09 planning complete
 | Phase 07 P03 | 10min | 2 tasks | 8 files |
 | Phase 07 P04 | 9min | 2 tasks | 5 files |
 | Phase 07 P05 | 4min | 2 tasks | 4 files |
+| Phase 09 P01 | 12min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -154,6 +155,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [Phase 07]: [07-04] EMIT-02 Regime B-md managed-block merge — merge.splice_managed_block is a hand-rolled two-marker (BEGIN/END HTML-comment) string splice: replaces ONLY inside the fence, preserves outside verbatim (T-07-02), appends once when markers absent (idempotent), LF/no-BOM/single trailing newline, fails loud (ValueError) on a single/malformed marker. generate.emit() reads->splices->writes root AGENTS.md (deterministic sorted agent/command/skill index) + CLAUDE.md (emitter pointer); NEVER full-write; both EXCLUDED from emit-manifest.json (Regime B not A). GSD Project/Developer-Profile + nearest-wins rules preserved byte-for-byte; committed-then-re-emit clean over the full emit-drift path set; 38 harness_emit tests green.
 - [Phase ?]: settings.json signature merge is order-preserving (Regime B-json, no sort_keys) — reproduces live bytes byte-for-byte; opencode.json/frontmatter stay globally sorted
 - [Phase ?]: Harness hook groups coexist idempotently with GSD wiring (no ownership migration); SessionStart pinned at 4 groups
+- [Phase ?]: [09-01] docs_sync.write() gains prune-then-write: orphaned <name>.md pages deleted under _confine(page,out_dir), README.md exempt by exact name; docs/reference reconciled to {README, format-conventions, greeting} — precondition for the Plan-04 stale-derived gate.
 
 ### Pending Todos
 
@@ -180,6 +182,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-13T14:48:18.894Z
+Last session: 2026-07-13T15:37:02.744Z
 Stopped at: Phase 9 context gathered
-Resume file: .planning/phases/09-self-maintaining-derived-artifacts-curator-v2-0/09-CONTEXT.md
+Resume file: None

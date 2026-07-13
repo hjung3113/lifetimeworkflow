@@ -106,3 +106,8 @@ None.
 None — no new network/auth/schema surface. The one delete path introduced is confined via the
 pre-existing `_confine` primitive (threat T-9-01-01 mitigated as planned); prune deletes only
 pages absent from the current schema set (T-9-01-02 mitigated); no package installs (T-9-01-SC).
+
+## Self-Check: PASSED
+
+- Created/modified files verified present: `docs/reference/greeting.md`, `tools/docs_sync/generate.py`, `09-01-SUMMARY.md`.
+- Commits verified in git log: fdb1de0 (test), 922b346 (feat), 66dad78 (fix), d4c35a4 (docs).
