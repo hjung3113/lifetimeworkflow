@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Long-Horizon
 status: executing
-stopped_at: Phase 10 context gathered
-last_updated: "2026-07-13T16:52:24.285Z"
-last_activity: 2026-07-13 -- Phase 10 planning complete
+stopped_at: Completed 10-01-PLAN.md
+last_updated: "2026-07-13T16:59:38.458Z"
+last_activity: 2026-07-13
 progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 7
-  completed_plans: 4
+  completed_plans: 5
   percent: 33
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 10 — context economy fan out/synthesize orchestration *(v2.0 β)*
+**Current focus:** Phase 10 — Context-Economy Fan-out/Synthesize Orchestration
 
 ## Current Position
 
-Phase: 10
-Plan: Not started
+Phase: 10 (Context-Economy Fan-out/Synthesize Orchestration) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-07-13 -- Phase 10 planning complete
+Last activity: 2026-07-13
 
 ## Performance Metrics
 
@@ -95,6 +95,7 @@ Last activity: 2026-07-13 -- Phase 10 planning complete
 | Phase 09 P02 | 3min | 2 tasks | 2 files |
 | Phase 09 P03 | 9min | 3 tasks | 18 files |
 | Phase 09 P04 | 12min | 2 tasks | 2 files |
+| Phase 10 P10-01 | 6min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -162,6 +163,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [09-02] MAINT-02 committed-derived flip: contracts-index.md flipped gitignored->tracked via .gitignore contents-form (.memory/derived/* + !.memory/derived/contracts-index.md); directory-form CANNOT re-include (P3). repo-map.md stays session-ephemeral. Generator INDEX_PATH + inject.py UNCHANGED (D-03/A1). Byte-identical regen preserved; now guarded by the Plan-04 stale-derived gate.
 - [Phase ?]: [09-03] curator persona admitted as 5th EXPECTED_PERSONA (read-mostly: edit+bash allow + write:deny, no model id, domain-neutral); writes DERIVED only, regenerates ONLY via tools.memory_regen.*/tools.docs_sync (D-06); constitution deny is GLOBAL path_deny_globs + contract-guard hook. /refresh-memory (agent: curator) + /verify-work step 5 freshness; two-plane-memory documents committed-derived (machine-write+CI-verify) tier for contracts-index + docs/reference; no on-write regen hook (MAINT-03/D-09); emitter round-tripped ONCE to both runtimes, byte-identical, GEN-04 green (D-11).
 - [Phase ?]: [09-04] MAINT-02 stale-derived CI gate: distinct job from emit-drift (D-07) regenerates docs/reference + contracts-index then git add -A + git diff --cached --exit-code (untracked-safe P1, NOT bare git diff); wired into gate.needs (non-bypassable); on-failure echoes /refresh-memory fix (D-08); permissions contents:read + no github.event.* interpolation; proven by structural + negative-control test. Phase 9 COMPLETE (4/4).
+- [Phase ?]: [10-01] ECON-01/02 fan-out-synthesize substrate: skill (decompose->dispatch N read-only explorer subtasks via native task affordance, NO bespoke engine->recover schema-bounded citation-bearing summaries->orchestrator synthesizes) + self-contained Draft-2020-12 return schema in skill references/ (NOT contracts/, no $ref, additionalProperties:false) + thin /fan-out-synthesize command (agent:orchestrator, subtask:true). EXPECTED_PERSONAS stays 5; EXPECTED_SKILLS 9->10. Source-only; emit round-trip is 10-03.
 
 ### Pending Todos
 
@@ -188,6 +190,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-13T16:20:18.787Z
-Stopped at: Phase 10 context gathered
-Resume file: .planning/phases/10-context-economy-fan-out-synthesize-orchestration-v2-0/10-CONTEXT.md
+Last session: 2026-07-13T16:59:38.434Z
+Stopped at: Completed 10-01-PLAN.md
+Resume file: None
