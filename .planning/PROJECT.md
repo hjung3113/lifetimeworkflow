@@ -19,7 +19,7 @@
 - **Context-Economy Fan-out/Synthesize (Phase 10 / β)** — 팬아웃 → 요약만 회수 → 합성하는 1급 워크플로로 장수 세션의 컨텍스트를 작게 유지. γ의 재사용 기반.
 - **Multi-Repo Workspace (Phase 11 / γ)** — 여러 레포를 하나의 워크스페이스로 선언·조작; repo-scoped 서브에이전트 + 크로스-레포 contract drift/golden 게이트.
 
-**Key context:** 모두 기존 기계(two-plane memory·`tools/memory_regen`·`/docs-sync`·orchestrator·Phase-6 CI·Phase-7 emitter·project.toml 슬롯)를 **재사용**하며 재구축 금지. 비협상 제약: derived는 손으로 편집 금지(기계가 쓰고 CI가 검증하는 것은 허용), 헌법 평면(contracts/adr/golden)은 사람 재가 유지(machines gate, humans ratify), GEN-04 core→example 무의존 유지, 모든 신규 agent/skill/hook은 Phase-7 emitter를 왕복. Open decisions(플랜 타임 해결): (α) committed-derived vs session-derived split, (γ) workspace model a/b/c (lean b: workspace manifest).
+**Key context:** 모두 기존 기계(two-plane memory·`tools/memory_regen`·`/docs-sync`·orchestrator·Phase-6 CI·Phase-7 emitter·project.toml 슬롯)를 **재사용**하며 재구축 금지. 비협상 제약: derived는 손으로 편집 금지(기계가 쓰고 CI가 검증하는 것은 허용), 헌법 평면(contracts/adr/golden)은 사람 재가 유지(machines gate, humans ratify), GEN-04 core→example 무의존 유지, 모든 신규 agent/skill/hook은 Phase-7 emitter를 왕복. Open decisions(플랜 타임 해결): ~~(α) committed-derived vs session-derived split~~ — **RESOLVED (Phase 9, D-01/D-02): committed+gated = `docs/reference/**` + `contracts-index`; `repo-map`는 gitignored/세션-임시 유지**; (γ) workspace model a/b/c (lean b: workspace manifest).
 
 ## Requirements
 
@@ -33,7 +33,7 @@
 
 <!-- v2.0 Long-Horizon (phases 9/10/11) — see REQUIREMENTS.md for MAINT-/ECON-/MREPO- detail -->
 
-- [ ] **Self-maintaining derived artifacts + curator (v2.0 α)**: `curator` 에이전트 + CI stale-derived 게이트(repo-map·contracts-index·docs `reference/` 재생성 후 diff 실패) + write-시 저렴/PR-시 무거운 훅 포스처 + `/refresh-memory` 로컬 프리핸드오프 재생성.
+- [x] **Self-maintaining derived artifacts + curator (v2.0 α)**: `curator` 에이전트 + CI stale-derived 게이트(repo-map·contracts-index·docs `reference/` 재생성 후 diff 실패) + write-시 저렴/PR-시 무거운 훅 포스처 + `/refresh-memory` 로컬 프리핸드오프 재생성. *(Validated in Phase 9)*
 - [ ] **Context-economy fan-out/synthesize (v2.0 β)**: 팬아웃→요약회수→합성 skill/command + compact citation-bearing 요약 반환 계약 + delegate-vs-inline 컨텍스트-예산 가이드(orchestrator·`/orient` 배선).
 - [ ] **Multi-repo workspace (v2.0 γ)**: 워크스페이스 매니페스트/모델(project.toml 슬롯을 한 단계 올림) + repo-scoped 서브에이전트에 β 팬아웃 적용 + 크로스-레포 contract drift/golden 게이트 + Phase-8 topology의 레포 경계 일반화.
 
