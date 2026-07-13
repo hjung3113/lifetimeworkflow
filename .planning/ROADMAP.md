@@ -250,7 +250,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 6. CI + Gates (generic) | 3/3 | Complete   | 2026-07-09 |
 | 7. Single-Source Dual-Runtime Emitter | 5/5 | Complete   | 2026-07-12 |
 | 8. Pipeline-Topology Conductor + Per-Component Agents | 6/6 | Complete   | 2026-07-11 |
-| 9. Self-Maintaining Derived Artifacts + Curator | 0/? | Not started | - |
+| 9. Self-Maintaining Derived Artifacts + Curator | 0/4 | Planned | - |
 | 10. Context-Economy Fan-out/Synthesize Orchestration | 0/? | Not started | - |
 | 11. Multi-Repo Workspace | 0/? | Not started | - |
 
@@ -283,8 +283,24 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
   4. `/refresh-memory` (or an equivalent `curator` invocation) runs the full regen set locally before handoff, and `/verify-work` incorporates that freshness check so drift is caught pre-handoff, not in CI.
   5. The new `curator` agent (and any new command/hook) round-trips the Phase-7 emitter to BOTH runtimes (opencode primary, Claude secondary) with no model identifier, and the core stays example-independent (GEN-04 guard green).
 
-**Plans**: TBD
-**KEY DECISION (plan-time)**: which derived artifacts flip from *gitignored-derived* (session-regenerated) to *committed-derived* (PR-refreshed). Only the committed-derived set is guarded by the stale-derived diff gate; leave unresolved here — resolve at plan time. (See PROJECT.md open decision α: committed-derived vs session-derived split.)
+**Plans**: 4 plans (3 waves)
+
+Plans:
+**Wave 1** *(foundation — reconcile pre-existing drift + flip contracts-index; no emitter touch, parallel-safe)*
+
+- [ ] 09-01-PLAN.md — Reconcile docs/reference drift + docs_sync prune-then-write + prune/determinism tests (MAINT-02)
+- [ ] 09-02-PLAN.md — Flip contracts-index to committed-derived: .gitignore contents-form + negation + track the file (MAINT-02)
+
+**Wave 2** *(blocked on 09-01, 09-02 — the sole emitter-round-trip owner)*
+
+- [ ] 09-03-PLAN.md — Curator persona + /refresh-memory + /verify-work freshness + two-plane doc + caps bump 4→5; re-emit both runtimes (MAINT-01, MAINT-03, MAINT-04)
+
+**Wave 3** *(blocked on 09-01, 09-02, 09-03 — lands last so CI is green on arrival)*
+
+- [ ] 09-04-PLAN.md — stale-derived CI job (regen → git add -A → git diff --cached --exit-code) + gate.needs + structural/negative-control test (MAINT-02)
+
+**KEY DECISION (RESOLVED at plan time, D-01/D-02):** committed-derived set = `docs/reference/**` + `contracts-index` (the gated scope); `repo-map` stays gitignored/session-ephemeral (PageRank churn = noise, not signal).
+
 
 ### Phase 10: Context-Economy Fan-out/Synthesize Orchestration *(v2.0 β)*
 

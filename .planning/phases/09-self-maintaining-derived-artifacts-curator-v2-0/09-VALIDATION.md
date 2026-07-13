@@ -1,8 +1,8 @@
 ---
 phase: 9
 slug: self-maintaining-derived-artifacts-curator-v2-0
-status: draft
-nyquist_compliant: false
+status: approved
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-07-13
 ---
@@ -80,11 +80,11 @@ created: 2026-07-13
 
 ## Validation Sign-Off
 
-- [ ] All signals have an `<automated>` verify or Wave 0 dependency
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references (caps bump, docs/reference reconcile, prune, CI job, manifest)
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 90s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All signals have an `<automated>` verify or Wave 0 dependency
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (caps bump, docs/reference reconcile, prune, CI job, manifest)
+- [x] No watch-mode flags
+- [x] Feedback latency < 90s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-07-13 (plan-checker Dimension 8 PASS — every task carries a concrete `<automated>` command, no MISSING placeholders, sampling continuity 100%)

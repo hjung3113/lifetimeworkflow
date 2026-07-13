@@ -354,17 +354,19 @@ uv run python -m tools.harness_emit                    # re-emit both runtime tr
 | A3 | `docs/reference/**` is the full committed-derived docs scope (root only; example instances have no `docs/reference/` today) | Architecture / Pattern 2 | LOW — verified `examples/log-parser/docs/reference/` does not exist. If an instance later needs its own reference sync, the gate scope widens (future phase). |
 | A4 | The curator needs `edit: allow` + `bash: allow` (not read-only) to write derived + run generators | Pattern 1 | LOW — writing `docs/reference/` and running `uv`/`python` both require these; constitution stays denied via `path_deny_globs`. If the team wants curator to delegate writes to an engineer instead, revisit. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Exact tracked path for `contracts-index` (D-03).**
    - What we know: keeping `INDEX_PATH` + `.gitignore` `.memory/derived/*` negation is lowest-blast-radius (`inject.py` untouched).
    - What's unclear: whether the team prefers the committed-derived artifact to live under `.memory/derived/` (co-located with session-derived, split by gitignore) or at a visibly-tracked path outside `derived/`.
    - Recommendation: go with the negation option; document the committed-derived sub-tier in the `two-plane-memory` skill so the "why is one file in derived/ tracked" is explicit.
+   - **RESOLVED:** Plan `09-02` keeps `INDEX_PATH` at `.memory/derived/contracts-index.md` and amends `.gitignore` with `.memory/derived/*` + `!.memory/derived/contracts-index.md` exactly as recommended; `inject.py` untouched. The committed-derived sub-tier is documented in `two-plane-memory/SKILL.md` by Plan `09-03` Task 2(c).
 
 2. **Should `/refresh-memory` regenerate `repo-map` (session-only) too?**
    - What we know: `/orient` already regenerates repo-map + contracts-index + inject; repo-map is NOT gated (D-02).
    - What's unclear: whether "full regen set" (MAINT-04) includes the ungated repo-map.
    - Recommendation: YES — `/refresh-memory` runs repo-map (local convenience) but the CI gate + `/verify-work` diff step cover ONLY the committed-derived set (docs/reference + contracts-index). Local runs everything; the gate guards only what's committed.
+   - **RESOLVED:** Plan `09-03` Task 2 authors `/refresh-memory` to run `tools.memory_regen.repo_map` as step 1 (local convenience), while the `stale-derived` gate (`09-04`) and the `/verify-work` freshness diff cover ONLY the committed-derived set — exactly as recommended.
 
 ## Environment Availability
 
