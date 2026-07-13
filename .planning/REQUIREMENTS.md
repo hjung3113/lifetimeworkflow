@@ -145,7 +145,7 @@
 
 - [x] **ECON-01**: `fan-out-synthesize` skill/command (deep-research / `Workflow` 형태) — 작업 분해 → N개 분석 서브에이전트 디스패치 → schema-bounded 요약 회수 → 합성. 사람과 지휘자 모두 재사용.
 - [x] **ECON-02**: 요약/반환 계약 — 서브에이전트가 compact, citation-bearing 결과(경로 + 주장, 파일 덤프 아님)를 반환해 지휘자가 raw 파일을 다시 읽지 않는다.
-- [ ] **ECON-03**: delegate-vs-inline 가이드/스킬(컨텍스트-예산 휴리스틱) — orchestrator 페르소나 + `/orient`에 배선.
+- [x] **ECON-03**: delegate-vs-inline 가이드/스킬(컨텍스트-예산 휴리스틱) — orchestrator 페르소나 + `/orient`에 배선.
 
 ### MREPO — Multi-Repo Workspace (Phase 11 / γ)
 
@@ -246,7 +246,7 @@
 | MAINT-04 | Phase 9 | Complete |
 | ECON-01 | Phase 10 | Complete |
 | ECON-02 | Phase 10 | Complete |
-| ECON-03 | Phase 10 | Pending |
+| ECON-03 | Phase 10 | Complete |
 | MREPO-01 | Phase 11 | Pending |
 | MREPO-02 | Phase 11 | Pending |
 | MREPO-03 | Phase 11 | Pending |

@@ -251,7 +251,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 7. Single-Source Dual-Runtime Emitter | 5/5 | Complete   | 2026-07-12 |
 | 8. Pipeline-Topology Conductor + Per-Component Agents | 6/6 | Complete   | 2026-07-11 |
 | 9. Self-Maintaining Derived Artifacts + Curator | 4/4 | Complete   | 2026-07-13 |
-| 10. Context-Economy Fan-out/Synthesize Orchestration | 1/3 | In Progress|  |
+| 10. Context-Economy Fan-out/Synthesize Orchestration | 2/3 | In Progress|  |
 | 11. Multi-Repo Workspace | 0/? | Not started | - |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
@@ -324,7 +324,7 @@ Plans:
 
 **Wave 2** *(blocked on 10-01 — shared caps.py enumeration)*
 
-- [ ] 10-02-PLAN.md — context-budget skill wired into orchestrator + /orient + wiring test (ECON-03)
+- [x] 10-02-PLAN.md — context-budget skill wired into orchestrator + /orient + wiring test (ECON-03)
 
 **Wave 3** *(blocked on 10-01, 10-02 — emitter round-trip lands last)*
 

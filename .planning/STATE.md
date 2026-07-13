@@ -4,13 +4,13 @@ milestone: v2.0
 milestone_name: Long-Horizon
 status: executing
 stopped_at: Completed 10-01-PLAN.md
-last_updated: "2026-07-13T16:59:38.458Z"
+last_updated: "2026-07-13T17:07:57.617Z"
 last_activity: 2026-07-13
 progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 33
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 10 (Context-Economy Fan-out/Synthesize Orchestration) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-07-13
 
@@ -96,6 +96,7 @@ Last activity: 2026-07-13
 | Phase 09 P03 | 9min | 3 tasks | 18 files |
 | Phase 09 P04 | 12min | 2 tasks | 2 files |
 | Phase 10 P10-01 | 6min | 2 tasks | 5 files |
+| Phase 10 P10-02 | 9min | 2 tasks tasks | 6 files files |
 
 ## Accumulated Context
 
@@ -164,6 +165,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [09-03] curator persona admitted as 5th EXPECTED_PERSONA (read-mostly: edit+bash allow + write:deny, no model id, domain-neutral); writes DERIVED only, regenerates ONLY via tools.memory_regen.*/tools.docs_sync (D-06); constitution deny is GLOBAL path_deny_globs + contract-guard hook. /refresh-memory (agent: curator) + /verify-work step 5 freshness; two-plane-memory documents committed-derived (machine-write+CI-verify) tier for contracts-index + docs/reference; no on-write regen hook (MAINT-03/D-09); emitter round-tripped ONCE to both runtimes, byte-identical, GEN-04 green (D-11).
 - [Phase ?]: [09-04] MAINT-02 stale-derived CI gate: distinct job from emit-drift (D-07) regenerates docs/reference + contracts-index then git add -A + git diff --cached --exit-code (untracked-safe P1, NOT bare git diff); wired into gate.needs (non-bypassable); on-failure echoes /refresh-memory fix (D-08); permissions contents:read + no github.event.* interpolation; proven by structural + negative-control test. Phase 9 COMPLETE (4/4).
 - [Phase ?]: [10-01] ECON-01/02 fan-out-synthesize substrate: skill (decompose->dispatch N read-only explorer subtasks via native task affordance, NO bespoke engine->recover schema-bounded citation-bearing summaries->orchestrator synthesizes) + self-contained Draft-2020-12 return schema in skill references/ (NOT contracts/, no $ref, additionalProperties:false) + thin /fan-out-synthesize command (agent:orchestrator, subtask:true). EXPECTED_PERSONAS stays 5; EXPECTED_SKILLS 9->10. Source-only; emit round-trip is 10-03.
+- [Phase 10]: [10-02] ECON-03 delegate-vs-inline surface: dedicated context-budget skill (heuristic-map shape, invariant 'a single context must not balloon' + decision-forcing table + Related->fan-out-synthesize/orient) wired at BOTH orchestrator (2 routing rows + named 'Budget the context' intake step) AND /orient read-order step 4, surfacing fan-out-synthesize too; EXPECTED_SKILLS 10->11, EXPECTED_PERSONAS stays 5 (D-05/D-10/D-11). test_context_budget_wiring.py mirrors topology gate. Fixed pre-existing GEN-04 self-leak in 10-01 test_fan_out_return_contract.py. Source-only; emit is 10-03.
 
 ### Pending Todos
 
@@ -190,6 +192,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-13T16:59:38.434Z
+Last session: 2026-07-13T17:06:41.744Z
 Stopped at: Completed 10-01-PLAN.md
 Resume file: None
