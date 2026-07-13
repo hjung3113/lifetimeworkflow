@@ -28,7 +28,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Milestone v2.0 — Long-Horizon** *(phases 9/10/11 — numbering continues after v1.0 = phases 1–8; reuses existing machinery, no rebuild)*
 
-- [ ] **Phase 9: Self-Maintaining Derived Artifacts + Curator** *(v2.0 α)* - A read-mostly `curator` agent + a CI “stale-derived” gate keep derived artifacts (repo-map, contracts-index, docs `reference/`, memory) fresh automatically — machines regenerate, CI verifies on PR, humans never hand-edit; heavy regen deferred to PR/CI (not per-commit).
+- [x] **Phase 9: Self-Maintaining Derived Artifacts + Curator** *(v2.0 α)* - A read-mostly `curator` agent + a CI “stale-derived” gate keep derived artifacts (repo-map, contracts-index, docs `reference/`, memory) fresh automatically — machines regenerate, CI verifies on PR, humans never hand-edit; heavy regen deferred to PR/CI (not per-commit). (completed 2026-07-13)
 - [ ] **Phase 10: Context-Economy Fan-out/Synthesize Orchestration** *(v2.0 β)* - A first-class fan-out → schema-bounded citation-bearing summary → synthesize workflow keeps long-lived sessions small; the reusable substrate γ builds on.
 - [ ] **Phase 11: Multi-Repo Workspace** *(v2.0 γ)* - Declare and operate several repos as one workspace: a workspace manifest, repo-scoped subagents running the β fan-out, cross-repo contract-drift/golden gates, and repo-crossing pipeline edges.
 
@@ -250,7 +250,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 6. CI + Gates (generic) | 3/3 | Complete   | 2026-07-09 |
 | 7. Single-Source Dual-Runtime Emitter | 5/5 | Complete   | 2026-07-12 |
 | 8. Pipeline-Topology Conductor + Per-Component Agents | 6/6 | Complete   | 2026-07-11 |
-| 9. Self-Maintaining Derived Artifacts + Curator | 3/4 | In Progress|  |
+| 9. Self-Maintaining Derived Artifacts + Curator | 4/4 | Complete   | 2026-07-13 |
 | 10. Context-Economy Fan-out/Synthesize Orchestration | 0/? | Not started | - |
 | 11. Multi-Repo Workspace | 0/? | Not started | - |
 
@@ -297,7 +297,7 @@ Plans:
 
 **Wave 3** *(blocked on 09-01, 09-02, 09-03 — lands last so CI is green on arrival)*
 
-- [ ] 09-04-PLAN.md — stale-derived CI job (regen → git add -A → git diff --cached --exit-code) + gate.needs + structural/negative-control test (MAINT-02)
+- [x] 09-04-PLAN.md — stale-derived CI job (regen → git add -A → git diff --cached --exit-code) + gate.needs + structural/negative-control test (MAINT-02)
 
 **KEY DECISION (RESOLVED at plan time, D-01/D-02):** committed-derived set = `docs/reference/**` + `contracts-index` (the gated scope); `repo-map` stays gitignored/session-ephemeral (PageRank churn = noise, not signal).
 

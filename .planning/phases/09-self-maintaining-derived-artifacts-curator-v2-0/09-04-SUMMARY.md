@@ -100,6 +100,12 @@ Note (unchanged from prior CI plans): true non-bypassability requires a human to
 - Full `tools/harness_lint` suite green (211 passed) after the change — no regression.
 - Manual-only residual (per VALIDATION): a throwaway PR mutating a committed derived page should red the `stale-derived` job with the fix message — verifiable once the workflow runs on GitHub.
 
+## Self-Check: PASSED
+
+- FOUND: `tools/harness_lint/tests/test_ci_stale_derived.py`
+- FOUND: `.planning/phases/09-self-maintaining-derived-artifacts-curator-v2-0/09-04-SUMMARY.md`
+- FOUND commits: `c85fd00` (Task 1), `4f925b3` (Task 2), `5c7fba3` (SUMMARY)
+
 ---
 *Phase: 09-self-maintaining-derived-artifacts-curator-v2-0*
 *Completed: 2026-07-13*
