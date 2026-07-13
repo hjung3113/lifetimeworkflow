@@ -24,16 +24,26 @@ skill is the map: which plane a file is in, and what that permits.
 
 ## Plane 2 — Derived / volatile (machine-owned, regenerated)
 
-This plane has two sub-tiers with **different git treatment**:
+This plane has three sub-tiers with **different git treatment**. The invariant is the same across
+all three — *machine-write, never hand-edit* — but what git does with each differs:
 
-- **`.memory/state/`** — *committed* volatile state (`activeContext.md`, `progress.md`). It survives
-  the ephemeral container because it is committed (via `/checkpoint`). It is **provisional**:
-  contracts/ and docs/adr/ always override it on conflict. Decisions do NOT live here — they belong
-  in append-only ADRs.
-- **`.memory/derived/`** — *gitignored*, auto-regenerated (`repo-map.md`, `contracts-index.md`).
-  Also `docs/reference/`. **Never hand-edit these.** `tools/memory_regen` rebuilds them; delete +
-  rerun reproduces them byte-identically. A hand edit is lost on the next regeneration and is a lie
-  in the meantime.
+- **Committed state — `.memory/state/`** — *committed* volatile state (`activeContext.md`,
+  `progress.md`). It survives the ephemeral container because it is committed (via `/checkpoint`). It
+  is **provisional**: contracts/ and docs/adr/ always override it on conflict. Decisions do NOT live
+  here — they belong in append-only ADRs.
+- **Committed-derived (machine-write + CI-verify) — `docs/reference/**` + `.memory/derived/contracts-index.md`** —
+  *tracked*, auto-regenerated. `docs/reference/**` has always been committed-derived (rendered from
+  `contracts/**` by `tools/docs_sync`); `.memory/derived/contracts-index.md` was **flipped from
+  gitignored → tracked** (Phase 9) so a CI gate can guard it. These are committed but STILL never
+  hand-edited: the two-plane invariant is satisfied by *machine-write + a CI gate*, not by human
+  edits. The `stale-derived` gate (and the `/verify-work` freshness step) regenerate them and fail on
+  any diff, so a stale commit is caught. Regenerate via `/refresh-memory` (or the underlying
+  `tools/docs_sync` + `tools/memory_regen.contracts_index`), then commit.
+- **Gitignored-derived — `.memory/derived/repo-map.md`** — *gitignored*, session-ephemeral. The
+  repo-map's PageRank ranking churns on unrelated edits, so committing it would be diff noise — it is
+  rebuilt each session by the SessionStart injector / `/orient` and is NOT gated. **Never hand-edit
+  it.** `tools/memory_regen` rebuilds it; delete + rerun reproduces it byte-identically. A hand edit
+  is lost on the next regeneration and is a lie in the meantime.
 
 ## The decision the plane forces
 
@@ -54,3 +64,5 @@ that capped, pointer-only, provisional-banner-first payload — never a full sch
 ## Related
 - `harness/skills/gate-model/SKILL.md` — how the constitution plane is enforced.
 - `/orient` — regenerate + surface the derived plane. `/checkpoint` — persist the committed state tier.
+- `/refresh-memory` — regenerate the FULL derived set (incl. the committed-derived tier) before
+  handoff; the local counterpart of the CI `stale-derived` gate.
