@@ -3,8 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Long-Horizon
 status: planning
-last_updated: "2026-07-12T12:00:00.000Z"
-last_activity: 2026-07-12
+stopped_at: Phase 9 context gathered
+last_updated: "2026-07-13T14:48:18.919Z"
+last_activity: 2026-07-12 — Milestone v2.0 roadmap created (phases 9/10/11, numbering continued)
 progress:
   total_phases: 3
   completed_phases: 0
@@ -179,6 +180,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-12
-Stopped at: Session resumed at v2.0 milestone boundary — proceeding to discuss Phase 9 (α)
-Resume file: None (HANDOFF.json consumed)
+Last session: 2026-07-13T14:48:18.894Z
+Stopped at: Phase 9 context gathered
+Resume file: .planning/phases/09-self-maintaining-derived-artifacts-curator-v2-0/09-CONTEXT.md
