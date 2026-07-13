@@ -29,7 +29,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Milestone v2.0 — Long-Horizon** *(phases 9/10/11 — numbering continues after v1.0 = phases 1–8; reuses existing machinery, no rebuild)*
 
 - [x] **Phase 9: Self-Maintaining Derived Artifacts + Curator** *(v2.0 α)* - A read-mostly `curator` agent + a CI “stale-derived” gate keep derived artifacts (repo-map, contracts-index, docs `reference/`, memory) fresh automatically — machines regenerate, CI verifies on PR, humans never hand-edit; heavy regen deferred to PR/CI (not per-commit). (completed 2026-07-13)
-- [ ] **Phase 10: Context-Economy Fan-out/Synthesize Orchestration** *(v2.0 β)* - A first-class fan-out → schema-bounded citation-bearing summary → synthesize workflow keeps long-lived sessions small; the reusable substrate γ builds on.
+- [x] **Phase 10: Context-Economy Fan-out/Synthesize Orchestration** *(v2.0 β)* - A first-class fan-out → schema-bounded citation-bearing summary → synthesize workflow keeps long-lived sessions small; the reusable substrate γ builds on. (completed 2026-07-13)
 - [ ] **Phase 11: Multi-Repo Workspace** *(v2.0 γ)* - Declare and operate several repos as one workspace: a workspace manifest, repo-scoped subagents running the β fan-out, cross-repo contract-drift/golden gates, and repo-crossing pipeline edges.
 
 ## Phase Details
@@ -251,7 +251,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 7. Single-Source Dual-Runtime Emitter | 5/5 | Complete   | 2026-07-12 |
 | 8. Pipeline-Topology Conductor + Per-Component Agents | 6/6 | Complete   | 2026-07-11 |
 | 9. Self-Maintaining Derived Artifacts + Curator | 4/4 | Complete   | 2026-07-13 |
-| 10. Context-Economy Fan-out/Synthesize Orchestration | 2/3 | In Progress|  |
+| 10. Context-Economy Fan-out/Synthesize Orchestration | 3/3 | Complete   | 2026-07-13 |
 | 11. Multi-Repo Workspace | 0/? | Not started | - |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
@@ -328,7 +328,7 @@ Plans:
 
 **Wave 3** *(blocked on 10-01, 10-02 — emitter round-trip lands last)*
 
-- [ ] 10-03-PLAN.md — re-emit both runtimes + commit derived trees + full-suite/GEN-04/emit-drift/anti-sprawl gate (ECON-01, ECON-02, ECON-03 / D-12)
+- [x] 10-03-PLAN.md — re-emit both runtimes + commit derived trees + full-suite/GEN-04/emit-drift/anti-sprawl gate (ECON-01, ECON-02, ECON-03 / D-12)
 
 ### Phase 11: Multi-Repo Workspace *(v2.0 γ)*
 
