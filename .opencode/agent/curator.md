@@ -9,7 +9,6 @@ permission:
   bash:
     "*": ask
     "uv *": allow
-    "python -m *": allow
   write: deny
 ---
 

@@ -49,7 +49,7 @@ generators (D-06); it never re-implements derivation. **Presence-safe:** a bare 
 contracts regenerates to the same bytes, so `git add -A` + `git diff --cached --exit-code` sees no
 change and exits 0. Uses `git add -A` (not bare `git diff`) so a NEW untracked page is caught too.
 
-!`uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index; git add -A -- docs/reference .memory/derived/contracts-index.md; git diff --cached --exit-code -- docs/reference .memory/derived/contracts-index.md || { echo 'FAIL: derived plane stale — commit the regenerated docs/reference + contracts-index (or run /refresh-memory)'; exit 1; }`
+!`uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index && git add -A -- docs/reference .memory/derived/contracts-index.md && git diff --cached --exit-code -- docs/reference .memory/derived/contracts-index.md || { echo 'FAIL: derived plane stale or a generator errored — commit the regenerated docs/reference + contracts-index (or run /refresh-memory)'; exit 1; }`
 
 ## Notes
 

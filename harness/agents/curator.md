@@ -12,7 +12,6 @@ permission:
   bash:
     "*": ask
     "uv *": allow
-    "python -m *": allow
   write: deny
 tools: Read, Edit, Bash, Grep, Glob
 ---
