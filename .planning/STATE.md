@@ -4,13 +4,13 @@ milestone: v2.0
 milestone_name: Long-Horizon
 status: executing
 stopped_at: Phase 9 context gathered
-last_updated: "2026-07-13T15:37:40.125Z"
+last_updated: "2026-07-13T15:42:01.338Z"
 last_activity: 2026-07-13
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 09 (self-maintaining-derived-artifacts-curator-v2-0) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-07-13
 
@@ -92,6 +92,7 @@ Last activity: 2026-07-13
 | Phase 07 P04 | 9min | 2 tasks | 5 files |
 | Phase 07 P05 | 4min | 2 tasks | 4 files |
 | Phase 09 P01 | 12min | 2 tasks | 7 files |
+| Phase 09 P02 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -156,6 +157,7 @@ Recent decisions affecting current work:
 - [Phase ?]: settings.json signature merge is order-preserving (Regime B-json, no sort_keys) — reproduces live bytes byte-for-byte; opencode.json/frontmatter stay globally sorted
 - [Phase ?]: Harness hook groups coexist idempotently with GSD wiring (no ownership migration); SessionStart pinned at 4 groups
 - [Phase ?]: [09-01] docs_sync.write() gains prune-then-write: orphaned <name>.md pages deleted under _confine(page,out_dir), README.md exempt by exact name; docs/reference reconciled to {README, format-conventions, greeting} — precondition for the Plan-04 stale-derived gate.
+- [Phase ?]: [09-02] MAINT-02 committed-derived flip: contracts-index.md flipped gitignored->tracked via .gitignore contents-form (.memory/derived/* + !.memory/derived/contracts-index.md); directory-form CANNOT re-include (P3). repo-map.md stays session-ephemeral. Generator INDEX_PATH + inject.py UNCHANGED (D-03/A1). Byte-identical regen preserved; now guarded by the Plan-04 stale-derived gate.
 
 ### Pending Todos
 
@@ -182,6 +184,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-13T15:37:02.744Z
+Last session: 2026-07-13T15:41:18.159Z
 Stopped at: Phase 9 context gathered
 Resume file: None

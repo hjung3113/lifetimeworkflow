@@ -250,7 +250,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 6. CI + Gates (generic) | 3/3 | Complete   | 2026-07-09 |
 | 7. Single-Source Dual-Runtime Emitter | 5/5 | Complete   | 2026-07-12 |
 | 8. Pipeline-Topology Conductor + Per-Component Agents | 6/6 | Complete   | 2026-07-11 |
-| 9. Self-Maintaining Derived Artifacts + Curator | 1/4 | In Progress|  |
+| 9. Self-Maintaining Derived Artifacts + Curator | 2/4 | In Progress|  |
 | 10. Context-Economy Fan-out/Synthesize Orchestration | 0/? | Not started | - |
 | 11. Multi-Repo Workspace | 0/? | Not started | - |
 
@@ -289,7 +289,7 @@ Plans:
 **Wave 1** *(foundation — reconcile pre-existing drift + flip contracts-index; no emitter touch, parallel-safe)*
 
 - [x] 09-01-PLAN.md — Reconcile docs/reference drift + docs_sync prune-then-write + prune/determinism tests (MAINT-02)
-- [ ] 09-02-PLAN.md — Flip contracts-index to committed-derived: .gitignore contents-form + negation + track the file (MAINT-02)
+- [x] 09-02-PLAN.md — Flip contracts-index to committed-derived: .gitignore contents-form + negation + track the file (MAINT-02)
 
 **Wave 2** *(blocked on 09-01, 09-02 — the sole emitter-round-trip owner)*
 
