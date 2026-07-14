@@ -59,26 +59,28 @@ Which phases cover which requirements. **Filled by the roadmapper during roadmap
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MEM2-01 | — | Pending |
-| MEM2-02 | — | Pending |
-| MEM2-03 | — | Pending |
-| MEM2-04 | — | Pending |
-| MEM2-05 | — | Pending |
-| MEM2-06 | — | Pending |
-| MEM2-07 | — | Pending |
+| MEM2-01 | Phase 12 | Pending |
+| MEM2-02 | Phase 13 | Pending |
+| MEM2-03 | Phase 12 | Pending |
+| MEM2-04 | Phase 14 | Pending |
+| MEM2-05 | Phase 13 | Pending |
+| MEM2-06 | Phase 15 | Pending |
+| MEM2-07 | Phase 16 | Pending |
+
+> **Note on MEM2-06:** its scope spans two phases. Traceability owner is **Phase 15** (the emit round-trip + gates). The **ADR-0006 authoring** portion is delivered in **Phase 12** (human-ratified constitution path), consistent with proposal §5's Phase-A/Phase-D split — but MEM2-06 is counted once (Phase 15) for coverage.
 
 **Coverage:**
 - v1 requirements: 7 total (MEM2-01..07)
-- Mapped to phases: 0 (roadmapper pending)
-- Unmapped: 7 ⚠️
+- Mapped to phases: 7 ✓
+- Unmapped: 0
 
-**Suggested phase breakdown (from proposal §5 + §7d; roadmapper to confirm/refine):**
-- Phase A — Model + ADR + doc reframe: MEM2-01, MEM2-03, ADR from MEM2-06
-- Phase B — Injector reframe + channel wiring: MEM2-02, MEM2-05
-- Phase C — Write path + anti-churn guard: MEM2-04
-- Phase D — Emit round-trip + gates: MEM2-06 (emit portion)
-- Phase E — Local memory web UI: MEM2-07
+**Phase breakdown (confirmed from proposal §5 + §7d):**
+- Phase 12 (A) — Model + ADR + doc reframe: MEM2-01, MEM2-03 (+ ADR-0006 authoring portion of MEM2-06)
+- Phase 13 (B) — Injector reframe + channel wiring: MEM2-02, MEM2-05
+- Phase 14 (C) — Write path + anti-churn guard: MEM2-04
+- Phase 15 (D) — Emit round-trip + gates: MEM2-06 (emit portion)
+- Phase 16 (E) — Local memory web UI: MEM2-07
 
 ---
 *Requirements defined: 2026-07-14 for milestone v2.1 (MEM2)*
-*Last updated: 2026-07-14 at milestone start*
+*Last updated: 2026-07-14 — roadmap created; traceability filled (7/7 mapped, 0 unmapped); phases 12–16.*
