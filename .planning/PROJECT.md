@@ -10,7 +10,9 @@
 
 **계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·전환 리스크를 하네스가 자동으로 강제·검증한다 — 그리고 이 강제 구조가 특정 도메인·언어에 묶이지 않고 어느 프로젝트에나 재사용된다.** 에이전트가 레포에서 "어떻게 개발·유지보수·리팩토링하는가"가 부족(tribal knowledge)이 아니라 실행 가능한 스킬·커맨드·훅으로 박혀 있고, 그 박힌 구조를 도메인만 갈아끼워 다음 프로젝트로 가져갈 수 있어야 한다.
 
-## Current Milestone: v2.0 Long-Horizon
+## Current Milestone: v2.0 Long-Horizon — ✅ SHIPPED 2026-07-14
+
+> **Status:** Complete. All 3 phases (9 α, 10 β, 11 γ) shipped and verified; 11/11 requirements validated; milestone audit passed (integration 12/12, 568 tests green). Archived to `.planning/milestones/v2.0-*`. Next milestone starts via `/gsd:new-milestone`.
 
 **Goal:** 에이전트(그리고 사람)가 *멀티-프로젝트* 작업을 *여러 세션·긴 달력 시간*에 걸쳐 이어가되, 프로젝트 자신의 컨텍스트(코드 그래프·메모리·문서·결정)가 자동으로 신선하게 유지된다 — 기계가 유지보수하고, 사람이 재가한다.
 
@@ -25,19 +27,17 @@
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ **Self-maintaining derived artifacts + curator (v2.0 α)** — `curator` 에이전트 + CI stale-derived 게이트 + write-시 저렴/PR-시 무거운 훅 포스처 + `/refresh-memory`. *(v2.0, Phase 9)*
+- ✓ **Context-economy fan-out/synthesize (v2.0 β)** — 팬아웃→요약회수→합성 skill/command + citation-bearing 반환 계약 + delegate-vs-inline 컨텍스트-예산 배선. *(v2.0, Phase 10)*
+- ✓ **Multi-repo workspace (v2.0 γ)** — `workspace.toml` 매니페스트(project.toml 슬롯 한 단계 상향) + repo-scoped β 팬아웃 + 크로스-레포 contract drift/golden 게이트 + repo:stage 파이프라인 edge + core→workspace-member GEN-04 가드. *(v2.0, Phase 11)*
 
 ### Active
 
 <!-- 하네스 산출물. 모두 검증 전까지 가설. -->
 
-<!-- v2.0 Long-Horizon (phases 9/10/11) — see REQUIREMENTS.md for MAINT-/ECON-/MREPO- detail -->
+(None — milestone v2.0 shipped; next milestone starts fresh via /gsd:new-milestone.)
 
-- [x] **Self-maintaining derived artifacts + curator (v2.0 α)**: `curator` 에이전트 + CI stale-derived 게이트(repo-map·contracts-index·docs `reference/` 재생성 후 diff 실패) + write-시 저렴/PR-시 무거운 훅 포스처 + `/refresh-memory` 로컬 프리핸드오프 재생성. *(Validated in Phase 9)*
-- [x] **Context-economy fan-out/synthesize (v2.0 β)**: 팬아웃→요약회수→합성 skill/command + compact citation-bearing 요약 반환 계약 + delegate-vs-inline 컨텍스트-예산 가이드(orchestrator·`/orient` 배선). *(Validated in Phase 10)*
-- [ ] **Multi-repo workspace (v2.0 γ)**: 워크스페이스 매니페스트/모델(project.toml 슬롯을 한 단계 올림) + repo-scoped 서브에이전트에 β 팬아웃 적용 + 크로스-레포 contract drift/golden 게이트 + Phase-8 topology의 레포 경계 일반화.
-
-<!-- v1.0 하네스 표면 (shipped in phases 1–8; complete-milestone 시 Validated로 이동) -->
+<!-- v1.0 하네스 표면 (shipped in phases 1–8) -->
 
 - [ ] **opencode 하네스 표면**: agents(orchestrator·dotnet·python·reviewer·golden-runner·polyglot-auditor·explorer), commands(/golden·/golden-approve·/contract-check·/new-normalization-rule·/adr·/strangler-step·/docs-sync·/component·/checkpoint), skills(dotnet·python·pipeline-patterns·data-contracts·golden-testing·normalization-catalog·skill-creator), plugins(contract-guard·session-start 주입기·format-on-write·polyglot-boundary 린터)
 - [ ] **opencode.json**: 모델·15키 권한 매트릭스(bash glob last-wins)·instructions glob·MCP·formatter
@@ -107,4 +107,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-13 — Phase 10 (v2.0 β) complete: context-economy fan-out/synthesize orchestration shipped (fan-out-synthesize + context-budget skills, /fan-out-synthesize command, citation-bearing return contract, orchestrator·/orient wiring, emitted to both runtimes). Milestone v2.0: α+β done, γ (Phase 11 multi-repo workspace) remaining.*
+*Last updated: 2026-07-14 after v2.0 milestone — Long-Horizon shipped: α (self-maintaining derived plane + curator), β (context-economy fan-out/synthesize), γ (multi-repo workspace) all complete and validated (11/11 requirements, audit passed). v1.0 (phases 1–8) + v2.0 (phases 9–11) both archived; no open milestone.*

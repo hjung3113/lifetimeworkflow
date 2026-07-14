@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Long-Horizon
-status: milestone_complete
-stopped_at: Milestone complete (Phase 11 was final phase)
-last_updated: 2026-07-14T01:30:12.751Z
-last_activity: 2026-07-14
+status: Awaiting next milestone
+stopped_at: Completed 11-04-PLAN.md
+last_updated: "2026-07-14T08:50:19.624Z"
+last_activity: 2026-07-14 — Milestone v2.0 completed and archived
 progress:
   total_phases: 3
   completed_phases: 3
   total_plans: 11
-  completed_plans: 59
+  completed_plans: 11
   percent: 100
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 
 ## Current Position
 
-Phase: 11
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-07-14
+Phase: Milestone v2.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-07-14 — Milestone v2.0 completed and archived
 
 ## Performance Metrics
 
@@ -209,3 +209,7 @@ Items acknowledged and carried forward from previous milestone close:
 Last session: 2026-07-14T00:59:45.909Z
 Stopped at: Completed 11-04-PLAN.md
 Resume file: None
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
