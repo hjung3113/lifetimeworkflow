@@ -252,7 +252,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 8. Pipeline-Topology Conductor + Per-Component Agents | 6/6 | Complete   | 2026-07-11 |
 | 9. Self-Maintaining Derived Artifacts + Curator | 4/4 | Complete   | 2026-07-13 |
 | 10. Context-Economy Fan-out/Synthesize Orchestration | 3/3 | Complete    | 2026-07-13 |
-| 11. Multi-Repo Workspace | 1/4 | In Progress|  |
+| 11. Multi-Repo Workspace | 2/4 | In Progress|  |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
 
@@ -353,7 +353,7 @@ Plans:
 
 **Wave 2** *(blocked on 11-01; parallel — no file overlap)*
 
-- [ ] 11-02-PLAN.md — MREPO-04: `repo:stage` edge generalization + generalized core→workspace-member GEN-04 guard twin
+- [x] 11-02-PLAN.md — MREPO-04: `repo:stage` edge generalization + generalized core→workspace-member GEN-04 guard twin
 - [ ] 11-03-PLAN.md — MREPO-03: cross-repo contract-drift + workspace-aware golden (`_confine` widened) + separate `workspace` CI job in `gate.needs`
 
 **Wave 3** *(blocked on 11-01/02/03 — closeout)*
