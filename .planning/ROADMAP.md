@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Milestone v2.1 — MEM2 — Process Memory & Provenance Reframe** *(phases 12–16 — numbering continues after v2.0 = phases 9–11; reuses existing machinery — `tools/memory_regen`, `/checkpoint`, `tools/harness_lint`, Phase-7 emitter, `adr`+CODEOWNERS — no rebuild)*
 
-- [ ] **Phase 12: Model + ADR + Doc Reframe** *(v2.1 A)* - Scaffold the new PROCESS memory tier (`.memory/agreements/<slug>.md` per-guideline, committed human-authored — NOT derived), reword the distrust framing to data-authority everywhere it echoes, and ratify the memory-model change as ADR-0006 via the human-gated constitution path.
+- [x] **Phase 12: Model + ADR + Doc Reframe** *(v2.1 A)* - Scaffold the new PROCESS memory tier (`.memory/agreements/<slug>.md` per-guideline, committed human-authored — NOT derived), reword the distrust framing to data-authority everywhere it echoes, and ratify the memory-model change as ADR-0006 via the human-gated constitution path. (completed 2026-07-14)
 - [ ] **Phase 13: Injector Reframe + Channel Wiring** *(v2.1 B)* - Split the SessionStart banner into a full-body priority-0 working-agreements directive + a data-scoped provenance banner, and surface a verbatim progress `updated:` stamp — preserving `inject.py` determinism and the ~4000-char budget.
 - [ ] **Phase 14: Write Path + Anti-Churn Guard** *(v2.1 C)* - A dedicated `/agree` command adds/retires a working-agreement only on explicit user feedback, backed by a `tools/harness_lint` provenance/anti-invent guard.
 - [ ] **Phase 15: Emit Round-Trip + Gates** *(v2.1 D)* - Round-trip every new/changed surface (`/agree`, updated skills, AGENTS.md managed block) through the Phase-7 emitter to both runtimes with no model id; emit-drift clean, GEN-04 green.
@@ -262,7 +262,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 9. Self-Maintaining Derived Artifacts + Curator | 4/4 | Complete   | 2026-07-13 |
 | 10. Context-Economy Fan-out/Synthesize Orchestration | 3/3 | Complete    | 2026-07-13 |
 | 11. Multi-Repo Workspace | 4/4 | Complete    | 2026-07-14 |
-| 12. Model + ADR + Doc Reframe (v2.1 A) | 0/3 | Planned | - |
+| 12. Model + ADR + Doc Reframe (v2.1 A) | 3/3 | Complete | 2026-07-14 |
 | 13. Injector Reframe + Channel Wiring (v2.1 B) | 0/TBD | Not started | - |
 | 14. Write Path + Anti-Churn Guard (v2.1 C) | 0/TBD | Not started | - |
 | 15. Emit Round-Trip + Gates (v2.1 D) | 0/TBD | Not started | - |

@@ -3,7 +3,7 @@ phase: 12
 slug: model-adr-doc-reframe-v2-1-a
 status: final
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-07-14
 ---
 
@@ -46,9 +46,9 @@ created: 2026-07-14
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 12-01-01 | 01 | 1 | MEM2-01 | — | N/A | structural | `test -f .memory/agreements/_TEMPLATE.md` | ❌ W0 | ⬜ pending |
-| 12-02-01 | 02 | 1 | MEM2-03 | — | N/A | structural | `grep -rn "confirm before trusting\|provisional" <5 surfaces> exits 1` | ✅ | ⬜ pending |
-| 12-03-01 | 03 | 2 | MEM2-06 (ADR-0006) | T-12-01 / — | agent Write to `docs/adr/` denied without human token | behavior | contract-guard deny reproduced; ADR-0006 present post-human-ratify | ✅ | ⬜ pending |
+| 12-01-01 | 01 | 1 | MEM2-01 | — | N/A | structural | `test -f .memory/agreements/_TEMPLATE.md` | ✅ | ✅ green |
+| 12-02-01 | 02 | 1 | MEM2-03 | — | N/A | structural | `grep -rn "confirm before trusting\|provisional" <5 surfaces> exits 1` | ✅ | ✅ green |
+| 12-03-01 | 03 | 2 | MEM2-06 (ADR-0006) | T-12-01 / — | agent Write to `docs/adr/` denied without human token | behavior | contract-guard deny reproduced; ADR-0006 present post-human-ratify | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
