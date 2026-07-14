@@ -84,9 +84,11 @@ def _index(schema: object, path: tuple = ()) -> dict[tuple, tuple]:
 def classify(old: dict, new: dict) -> str:
     """Classify an old→new schema edit ``breaking`` or ``non-breaking``.
 
-    Breaking iff any of: a property is removed/renamed, a required field is dropped, a fixed
-    ``const`` value changes, or an ``enum`` narrows (drops a previously-allowed value). Purely
-    additive edits (new optional property, new enum case) are non-breaking (seed change_policy).
+    Breaking iff any of: a property is removed/renamed, a required field is dropped, a field is
+    newly *added* to a ``required`` list (existing instances that omit it now fail validation —
+    true whether the property is brand-new or was previously optional), a fixed ``const`` value
+    changes, or an ``enum`` narrows (drops a previously-allowed value). Purely additive edits (new
+    *optional* property, new enum case) are non-breaking (seed change_policy).
     """
     old_idx = _index(old)
     new_idx = _index(new)
@@ -107,6 +109,17 @@ def classify(old: dict, new: dict) -> str:
         elif kind == "required":
             if val - nval:
                 return "breaking"  # a previously-required field is no longer required
+    # old_idx-only iteration misses newly-required fields: the `required` frozenset merely grows,
+    # or a `required` list is added where none existed. Either way a field newly demanded of every
+    # instance is a producer-breaking change, so scan new_idx for required-set additions.
+    for key, (kind, nval) in new_idx.items():
+        if kind == "required":
+            old_entry = old_idx.get(key)
+            old_required = old_entry[1] if old_entry is not None else frozenset()
+            if nval - old_required:
+                return (
+                    "breaking"  # a field was newly added to `required` (new or promoted-optional)
+                )
     return "non-breaking"
 
 
