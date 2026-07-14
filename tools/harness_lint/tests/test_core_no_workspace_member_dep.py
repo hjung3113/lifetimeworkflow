@@ -48,9 +48,14 @@ _SELF = Path(__file__).resolve()
 # below (which pass ``_WORKSPACE_FILE`` as the rel path directly).
 _WORKSPACE_FILE = "workspace.toml"
 
-# Matches the sanctioned workspace-pointer lines in workspace.toml: ``root = ...`` (member root) and
-# the ``from = ...`` / ``to = ...`` / ``contract = ...`` edge-endpoint keys (ADR-0002 (c)).
-_WORKSPACE_POINTER_LINE = re.compile(r"\s*(root|from|to|contract)\s*=")
+# Matches the sanctioned workspace-pointer keys in workspace.toml: ``root = ...`` (member root, a
+# standalone key) and the ``from = ...`` / ``to = ...`` / ``contract = ...`` edge-endpoint keys
+# (ADR-0002 (c)). Real edges are a single-line INLINE TABLE
+# (``{ from = "…", to = "…", contract = "…" }``), so from/to/contract are NOT the first token on the
+# line — they follow ``{`` or ``,``. The key may therefore appear either at line start (optionally
+# indented, the standalone ``root =``) OR right after ``{``/``,`` (the inline-table keys); matched
+# via ``.search`` (WR-01: a leading-anchored ``.match`` never matched the real inline-table edge).
+_WORKSPACE_POINTER_LINE = re.compile(r"(?:^\s*|[{,]\s*)(root|from|to|contract)\s*=")
 
 
 def _member_roots() -> set[str]:
@@ -87,8 +92,9 @@ def _tracked_core_files() -> list[Path]:
 def _is_workspace_pointer_line(rel_path: str, line: str) -> bool:
     """The one sanctioned exemption: the ``root =`` / ``from =`` / ``to =`` / ``contract =``
     member-pointer lines in ``workspace.toml`` (ADR-0002 (c)) — the only config place that may name a
-    member. Key-scoped: any member path on a NON-pointer key stays flagged."""
-    return rel_path == _WORKSPACE_FILE and _WORKSPACE_POINTER_LINE.match(line) is not None
+    member. Key-scoped: any member path on a NON-pointer key stays flagged. Uses ``.search`` (not
+    ``.match``) so the inline-table edge keys (``{ from = … }``) — never the first token — match."""
+    return rel_path == _WORKSPACE_FILE and _WORKSPACE_POINTER_LINE.search(line) is not None
 
 
 def _scan_lines(rel_path: str, text: str, roots: set[str] | None = None) -> list[tuple[int, str]]:
@@ -147,6 +153,36 @@ def test_workspace_root_pointer_is_exempt() -> None:
     marker = sorted(_member_roots())[0]
     hits = _scan_lines(_WORKSPACE_FILE, f'root = "{marker}"')
     assert not hits, "the sanctioned workspace.toml root pointer must be exempt from the guard"
+
+
+def test_inline_table_edge_pointer_is_exempt() -> None:
+    """The REAL workspace.toml edge is a single-line inline table
+    (``{ from = …, to = …, contract = … }``): its from/to/contract pointer keys are NOT the first
+    token on the line, so the exemption must match them mid-line (WR-01 — a leading-anchored
+    ``.match`` never matched this). A member root carried on an inline-table pointer key is exempt.
+    """
+    marker = sorted(_member_roots())[0]
+    line = f'  {{ from = "{marker}", to = "member-b:ingest", contract = "greeting" }},'
+    hits = _scan_lines(_WORKSPACE_FILE, line)
+    assert not hits, (
+        "the inline-table edge pointer keys must be exempt against the REAL edge syntax "
+        f"(line: {line!r})"
+    )
+
+
+def test_real_workspace_edge_line_is_recognized_as_pointer() -> None:
+    """Prove the exemption against the VERBATIM edge line in the committed workspace.toml (not a
+    synthetic stand-in): every inline-table edge line is recognized as a sanctioned pointer (WR-01).
+    """
+    ws_text = (_REPO_ROOT / _WORKSPACE_FILE).read_text(encoding="utf-8")
+    edge_lines = [
+        ln for ln in ws_text.splitlines() if "from =" in ln and "to =" in ln and "contract =" in ln
+    ]
+    assert edge_lines, "expected at least one inline-table edge line in workspace.toml"
+    for ln in edge_lines:
+        assert _is_workspace_pointer_line(_WORKSPACE_FILE, ln), (
+            f"real inline-table edge line not recognized as a sanctioned pointer: {ln!r}"
+        )
 
 
 def test_negative_control_flags_nonexempt_workspace_leak() -> None:
