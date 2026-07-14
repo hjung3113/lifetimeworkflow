@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 9: Self-Maintaining Derived Artifacts + Curator** *(v2.0 α)* - A read-mostly `curator` agent + a CI “stale-derived” gate keep derived artifacts (repo-map, contracts-index, docs `reference/`, memory) fresh automatically — machines regenerate, CI verifies on PR, humans never hand-edit; heavy regen deferred to PR/CI (not per-commit). (completed 2026-07-13)
 - [x] **Phase 10: Context-Economy Fan-out/Synthesize Orchestration** *(v2.0 β)* - A first-class fan-out → schema-bounded citation-bearing summary → synthesize workflow keeps long-lived sessions small; the reusable substrate γ builds on. (completed 2026-07-13)
-- [ ] **Phase 11: Multi-Repo Workspace** *(v2.0 γ)* - Declare and operate several repos as one workspace: a workspace manifest, repo-scoped subagents running the β fan-out, cross-repo contract-drift/golden gates, and repo-crossing pipeline edges.
+- [x] **Phase 11: Multi-Repo Workspace** *(v2.0 γ)* - Declare and operate several repos as one workspace: a workspace manifest, repo-scoped subagents running the β fan-out, cross-repo contract-drift/golden gates, and repo-crossing pipeline edges. (completed 2026-07-14)
 
 ## Phase Details
 
@@ -252,7 +252,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 8. Pipeline-Topology Conductor + Per-Component Agents | 6/6 | Complete   | 2026-07-11 |
 | 9. Self-Maintaining Derived Artifacts + Curator | 4/4 | Complete   | 2026-07-13 |
 | 10. Context-Economy Fan-out/Synthesize Orchestration | 3/3 | Complete    | 2026-07-13 |
-| 11. Multi-Repo Workspace | 3/4 | In Progress|  |
+| 11. Multi-Repo Workspace | 4/4 | Complete   | 2026-07-14 |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
 
@@ -358,5 +358,5 @@ Plans:
 
 **Wave 3** *(blocked on 11-01/02/03 — closeout)*
 
-- [ ] 11-04-PLAN.md — MREPO-02: prose-wire member-repo fan-out reuse into orchestrator + fan-out-synthesize skill; emitter round-trip to both runtimes + full phase gate
+- [x] 11-04-PLAN.md — MREPO-02: prose-wire member-repo fan-out reuse into orchestrator + fan-out-synthesize skill; emitter round-trip to both runtimes + full phase gate
 
