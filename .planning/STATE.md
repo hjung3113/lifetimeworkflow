@@ -206,10 +206,22 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-14T00:59:45.909Z
-Stopped at: Completed 11-04-PLAN.md
+Last session: 2026-07-14
+Stopped at: Milestone v2.0 completed + archived (ROADMAP/REQUIREMENTS/audit → milestones/; v2.0 phase dirs → milestones/v2.0-phases/; tag v2.0 local-only, remote blocks tag push). README.md added. No open milestone.
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+**PLANNED NEXT WORK — full-harness audit (dead code + review + hardening).** Repo-wide, not phase-scoped. Run in the next session:
+
+1. `/gsd:map-codebase` — build a fresh tech/arch/**quality**/**concerns** map (dead-code + smell evidence).
+2. Then a full-harness audit with 3 goals: (1) dead code — unused funcs/modules/tests/emitter branches, unreachable code, unused exports/deps; (2) code review — correctness/edge-cases/consistency, esp. `tools/` Python core; (3) hardening — guard/validator hardening, low-scope exception handling, test-coverage gaps.
+   - Scope IN: `tools/**`, `harness/**`, `libs/**`, `contracts/**`, `.github/workflows/ci.yml`.
+   - Scope OUT: `examples/**` (reference instance); generated `.opencode/**`·`.claude/**`·`opencode.json` (byte-verified by the emit-drift gate — review the `harness/` source, not the emitted trees).
+   - Non-negotiables: contract-first; machines-gate/humans-ratify (no auto-mutation of golden/constitution); GEN-04 (core imports/refs no example or workspace member); new/edited agent·command·skill = edit `harness/` source + round-trip Phase-7 emitter to both runtimes, no model id; derived (`.memory/derived`, `docs/reference`) never hand-edited.
+   - Method: severity-ranked findings report first, then fix in atomic-commit batches; keep `uv run pytest -q` (currently 568 green) and re-emit `git diff --exit-code` clean each batch; check with operator before any contract/golden-touching change.
+   - Heavier option: prefix the prompt with `ultracode` for multi-agent adversarial review. Lighter: `/code-review high` on the current diff, or `/security-review`.
+
+- Or start a fresh feature milestone with `/gsd:new-milestone`.
+- Optional retro: `/gsd:complete-milestone v1.0` was never run (phases 1–8 still under `.planning/phases/`); run it to archive v1.0 too.
+- `git push origin v2.0` from an environment that permits tag pushes (this env blocks tag refs).
