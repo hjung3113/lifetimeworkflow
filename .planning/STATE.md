@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Milestone complete
+**Current focus:** v2.0 complete + harness audit done — ready for next milestone
 
 ## Current Position
 
@@ -212,16 +212,14 @@ Resume file: None
 
 ## Operator Next Steps
 
-**PLANNED NEXT WORK — full-harness audit (dead code + review + hardening).** Repo-wide, not phase-scoped. Run in the next session:
+**Clean milestone boundary — ready to start the next milestone with `/gsd:new-milestone`.**
 
-1. `/gsd:map-codebase` — build a fresh tech/arch/**quality**/**concerns** map (dead-code + smell evidence).
-2. Then a full-harness audit with 3 goals: (1) dead code — unused funcs/modules/tests/emitter branches, unreachable code, unused exports/deps; (2) code review — correctness/edge-cases/consistency, esp. `tools/` Python core; (3) hardening — guard/validator hardening, low-scope exception handling, test-coverage gaps.
-   - Scope IN: `tools/**`, `harness/**`, `libs/**`, `contracts/**`, `.github/workflows/ci.yml`.
-   - Scope OUT: `examples/**` (reference instance); generated `.opencode/**`·`.claude/**`·`opencode.json` (byte-verified by the emit-drift gate — review the `harness/` source, not the emitted trees).
-   - Non-negotiables: contract-first; machines-gate/humans-ratify (no auto-mutation of golden/constitution); GEN-04 (core imports/refs no example or workspace member); new/edited agent·command·skill = edit `harness/` source + round-trip Phase-7 emitter to both runtimes, no model id; derived (`.memory/derived`, `docs/reference`) never hand-edited.
-   - Method: severity-ranked findings report first, then fix in atomic-commit batches; keep `uv run pytest -q` (currently 568 green) and re-emit `git diff --exit-code` clean each batch; check with operator before any contract/golden-touching change.
-   - Heavier option: prefix the prompt with `ultracode` for multi-agent adversarial review. Lighter: `/code-review high` on the current diff, or `/security-review`.
+Done and committed this cycle:
+- Milestone **v2.0** complete + archived (`.planning/milestones/v2.0-*`, phase dirs under `v2.0-phases/`). `README.md` added.
+- **Full-harness audit** executed (`.planning/AUDIT-FINDINGS.md` + `.planning/codebase/` 7 docs). Batch A fixes merged (H1 contract_guard abs-path, M2 empty-cell guard, M3 drift added-required=breaking, CI `[[languages]]` guard, contract-hash tests). Baseline green: 568 pytest, contract-drift + emit-drift clean.
 
-- Or start a fresh feature milestone with `/gsd:new-milestone`.
-- Optional retro: `/gsd:complete-milestone v1.0` was never run (phases 1–8 still under `.planning/phases/`); run it to archive v1.0 too.
-- `git push origin v2.0` from an environment that permits tag pushes (this env blocks tag refs).
+Deferred follow-ups (do NOT block a new milestone — pull in when you want):
+- **Batch B (H2/M1) — golden-comparator gap** captured in `.planning/AUDIT-FINDINGS.md` (§Batch B). M1 (tolerance float-compare wired to nothing) is the clear core-contract gap; H2 (cell canonicalization on compare path) is dispositioned via `docs/adr/0005`. Both shift golden semantics → need operator sign-off + golden re-approval; plan as a phase when ready.
+- `docs/adr/0004` (constitution-hook fail-open posture) recorded — revisit fail-closed after H1.
+- Optional: `/gsd:complete-milestone v1.0` (phases 1–8 never formally archived).
+- `git push origin v2.0` from an env that allows tag pushes (this env blocks tag refs; tag exists locally).
