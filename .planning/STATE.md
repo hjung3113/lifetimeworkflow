@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Long-Horizon
 status: Awaiting next milestone
-stopped_at: Completed 11-04-PLAN.md
-last_updated: "2026-07-14T08:50:19.624Z"
-last_activity: 2026-07-14 — Milestone v2.0 completed and archived
+stopped_at: Full-harness audit — Batch A merged; Batch B (H2/M1) queued as phase
+last_updated: "2026-07-14T10:30:00.000Z"
+last_activity: 2026-07-14 — Full-harness audit executed (Batch A fixes merged, Batch B dispositioned)
 progress:
   total_phases: 3
   completed_phases: 3
@@ -207,7 +207,7 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-07-14
-Stopped at: Milestone v2.0 completed + archived (ROADMAP/REQUIREMENTS/audit → milestones/; v2.0 phase dirs → milestones/v2.0-phases/; tag v2.0 local-only, remote blocks tag push). README.md added. No open milestone.
+Stopped at: **Full-harness audit executed.** Mapped codebase (`.planning/codebase/`, 7 docs) → verified findings (`.planning/AUDIT-FINDINGS.md`) via 3 read-only verify agents. **Batch A merged** (5 atomic commits, 591 pytest green, ruff/emit clean): H1 hooks absolute-path normalization (constitution deny was a no-op in real sessions), M3 classify newly-required=breaking, M2 empty decimal/datetime cell guard, L4 CI matrix guard, L3 contract_hash tests. **Batch B dispositions:** H2+M1 (comparator cell-canonicalization/tolerance) refined to an architecture decision — core comparator is intentionally column-agnostic (per-column kinds live in the instance overlay) — **queued for `/gsd:plan-phase`**, not patched; M4 decided keep fail-open, ADR-0004 **drafted at `.planning/proposed-adr-0004-*.md` pending human promotion** (contract-guard correctly denied the agent write to docs/adr/ — live H1 validation); L2 left as-is. Milestone v2.0 remains complete/archived; this audit was repo-wide maintenance, not a new milestone.
 Resume file: None
 
 ## Operator Next Steps
