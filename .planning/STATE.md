@@ -212,7 +212,15 @@ Resume file: None
 
 ## Operator Next Steps
 
-**Clean milestone boundary — ready to start the next milestone with `/gsd:new-milestone`.**
+**► NEXT SESSION — start the MEM2 memory-model upgrade milestone.**
+- Read `.planning/MEMORY-UPGRADE-PROPOSAL.md` first (design + operator refinements in §7).
+- Then `/gsd:new-milestone` (working title **MEM2 — Process Memory & Provenance Reframe**). Decide the remaining kickoff Qs: Q1 gating strength, Q2 `/checkpoint` vs `/agree`, Q4 inject budget, Q6 staleness threshold (Q3/Q5 already decided: per-guideline files, retire via per-file status).
+- Locked operator direction (§7): progress memory = in-flight + remaining + last-few-done summary only (git is the log; retire STATE.md bloat); guidelines = one small file per guideline (essence only), not a monolith; project decisions already in `docs/adr/` + PROJECT.md Key Decisions (reference, don't duplicate); add **MEM2-07** = a local memory-management web UI with pointer-integrity UX.
+- **Note:** SessionStart memory injection is currently DISABLED (flag `.memory/.inject-disabled`, no-op in `.claude/hooks/memory-inject.sh`) until MEM2 reframes it. Re-enable with `rm .memory/.inject-disabled`. So a fresh session will NOT auto-inject repo-map/contracts-index/banner — run `/orient` manually if you want that context.
+
+---
+
+Clean milestone boundary otherwise — v2.0 complete + archived, full-harness audit done.
 
 Done and committed this cycle:
 - Milestone **v2.0** complete + archived (`.planning/milestones/v2.0-*`, phase dirs under `v2.0-phases/`). `README.md` added.
