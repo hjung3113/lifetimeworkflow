@@ -261,7 +261,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 9. Self-Maintaining Derived Artifacts + Curator | 4/4 | Complete   | 2026-07-13 |
 | 10. Context-Economy Fan-out/Synthesize Orchestration | 3/3 | Complete    | 2026-07-13 |
 | 11. Multi-Repo Workspace | 4/4 | Complete    | 2026-07-14 |
-| 12. Model + ADR + Doc Reframe (v2.1 A) | 0/TBD | Not started | - |
+| 12. Model + ADR + Doc Reframe (v2.1 A) | 0/3 | Planned | - |
 | 13. Injector Reframe + Channel Wiring (v2.1 B) | 0/TBD | Not started | - |
 | 14. Write Path + Anti-Churn Guard (v2.1 C) | 0/TBD | Not started | - |
 | 15. Emit Round-Trip + Gates (v2.1 D) | 0/TBD | Not started | - |
@@ -394,7 +394,17 @@ Plans:
   3. The agreements-entry shape links to ADRs / PROJECT.md Key-Decisions and never restates a project decision (§7c) — the PROCESS channel is working-style/methodology only.
   4. ADR-0006 records the memory-model change (append-only, next number after 0005) and lands via the human-ratified path — an agent Write to `docs/adr/` is correctly denied by contract-guard, and CODEOWNERS ratifies at merge (mirrors the ADR-0004/0005 posture).
 
-**Plans**: TBD
+**Plans**: 3 plans (2 waves)
+
+Plans:
+**Wave 1** *(parallel — zero file overlap)*
+
+- [ ] 12-01-PLAN.md — Scaffold `.memory/agreements/` committed tier (`_TEMPLATE.md` + tier README) + four-plane `.memory/README.md` + data-authority reword of the two shared docs (README STATE section + two-plane-memory SKILL source) (MEM2-01, MEM2-03)
+- [ ] 12-02-PLAN.md — Data-authority reword of the three non-shared surfaces: `.memory/state/activeContext.md`, `.memory/state/progress.md`, `AGENTS.md` (edit outside the HARNESS-MANAGED block) (MEM2-03)
+
+**Wave 2** *(blocked on 12-01, 12-02)*
+
+- [ ] 12-03-PLAN.md — Author ADR-0006 (memory-model change) via the human-ratified constitution path; agent Write correctly denied, human token/CODEOWNERS ratifies (MEM2-06 ADR portion) [autonomous: false]
 
 ### Phase 13: Injector Reframe + Channel Wiring *(v2.1 B)*
 
