@@ -26,6 +26,11 @@ contract, or question. A good unit is answerable by a single read-only pass and 
 claims, not a report. Keep units disjoint so the returns compose without overlap, and name each unit
 so its return can be matched back to it.
 
+A **workspace member repo** (a member declared in `workspace.toml`) is exactly such a unit: when the
+task is to analyze a multi-repo workspace, decompose it into one unit per member repo. Member repos
+are disjoint by construction, so per-repo units compose without overlap and each is answerable by a
+single read-only pass over its own repo.
+
 ## 2. DISPATCH one read-only worker per unit (native task affordance — NO bespoke engine)
 
 Dispatch each unit as a subtask via the runtime's native affordance — `task` (opencode) / `Task`
@@ -34,6 +39,12 @@ Dispatch each unit as a subtask via the runtime's native affordance — `task` (
 return contract is enforced by *this prompt*, not by frontmatter. In each worker's prompt, state the
 unit and require the return to conform to `references/fan-out-return.schema.json` — compact claims
 each cited to file/line, never pasted file bodies.
+
+When the unit is a **workspace member repo**, scope each worker to its own member repo only: a per-repo
+worker is read-only and **never reads a sibling member repo**. This is the guarantee that keeps any
+single context from holding every repo at once — each worker absorbs only its own repo's reading, and
+the conductor synthesizes across repos from the compact returns (never by pulling a second repo into a
+worker or into itself).
 
 ## 3. RECOVER each worker's schema-bounded, citation-bearing return
 
