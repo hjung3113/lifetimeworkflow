@@ -6,12 +6,10 @@
 
 ## In flight
 
-- Phase 2 — Two-Plane Memory + Rules. 02-01 laid the `.memory/` two-plane skeleton +
-  `tools/memory_regen` member. 02-02 fixed the single injection contract
-  (`inject.assemble`) and wired the Claude SessionStart injector as the 4th slot
-  (coexists) + authored-deferred opencode adapter.
+- Nothing in flight. Clean milestone boundary — `milestone: v2.0` complete + archived; no open phase.
 
 ## Next
 
-- 02-03 contracts-index and 02-04 repo-map produce `.memory/derived/*.md` — `assemble()`
-  already reads their heads and degrades gracefully until they exist. 02-05 AGENTS.md rules.
+- Start the next milestone with `/gsd:new-milestone` when ready.
+- Deferred (non-blocking; see `.planning/STATE.md` → Operator Next Steps + `.planning/AUDIT-FINDINGS.md`):
+  golden-comparator Batch B (H2/M1), optional `/gsd:complete-milestone v1.0`, `git push origin v2.0`.
