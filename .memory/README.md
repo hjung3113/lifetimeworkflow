@@ -1,18 +1,19 @@
 # `.memory/` — Two-Plane Context Memory (committed index)
 
-This directory is the harness's **context-memory** root. It is split into the two
-non-constitution planes of the project's *three-plane* memory model. This README is
+This directory is the harness's **context-memory** root. It is split across the
+non-constitution planes of the project's *four-plane* memory model. This README is
 **committed**; it declares the boundary so agents and humans read the same rules
 before consuming any context. It is not itself a derived artifact — edit it by hand
 only to refine the plane declaration.
 
-## Three planes at a glance
+## Four planes at a glance
 
 | Plane | Location | Ownership | Tracked in git? | Regenerated? |
 |-------|----------|-----------|-----------------|--------------|
 | **CONSTITUTION** | `contracts/`, `docs/adr/`, `docs/glossary.md`, `golden/` | Human-owned, CODEOWNERS-gated | ✅ committed | ❌ never (hand-authored) |
 | **DERIVED** | `.memory/derived/` | Machine-owned (`tools/memory_regen`) | ❌ **gitignored** | ✅ every session |
 | **STATE** | `.memory/state/` | Agent-authored volatile hints | ✅ committed | ❌ (small, survives sessions) |
+| **PROCESS** | `.memory/agreements/` | Human-authored via feedback (curated) | ✅ committed | ❌ never |
 
 ## (1) CONSTITUTION plane — human-owned, immutable-to-agents (MEM-01)
 
@@ -42,12 +43,19 @@ tree-sitter + PageRank, contracts-index via the Phase-1 hash/drift modules). It 
 
 ## (3) STATE plane — `.memory/state/` — committed volatile state (D-03)
 
-Small, agent-authored **volatile hints** that must survive the ephemeral container across sessions:
+Small, agent-authored volatile context that must survive the ephemeral container across sessions:
 
 - `state/activeContext.md` — what is in flight right now.
 - `state/progress.md` — a terse running progress log.
 
-State is **committed** (so it survives), but it is **provisional**: the SessionStart injector
-injects only a *pointer* to `activeContext`, never its body, under a banner declaring that
-`contracts/` and `docs/adr/` always override `.memory/state/` on conflict. Never store secrets,
-tokens, credentials, or PII here. Durable decisions belong in append-only ADRs, not in state.
+State is **committed** (so it survives). The SessionStart injector injects only a *pointer* to
+`activeContext`, never its body. On a **data conflict**, `contracts/` and `docs/adr/` are
+authoritative over `.memory/state/`: this identifies which artifact wins a contradiction, not a
+reason to distrust grounded work. Never store secrets, tokens, credentials, or PII here. Durable
+decisions belong in append-only ADRs, not in state.
+
+## (4) PROCESS plane — `.memory/agreements/`
+
+Committed, human-authored working agreements captured from feedback. They are curated and never
+regenerated; see [`.memory/agreements/README.md`](agreements/README.md) for the entry shape and the
+link-never-restate rule.
