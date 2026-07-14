@@ -187,6 +187,26 @@ def test_member_non_breaking_change_is_classified_not_unknown(tmp_path: Path) ->
     )
 
 
+def test_member_missing_baseline_is_reported_not_crash(tmp_path: Path) -> None:
+    """Regression (WR-03): a member declared before its baseline manifest exists FAILS LOUD with a
+    ``missing-baseline`` reason — never an unhandled FileNotFoundError.
+    """
+    _mid, src_root = _first_member_root()
+    member_root = tmp_path / "no-baseline-member"
+    shutil.copytree(src_root, member_root)
+    # Remove the member's committed baseline to simulate a freshly-onboarded member.
+    (member_root / "contracts" / ".hashes" / "manifest.json").unlink()
+
+    ws = tmp_path / "workspace.toml"
+    _write_workspace_toml(ws, [{"id": "fresh", "root": str(member_root)}], edges=[])
+
+    result = workspace_drift(ws)
+    assert not result["ok"], "a member with no baseline must fail the workspace gate"
+    assert not result["members"]["fresh"]["ok"]
+    kinds = {kind for _rel, kind, _cls in result["members"]["fresh"]["drifted"]}
+    assert "missing-baseline" in kinds, result["members"]["fresh"]["drifted"]
+
+
 def test_unresolved_edge_contract_is_flagged(tmp_path: Path) -> None:
     """An edge whose contract is not tracked in its producer member → ok=False (fail loud)."""
     _mid, src_root = _first_member_root()

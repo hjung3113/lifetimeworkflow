@@ -206,9 +206,25 @@ def workspace_drift(ws_path: str | Path | None = None) -> dict:
     member_results: dict[str, dict] = {}
     for mid, mroot in by_id.items():
         cdir = mroot / "contracts"
+        baseline = cdir / ".hashes" / "manifest.json"
+        if not baseline.exists():
+            # A member declared before its own baseline is written (a plausible onboarding step for
+            # a new member repo) must FAIL LOUD with an actionable reason — never crash with a raw
+            # FileNotFoundError from load_baseline (WR-03). Mirrors the root CLI's rebaseline hint.
+            member_results[mid] = {
+                "ok": False,
+                "drifted": [
+                    (
+                        str(baseline),
+                        "missing-baseline",
+                        "unknown",
+                    )
+                ],
+            }
+            continue
         member_results[mid] = run_gate(
             contracts_dir=cdir,
-            baseline_path=cdir / ".hashes" / "manifest.json",
+            baseline_path=baseline,
         )
 
     edge_list = edges(cfg)
