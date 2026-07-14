@@ -34,6 +34,12 @@ BOM_CONTENT = "﻿{}"
 CRLF_CONTENT = "a\r\nb\r\n"
 
 
+@pytest.fixture(autouse=True)
+def _no_ambient_dev_bypass(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Strip HARNESS_DEV_BYPASS so a dev session's own opt-out never pollutes the deny assertions."""
+    monkeypatch.delenv("HARNESS_DEV_BYPASS", raising=False)
+
+
 # --- decide(): constitution plane + approval (access control) -----------------------------------
 
 
@@ -190,3 +196,72 @@ def test_main_approved_constitution_bom_denies(monkeypatch: pytest.MonkeyPatch) 
 def test_main_allowed_path_bom_silent(monkeypatch: pytest.MonkeyPatch) -> None:
     out = _run_main(monkeypatch, _write("libs/python/foo.py", BOM_CONTENT), token=None)
     assert out.strip() == ""
+
+
+# --- main(): HARNESS_DEV_BYPASS local-dev opt-out (secure default, distinct from the token) ------
+
+
+def _run_main_io(
+    monkeypatch: pytest.MonkeyPatch, payload: dict, token: str | None, dev: str | None
+) -> tuple[str, str]:
+    """Drive main() toggling BOTH GOLDEN_APPROVE_HUMAN and HARNESS_DEV_BYPASS; return (stdout, stderr)."""
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(payload)))
+    if token is None:
+        monkeypatch.delenv("GOLDEN_APPROVE_HUMAN", raising=False)
+    else:
+        monkeypatch.setenv("GOLDEN_APPROVE_HUMAN", token)
+    if dev is None:
+        monkeypatch.delenv("HARNESS_DEV_BYPASS", raising=False)
+    else:
+        monkeypatch.setenv("HARNESS_DEV_BYPASS", dev)
+    import sys as _sys
+
+    out, err = io.StringIO(), io.StringIO()
+    monkeypatch.setattr(_sys, "stdout", out)
+    monkeypatch.setattr(_sys, "stderr", err)
+    rc = main()
+    assert rc == 0
+    return out.getvalue(), err.getvalue()
+
+
+def test_main_dev_bypass_allows_constitution_with_note(monkeypatch: pytest.MonkeyPatch) -> None:
+    # SC1: dev flag waives the access-control deny; a distinct on-plane dev-note lands on stderr.
+    out, err = _run_main_io(monkeypatch, _write("docs/adr/0007-x.md", "# x\n"), token=None, dev="1")
+    assert out.strip() == ""  # no deny
+    assert "HARNESS_DEV_BYPASS" in err
+    assert "CODEOWNERS" in err
+    assert "ratified" not in err.lower()  # never mislabeled human-ratified
+
+
+def test_main_dev_bypass_bom_still_denies(monkeypatch: pytest.MonkeyPatch) -> None:
+    # SC2: byte-hygiene is NOT waived by the dev flag.
+    out, _err = _run_main_io(
+        monkeypatch, _write("contracts/x.schema.json", BOM_CONTENT), token=None, dev="1"
+    )
+    assert json.loads(out)["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+def test_main_dev_bypass_unset_still_denies(monkeypatch: pytest.MonkeyPatch) -> None:
+    # SC4 regression: default (flag unset, no token) still denies.
+    out, _err = _run_main_io(
+        monkeypatch, _write("contracts/x.schema.json", "{}"), token=None, dev=None
+    )
+    assert json.loads(out)["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+@pytest.mark.parametrize("blank", ["", "   "])
+def test_main_dev_bypass_blank_still_denies(monkeypatch: pytest.MonkeyPatch, blank: str) -> None:
+    # SC4 blank-rule: empty/whitespace flag does NOT bypass (mirrors the token rule).
+    out, _err = _run_main_io(
+        monkeypatch, _write("docs/adr/0007-x.md", "# x\n"), token=None, dev=blank
+    )
+    assert json.loads(out)["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+def test_main_dev_bypass_source_path_no_note(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The dev-note is on-plane only: a source-path write under the dev flag prints nothing.
+    out, err = _run_main_io(
+        monkeypatch, _write("libs/python/foo.py", "x = 1\n"), token=None, dev="1"
+    )
+    assert out.strip() == ""
+    assert err.strip() == ""
