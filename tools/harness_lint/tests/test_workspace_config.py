@@ -88,6 +88,11 @@ def test_edge_contracts_tracked_in_producer() -> None:
         )
     for edge in es:
         producer_id, _stage = split_endpoint(edge["from"])
+        assert producer_id in by_id, (
+            f"edge {edge!r}: `from` endpoint {edge['from']!r} resolves to producer "
+            f"{producer_id!r}, which is not a declared [[members]].id "
+            f"(declared: {sorted(by_id)})"
+        )
         producer_root = _REPO_ROOT / by_id[producer_id]["root"]
         schemas = {
             p.name.removesuffix(".schema.json")
