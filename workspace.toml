@@ -1,0 +1,39 @@
+# WORKSPACE manifest — the multi-repo SINGLE SOURCE OF TRUTH (MREPO-01). Pure DATA, no logic.
+#
+# Raises the GEN-03 config-slot pattern (harness/project.toml) ONE level: a workspace sits above a
+# single project and declares the member repos that form it plus the contracts that cross their
+# boundaries. No enforcement logic lives here (mirrors harness/project.toml + permission-matrix.json
+# data-only posture). The member roots below are the *generic default* 2-member demo fixture; a
+# downstream workspace overrides [workspace] id + the [[members]] tables from its own copy.
+#
+# Consumers:
+#   * tools/workspace_config/loader.py — stdlib `tomllib` reader; exposes members()/edges()
+#     passthrough + the split_endpoint() `repo:stage` helper. NO enforcement.
+#   * tools/harness_lint/tests/test_workspace_config.py — the MREPO-01 CONSISTENCY gate: every
+#     edge's endpoints name a declared member and every edge contract resolves in its PRODUCER
+#     member's tree; no member dangles. A silent divergence fails the suite (config = SSOT, no
+#     codegen — the GEN-03 discipline, one level up).
+
+[workspace]
+# "" = the generic default workspace rooted at this repo (mirror harness/project.toml [instance]
+# root = ""). A downstream workspace overrides this id from its own copy of the manifest.
+id = ""
+
+[[members]]
+id = "member-a"
+root = "tests/fixtures/workspace/member-a"     # repo-relative; kept INSIDE REPO_ROOT (Pitfall 1)
+# url = "https://…"                            # deferred seam: remote member roots are a future
+#                                              # milestone (model b is manifest-first, local-only).
+
+[[members]]
+id = "member-b"
+root = "tests/fixtures/workspace/member-b"
+
+# Cross-repo edges: producer member → contract id → consumer member. Endpoints are `repo:stage` so
+# ONE table serves both MREPO-03 (repo half → member-root resolution for drift/golden) and MREPO-04
+# (stage half → pipeline topology). A bare `stage` (no colon) stays a single-repo edge
+# (backward-compatible with the Phase-8 core/instance topology).
+[pipeline]
+edges = [
+  { from = "member-a:emit", to = "member-b:ingest", contract = "greeting" },
+]

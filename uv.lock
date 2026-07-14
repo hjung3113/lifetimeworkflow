@@ -18,6 +18,7 @@ members = [
     "logparser-normalize",
     "logparser-polyglot-lint",
     "logparser-strangler-guard",
+    "logparser-workspace-config",
 ]
 
 [[package]]
@@ -319,6 +320,11 @@ source = { virtual = "tools/polyglot_lint" }
 name = "logparser-strangler-guard"
 version = "0.0.0"
 source = { virtual = "tools/strangler_guard" }
+
+[[package]]
+name = "logparser-workspace-config"
+version = "0.0.0"
+source = { virtual = "tools/workspace_config" }
 
 [[package]]
 name = "networkx"
