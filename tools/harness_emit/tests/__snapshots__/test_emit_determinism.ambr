@@ -246,8 +246,11 @@
      the request would pull in, and decide *where the reading happens*. A large surface that would
      balloon one context is fanned out via the `fan-out-synthesize` skill (`/fan-out-synthesize`) so
      read-only workers absorb the reading and you synthesize compact returns; a small surface is worked
-     inline. Making this an explicit, named step keeps the delegate-vs-inline decision observable and
-     repeatable.
+     inline. A **workspace member repo** (declared in `workspace.toml`) is a natural fan-out unit: when
+     the request spans a multi-repo workspace, fan out one read-only worker per member repo so each
+     worker absorbs its own repo's reading and you synthesize at the workspace level — no single context
+     holds every repo. Making this an explicit, named step keeps the delegate-vs-inline decision
+     observable and repeatable.
   4. **Trace the topology** — read `[[components]]`/`[pipeline]` via `tools.harness_config`
      (`components()` / `pipeline()`); identify which stage/component the request touches and its
      upstream/downstream edge contracts, so you route to the owning component engineer (or the
@@ -281,6 +284,7 @@
   | "Is this allowed / why is it blocked?" | (self) | `gate-model` skill |
   | "Should I delegate this or work inline?" | (self) | `context-budget` skill |
   | Large surface to cover / would balloon one context | (self) fan out | `fan-out-synthesize` skill, `/fan-out-synthesize` |
+  | Analyze a multi-repo workspace / cover several member repos | (self) fan out, one read-only worker per member repo | `fan-out-synthesize` skill, `/fan-out-synthesize` |
   | Locate code / map unfamiliar area | **explorer** | (read-only search) |
   | Pre-handoff verification | scoped engineer | `/verify-work` |
   | Persist session state | (self) | `/checkpoint` |
@@ -329,8 +333,11 @@
      the request would pull in, and decide *where the reading happens*. A large surface that would
      balloon one context is fanned out via the `fan-out-synthesize` skill (`/fan-out-synthesize`) so
      read-only workers absorb the reading and you synthesize compact returns; a small surface is worked
-     inline. Making this an explicit, named step keeps the delegate-vs-inline decision observable and
-     repeatable.
+     inline. A **workspace member repo** (declared in `workspace.toml`) is a natural fan-out unit: when
+     the request spans a multi-repo workspace, fan out one read-only worker per member repo so each
+     worker absorbs its own repo's reading and you synthesize at the workspace level — no single context
+     holds every repo. Making this an explicit, named step keeps the delegate-vs-inline decision
+     observable and repeatable.
   4. **Trace the topology** — read `[[components]]`/`[pipeline]` via `tools.harness_config`
      (`components()` / `pipeline()`); identify which stage/component the request touches and its
      upstream/downstream edge contracts, so you route to the owning component engineer (or the
@@ -364,6 +371,7 @@
   | "Is this allowed / why is it blocked?" | (self) | `gate-model` skill |
   | "Should I delegate this or work inline?" | (self) | `context-budget` skill |
   | Large surface to cover / would balloon one context | (self) fan out | `fan-out-synthesize` skill, `/fan-out-synthesize` |
+  | Analyze a multi-repo workspace / cover several member repos | (self) fan out, one read-only worker per member repo | `fan-out-synthesize` skill, `/fan-out-synthesize` |
   | Locate code / map unfamiliar area | **explorer** | (read-only search) |
   | Pre-handoff verification | scoped engineer | `/verify-work` |
   | Persist session state | (self) | `/checkpoint` |
@@ -2296,6 +2304,11 @@
   claims, not a report. Keep units disjoint so the returns compose without overlap, and name each unit
   so its return can be matched back to it.
   
+  A **workspace member repo** (a member declared in `workspace.toml`) is exactly such a unit: when the
+  task is to analyze a multi-repo workspace, decompose it into one unit per member repo. Member repos
+  are disjoint by construction, so per-repo units compose without overlap and each is answerable by a
+  single read-only pass over its own repo.
+  
   ## 2. DISPATCH one read-only worker per unit (native task affordance — NO bespoke engine)
   
   Dispatch each unit as a subtask via the runtime's native affordance — `task` (opencode) / `Task`
@@ -2304,6 +2317,12 @@
   return contract is enforced by *this prompt*, not by frontmatter. In each worker's prompt, state the
   unit and require the return to conform to `references/fan-out-return.schema.json` — compact claims
   each cited to file/line, never pasted file bodies.
+  
+  When the unit is a **workspace member repo**, scope each worker to its own member repo only: a per-repo
+  worker is read-only and **never reads a sibling member repo**. This is the guarantee that keeps any
+  single context from holding every repo at once — each worker absorbs only its own repo's reading, and
+  the conductor synthesizes across repos from the compact returns (never by pulling a second repo into a
+  worker or into itself).
   
   ## 3. RECOVER each worker's schema-bounded, citation-bearing return
   

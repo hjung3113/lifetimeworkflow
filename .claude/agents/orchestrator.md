@@ -39,8 +39,11 @@ non-trivial request:
    the request would pull in, and decide *where the reading happens*. A large surface that would
    balloon one context is fanned out via the `fan-out-synthesize` skill (`/fan-out-synthesize`) so
    read-only workers absorb the reading and you synthesize compact returns; a small surface is worked
-   inline. Making this an explicit, named step keeps the delegate-vs-inline decision observable and
-   repeatable.
+   inline. A **workspace member repo** (declared in `workspace.toml`) is a natural fan-out unit: when
+   the request spans a multi-repo workspace, fan out one read-only worker per member repo so each
+   worker absorbs its own repo's reading and you synthesize at the workspace level — no single context
+   holds every repo. Making this an explicit, named step keeps the delegate-vs-inline decision
+   observable and repeatable.
 4. **Trace the topology** — read `[[components]]`/`[pipeline]` via `tools.harness_config`
    (`components()` / `pipeline()`); identify which stage/component the request touches and its
    upstream/downstream edge contracts, so you route to the owning component engineer (or the
@@ -74,6 +77,7 @@ pipeline stage/component, resolve the owner from the topology first, then fall b
 | "Is this allowed / why is it blocked?" | (self) | `gate-model` skill |
 | "Should I delegate this or work inline?" | (self) | `context-budget` skill |
 | Large surface to cover / would balloon one context | (self) fan out | `fan-out-synthesize` skill, `/fan-out-synthesize` |
+| Analyze a multi-repo workspace / cover several member repos | (self) fan out, one read-only worker per member repo | `fan-out-synthesize` skill, `/fan-out-synthesize` |
 | Locate code / map unfamiliar area | **explorer** | (read-only search) |
 | Pre-handoff verification | scoped engineer | `/verify-work` |
 | Persist session state | (self) | `/checkpoint` |
