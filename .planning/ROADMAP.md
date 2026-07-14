@@ -252,7 +252,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 8. Pipeline-Topology Conductor + Per-Component Agents | 6/6 | Complete   | 2026-07-11 |
 | 9. Self-Maintaining Derived Artifacts + Curator | 4/4 | Complete   | 2026-07-13 |
 | 10. Context-Economy Fan-out/Synthesize Orchestration | 3/3 | Complete    | 2026-07-13 |
-| 11. Multi-Repo Workspace | 0/? | Not started | - |
+| 11. Multi-Repo Workspace | 0/4 | Not started | - |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
 
@@ -343,6 +343,20 @@ Plans:
   3. Cross-repo contract-drift/golden gates extend the Phase-6 CI + `contract_drift` machinery across the workspace, failing on a drift or golden break whose edge spans a repo boundary — machines gate, humans ratify (constitution plane stays human-owned).
   4. The Phase-8 pipeline topology generalizes so a declared edge can cross a repo boundary, and a guard proves core→workspace-member single-direction dependency (GEN-04 generalized — core never imports/path-references a workspace member); new agents/commands round-trip the Phase-7 emitter to both runtimes.
 
-**Plans**: TBD
-**KEY DECISION (plan-time)**: workspace model a/b/c — lean **b: workspace manifest** (raise the project.toml slot pattern one level). Leave unresolved here — resolve at plan time. (See PROJECT.md open decision γ.)
+**Plans**: 4 plans (3 waves)
+**KEY DECISION (RESOLVED at plan time):** workspace model **b — workspace manifest as pure DATA** (top-level `workspace.toml`, raising the `harness/project.toml` GEN-03 slot pattern one level; declares `[[members]]` + `[pipeline].edges` with `repo:stage` endpoints so one table serves both cross-repo drift/golden member-resolution and repo-crossing topology). No enforcement in the manifest; a `tools/workspace_config` loader passthrough + a `test_workspace_config.py` consistency gate enforce well-formedness. Fan-out reuse is prose-wired (no new skill/command); the 2-member demo fixture lives INSIDE `REPO_ROOT` (`tests/fixtures/workspace/`) so `golden_runner._confine` passes unchanged.
+
+Plans:
+**Wave 1**
+
+- [ ] 11-01-PLAN.md — MREPO-01: `workspace.toml` DATA slot + `tools/workspace_config` loader/gate + minimal 2-member fixture (fully baselined, in-repo)
+
+**Wave 2** *(blocked on 11-01; parallel — no file overlap)*
+
+- [ ] 11-02-PLAN.md — MREPO-04: `repo:stage` edge generalization + generalized core→workspace-member GEN-04 guard twin
+- [ ] 11-03-PLAN.md — MREPO-03: cross-repo contract-drift + workspace-aware golden (`_confine` widened) + separate `workspace` CI job in `gate.needs`
+
+**Wave 3** *(blocked on 11-01/02/03 — closeout)*
+
+- [ ] 11-04-PLAN.md — MREPO-02: prose-wire member-repo fan-out reuse into orchestrator + fan-out-synthesize skill; emitter round-trip to both runtimes + full phase gate
 

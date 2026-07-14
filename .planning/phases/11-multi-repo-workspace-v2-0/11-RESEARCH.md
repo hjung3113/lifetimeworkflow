@@ -470,7 +470,7 @@ def split_endpoint(endpoint: str) -> tuple[str | None, str]:
 
 ## Open Questions
 
-1. **One edge table or two?** Recommend a single `[pipeline].edges` table with `repo:stage`
+1. **One edge table or two? — RESOLVED (planning): single `repo:stage` edge table chosen.** Recommend a single `[pipeline].edges` table with `repo:stage`
    endpoints (repo part → drift/golden member resolution; stage part → topology). CONTEXT phrases
    MREPO-01 as "producer repo → contract id → consumer repo" and MREPO-04 as "repo-qualified stage."
    - What we know: Both are satisfiable; a unified `{from:"repo:stage", to:"repo:stage", contract}`
@@ -478,16 +478,25 @@ def split_endpoint(endpoint: str) -> tuple[str | None, str]:
    - What's unclear: Whether the planner wants an explicit repo-level dependency view too.
    - Recommendation: Unify on `repo:stage`; the consistency gate derives the repo-level
      producer/consumer from the endpoints. Field naming is planner discretion (A1).
+   - **RESOLVED (planning):** Adopted the single `[pipeline].edges` `repo:stage` table — one table
+     serves both MREPO-03 (repo half → member resolution) and MREPO-04 (stage half → topology); the
+     consistency gate derives the repo-level producer/consumer from the endpoints. See 11-01 Task 1.
 
-2. **Does the general (non-demo) case need remote/url member roots?** CONTEXT defers remote-repo
+2. **Does the general (non-demo) case need remote/url member roots? — RESOLVED (planning): local-only roots + commented `# url =` seam.** CONTEXT defers remote-repo
    fetching (out of scope for model b). Recommend: `root` is a repo-relative (or absolute local) path
    only; leave a commented `# url = ...` seam for the future milestone, but the gate/drift/golden
    resolve local paths only this phase.
+   - **RESOLVED (planning):** Member `root` is a repo-relative local path this phase; a commented
+     `# url = ...` seam is added to `workspace.toml` for the deferred remote-repo milestone. See
+     11-01 Task 1 + CONTEXT Deferred Ideas.
 
-3. **Should `_confine` widening land now or only for the demo?** Recommend widening `_confine` to
+3. **Should `_confine` widening land now or only for the demo? — RESOLVED (planning): widen now, threaded param.** Recommend widening `_confine` to
    accept declared member roots as a threaded parameter now (small, testable, negative-control
    guarded) so the mechanism is real even though the demo members sit inside the repo — matches
    "ship mechanism + minimal fixture."
+   - **RESOLVED (planning):** `_confine` is widened now via an additive threaded `allowed_roots`
+     parameter with a negative-control test — the escape guard is extended, never removed. See
+     11-03 Task 2.
 
 ## Environment Availability
 
