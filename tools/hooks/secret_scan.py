@@ -62,7 +62,7 @@ def decide(file_path: str, content: str) -> dict | None:
     -plane paths with no secret content return ``None`` — that plane is not this gate's job.
     """
     # Normalize Claude's absolute file_path to repo-relative so both the *.env path-deny and the
-    # tests/golden/fixtures allow-list match on a real absolute write (not just relative test input).
+    # tests/golden/fixtures allow-list match a real absolute write (not just relative test input).
     relative_path = repo_relative(file_path)
     if relative_path and resolve_path(SECRET_PATH_GLOBS, relative_path) == "deny":
         return emit_deny(f"secret_scan: refusing to touch secret file path '{file_path}' (*.env)")

@@ -16,7 +16,6 @@ if str(_LIBS_PYTHON) not in sys.path:
 
 from normalize.core import NULL_SENTINEL, normalize_cell  # noqa: E402
 
-
 # --- R6: null vs empty vs value ------------------------------------------------------------------
 
 
