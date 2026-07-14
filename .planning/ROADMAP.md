@@ -252,7 +252,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 8. Pipeline-Topology Conductor + Per-Component Agents | 6/6 | Complete   | 2026-07-11 |
 | 9. Self-Maintaining Derived Artifacts + Curator | 4/4 | Complete   | 2026-07-13 |
 | 10. Context-Economy Fan-out/Synthesize Orchestration | 3/3 | Complete    | 2026-07-13 |
-| 11. Multi-Repo Workspace | 0/4 | Not started | - |
+| 11. Multi-Repo Workspace | 1/4 | In Progress|  |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
 
@@ -349,7 +349,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 11-01-PLAN.md — MREPO-01: `workspace.toml` DATA slot + `tools/workspace_config` loader/gate + minimal 2-member fixture (fully baselined, in-repo)
+- [x] 11-01-PLAN.md — MREPO-01: `workspace.toml` DATA slot + `tools/workspace_config` loader/gate + minimal 2-member fixture (fully baselined, in-repo)
 
 **Wave 2** *(blocked on 11-01; parallel — no file overlap)*
 

@@ -149,7 +149,7 @@
 
 ### MREPO — Multi-Repo Workspace (Phase 11 / γ)
 
-- [ ] **MREPO-01**: 워크스페이스 모델 + 매니페스트 — `harness/project.toml` 슬롯 패턴을 한 단계 올려 멤버 레포 + 크로스-레포 edge(어느 레포가 어느 계약을 생산/소비)를 선언. (플랜-타임 KEY DECISION: 모델 a/b/c, lean **b: workspace manifest**)
+- [x] **MREPO-01**: 워크스페이스 모델 + 매니페스트 — `harness/project.toml` 슬롯 패턴을 한 단계 올려 멤버 레포 + 크로스-레포 edge(어느 레포가 어느 계약을 생산/소비)를 선언. (플랜-타임 KEY DECISION: 모델 a/b/c, lean **b: workspace manifest**)
 - [ ] **MREPO-02**: repo-scoped 서브에이전트 + β 팬아웃/합성을 레포 전반에 적용(per-repo 분석 → 워크스페이스-레벨 합성) — 단일 컨텍스트가 모든 레포를 담지 않는다.
 - [ ] **MREPO-03**: 크로스-레포 contract drift/golden 게이트 — Phase-6 CI + `contract_drift`를 워크스페이스 전반으로 확장.
 - [ ] **MREPO-04**: 파이프라인 토폴로지(Phase 8)를 일반화해 edge가 레포 경계를 넘을 수 있게 한다.
@@ -247,7 +247,7 @@
 | ECON-01 | Phase 10 | Complete |
 | ECON-02 | Phase 10 | Complete |
 | ECON-03 | Phase 10 | Complete |
-| MREPO-01 | Phase 11 | Pending |
+| MREPO-01 | Phase 11 | Complete |
 | MREPO-02 | Phase 11 | Pending |
 | MREPO-03 | Phase 11 | Pending |
 | MREPO-04 | Phase 11 | Pending |

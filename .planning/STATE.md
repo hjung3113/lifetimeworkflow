@@ -4,14 +4,14 @@ milestone: v2.0
 milestone_name: Long-Horizon
 status: executing
 stopped_at: Completed 10-03-PLAN.md
-last_updated: "2026-07-14T00:26:01.586Z"
-last_activity: 2026-07-14 -- Phase 11 planning complete
+last_updated: "2026-07-14T00:33:58.561Z"
+last_activity: 2026-07-14
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 11
-  completed_plans: 7
-  percent: 64
+  completed_plans: 8
+  percent: 67
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 11 — multi repo workspace *(v2.0 γ)*
+**Current focus:** Phase 11 — multi-repo-workspace-v2-0
 
 ## Current Position
 
-Phase: 11
-Plan: Not started
+Phase: 11 (multi-repo-workspace-v2-0) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-07-14 -- Phase 11 planning complete
+Last activity: 2026-07-14
 
 ## Performance Metrics
 
@@ -99,6 +99,7 @@ Last activity: 2026-07-14 -- Phase 11 planning complete
 | Phase 10 P10-01 | 6min | 2 tasks | 5 files |
 | Phase 10 P10-02 | 9min | 2 tasks tasks | 6 files files |
 | Phase 10 P10-03 | 6min | 2 tasks | 16 files |
+| Phase 11 P01 | 12min | 3 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -169,6 +170,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [10-01] ECON-01/02 fan-out-synthesize substrate: skill (decompose->dispatch N read-only explorer subtasks via native task affordance, NO bespoke engine->recover schema-bounded citation-bearing summaries->orchestrator synthesizes) + self-contained Draft-2020-12 return schema in skill references/ (NOT contracts/, no $ref, additionalProperties:false) + thin /fan-out-synthesize command (agent:orchestrator, subtask:true). EXPECTED_PERSONAS stays 5; EXPECTED_SKILLS 9->10. Source-only; emit round-trip is 10-03.
 - [Phase 10]: [10-02] ECON-03 delegate-vs-inline surface: dedicated context-budget skill (heuristic-map shape, invariant 'a single context must not balloon' + decision-forcing table + Related->fan-out-synthesize/orient) wired at BOTH orchestrator (2 routing rows + named 'Budget the context' intake step) AND /orient read-order step 4, surfacing fan-out-synthesize too; EXPECTED_SKILLS 10->11, EXPECTED_PERSONAS stays 5 (D-05/D-10/D-11). test_context_budget_wiring.py mirrors topology gate. Fixed pre-existing GEN-04 self-leak in 10-01 test_fan_out_return_contract.py. Source-only; emit is 10-03.
 - [Phase ?]: [10-03] D-12 emit round-trip: re-ran the Phase-7 emitter (glob discovery, zero emitter code change) projecting fan-out-synthesize + context-budget skills, the fan-out-return.schema.json reference (byte-identical), and /fan-out-synthesize command to BOTH runtimes; regenerated opencode.json + emit-manifest.json + AGENTS.md managed block. Updated emit-fixture twins (command count 18->19, projected-tree .ambr snapshot). Phase gate GREEN: 537 passed, GEN-04 green, emit-drift clean, 11 skills / 5 personas, no model id. Phase 10 COMPLETE (3/3).
+- [Phase ?]: [11-01] MREPO-01: raised GEN-03 slot pattern one level into pure-DATA workspace.toml (2 members + one repo:stage edge). Single [pipeline].edges repo:stage table serves both MREPO-03 (member resolution) and MREPO-04 (topology). tools/workspace_config mirrors harness_config (tomllib passthrough + split_endpoint; loader hardcodes no member path -> GEN-04-clean). Gate: member unique/exists, edge endpoints declared, edge contract tracked under PRODUCER via rglob, visible SKIP on zero edges. 2-member fixture fully baselined in-repo (per-member self-relative manifests not merged; identity golden case R8-only, no .NET). Member root local-only; # url = deferred. 547 passed.
 
 ### Pending Todos
 
@@ -195,6 +197,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-13T17:15:51.011Z
+Last session: 2026-07-14T00:33:29.516Z
 Stopped at: Completed 10-03-PLAN.md
 Resume file: None
