@@ -95,9 +95,14 @@ The two HIGH findings share one root: **the harness's central promises — contr
   cell canonicalization definitively the producer's job with the core only neutralizing R1/R2/R8?
   M1 (tolerance) is the one clear *core-contract* promise gap (`format-conventions.schema.json`
   declares `mode="tolerance"`; the spec says "applies at compare time in the golden runner") but it
-  rides the same column-kind plumbing. **Recommendation: `/gsd:plan-phase`** — decide core-vs-
-  instance ownership, add the column-kind source if chosen, then re-baseline goldens under
-  `/golden-approve`. Not prototyped, to avoid front-running the design + golden churn.
+  rides the same column-kind plumbing. **Decided (2026-07-14): recorded as ADR-0005** —
+  `docs/adr/0005-golden-comparator-structural-only.md`. The comparator is **structural-only
+  (R1/R2/R8) for now** by ratified decision; the column-aware extension (R3/R5 + tolerance at compare
+  time) is the **committed direction ("A")**, deferred to a `/gsd:plan-phase` when a real .NET
+  converter is wired (BOOT-01 unblocked) and can exercise it + re-baseline goldens under
+  `/golden-approve`. Latent-not-ignored: today the shipped `identity` converter is byte-identical and
+  no live .NET converter exists, so no case emits a non-canonical cell. Not prototyped, to avoid
+  shipping unexercised code + speculative golden churn.
 - **M4 → decided: KEEP fail-open, recorded as ADR-0004 (draft staged).** Rationale: flipping the
   constitution guard to fail-closed is not *selective* (a malformed payload has no `file_path`), so
   it would deny **every** `Write|Edit` on any malformed stdin — wedging legitimate editing to guard

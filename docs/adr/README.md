@@ -31,5 +31,6 @@ be silently rewritten (DOCS-02).
 | [0002](0002-general-template-de-specialization.md) | General Template De-specialization | accepted |
 | [0003](0003-pipeline-topology-slot-and-instance-overlay.md) | Pipeline-Topology Slot and Instance Overlay | accepted |
 | [0004](0004-constitution-hook-fail-open-posture.md) | Constitution-Plane Hook Fail-Open Posture on Malformed Stdin | accepted |
+| [0005](0005-golden-comparator-structural-only.md) | Golden Comparator Is Structural-Only Pending Column-Aware Canonicalization | accepted |
 
 *Add a row per ADR. Do not remove rows — mark superseded records in the Status column.*
