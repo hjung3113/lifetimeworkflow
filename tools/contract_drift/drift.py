@@ -113,16 +113,22 @@ def classify(old: dict, new: dict) -> str:
 # ---- gate ----------------------------------------------------------------------------------
 
 
-def _git_show(rel_path: str) -> dict | None:
+def _git_show(rel_path: str, cwd: Path = REPO_ROOT) -> dict | None:
     """Return the HEAD-committed schema document for ``rel_path``, or None if unavailable.
 
-    Used to fetch the *old* content for classification when the drift is on a copied tmp tree.
-    ``shell=False`` (argv list) — no shell interpolation.
+    Used to fetch the *old* content for classification. ``rel_path`` is the manifest key —
+    relative to the ``contracts_dir``'s parent (the *member root* for a workspace member, the
+    top-level repo root for the root tree). It is resolved against ``cwd`` by prefixing ``./``
+    so ``git`` treats it as **working-directory-relative** (a bare ``HEAD:<path>`` is always
+    resolved against the repo root, which is the wrong tree for a member — CR-01). Callers thread
+    the member root as ``cwd`` so ``git show`` reads that member's committed schema; the default
+    ``REPO_ROOT`` preserves the top-level tree behavior exactly. ``shell=False`` (argv list) — no
+    shell interpolation.
     """
     try:
         proc = subprocess.run(
-            ["git", "show", f"HEAD:{rel_path}"],
-            cwd=str(REPO_ROOT),
+            ["git", "show", f"HEAD:./{rel_path}"],
+            cwd=str(cwd),
             capture_output=True,
             check=True,
             shell=False,
@@ -148,7 +154,10 @@ def run_gate(
 
     drifted: list[tuple[str, str, str]] = []
     for rel in delta["changed"]:
-        old = _git_show(rel)
+        # ``base`` is the ``contracts_dir`` parent — the member root for a workspace member — so the
+        # baseline ``git show`` resolves ``rel`` (a member-root-relative manifest key) against the
+        # correct tree, not the top-level repo root (CR-01).
+        old = _git_show(rel, cwd=base)
         new_path = base / rel
         try:
             new = json.loads(new_path.read_bytes())

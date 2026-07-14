@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -26,7 +27,8 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from tools.contract_drift.drift import main, workspace_drift  # noqa: E402
+from tools.contract_drift.drift import main, run_gate, workspace_drift  # noqa: E402
+from tools.contract_hash.hash import write_manifest  # noqa: E402
 from tools.workspace_config import load_workspace, members  # noqa: E402
 
 
@@ -92,6 +94,97 @@ def test_per_member_drift_is_detected(tmp_path: Path) -> None:
     result = workspace_drift(ws)
     assert not result["ok"], "a per-member schema drift must fail the workspace gate"
     assert not result["members"]["m"]["ok"], "the mutated member must report drift"
+
+
+def _init_member_git_repo(member_root: Path, schema_doc: dict) -> Path:
+    """Materialize a standalone git repo playing a member root: commit ``schema_doc`` under
+    ``contracts/greeting.schema.json`` so ``_git_show`` can recover it from HEAD, then baseline it.
+
+    Returns the member's ``contracts/`` dir. The schema is committed BEFORE the baseline manifest is
+    written so HEAD holds the pre-drift content (what classification diffs the on-disk edit against).
+    """
+    contracts = member_root / "contracts"
+    contracts.mkdir(parents=True)
+    schema = contracts / "greeting.schema.json"
+    schema.write_text(json.dumps(schema_doc, indent=2), encoding="utf-8")
+
+    def _git(*args: str) -> None:
+        subprocess.run(["git", *args], cwd=str(member_root), check=True, capture_output=True)
+
+    _git("init", "-q")
+    _git("config", "user.email", "regression@test.local")
+    _git("config", "user.name", "regression")
+    _git("add", "-A")
+    _git("commit", "-qm", "seed member schema")
+
+    write_manifest(manifest_path=contracts / ".hashes" / "manifest.json", contracts_dir=contracts)
+    return contracts
+
+
+# The pre-drift baseline schema every classification-regression case starts from.
+_BASE_SCHEMA = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {"greeting": {"type": "string"}, "name": {"type": "string"}},
+    "required": ["greeting", "name"],
+}
+
+
+def test_member_breaking_change_is_classified_not_unknown(tmp_path: Path) -> None:
+    """Regression (CR-01): a member-root-relative schema change is classified ``breaking`` — NOT the
+    silent ``unknown`` produced when ``_git_show`` queried the top-level repo root instead of the
+    member root. A breaking edit (drop a required property) must be recovered + classified.
+    """
+    contracts = _init_member_git_repo(tmp_path / "member", _BASE_SCHEMA)
+
+    breaking = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {"greeting": {"type": "string"}},  # 'name' removed → breaking
+        "required": ["greeting"],  # 'name' no longer required → breaking
+    }
+    (contracts / "greeting.schema.json").write_text(
+        json.dumps(breaking, indent=2), encoding="utf-8"
+    )
+
+    result = run_gate(
+        contracts_dir=contracts, baseline_path=contracts / ".hashes" / "manifest.json"
+    )
+    assert not result["ok"], "the mutated member schema must trip the gate"
+    classes = {rel: cls for rel, kind, cls in result["drifted"]}
+    assert classes.get("contracts/greeting.schema.json") == "breaking", (
+        f"member drift must classify as 'breaking', not 'unknown': {result['drifted']}"
+    )
+
+
+def test_member_non_breaking_change_is_classified_not_unknown(tmp_path: Path) -> None:
+    """Regression (CR-01): a purely additive member schema edit (new optional property) classifies
+    ``non-breaking`` — proving ``_git_show`` recovered the member's HEAD schema (not ``unknown``).
+    """
+    contracts = _init_member_git_repo(tmp_path / "member", _BASE_SCHEMA)
+
+    additive = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+            "greeting": {"type": "string"},
+            "name": {"type": "string"},
+            "locale": {"type": "string"},  # new OPTIONAL property → non-breaking
+        },
+        "required": ["greeting", "name"],
+    }
+    (contracts / "greeting.schema.json").write_text(
+        json.dumps(additive, indent=2), encoding="utf-8"
+    )
+
+    result = run_gate(
+        contracts_dir=contracts, baseline_path=contracts / ".hashes" / "manifest.json"
+    )
+    assert not result["ok"], "the additive member schema edit must still trip the gate (hash drift)"
+    classes = {rel: cls for rel, kind, cls in result["drifted"]}
+    assert classes.get("contracts/greeting.schema.json") == "non-breaking", (
+        f"additive member drift must classify as 'non-breaking', not 'unknown': {result['drifted']}"
+    )
 
 
 def test_unresolved_edge_contract_is_flagged(tmp_path: Path) -> None:
