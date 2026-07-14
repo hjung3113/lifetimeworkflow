@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Long-Horizon
-status: Awaiting next milestone
-stopped_at: Full-harness audit — Batch A merged; Batch B (H2/M1) queued as phase
-last_updated: "2026-07-14T10:30:00.000Z"
-last_activity: 2026-07-14 — Full-harness audit executed (Batch A fixes merged, Batch B dispositioned)
+milestone: v2.1
+milestone_name: MEM2 — Process Memory & Provenance Reframe
+status: planning
+last_updated: "2026-07-14T12:37:59.772Z"
+last_activity: 2026-07-14
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 11
-  completed_plans: 11
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 
 ## Current Position
 
-Phase: Milestone v2.0 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-07-14 — Milestone v2.0 completed and archived
+Status: Defining requirements
+Last activity: 2026-07-14 — Milestone v2.1 started
 
 ## Performance Metrics
 
@@ -213,6 +212,7 @@ Resume file: None
 ## Operator Next Steps
 
 **► NEXT SESSION — start the MEM2 memory-model upgrade milestone.**
+
 - Read `.planning/MEMORY-UPGRADE-PROPOSAL.md` first (design + operator refinements in §7).
 - Then `/gsd:new-milestone` (working title **MEM2 — Process Memory & Provenance Reframe**). Decide the remaining kickoff Qs: Q1 gating strength, Q2 `/checkpoint` vs `/agree`, Q4 inject budget, Q6 staleness threshold (Q3/Q5 already decided: per-guideline files, retire via per-file status).
 - Locked operator direction (§7): progress memory = in-flight + remaining + last-few-done summary only (git is the log; retire STATE.md bloat); guidelines = one small file per guideline (essence only), not a monolith; project decisions already in `docs/adr/` + PROJECT.md Key Decisions (reference, don't duplicate); add **MEM2-07** = a local memory-management web UI with pointer-integrity UX.
@@ -223,10 +223,12 @@ Resume file: None
 Clean milestone boundary otherwise — v2.0 complete + archived, full-harness audit done.
 
 Done and committed this cycle:
+
 - Milestone **v2.0** complete + archived (`.planning/milestones/v2.0-*`, phase dirs under `v2.0-phases/`). `README.md` added.
 - **Full-harness audit** executed (`.planning/AUDIT-FINDINGS.md` + `.planning/codebase/` 7 docs). Batch A fixes merged (H1 contract_guard abs-path, M2 empty-cell guard, M3 drift added-required=breaking, CI `[[languages]]` guard, contract-hash tests). Baseline green: 568 pytest, contract-drift + emit-drift clean.
 
 Deferred follow-ups (do NOT block a new milestone — pull in when you want):
+
 - **Batch B (H2/M1) — golden-comparator gap** captured in `.planning/AUDIT-FINDINGS.md` (§Batch B). M1 (tolerance float-compare wired to nothing) is the clear core-contract gap; H2 (cell canonicalization on compare path) is dispositioned via `docs/adr/0005`. Both shift golden semantics → need operator sign-off + golden re-approval; plan as a phase when ready.
 - `docs/adr/0004` (constitution-hook fail-open posture) recorded — revisit fail-closed after H1.
 - Optional: `/gsd:complete-milestone v1.0` (phases 1–8 never formally archived).

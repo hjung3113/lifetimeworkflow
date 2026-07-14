@@ -10,18 +10,24 @@
 
 **계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·전환 리스크를 하네스가 자동으로 강제·검증한다 — 그리고 이 강제 구조가 특정 도메인·언어에 묶이지 않고 어느 프로젝트에나 재사용된다.** 에이전트가 레포에서 "어떻게 개발·유지보수·리팩토링하는가"가 부족(tribal knowledge)이 아니라 실행 가능한 스킬·커맨드·훅으로 박혀 있고, 그 박힌 구조를 도메인만 갈아끼워 다음 프로젝트로 가져갈 수 있어야 한다.
 
-## Current Milestone: v2.0 Long-Horizon — ✅ SHIPPED 2026-07-14
+> **v2.0 Long-Horizon — ✅ SHIPPED 2026-07-14:** All 3 phases (9 α, 10 β, 11 γ) shipped and verified; 11/11 requirements validated; milestone audit passed (integration 12/12, 568 tests green). Archived to `.planning/milestones/v2.0-*`. See `## Requirements → Validated`.
 
-> **Status:** Complete. All 3 phases (9 α, 10 β, 11 γ) shipped and verified; 11/11 requirements validated; milestone audit passed (integration 12/12, 568 tests green). Archived to `.planning/milestones/v2.0-*`. Next milestone starts via `/gsd:new-milestone`.
+## Current Milestone: v2.1 MEM2 — Process Memory & Provenance Reframe
 
-**Goal:** 에이전트(그리고 사람)가 *멀티-프로젝트* 작업을 *여러 세션·긴 달력 시간*에 걸쳐 이어가되, 프로젝트 자신의 컨텍스트(코드 그래프·메모리·문서·결정)가 자동으로 신선하게 유지된다 — 기계가 유지보수하고, 사람이 재가한다.
+**Goal:** 하네스에 사용자 방법론 피드백을 담는 **durable·authoritative 프로세스-메모리 채널**을 부여하고, SessionStart provenance 문구를 재구성해 "provisional/verify"가 *데이터 권위(data authority)* 에만 스코프되게 한다 — contract-first provenance 규칙은 그대로 두면서, 에이전트가 근거 있는 작업을 반사적으로 self-cancel하지 않고 **자신 있게 실행**하도록.
 
-**Target features (phases 9→10→11, 넘버링 연속):**
-- **Self-Maintaining Derived Artifacts + Curator (Phase 9 / α)** — 파생물(repo-map·contracts-index·docs `reference/`·memory)이 머지 시점에 CI로 자동 신선화; Phase-7 re-emit-diff를 미러하는 "stale-derived" 게이트 + `curator` 에이전트가 유지 소유.
-- **Context-Economy Fan-out/Synthesize (Phase 10 / β)** — 팬아웃 → 요약만 회수 → 합성하는 1급 워크플로로 장수 세션의 컨텍스트를 작게 유지. γ의 재사용 기반.
-- **Multi-Repo Workspace (Phase 11 / γ)** — 여러 레포를 하나의 워크스페이스로 선언·조작; repo-scoped 서브에이전트 + 크로스-레포 contract drift/golden 게이트.
+**Target features (phases 12+, 넘버링 연속; §7 operator refinements가 authoritative):**
+- **PROCESS 채널 (MEM2-01)** — **가이드라인 1개당 파일 1개** `.memory/agreements/<slug>.md`(제목 + 한 줄 규칙 + provenance 스탬프 + status). committed·user-authored·curated(피드백 시 추가 / 명시적 은퇴). §7b.
+- **Injector 재구성 (MEM2-02)** — 단일 배너를 (a) full-body **working-agreements 지시문** 블록(신규 priority-0, never-dropped, Q4 캡)과 (b) **데이터-스코프** provenance 배너로 분리; activeContext 포인터 재문구. determinism(`inject.py:20-22`) + char budget(`inject.py:105`) 보존.
+- **Distrust 문구 재구성 (MEM2-03)** — echo되는 모든 곳(`.memory/README.md`, state 파일들, `two-plane-memory/SKILL.md`, `AGENTS.md`)에서 *데이터 권위*로 재문구 — behavior 지시가 아니라.
+- **Sanctioned write path (MEM2-04)** — 전용 **`/agree`** 커맨드(명시적 사용자 피드백에만 append/retire) + `tools/harness_lint` provenance/anti-invent 가드(모든 엔트리가 origin 스탬프를 갖고, 에이전트가 자가발명 못 하게).
+- **Progress staleness 가드 (MEM2-05)** — `/checkpoint`가 `updated:` 스탬프 기록; `assemble()`가 verbatim 노출; **agent-side** freshness 판단(assemble 안에 wall-clock 없음; 고정 임계 없음).
+- **ADR + emit 왕복 (MEM2-06)** — 모델 변경을 **ADR-0006**(append-only, 사람-게이트 경로)로 기록; 모든 신규/변경 agent/skill/command를 Phase-7 emitter로 두 런타임에 왕복(모델 id 없음), GEN-04 green.
+- **로컬 메모리 웹 UI (MEM2-07, §7d)** — 메모리 항목(progress + per-guideline agreements)을 보기/편집/은퇴하는 경량 로컬 툴, **pointer-aware** 참조 무결성(파생 pointer-index로 "무엇이 이 항목을 가리키는가" 표면화, 편집/은퇴 시 참조 정합 유지). 외부 네트워크·auth 없음.
 
-**Key context:** 모두 기존 기계(two-plane memory·`tools/memory_regen`·`/docs-sync`·orchestrator·Phase-6 CI·Phase-7 emitter·project.toml 슬롯)를 **재사용**하며 재구축 금지. 비협상 제약: derived는 손으로 편집 금지(기계가 쓰고 CI가 검증하는 것은 허용), 헌법 평면(contracts/adr/golden)은 사람 재가 유지(machines gate, humans ratify), GEN-04 core→example 무의존 유지, 모든 신규 agent/skill/hook은 Phase-7 emitter를 왕복. Open decisions(플랜 타임 해결): ~~(α) committed-derived vs session-derived split~~ — **RESOLVED (Phase 9, D-01/D-02): committed+gated = `docs/reference/**` + `contracts-index`; `repo-map`는 gitignored/세션-임시 유지**; (γ) workspace model a/b/c (lean b: workspace manifest).
+**Kickoff decisions (2026-07-14):** Q1=committed-but-writable(`.memory/agreements/`, provenance-lint가 가드) · Q2=전용 `/agree` 커맨드 · Q3=per-guideline 파일(§7b) · Q4=캡(N entries / M chars, overflow는 pointer로 강등) · Q5=retire=per-file status 플립(§7b) · Q6=agent-side, 고정 임계 없음(stamp verbatim + 세션 날짜로 에이전트 판단).
+
+**Key context:** §7 operator refinements가 §2/§5를 supersede — progress는 tiny by design(완료 이력은 git 커밋이 log, §7a), 가이드라인은 파일 1개당 essence만(§7b), PROCESS 채널은 project decisions가 아니라 *working-style/methodology* 전용이며 ADR/Key-Decisions를 **링크**하되 재진술 금지(§7c). 기존 기계 **재사용**(재구축 금지): `tools/memory_regen`(`inject.py`/`assemble()`), `/checkpoint`, `tools/harness_lint`, Phase-7 emitter(`tools/harness_emit`), `adr` skill + CODEOWNERS 경로. 비협상: 헌법 평면(contracts/adr/golden) 사람 재가 유지(machines gate, humans ratify), 신규 채널은 derived가 아니라 committed human-authored tier(state/처럼) — 재생성 안 함, GEN-04 core→example 무의존 유지.
 
 ## Requirements
 
@@ -33,9 +39,15 @@
 
 ### Active
 
-<!-- 하네스 산출물. 모두 검증 전까지 가설. -->
+<!-- 하네스 산출물. 모두 검증 전까지 가설. v2.1 MEM2 — 상세 REQ-ID는 REQUIREMENTS.md. -->
 
-(None — milestone v2.0 shipped; next milestone starts fresh via /gsd:new-milestone.)
+- [ ] **PROCESS 메모리 채널 (v2.1 MEM2-01)** — per-guideline `.memory/agreements/<slug>.md`, committed·curated.
+- [ ] **Injector provenance 재구성 (v2.1 MEM2-02)** — full-body working-agreements 지시문 + data-scoped 배너, determinism+budget 보존.
+- [ ] **Distrust 문구 재구성 (v2.1 MEM2-03)** — echo되는 모든 곳에서 data-authority로.
+- [ ] **`/agree` write path + anti-churn 가드 (v2.1 MEM2-04)** — 전용 커맨드 + harness_lint provenance 가드.
+- [ ] **Progress staleness 가드 (v2.1 MEM2-05)** — `updated:` stamp + agent-side freshness 판단.
+- [ ] **ADR-0006 + emit 왕복 (v2.1 MEM2-06)** — 사람-게이트 ADR, 두 런타임 emit, 모델 id 없음, GEN-04 green.
+- [ ] **로컬 메모리 웹 UI (v2.1 MEM2-07)** — pointer-aware 참조 무결성 툴.
 
 <!-- v1.0 하네스 표면 (shipped in phases 1–8) -->
 
@@ -107,4 +119,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-14 after v2.0 milestone — Long-Horizon shipped: α (self-maintaining derived plane + curator), β (context-economy fan-out/synthesize), γ (multi-repo workspace) all complete and validated (11/11 requirements, audit passed). v1.0 (phases 1–8) + v2.0 (phases 9–11) both archived; no open milestone.*
+*Last updated: 2026-07-14 — milestone v2.1 (MEM2 — Process Memory & Provenance Reframe) started. Goal: durable authoritative process-memory channel + data-scoped provenance reframe. 7 requirements (MEM2-01..07); kickoff decisions Q1–Q6 recorded above. v1.0 (phases 1–8) + v2.0 (phases 9–11) archived. Design source: `.planning/MEMORY-UPGRADE-PROPOSAL.md` (§7 operator refinements authoritative).*
