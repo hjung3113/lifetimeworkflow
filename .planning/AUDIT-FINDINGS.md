@@ -75,12 +75,12 @@ The two HIGH findings share one root: **the harness's central promises — contr
 
 ## Proposed fix batches
 
-**Batch A — pure code + tests, no gate, safe to apply and keep green (pytest + emit-drift):**
-- H1 — normalize `file_path` to repo-relative in the hook path (or dual-glob) + absolute-path regression tests for `contract_guard`/`secret_scan`.
-- M3 — `classify` flags `nval - val` required additions as breaking + test.
-- M2 — guard empty decimal/datetime cell in `normalize_cell` + test.
-- L3 — add `tools/contract_hash/tests/` (keying + symlink-escape).
-- L4 — `.get()` guards + clear error in the CI matrix step.
+**Batch A — pure code + tests, no gate — ✅ DONE (591 pytest green, ruff clean, emit clean):**
+- H1 — ✅ `repo_relative()` at the hook-stdin seam normalizes absolute paths before `resolve_path` in both gates + absolute-path regression tests. (`7d71c7e`)
+- M3 — ✅ `classify` flags required-set additions (new or promoted-optional) as breaking + 3 tests. (`6b83a72`)
+- M2 — ✅ empty decimal/datetime cell short-circuits to `""` (R6) instead of raising + edge-case tests. (`716c24a`)
+- L4 — ✅ CI matrix `sys.exit` with a clear message on a missing `id`/`test` + `id` consistency gate. (`0d83745`)
+- L3 — ✅ dedicated `tools/contract_hash/tests/` (canonicalization, keying, symlink-escape, write). (`987325c`)
 
 **Batch B — needs operator sign-off (touches golden/spec/ADR semantics):**
 - H2 + M1 — wire cell canonicalization + tolerance compare into the comparator. Changes what compares equal → paired golden re-approval + ADR. **Gated.**
