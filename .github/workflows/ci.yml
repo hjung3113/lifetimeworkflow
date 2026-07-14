@@ -230,6 +230,27 @@ jobs:
             exit 1
           fi
 
+  # ── workspace ──────────────────────────────────────────────────────────────────────────────
+  # Cross-repo (multi-repo workspace) gate (MREPO-03). A SEPARATE job — cross-repo drift/golden are
+  # NOT folded into the per-repo `drift`/`golden` jobs (anti-pattern) — mirroring the emit-drift /
+  # stale-derived separate-job idiom. It iterates the workspace.toml members + edges:
+  #   step 1 — cross-repo contract-drift (per-member baselines + edge-contract resolution)
+  #   step 2 — the cross-repo pytest set (loader + consistency gate + GEN-04 twin + workspace
+  #            golden + workspace drift)
+  # Security posture preserved: pinned actions, top-level `permissions: contents: read`, and NO
+  # `${{ github.event.* }}` interpolation into any run shell (all data from repo-owned files).
+  workspace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.0
+      - uses: astral-sh/setup-uv@v8.3.2
+      - name: Sync workspace (all packages)
+        run: uv sync --all-packages
+      - name: Cross-repo drift — workspace members + edges
+        run: uv run python -m tools.contract_drift.drift --workspace
+      - name: Cross-repo golden + workspace gates
+        run: uv run pytest tools/workspace_config tools/harness_lint/tests/test_workspace_config.py tools/harness_lint/tests/test_core_no_workspace_member_dep.py tools/golden_runner/tests/test_workspace_golden.py tools/contract_drift/tests/test_workspace_drift.py
+
   # ── gate ───────────────────────────────────────────────────────────────────────────────────
   # Fan-in. Depends on every upstream job; runs even when one fails (if: always()) and FAILS if
   # any upstream job failed or was cancelled. This is the single job a human enables as a REQUIRED
@@ -237,7 +258,7 @@ jobs:
   # here). needs.*.result values are workflow-computed enums (success/failure/cancelled/skipped),
   # NOT event input — safe to interpolate.
   gate:
-    needs: [setup, lang-tests, contract-check, drift, golden, core-suite, emit-drift, stale-derived]
+    needs: [setup, lang-tests, contract-check, drift, golden, core-suite, emit-drift, stale-derived, workspace]
     if: always()
     runs-on: ubuntu-latest
     steps:
