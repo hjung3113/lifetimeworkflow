@@ -40,7 +40,7 @@ from pathlib import Path
 # on THIS module to drive each composed branch without a live .NET / contract tree.
 from tools.contract_drift.drift import run_gate
 from tools.golden_runner.runner import GOLDEN_DIR, resolve_dotnet, run_golden_case
-from tools.hooks._stdin import emit_block, parse_event, read_stdin
+from tools.hooks._stdin import dev_bypassed, emit_block, parse_event, read_stdin
 from tools.polyglot_lint.lint import lint_file
 
 # commit_gate -> hooks -> tools -> repo root (parents[2]). Overridable in tests.
@@ -165,6 +165,17 @@ def check_drift() -> GateResult:
             "contract-drift",
             "PASS",
             f"WARN (ratified) — GOLDEN_APPROVE_HUMAN set, drift accepted: {listed}",
+        )
+    if dev_bypassed():
+        # Local-dev opt-out (HARNESS_DEV_BYPASS): distinct from the human token — never claims
+        # ratification, so the audit meaning of GOLDEN_APPROVE_HUMAN is preserved. DRIFT-ONLY, and
+        # CODEOWNERS at merge remains the real gate. Token check stays FIRST so a real approval still
+        # reads "WARN (ratified)".
+        return GateResult(
+            "contract-drift",
+            "PASS",
+            f"WARN (dev) — HARNESS_DEV_BYPASS set, drift bypassed (dev-only), "
+            f"CODEOWNERS still gates merge: {listed}",
         )
     return GateResult("contract-drift", "FAIL", f"unapproved schema change(s): {listed}")
 

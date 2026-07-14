@@ -31,9 +31,11 @@ def _no_ambient_approval(monkeypatch) -> None:
     regardless of the session env. A live ratification token (e.g. during an intentional
     constitution change) would otherwise route a drift FAIL through the 05-01 warn+pass path
     and give a false green. The approval-path tests set the token explicitly in their own body,
-    which runs after this autouse fixture, so they are unaffected.
+    which runs after this autouse fixture, so they are unaffected. HARNESS_DEV_BYPASS is stripped
+    for the same reason — a dev session's opt-out would otherwise false-green the base block tests.
     """
     monkeypatch.delenv("GOLDEN_APPROVE_HUMAN", raising=False)
+    monkeypatch.delenv("HARNESS_DEV_BYPASS", raising=False)
 
 
 # --- helpers ------------------------------------------------------------------------------------
@@ -239,5 +241,59 @@ def test_approval_does_not_bypass_polyglot(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(commit_gate, "REPO_ROOT", tmp_path)
     monkeypatch.setattr(commit_gate, "staged_files", lambda: ["wire.tsv"])
     monkeypatch.setenv("GOLDEN_APPROVE_HUMAN", "yes")
+
+    assert commit_gate.main([]) != 0
+
+
+# --- SC5: HARNESS_DEV_BYPASS local-dev opt-out (DRIFT-ONLY, distinct from the token) -------------
+
+
+def test_drift_present_with_dev_bypass_warns_not_blocks(monkeypatch, capsys) -> None:
+    # SC5: the dev flag downgrades a drift FAIL to a distinct WARN (dev) PASS (exit 0).
+    _drift_present(monkeypatch)
+    _no_staged(monkeypatch)
+    _dotnet_absent(monkeypatch)
+    monkeypatch.setenv("HARNESS_DEV_BYPASS", "1")
+
+    assert commit_gate.main([]) == 0
+    combined = capsys.readouterr()
+    log = combined.out + combined.err
+    assert "WARN (dev)" in log
+    assert "HARNESS_DEV_BYPASS" in log
+    assert "ratified" not in log  # distinct from the human-token WARN (ratified) branch
+    assert "FAIL [contract-drift]" not in log
+
+
+def test_drift_present_dev_bypass_unset_still_blocks(monkeypatch) -> None:
+    # Secure default: no token AND no dev flag ⇒ drift still blocks.
+    _drift_present(monkeypatch)
+    _no_staged(monkeypatch)
+    _dotnet_absent(monkeypatch)
+    monkeypatch.delenv("HARNESS_DEV_BYPASS", raising=False)
+
+    assert commit_gate.main([]) != 0
+
+
+def test_blank_dev_bypass_does_not_bypass_drift(monkeypatch) -> None:
+    # Empty / whitespace-only flag never bypasses (mirrors the token blank-rule).
+    _drift_present(monkeypatch)
+    _no_staged(monkeypatch)
+    _dotnet_absent(monkeypatch)
+
+    for blank in ("", "   "):
+        monkeypatch.setenv("HARNESS_DEV_BYPASS", blank)
+        assert commit_gate.main([]) != 0
+
+
+def test_dev_bypass_does_not_bypass_polyglot(monkeypatch, tmp_path) -> None:
+    # DRIFT-ONLY: a staged BOM/CRLF TSV still blocks even with the dev flag set (polyglot untouched).
+    bad = tmp_path / "wire.tsv"
+    bad.write_bytes(b"\xef\xbb\xbfid\tval\r\n1\t2\r\n")
+
+    _clean_drift(monkeypatch)
+    _dotnet_absent(monkeypatch)
+    monkeypatch.setattr(commit_gate, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(commit_gate, "staged_files", lambda: ["wire.tsv"])
+    monkeypatch.setenv("HARNESS_DEV_BYPASS", "1")
 
     assert commit_gate.main([]) != 0
