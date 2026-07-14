@@ -113,7 +113,12 @@ def _confine(path: Path, allowed_roots: tuple[Path, ...] | None = None) -> Path:
 # --- pure comparison logic (no .NET needed) ---------------------------------------------------
 
 
-def compare(output_bytes: bytes, case: str, golden_dir: Path | None = None) -> GoldenResult:
+def compare(
+    output_bytes: bytes,
+    case: str,
+    golden_dir: Path | None = None,
+    allowed_roots: tuple[Path, ...] | None = None,
+) -> GoldenResult:
     """Normalize the converter output AND the approved baseline via the §4-5 core, then diff.
 
     On mismatch, write ``expected/baseline.received.tsv`` (the raw converter output — the exact
@@ -121,9 +126,16 @@ def compare(output_bytes: bytes, case: str, golden_dir: Path | None = None) -> G
 
     ``golden_dir`` overrides the case root (default ``REPO_ROOT/golden``) so the identical
     §4.3-4.6 compare path serves both the domain golden tree and a tmp/generic instance.
+
+    ``case`` is CLI-controlled, so BOTH the verified-baseline read and the received-baseline write
+    are routed through :func:`_confine` — the SAME trust boundary the converter I/O paths already
+    enforce (WR-04). ``allowed_roots`` widens that confinement to declared workspace-member roots
+    (additive — MREPO-03) so a member-rooted baseline still resolves.
     """
     normalized_new = normalize_tsv(output_bytes)
-    normalized_baseline = normalize_tsv(verified_path(case, golden_dir).read_bytes())
+    normalized_baseline = normalize_tsv(
+        _confine(verified_path(case, golden_dir), allowed_roots).read_bytes()
+    )
 
     if normalized_new == normalized_baseline:
         return GoldenResult(case=case, passed=True, diff="", received_path=None)
@@ -138,7 +150,7 @@ def compare(output_bytes: bytes, case: str, golden_dir: Path | None = None) -> G
         )
     )
 
-    rec = received_path(case, golden_dir)
+    rec = _confine(received_path(case, golden_dir), allowed_roots)
     rec.parent.mkdir(parents=True, exist_ok=True)
     rec.write_bytes(output_bytes)  # machine-proposed; .verified is left untouched (P9)
     return GoldenResult(case=case, passed=False, diff=diff, received_path=rec)
@@ -241,7 +253,7 @@ def run_golden_case(
             seed, out_path, dotnet_exe=dotnet_exe, project=project, allowed_roots=allowed_roots
         )
     output_bytes = Path(out_path).read_bytes()
-    return compare(output_bytes, case, golden_dir=golden_dir)
+    return compare(output_bytes, case, golden_dir=golden_dir, allowed_roots=allowed_roots)
 
 
 def workspace_golden_case(
