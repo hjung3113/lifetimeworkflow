@@ -39,7 +39,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 14: Write Path + Anti-Churn Guard** *(v2.1 C)* - A dedicated `/agree` command adds/retires a working-agreement only on explicit user feedback, backed by a `tools/harness_lint` provenance/anti-invent guard.
 - [ ] **Phase 15: Emit Round-Trip + Gates** *(v2.1 D)* - Round-trip every new/changed surface (`/agree`, updated skills, AGENTS.md managed block) through the Phase-7 emitter to both runtimes with no model id; emit-drift clean, GEN-04 green.
 - [ ] **Phase 16: Local Memory Web UI** *(v2.1 E)* - A local, no-network, no-auth tool to view/edit/retire memory items with pointer-aware referential integrity over a machine-built derived pointer-index.
-- [ ] **Phase 17: Constitution-Gate Dev/Enforce Decoupling** *(infra — independent of v2.1 MEM2)* - A secure-default `HARNESS_DEV_BYPASS` env opt-out so the product's constitution gates stop governing the Claude dev session (default enforce; blank = no bypass; distinct from `GOLDEN_APPROVE_HUMAN`; byte-hygiene never waived), honored by `contract_guard`/`commit_gate`; ADR-0007 records it; CODEOWNERS stays the real gate.
+- [x] **Phase 17: Constitution-Gate Dev/Enforce Decoupling** *(infra — independent of v2.1 MEM2)* - A secure-default `HARNESS_DEV_BYPASS` env opt-out so the product's constitution gates stop governing the Claude dev session (default enforce; blank = no bypass; distinct from `GOLDEN_APPROVE_HUMAN`; byte-hygiene never waived), honored by `contract_guard`/`commit_gate`; ADR-0007 records it; CODEOWNERS stays the real gate. (completed 2026-07-15)
 
 ## Phase Details
 
