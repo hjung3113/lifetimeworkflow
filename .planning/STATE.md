@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Long-Horizon
 status: executing
-stopped_at: Completed 11-02-PLAN.md
-last_updated: "2026-07-14T00:41:10.594Z"
+stopped_at: Completed 11-03-PLAN.md
+last_updated: "2026-07-14T00:51:36.415Z"
 last_activity: 2026-07-14
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 11
-  completed_plans: 9
+  completed_plans: 10
   percent: 67
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 11 (multi-repo-workspace-v2-0) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-07-14
 
@@ -101,6 +101,7 @@ Last activity: 2026-07-14
 | Phase 10 P10-03 | 6min | 2 tasks | 16 files |
 | Phase 11 P01 | 12min | 3 tasks | 15 files |
 | Phase 11 P02 | 3min | 2 tasks | 2 files |
+| Phase 11 P03 | 7min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -174,6 +175,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [11-01] MREPO-01: raised GEN-03 slot pattern one level into pure-DATA workspace.toml (2 members + one repo:stage edge). Single [pipeline].edges repo:stage table serves both MREPO-03 (member resolution) and MREPO-04 (topology). tools/workspace_config mirrors harness_config (tomllib passthrough + split_endpoint; loader hardcodes no member path -> GEN-04-clean). Gate: member unique/exists, edge endpoints declared, edge contract tracked under PRODUCER via rglob, visible SKIP on zero edges. 2-member fixture fully baselined in-repo (per-member self-relative manifests not merged; identity golden case R8-only, no .NET). Member root local-only; # url = deferred. 547 passed.
 - [Phase 11]: MREPO-04 GEN-04 twin derives forbidden member-root markers from members(load_workspace()) at test time — never hardcodes fixture paths, so the guard tracks the manifest
 - [Phase 11]: workspace.toml pointer exemption is key-scoped (root/from/to/contract), not a blanket file pass — a non-pointer member leak stays flagged (T-11-05)
+- [Phase 11]: Cross-repo drift reuses run_gate per member (no merged manifest) + resolves each edge's contract in its producer; _confine widened via a threaded allowed_roots param (guard extended, not removed); enforced by a separate workspace CI job in gate.needs (MREPO-03)
 
 ### Pending Todos
 
@@ -200,6 +202,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-14T00:41:10.569Z
-Stopped at: Completed 11-02-PLAN.md
+Last session: 2026-07-14T00:51:36.393Z
+Stopped at: Completed 11-03-PLAN.md
 Resume file: None
