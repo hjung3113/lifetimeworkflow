@@ -113,17 +113,12 @@ def classify(old: dict, new: dict) -> str:
 # ---- gate ----------------------------------------------------------------------------------
 
 
-def _git_show(rel_path: str, cwd: Path = REPO_ROOT) -> dict | None:
-    """Return the HEAD-committed schema document for ``rel_path``, or None if unavailable.
+def _git_show_at(cwd: Path, rel_path: str) -> dict | None:
+    """``git show HEAD:./<rel_path>`` run with ``cwd`` — return the parsed doc or None.
 
-    Used to fetch the *old* content for classification. ``rel_path`` is the manifest key —
-    relative to the ``contracts_dir``'s parent (the *member root* for a workspace member, the
-    top-level repo root for the root tree). It is resolved against ``cwd`` by prefixing ``./``
-    so ``git`` treats it as **working-directory-relative** (a bare ``HEAD:<path>`` is always
-    resolved against the repo root, which is the wrong tree for a member — CR-01). Callers thread
-    the member root as ``cwd`` so ``git show`` reads that member's committed schema; the default
-    ``REPO_ROOT`` preserves the top-level tree behavior exactly. ``shell=False`` (argv list) — no
-    shell interpolation.
+    The ``./`` prefix makes ``git`` resolve ``rel_path`` **working-directory-relative** (a bare
+    ``HEAD:<path>`` is always resolved against the repo root, ignoring ``cwd``). ``shell=False``
+    (argv list) — no shell interpolation.
     """
     try:
         proc = subprocess.run(
@@ -136,6 +131,34 @@ def _git_show(rel_path: str, cwd: Path = REPO_ROOT) -> dict | None:
         return json.loads(proc.stdout)
     except (subprocess.CalledProcessError, json.JSONDecodeError, OSError):
         return None
+
+
+def _git_show(rel_path: str, cwd: Path = REPO_ROOT) -> dict | None:
+    """Return the HEAD-committed schema document for the manifest key ``rel_path``, or None.
+
+    Used to fetch the *old* content for classification. ``rel_path`` is the manifest key — relative
+    to the ``contracts_dir``'s parent: the *member root* for a workspace member, the top-level repo
+    root (or a mirror-layout tmp copy of it) for the root tree.
+
+    Resolution order (CR-01):
+      1. Against ``cwd`` (the member/base root threaded by :func:`run_gate`). For a real workspace
+         member this reads that member's OWN committed schema — the bug fix: a bare
+         ``git show HEAD:<rel>`` from the top-level root read the wrong (or a nonexistent) tree and
+         silently classified every member drift ``unknown``.
+      2. Fallback against ``REPO_ROOT`` when step 1 finds nothing — preserves the pre-existing
+         top-level behavior EXACTLY for the drift tests that hash a tmp copy MIRRORING the repo-root
+         layout (that copy is not itself a git tree, so ``rel`` must resolve against the real root).
+
+    Because a real member's own tree is consulted FIRST, a member schema is never silently diffed
+    against a same-named top-level path (the collision hazard CR-01 warns of); the root fallback is
+    reached only when the member/base tree has no such committed blob.
+    """
+    doc = _git_show_at(cwd, rel_path)
+    if doc is not None:
+        return doc
+    if Path(cwd).resolve() != REPO_ROOT.resolve():
+        return _git_show_at(REPO_ROOT, rel_path)
+    return None
 
 
 def run_gate(
