@@ -265,3 +265,47 @@ self-cancelling, while the contract-first provenance rule stays intact.
 6. **Staleness threshold.** What age makes progress "stale," and where does the wall-clock
    comparison live — hook wrapper, `/checkpoint`, or agent-side (given determinism forbids it in
    `assemble()`)?
+
+---
+
+## 7. Operator refinements (AUTHORITATIVE — supersede §2/§5 where they conflict)
+
+Direction given by the operator on 2026-07-14. These override the agent's earlier recommendations
+where they differ.
+
+### 7a. Progress memory = small by design, git is the log
+- Progress memory holds only: **(1) in flight now**, **(2) remaining work** (kept updated), and
+  **(3) a short summary of the last few completed items** — nothing more.
+- The **full completed history lives in `git` commits**, not in memory. Do NOT accumulate an
+  ever-growing done-log. → This retires the bloated `.planning/STATE.md` pattern (currently ~50+
+  phase rows + a giant "Accumulated Context"); progress state must stay tight and turn over.
+- Resolves open-Q6 in spirit: progress is intentionally tiny, so staleness matters less — but keep
+  the `updated:` stamp (MEM2-05) so the last-N-done summary isn't silently frozen.
+
+### 7b. Guidelines = one file PER guideline, essence only (supersedes §2's single `working-agreements.md`)
+- Instead of one monolithic `working-agreements.md`, use **one small file per guideline**, each
+  holding **only the core point** (e.g. `.memory/agreements/<slug>.md`: title + one-line rule +
+  provenance stamp + status).
+- Rationale: each pointer can target a specific guideline; individual add/retire is clean; the
+  injector composes the active set. This revises §2 and answers open-Q3/Q5 (retire = flip one
+  file's `status`, or remove that one file).
+
+### 7c. Project decisions already have a home — reference, don't duplicate
+- Confirmed: project decisions are managed in **`docs/adr/` (append-only ADRs 0001–0005)** +
+  **`.planning/PROJECT.md` → `## Key Decisions`** (summary/index, ADR-cross-referenced).
+- The new PROCESS channel is for *working-style / methodology* directives, NOT project decisions.
+  It must **link** to ADRs/Key-Decisions, never restate them (keeps single-source-of-truth intact).
+
+### 7d. NEW requirement — a simple local web UI to manage memory (referential integrity)
+- **MEM2-07:** a lightweight local web tool to view/edit/retire memory items (progress + per-guideline
+  agreements) with **pointer-aware UX**: many docs/skills/`inject.py` carry *pointers that reference
+  memory files*; editing or deleting a file by hand silently breaks those references. The tool should
+  surface "what points to this item" and keep references consistent on edit/retire — so memory
+  hygiene is systematized, not manual.
+- Scope note for planning: keep it a **local, read-mostly-then-edit** tool (no external network,
+  no auth surface); it operates on the committed memory files + a pointer index. Treat pointer-index
+  generation like other derived artifacts (machine-built, not hand-maintained).
+
+**Net effect on the milestone:** §2 changes from "one file" to "per-guideline files"; §4/§5 adopt the
+tight progress shape in 7a; add MEM2-07 (local memory web UI) as a phase; §6 open-Qs 3 & 5 are now
+decided (per-guideline files; retire via per-file status). Q1/Q2/Q4/Q6 still for kickoff.
