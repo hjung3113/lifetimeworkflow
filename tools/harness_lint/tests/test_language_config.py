@@ -52,6 +52,17 @@ def test_each_configured_persona_exists() -> None:
         assert persona.is_file(), f"{lang['id']!r}: persona {lang['persona']} not found on disk"
 
 
+def test_each_configured_language_has_id() -> None:
+    """Every language declares a non-empty `id` (keyed by the CI matrix step + toolchain install).
+
+    The Phase-6 CI `setup` job subscripts `lang["id"]` unguarded when emitting the matrix; this
+    gate makes a missing/blank id fail in pytest with a clear message instead of surfacing only as
+    a raw KeyError in CI (CI-01 L4).
+    """
+    for i, lang in enumerate(languages()):
+        assert str(lang.get("id", "")).strip(), f"[[languages]] entry #{i} has empty/missing id"
+
+
 def test_each_configured_language_has_test_command() -> None:
     """Every language declares a non-empty `test` command (the /test golden-path invocation)."""
     for lang in languages():

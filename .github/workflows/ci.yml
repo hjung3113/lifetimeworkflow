@@ -49,11 +49,19 @@ jobs:
         run: |
           uv run python - <<'PY' >> "$GITHUB_OUTPUT"
           import json
+          import sys
           from tools.harness_config.loader import languages
-          legs = [
-              {"id": lang["id"], "test": lang["test"], "test_paths": lang.get("test_paths", [])}
-              for lang in languages()
-          ]
+          legs = []
+          for i, lang in enumerate(languages()):
+              missing = [k for k in ("id", "test") if not str(lang.get(k, "")).strip()]
+              if missing:
+                  sys.exit(
+                      f"harness/project.toml [[languages]] entry #{i} is missing required "
+                      f"key(s): {', '.join(missing)} (keys present: {sorted(lang)})"
+                  )
+              legs.append(
+                  {"id": lang["id"], "test": lang["test"], "test_paths": lang.get("test_paths", [])}
+              )
           print("matrix=" + json.dumps({"include": legs}))
           PY
 
