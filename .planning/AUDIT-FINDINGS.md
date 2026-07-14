@@ -82,7 +82,29 @@ The two HIGH findings share one root: **the harness's central promises — contr
 - L4 — ✅ CI matrix `sys.exit` with a clear message on a missing `id`/`test` + `id` consistency gate. (`0d83745`)
 - L3 — ✅ dedicated `tools/contract_hash/tests/` (canonicalization, keying, symlink-escape, write). (`987325c`)
 
-**Batch B — needs operator sign-off (touches golden/spec/ADR semantics):**
-- H2 + M1 — wire cell canonicalization + tolerance compare into the comparator. Changes what compares equal → paired golden re-approval + ADR. **Gated.**
-- M4 — ADR recording the hooks' fail-open posture (and whether the constitution guard flips fail-closed after H1). **Gated.**
-- L2 — sub-second precision is a spec (`normalize-spec.md` R5) decision if ever revisited. **Gated.**
+**Batch B — operator-delegated dispositions (2026-07-14):**
+
+- **H2 + M1 → queued as a future PHASE (not a patch).** Investigation refined the finding: the core
+  comparator (`normalize_tsv`) is *intentionally* column-agnostic — it cannot canonicalize decimal/
+  datetime cells because **per-column kinds live in the instance overlay**
+  (`examples/log-parser/contracts/log-specs/standard-log.spec.yaml`), never in the domain-neutral
+  core (GEN-04 keeps domain names out of `tools/`·`harness/`·`libs/`). `run_identity_converter`'s
+  own docstring says domain canonicalization is "the domain converter's job." So H2 is not a plain
+  bug — it is an **architecture decision**: should the golden runner become column-schema-aware
+  (consume a per-case column-kind spec so `compare()` applies `normalize_cell` + tolerance), or is
+  cell canonicalization definitively the producer's job with the core only neutralizing R1/R2/R8?
+  M1 (tolerance) is the one clear *core-contract* promise gap (`format-conventions.schema.json`
+  declares `mode="tolerance"`; the spec says "applies at compare time in the golden runner") but it
+  rides the same column-kind plumbing. **Recommendation: `/gsd:plan-phase`** — decide core-vs-
+  instance ownership, add the column-kind source if chosen, then re-baseline goldens under
+  `/golden-approve`. Not prototyped, to avoid front-running the design + golden churn.
+- **M4 → decided: KEEP fail-open, recorded as ADR-0004 (draft staged).** Rationale: flipping the
+  constitution guard to fail-closed is not *selective* (a malformed payload has no `file_path`), so
+  it would deny **every** `Write|Edit` on any malformed stdin — wedging legitimate editing to guard
+  a plane that CODEOWNERS + the CI drift gate already ratify authoritatively. H1 already closes the
+  realistic exposure (well-formed absolute-path writes). Draft:
+  `.planning/proposed-adr-0004-constitution-hook-fail-open-posture.md` — **pending human promotion**
+  into `docs/adr/` (the contract-guard hook correctly *denied* the agent write there, a live
+  validation of H1).
+- **L2 (sub-second datetime precision) → leave as-is.** Contract-conformant (`normalize-spec.md` R5
+  pins second precision); a spec change only if ever revisited. No action.
