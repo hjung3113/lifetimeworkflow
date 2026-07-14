@@ -1,13 +1,3 @@
-# PROPOSED ADR-0004 — pending human promotion into docs/adr/
-
-> This is a DRAFT staged in the derived/planning plane. The contract-guard hook (correctly)
-> refuses an agent write to `docs/adr/**`. To promote: a human copies this body to
-> `docs/adr/0004-constitution-hook-fail-open-posture.md` (drop this banner) and commits it under
-> CODEOWNERS review — or sets `GOLDEN_APPROVE_HUMAN` for a session and writes it there via the
-> `adr` skill. The block below is the intended final ADR content verbatim.
-
----
-
 # 4. Constitution-Plane Hook Fail-Open Posture on Malformed Stdin
 
 *MADR 4.x · plane: constitution (human-owned, immutable, append-only)*

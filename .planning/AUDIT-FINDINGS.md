@@ -102,9 +102,10 @@ The two HIGH findings share one root: **the harness's central promises — contr
   constitution guard to fail-closed is not *selective* (a malformed payload has no `file_path`), so
   it would deny **every** `Write|Edit` on any malformed stdin — wedging legitimate editing to guard
   a plane that CODEOWNERS + the CI drift gate already ratify authoritatively. H1 already closes the
-  realistic exposure (well-formed absolute-path writes). Draft:
-  `.planning/proposed-adr-0004-constitution-hook-fail-open-posture.md` — **pending human promotion**
-  into `docs/adr/` (the contract-guard hook correctly *denied* the agent write there, a live
-  validation of H1).
+  realistic exposure (well-formed absolute-path writes). **Promoted (human-authorized) →
+  `docs/adr/0004-constitution-hook-fail-open-posture.md`** + README index row. (The contract-guard
+  PreToolUse hook correctly *denied* the agent Write to `docs/adr/` — a live validation of H1; the
+  promotion was performed as file ops under explicit human authorization, with CODEOWNERS as the
+  authoritative ratification at merge.)
 - **L2 (sub-second datetime precision) → leave as-is.** Contract-conformant (`normalize-spec.md` R5
   pins second precision); a spec change only if ever revisited. No action.
