@@ -6,10 +6,16 @@
 
 ## In flight
 
-- Nothing in flight. Clean milestone boundary — `milestone: v2.0` complete + archived; no open phase.
+- **Milestone v2.1 — MEM2 (Process Memory & Provenance Reframe)** started + roadmap written
+  (phases 12–16, 7/7 requirements mapped). No phase planned/executed yet. Nothing mid-edit.
+- SessionStart memory injection is temporarily **DISABLED** (`.memory/.inject-disabled`) — MEM2
+  Phase 13 reframes it; re-enable with `rm .memory/.inject-disabled`.
 
 ## Next
 
-- Start the next milestone with `/gsd:new-milestone` when ready.
-- Deferred (non-blocking; see `.planning/STATE.md` → Operator Next Steps + `.planning/AUDIT-FINDINGS.md`):
-  golden-comparator Batch B (H2/M1), optional `/gsd:complete-milestone v1.0`, `git push origin v2.0`.
+- **`/gsd:plan-phase 12`** — Model + ADR + Doc Reframe (v2.1 A): scaffold `.memory/agreements/`
+  process tier, reword distrust framing to data-authority, ratify as ADR-0006. Then 13→14→15→16.
+- Design source of truth: `.planning/MEMORY-UPGRADE-PROPOSAL.md` (§7 operator refinements authoritative).
+- Kickoff open Qs still to settle at planning: Q1 gating strength, Q2 `/checkpoint` vs `/agree`,
+  Q4 inject budget, Q6 staleness threshold (Q3/Q5 already decided: per-guideline files; per-file retire).
+- Deferred (non-blocking): golden-comparator Batch B (H2/M1, ADR-0005), optional `/gsd:complete-milestone v1.0`.

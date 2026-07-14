@@ -32,6 +32,14 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 10: Context-Economy Fan-out/Synthesize Orchestration** *(v2.0 β)* - A first-class fan-out → schema-bounded citation-bearing summary → synthesize workflow keeps long-lived sessions small; the reusable substrate γ builds on. (completed 2026-07-13)
 - [x] **Phase 11: Multi-Repo Workspace** *(v2.0 γ)* - Declare and operate several repos as one workspace: a workspace manifest, repo-scoped subagents running the β fan-out, cross-repo contract-drift/golden gates, and repo-crossing pipeline edges. (completed 2026-07-14)
 
+**Milestone v2.1 — MEM2 — Process Memory & Provenance Reframe** *(phases 12–16 — numbering continues after v2.0 = phases 9–11; reuses existing machinery — `tools/memory_regen`, `/checkpoint`, `tools/harness_lint`, Phase-7 emitter, `adr`+CODEOWNERS — no rebuild)*
+
+- [ ] **Phase 12: Model + ADR + Doc Reframe** *(v2.1 A)* - Scaffold the new PROCESS memory tier (`.memory/agreements/<slug>.md` per-guideline, committed human-authored — NOT derived), reword the distrust framing to data-authority everywhere it echoes, and ratify the memory-model change as ADR-0006 via the human-gated constitution path.
+- [ ] **Phase 13: Injector Reframe + Channel Wiring** *(v2.1 B)* - Split the SessionStart banner into a full-body priority-0 working-agreements directive + a data-scoped provenance banner, and surface a verbatim progress `updated:` stamp — preserving `inject.py` determinism and the ~4000-char budget.
+- [ ] **Phase 14: Write Path + Anti-Churn Guard** *(v2.1 C)* - A dedicated `/agree` command adds/retires a working-agreement only on explicit user feedback, backed by a `tools/harness_lint` provenance/anti-invent guard.
+- [ ] **Phase 15: Emit Round-Trip + Gates** *(v2.1 D)* - Round-trip every new/changed surface (`/agree`, updated skills, AGENTS.md managed block) through the Phase-7 emitter to both runtimes with no model id; emit-drift clean, GEN-04 green.
+- [ ] **Phase 16: Local Memory Web UI** *(v2.1 E)* - A local, no-network, no-auth tool to view/edit/retire memory items with pointer-aware referential integrity over a machine-built derived pointer-index.
+
 ## Phase Details
 
 ### Phase 1: Constitution + Golden Core
@@ -237,7 +245,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -253,6 +261,11 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 9. Self-Maintaining Derived Artifacts + Curator | 4/4 | Complete   | 2026-07-13 |
 | 10. Context-Economy Fan-out/Synthesize Orchestration | 3/3 | Complete    | 2026-07-13 |
 | 11. Multi-Repo Workspace | 4/4 | Complete    | 2026-07-14 |
+| 12. Model + ADR + Doc Reframe (v2.1 A) | 0/TBD | Not started | - |
+| 13. Injector Reframe + Channel Wiring (v2.1 B) | 0/TBD | Not started | - |
+| 14. Write Path + Anti-Churn Guard (v2.1 C) | 0/TBD | Not started | - |
+| 15. Emit Round-Trip + Gates (v2.1 D) | 0/TBD | Not started | - |
+| 16. Local Memory Web UI (v2.1 E) | 0/TBD | Not started | - |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
 
@@ -360,3 +373,83 @@ Plans:
 
 - [x] 11-04-PLAN.md — MREPO-02: prose-wire member-repo fan-out reuse into orchestrator + fan-out-synthesize skill; emitter round-trip to both runtimes + full phase gate
 
+---
+
+## Milestone v2.1 — MEM2 — Process Memory & Provenance Reframe
+
+> **Numbering continues (do NOT reset).** v2.0 ended at Phase 11; this milestone runs **Phases 12–16**. Design source: `.planning/MEMORY-UPGRADE-PROPOSAL.md` (§7 operator refinements are AUTHORITATIVE, supersede §2/§5 on conflict). Every phase **reuses existing machinery** (`tools/memory_regen`/`inject.py`, `/checkpoint`, `tools/harness_lint`, the Phase-7 emitter `tools/harness_emit`, the `adr` skill + CODEOWNERS path) — no new machinery is invented. Sequencing is dependency-locked 12 → 13 → 14 → 15 → 16: the model+ADR ground the injector; the injector consumes the channel the write-path fills; emit round-trips the surface changes; the UI operates on the finished, committed channel.
+>
+> **Cross-cutting non-negotiables (all phases):** contract-first / constitution gated (ADR-0006 lands via the human-ratified path — an agent Write to `docs/adr/` is correctly denied by contract-guard); machines gate / humans ratify (agreements are written **only** on explicit user feedback — the user is the ratifier); the new agreements channel is a **committed human-authored tier** (like `state/`), NOT a derived artifact — never regenerated, never colliding with `.memory/derived/`; every surface change round-trips the emitter to both runtimes with **no model id**; GEN-04 core→example independence stays green; project decisions are **linked** (ADR / PROJECT.md Key Decisions), never restated in the PROCESS channel (§7c).
+
+### Phase 12: Model + ADR + Doc Reframe *(v2.1 A)*
+
+**Goal**: The PROCESS memory channel exists as a scaffolded per-guideline tier and the distrust framing reads as *data authority* everywhere it echoes — and the memory-model change is ratified as ADR-0006 through the human-gated constitution path. This is the model + documentation foundation the injector (Phase 13) and write-path (Phase 14) build on.
+**Mode:** standard
+**Depends on**: Phase 11 (last shipped)
+**Requirements**: MEM2-01, MEM2-03 *(also authors the ADR-0006 portion of MEM2-06 — the emit portion of MEM2-06 is owned by Phase 15)*
+**Success Criteria** (what must be TRUE):
+
+  1. `.memory/agreements/` exists as a committed, human-authored tier with a defined per-guideline entry shape — one file per guideline (`<slug>.md`: title + one-line rule + `status` active/retired + a provenance stamp "added because &lt;user feedback&gt;" + added-date) — documented (schema/fixture) and scaffolded (empty or seed), and it is explicitly a committed tier like `state/`, NOT a derived artifact (it never regenerates, never collides with `.memory/derived/`).
+  2. No session-start surface tells an agent to "confirm before trusting" its own grounded work: the distrust prose is reworded to data-authority ("which artifact wins a DATA conflict") in `.memory/README.md`, `.memory/state/activeContext.md`, `.memory/state/progress.md`, `harness/skills/two-plane-memory/SKILL.md`, and `AGENTS.md`.
+  3. The agreements-entry shape links to ADRs / PROJECT.md Key-Decisions and never restates a project decision (§7c) — the PROCESS channel is working-style/methodology only.
+  4. ADR-0006 records the memory-model change (append-only, next number after 0005) and lands via the human-ratified path — an agent Write to `docs/adr/` is correctly denied by contract-guard, and CODEOWNERS ratifies at merge (mirrors the ADR-0004/0005 posture).
+
+**Plans**: TBD
+
+### Phase 13: Injector Reframe + Channel Wiring *(v2.1 B)*
+
+**Goal**: SessionStart injects the working-agreements as a full-body priority-0 directive plus a separate data-scoped provenance banner, and surfaces a verbatim progress freshness stamp — all while preserving `inject.py` determinism and the ~4000-char budget. This consumes the channel scaffolded in Phase 12.
+**Mode:** standard
+**Depends on**: Phase 12 (the `.memory/agreements/` shape + reworded prose it composes/surfaces)
+**Requirements**: MEM2-02, MEM2-05
+**Success Criteria** (what must be TRUE):
+
+  1. `inject.py` emits two distinct blocks: (a) a full-body **working-agreements directive** composed from the active `.memory/agreements/*` files at a new priority-0 (never-dropped, honored as a directive), **capped** (N entries / M chars; overflow degrades to a pointer per Q4) so it cannot crowd out drift + index; and (b) a **data-scoped** provenance banner that reads as "which artifact wins a data conflict" — NOT "distrust/retract your own grounded work". The activeContext pointer is reworded to a progress-log pointer.
+  2. delete+regen of the injector payload is **byte-identical** (determinism at `inject.py:20-22` preserved) and the assembled payload stays within the ~4000-char budget (`inject.py:105`) even with the capped agreements block present.
+  3. `/checkpoint` writes an `updated: <ISO-date>` stamp into `.memory/state/activeContext.md` / `progress.md`; `assemble()` surfaces that stamp **verbatim** — NO wall-clock inside `assemble()` (determinism intact) and NO hook-wrapper wall-clock code — freshness is judged **agent-side** against the session date (no fixed threshold, per Q6).
+  4. Progress state stays tight by design (in-flight + remaining + a short last-N-done summary); no ever-growing done-log is introduced (full history lives in git, §7a).
+
+**Plans**: TBD
+
+### Phase 14: Write Path + Anti-Churn Guard *(v2.1 C)*
+
+**Goal**: A dedicated `/agree` command is the sanctioned — and only — way a working-agreement is added or retired, and it fires only on explicit user feedback; a `tools/harness_lint` provenance/anti-invent guard enforces that every entry is origin-stamped and that agents cannot self-invent unsolicited entries.
+**Mode:** standard
+**Depends on**: Phase 13 (the injector consumes the files this command writes)
+**Requirements**: MEM2-04
+**Success Criteria** (what must be TRUE):
+
+  1. A dedicated **`/agree`** command appends a new per-guideline agreement **only in response to explicit user feedback**, and retires one by flipping that file's `status` to `retired` (per Q5/§7b) — never auto-churned, never silently rotated like the progress log.
+  2. A `tools/harness_lint` check **fails when an agreement file lacks a well-formed provenance/origin stamp** ("added because &lt;user feedback&gt;" + added-date), so agents cannot auto-invent entries; the guard follows the existing `stale-derived` gate pattern (regenerate → verify).
+  3. `/agree` is added to `EXPECTED_COMMANDS` (source side; its emit round-trip to both runtimes is owned by Phase 15).
+
+**Plans**: TBD
+
+### Phase 15: Emit Round-Trip + Gates *(v2.1 D)*
+
+**Goal**: Every new/changed surface from this milestone (`/agree`, updated skills, the updated `AGENTS.md` managed block) round-trips the Phase-7 emitter to both runtimes with no model id — proving emit-drift clean, GEN-04 green, and counts/fixtures updated. This is the emit portion of MEM2-06 (its ADR portion landed in Phase 12).
+**Mode:** standard
+**Depends on**: Phase 14 (the full set of surface changes must exist before the round-trip)
+**Requirements**: MEM2-06
+**Success Criteria** (what must be TRUE):
+
+  1. Re-running `tools/harness_emit` (glob discovery, mirroring the Phase-10/11 emitter round-trip — no emitter code change expected) projects `/agree` + the updated skills + the updated `AGENTS.md` managed block to BOTH runtimes (`.opencode/` + `.claude/`); emit fixtures/counts + `EXPECTED_COMMANDS` are updated to match.
+  2. The **emit-drift gate is clean** (re-emit + diff over the full documented path set) and **no model id** appears anywhere in the emitted trees (placeholder tiers only).
+  3. **GEN-04 core→example independence stays green** and the full non-example test suite passes.
+
+**Plans**: TBD
+
+### Phase 16: Local Memory Web UI *(v2.1 E)*
+
+**Goal**: A lightweight, local, no-network, no-auth tool lets a user view / edit / retire memory items (progress state + per-guideline agreements) with pointer-aware referential integrity — surfacing "what points to this item" over a machine-built derived pointer-index and keeping references consistent on edit/retire, so memory hygiene is systematized rather than manual.
+**Mode:** standard
+**Depends on**: Phase 15 (operates on the finished, committed memory channel + emitted surface)
+**Requirements**: MEM2-07
+**Success Criteria** (what must be TRUE):
+
+  1. A **local** web tool (no external network, no auth surface) lists the committed memory items — progress state + per-guideline agreements — and lets a user view, edit, and retire them.
+  2. A machine-built **derived pointer-index** surfaces "what points to this item" (docs / skills / `inject.py` pointers that reference memory files); the index is treated like other derived artifacts (generated, not hand-maintained).
+  3. Editing or retiring an item keeps references consistent — an edit/retire that would orphan a pointer is surfaced and reconciled — so a hand-edit can no longer silently break references.
+
+**Plans**: TBD
+**UI hint**: yes
