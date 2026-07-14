@@ -26,12 +26,22 @@ choose fail-open vs fail-closed on top of it.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 # _stdin.py -> hooks -> tools -> repo root (parents[2]); mirrors tools/harness_perms/resolver.py.
 _REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# DEV-only opt-out; distinct from GOLDEN_APPROVE_HUMAN, so a dev-bypassed write is never
+# represented as human ratified.
+DEV_BYPASS_ENV = "HARNESS_DEV_BYPASS"
+
+
+def dev_bypassed() -> bool:
+    """Return whether the explicit local-dev bypass flag is non-empty and non-blank."""
+    return bool((os.environ.get(DEV_BYPASS_ENV) or "").strip())
 
 
 def repo_relative(file_path: str, root: Path = _REPO_ROOT) -> str:
