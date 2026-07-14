@@ -1,6 +1,7 @@
-# progress — terse running log (COMMITTED, PROVISIONAL)
+# progress — terse running log (COMMITTED)
 
-> PROVISIONAL — a hint, not truth. `contracts/` and `docs/adr/` always win on conflict.
+> DATA AUTHORITY — on a data conflict, `contracts/` and `docs/adr/` win over
+> `.memory/state/`. This is a session progress log, not a reason to re-verify grounded work.
 > No secrets/PII. Durable decisions go in append-only `docs/adr/`, not here.
 
 - v1.0 (phases 1–8) + v2.0 (phases 9–11): complete + archived.

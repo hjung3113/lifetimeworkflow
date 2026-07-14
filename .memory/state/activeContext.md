@@ -1,7 +1,8 @@
-# activeContext — volatile session hint (COMMITTED, PROVISIONAL)
+# activeContext — volatile session hint (COMMITTED)
 
-> PROVISIONAL — this file is a hint, not truth. `contracts/` and `docs/adr/` always
-> override `.memory/state/` on conflict. No secrets, tokens, credentials, or PII here.
+> DATA AUTHORITY — on a data conflict, `contracts/` and `docs/adr/` win over
+> `.memory/state/`. This is a session progress log, not a reason to re-verify grounded work.
+> No secrets, tokens, credentials, or PII here.
 > The SessionStart injector injects only a *pointer* to this file, never its body.
 
 ## In flight

@@ -84,8 +84,9 @@ specifics live with the instance** — see `examples/log-parser/{AGENTS.md,READM
 5. **Lazy-load rule.** Do **not** preload full contract bodies into context. Use the injected
    contracts-index / repo-map **pointers** and read a specific contract only when the task
    needs it. This is the mechanism the SessionStart injector implements (~1k-token cap,
-   pointer-only, provisional-banner-first). Volatile `.memory/state/` is **provisional** —
-   contracts/ and docs/adr/ always override it on conflict.
+   pointer-only, data-authority-banner-first). On a **data** conflict, `contracts/` and
+   `docs/adr/` are authoritative over volatile `.memory/state/` — this determines which
+   artifact wins a contradiction, not whether grounded work should be distrusted.
 
 ## Working in a package
 
