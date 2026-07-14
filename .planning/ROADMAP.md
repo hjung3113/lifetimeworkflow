@@ -380,10 +380,11 @@ Plans:
 
 **Requirements**: none new (references the approved brainstorm spec)
 **Depends on:** None (harness-core; independent of the Phase 12–16 memory chain)
-**Plans:** 0 plans
+**Plans:** 2 plans (2 waves)
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 17 to break down)
+- [ ] 17-01-PLAN.md — HARNESS_DEV_BYPASS: shared dev_bypassed() + thread into contract_guard/commit_gate + tests (SC1–SC6)
+- [ ] 17-02-PLAN.md — ADR-0007 recording the posture (draft-to-scratch + human-gated landing)
 
 ---
 
