@@ -1,0 +1,37 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-07-14T15:36:11.687Z",
+  "phase": "13",
+  "phase_name": "Injector Reframe + Channel Wiring (v2.1 B)",
+  "phase_dir": ".planning/phases/13-... (not yet created)",
+  "plan": null,
+  "task": null,
+  "total_tasks": null,
+  "status": "between_phases",
+  "completed_tasks": [
+    {"id": "12", "name": "Phase 12 — Model + ADR + Doc Reframe (v2.1 A)", "status": "done", "commit": "ea776cd"},
+    {"id": "12-adr", "name": "ADR-0006 landed (human-gated)", "status": "done", "commit": "bea92ef"},
+    {"id": "17", "name": "Phase 17 — Constitution-Gate Dev/Enforce Decoupling (infra)", "status": "done", "commit": "7d5edca"},
+    {"id": "17-adr", "name": "ADR-0007 landed (human-gated)", "status": "done", "commit": "ad6f644"}
+  ],
+  "remaining_tasks": [
+    {"id": "13", "name": "Phase 13 — Injector Reframe + Channel Wiring (MEM2-02, MEM2-05)", "status": "not_started"},
+    {"id": "14", "name": "Phase 14 — Write Path + Anti-Churn Guard (MEM2-04)", "status": "not_started"},
+    {"id": "15", "name": "Phase 15 — Emit Round-Trip + Gates (MEM2-06 emit)", "status": "not_started"},
+    {"id": "16", "name": "Phase 16 — Local Memory Web UI (MEM2-07)", "status": "not_started"}
+  ],
+  "blockers": [],
+  "human_actions_pending": [
+    {"action": "Open a PR and let CODEOWNERS review the constitution-plane changes (ADR-0006, ADR-0007)", "context": "The branch is pushed; the runtime hooks allowed the ADR writes via raw-shell, but CODEOWNERS at PR merge is the real ratification for docs/adr/. Use /gsd:ship or /gsd:pr-branch.", "blocking": false},
+    {"action": "Optionally enable HARNESS_DEV_BYPASS in .claude/settings.local.json", "context": "Phase 17 shipped the flag; setting {\"env\":{\"HARNESS_DEV_BYPASS\":\"1\"}} lets the dev agent land future constitution writes in-session (CODEOWNERS still gates merge), ending the manual raw-shell ADR handoff.", "blocking": false}
+  ],
+  "decisions": [
+    {"decision": "Execute delegated to Codex via orca-cli (gpt-5.6, medium, fast off)", "rationale": "User's standing workflow preference; saved as memory execute-via-codex-orca. Claude orchestrates/verifies/merges, Codex implements in an isolated Orca worktree.", "phase": "12/17"},
+    {"decision": "Switched Codex model luna → terra mid-run", "rationale": "User flagged luna as too expensive for implementation; terra is a lower/cheaper tier.", "phase": "17"},
+    {"decision": "Took over Phase 17 Tasks 2-3 directly instead of Codex", "rationale": "The terra Codex terminal stalled on MCP-server startup after committing Task 1; Phase 17 code is under tools/hooks/ (NOT constitution-gated), so direct implementation was reliable and cost-free.", "phase": "17"},
+    {"decision": "Phase 17 inserted as standalone infra (not inside v2.1 MEM2 chain)", "rationale": "Dogfooding entanglement surfaced mid-Phase-12 (product guard governs the dev session); it is independent of the memory-model milestone.", "phase": "17"}
+  ],
+  "uncommitted_files": [".planning/config.json (pre-existing, not this session)", ".mcp.json (untracked, pre-existing)"],
+  "next_action": "/gsd:plan-phase 13  (Injector Reframe + Channel Wiring — consumes the .memory/agreements/ channel + reworded surfaces from Phase 12; dependency-locked 12→13)",
+  "context_notes": "Two phases completed and PUSHED (origin/claude/data-pipeline-harness-8aypct, 43808c1..7d5edca, 19 commits). No mid-task work is paused — this is a clean stop between phases. Phase 12 (v2.1 A) done; Phase 17 (infra decoupling) done. Full hooks+harness_lint suite = 348 passed. The v2.1 MEM2 chain resumes at Phase 13 (13→14→15→16, dependency-locked). ADR-0006 + ADR-0007 both landed and pushed but not yet PR-reviewed by CODEOWNERS."
+}
