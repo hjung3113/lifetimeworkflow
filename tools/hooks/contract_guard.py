@@ -33,7 +33,7 @@ import json
 import os
 
 from tools.harness_perms import resolve_path
-from tools.hooks._stdin import emit_deny, parse_event, read_stdin
+from tools.hooks._stdin import emit_deny, parse_event, read_stdin, repo_relative
 from tools.polyglot_lint import lint_bytes
 
 # CONSTITUTION-ONLY subset — the human-owned, CODEOWNERS-gated plane. Deliberately EXCLUDES *.env
@@ -57,7 +57,10 @@ def decide(file_path: str, content: str, approved: bool) -> dict | None:
       (BOM/CRLF) -> deny (the plane must be byte-pristine even when access-approved, D-04).
     * On the constitution plane, approved, byte-pristine -> ``None`` (the bypass).
     """
-    on_plane = bool(file_path) and resolve_path(CONSTITUTION_GLOBS, file_path) == "deny"
+    # Claude's file_path is absolute; the deny globs are repo-relative. Normalize at this seam so
+    # the prefix-anchored globs actually match a real absolute write (else the gate no-ops).
+    relative_path = repo_relative(file_path)
+    on_plane = bool(relative_path) and resolve_path(CONSTITUTION_GLOBS, relative_path) == "deny"
     if not on_plane:
         return None
 

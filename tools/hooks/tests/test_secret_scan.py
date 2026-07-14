@@ -106,6 +106,21 @@ def test_benign_source_file_allowed() -> None:
     assert decide("libs/python/foo.py", "def f():\n    return 1\n") is None
 
 
+# --- decide(): ABSOLUTE file_path (Claude's real hook input) — path-deny + allow-list (H1) --------
+
+
+def test_absolute_dotenv_path_denied() -> None:
+    # An absolute *.env write must still be path-denied after repo-relative normalization.
+    out = decide(str(_REPO_ROOT / "config" / "prod.env"), "PLAIN=notasecret")
+    assert out is not None
+    assert out["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+def test_absolute_fixture_path_allowlisted() -> None:
+    # Absolute path under tests/ must still be allow-listed (else content scanning over-fires).
+    assert decide(str(_REPO_ROOT / "tests" / "fixtures" / "blob.json"), AWS_KEY) is None
+
+
 # --- main(): stdin -> deny JSON on hit, silent allow otherwise -----------------------------------
 
 

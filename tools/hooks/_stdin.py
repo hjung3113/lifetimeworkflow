@@ -28,6 +28,35 @@ from __future__ import annotations
 import json
 import sys
 from dataclasses import dataclass
+from pathlib import Path
+
+# _stdin.py -> hooks -> tools -> repo root (parents[2]); mirrors tools/harness_perms/resolver.py.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def repo_relative(file_path: str, root: Path = _REPO_ROOT) -> str:
+    """Best-effort normalize a hook ``file_path`` to a repo-root-relative POSIX path.
+
+    Claude's Write/Edit ``tool_input.file_path`` is ABSOLUTE (``/…/contracts/x``), but the
+    constitution/secret deny globs (``contracts/**``, ``golden/**``, ``*.env``) are repo-relative
+    and matched with ``fnmatchcase``, which anchors at the string start — so an absolute path never
+    matches and the path-scoped deny silently no-ops. Normalizing here, at the one Claude-stdin
+    seam, lets the shared pure resolver keep seeing relative paths (its signature stays stable).
+
+    * Absolute path under ``root`` -> repo-relative POSIX string (``contracts/x``).
+    * Absolute path OUTSIDE the repo -> returned unchanged (still absolute; simply won't match).
+    * Already-relative path (as fed by tests) -> unchanged apart from a stripped leading ``./``.
+    * Empty string -> unchanged.
+    """
+    if not file_path:
+        return file_path
+    candidate = Path(file_path)
+    if candidate.is_absolute():
+        try:
+            return candidate.resolve().relative_to(root).as_posix()
+        except ValueError:
+            return file_path  # outside the repo -> leave as-is (won't match repo-relative globs)
+    return file_path[2:] if file_path.startswith("./") else file_path
 
 
 @dataclass(frozen=True)

@@ -20,10 +20,14 @@ from __future__ import annotations
 
 import io
 import json
+from pathlib import Path
 
 import pytest
 
 from tools.hooks.contract_guard import decide, main
+
+# The repo root — Claude's real hook stdin sends file_path as an ABSOLUTE path under this root.
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 
 # A UTF-8 BOM as a decoded string (encodes to EF BB BF) and a CRLF-bearing payload.
 BOM_CONTENT = "﻿{}"
@@ -57,6 +61,34 @@ def test_unapproved_golden_write_denied() -> None:
 def test_approved_clean_constitution_write_allowed() -> None:
     # Non-empty token present + byte-pristine payload -> no access-control decision (bypass).
     assert decide("contracts/x.schema.json", "{}\n", approved=True) is None
+
+
+# --- decide(): ABSOLUTE file_path (Claude's real hook input) must still be gated (H1 regression) --
+
+
+def test_unapproved_absolute_constitution_write_denied() -> None:
+    # Claude sends an absolute path; the prefix-anchored deny globs must still match after
+    # repo-relative normalization (else the constitution gate silently no-ops in real sessions).
+    abs_path = str(_REPO_ROOT / "contracts" / "x.schema.json")
+    out = decide(abs_path, "{}", approved=False)
+    assert out is not None
+    assert out["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+def test_absolute_source_path_allowed() -> None:
+    abs_path = str(_REPO_ROOT / "libs" / "python" / "foo.py")
+    assert decide(abs_path, "x = 1\n", approved=False) is None
+
+
+def test_absolute_path_outside_repo_not_constitution() -> None:
+    # A path that is not under the repo root cannot be a constitution write here.
+    assert decide("/etc/passwd", "root:x:0:0", approved=False) is None
+
+
+def test_main_absolute_constitution_denies(monkeypatch: pytest.MonkeyPatch) -> None:
+    abs_path = str(_REPO_ROOT / "docs" / "adr" / "0003-x.md")
+    out = _run_main(monkeypatch, _write(abs_path, "# x\n"), token=None)
+    assert json.loads(out)["hookSpecificOutput"]["permissionDecision"] == "deny"
 
 
 # --- decide(): source paths are not this gate's plane -------------------------------------------
