@@ -19,6 +19,17 @@ cd "$PROJECT_DIR"
 NODE=node
 command -v node >/dev/null 2>&1 || NODE=/opt/node22/bin/node
 
+# --- TEMPORARY DISABLE (until the MEM2 memory-model upgrade) ---------------------------------
+# The SessionStart memory injection is paused because its every-session payload (~2.9k chars /
+# ~730 tokens) both costs context and carries the "provisional / confirm-before-trusting" framing
+# that MEM2 will reframe (see .planning/MEMORY-UPGRADE-PROPOSAL.md). Wiring stays at 4 groups
+# (test_hook_wiring.py); this only makes the injection a no-op. RE-ENABLE by deleting the flag:
+#   rm .memory/.inject-disabled
+if [ -f "$PROJECT_DIR/.memory/.inject-disabled" ]; then
+  "$NODE" -e 'process.stdout.write(JSON.stringify({hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:""}}))'
+  exit 0
+fi
+
 # Best-effort regenerate the derived plane. A missing Wave-2 generator (repo_map / contracts_index
 # authored in 02-03/02-04) must NEVER break the hook — hence `|| true`. The assembler degrades
 # gracefully when the derived files are absent.

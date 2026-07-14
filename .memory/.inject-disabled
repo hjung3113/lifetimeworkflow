@@ -1,0 +1,3 @@
+SessionStart memory-injection is DISABLED until the MEM2 memory-model upgrade.
+Re-enable: delete this file (`rm .memory/.inject-disabled`).
+See .planning/MEMORY-UPGRADE-PROPOSAL.md.
