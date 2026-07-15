@@ -482,7 +482,20 @@ Plans:
   2. The **emit-drift gate is clean** (re-emit + diff over the full documented path set) and **no model id** appears anywhere in the emitted trees (placeholder tiers only).
   3. **GEN-04 core→example independence stays green** and the full non-example test suite passes.
 
-**Plans**: TBD
+> **SC1 note (planning, 2026-07-16):** `EXPECTED_COMMANDS` **does not exist** in any source file
+> (verified: 0 hits across `tools/`, `harness/`, `libs/`). `test_commands.py` is glob-driven by
+> design, which is why `agree.md` was auto-covered in Phase 14 with zero test edits; Phase 14 already
+> ruled against inventing the constant (D-11). SC1 is **mis-worded** — the third such instance in this
+> milestone's own source. Its substance is satisfied by the re-emit plus the `.ambr` regen. Likewise
+> "counts updated" is **already done**: `test_all_20_commands_emit_to_both_trees` was bumped 19→20 by
+> Phase 14 (`fa1aea8`) and passes, because `_emit(tmp_path)` counts the runtime-neutral SOURCE, not the
+> committed trees.
+
+**Plans**: 2 plans
+
+Plans:
+- [ ] 15-01-PLAN.md — Wave 1 · Run the Phase-7 emitter, commit the measured delta (2 new + 8 changed + AGENTS.md splice + manifest), then regenerate the projected-tree `.ambr` — emit strictly BEFORE snapshot-regen (gate-theft guard)
+- [ ] 15-02-PLAN.md — Wave 2 · Prove the gates (model-id incl. the body coverage gap, GEN-04 post-regen, full suite, emit-drift replica), fix the stale `test_coexist` module docstring 19→20, record the SC1 mis-wording
 
 ### Phase 16: Local Memory Web UI *(v2.1 E)*
 
