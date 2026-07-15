@@ -265,7 +265,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 12. Model + ADR + Doc Reframe (v2.1 A) | 3/3 | Complete | 2026-07-14 |
 | 13. Injector Reframe + Channel Wiring (v2.1 B) | 0/TBD | Not started | - |
 | 14. Write Path + Anti-Churn Guard (v2.1 C) | 0/TBD | Not started | - |
-| 15. Emit Round-Trip + Gates (v2.1 D) | 2/2 | Complete   | 2026-07-15 |
+| 15. Emit Round-Trip + Gates (v2.1 D) | 2/2 | Complete    | 2026-07-15 |
 | 16. Local Memory Web UI (v2.1 E) | 0/TBD | Not started | - |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
