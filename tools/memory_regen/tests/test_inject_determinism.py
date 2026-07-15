@@ -67,11 +67,26 @@ def test_payload_matches_snapshot(snapshot, monkeypatch, tmp_path: Path) -> None
     assert payload == snapshot
 
 
+_WALLCLOCK_TOKENS = ("datetime", "date.today", ".now()", "time.time", "time.monotonic")
+
+
+def _wallclock_tokens(text: str) -> list[str]:
+    return [token for token in _WALLCLOCK_TOKENS if token in text]
+
+
 def test_inject_module_has_no_wallclock(repo_root: Path) -> None:
-    """The assembler reads authored freshness data; it never computes wall-clock time."""
-    text = (repo_root / "tools/memory_regen/inject.py").read_text(encoding="utf-8")
-    for token in ("datetime", "date.today", ".now()", "time.time", "time.monotonic"):
-        assert token not in text
+    """The deterministic assembler and agreement predicate never compute wall-clock time."""
+    for relative_path in (
+        "tools/memory_regen/inject.py",
+        "tools/harness_lint/agreements.py",
+    ):
+        text = (repo_root / relative_path).read_text(encoding="utf-8")
+        assert not _wallclock_tokens(text), relative_path
+
+
+def test_negative_control_wallclock_scan_flags_planted_token() -> None:
+    """The static scan is live and rejects a synthetic clock-bearing source."""
+    assert _wallclock_tokens("x = datetime") == ["datetime"]
 
 
 def test_hook_wrappers_have_no_wallclock(repo_root: Path) -> None:

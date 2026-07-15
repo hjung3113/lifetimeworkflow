@@ -13,6 +13,7 @@ from pathlib import Path
 
 from tools.contract_drift.drift import run_gate
 from tools.harness_lint import parse_frontmatter
+from tools.harness_lint.agreements import iter_agreement_files, load_agreement
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 DERIVED_DIR = _REPO_ROOT / ".memory" / "derived"
@@ -88,20 +89,12 @@ def _render_agreement(body: str) -> str | None:
 
 
 def _agreements_block(agreements_dir: Path = AGREEMENTS_DIR) -> str:
-    base = Path(agreements_dir)
-    try:
-        resolved_base = base.resolve()
-    except OSError:
-        return ""
     entries: list[str] = []
-    for path in sorted(base.glob("*.md")):
-        if path.name.startswith("_") or path.name == "README.md" or path.is_symlink():
+    for path in iter_agreement_files(agreements_dir):
+        agreement = load_agreement(path)
+        if agreement is None:
             continue
-        try:
-            path.resolve().relative_to(resolved_base)
-            frontmatter, body = parse_frontmatter(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            continue
+        frontmatter, body = agreement
         if str(frontmatter.get("status", "")).strip() != "active":
             continue
         rendered = _render_agreement(body)
