@@ -37,7 +37,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 12: Model + ADR + Doc Reframe** *(v2.1 A)* - Scaffold the new PROCESS memory tier (`.memory/agreements/<slug>.md` per-guideline, committed human-authored — NOT derived), reword the distrust framing to data-authority everywhere it echoes, and ratify the memory-model change as ADR-0006 via the human-gated constitution path. (completed 2026-07-14)
 - [ ] **Phase 13: Injector Reframe + Channel Wiring** *(v2.1 B)* - Split the SessionStart banner into a full-body priority-0 working-agreements directive + a data-scoped provenance banner, and surface a verbatim progress `updated:` stamp — preserving `inject.py` determinism and the ~4000-char budget.
 - [ ] **Phase 14: Write Path + Anti-Churn Guard** *(v2.1 C)* - A dedicated `/agree` command adds/retires a working-agreement only on explicit user feedback, backed by a `tools/harness_lint` provenance/anti-invent guard.
-- [ ] **Phase 15: Emit Round-Trip + Gates** *(v2.1 D)* - Round-trip every new/changed surface (`/agree`, updated skills, AGENTS.md managed block) through the Phase-7 emitter to both runtimes with no model id; emit-drift clean, GEN-04 green.
+- [x] **Phase 15: Emit Round-Trip + Gates** *(v2.1 D)* - Round-trip every new/changed surface (`/agree`, updated skills, AGENTS.md managed block) through the Phase-7 emitter to both runtimes with no model id; emit-drift clean, GEN-04 green. (completed 2026-07-15)
 - [ ] **Phase 16: Local Memory Web UI** *(v2.1 E)* - A local, no-network, no-auth tool to view/edit/retire memory items with pointer-aware referential integrity over a machine-built derived pointer-index.
 - [x] **Phase 17: Constitution-Gate Dev/Enforce Decoupling** *(infra — independent of v2.1 MEM2)* - A secure-default `HARNESS_DEV_BYPASS` env opt-out so the product's constitution gates stop governing the Claude dev session (default enforce; blank = no bypass; distinct from `GOLDEN_APPROVE_HUMAN`; byte-hygiene never waived), honored by `contract_guard`/`commit_gate`; ADR-0007 records it; CODEOWNERS stays the real gate. (completed 2026-07-15)
 
@@ -265,7 +265,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 12. Model + ADR + Doc Reframe (v2.1 A) | 3/3 | Complete | 2026-07-14 |
 | 13. Injector Reframe + Channel Wiring (v2.1 B) | 0/TBD | Not started | - |
 | 14. Write Path + Anti-Churn Guard (v2.1 C) | 0/TBD | Not started | - |
-| 15. Emit Round-Trip + Gates (v2.1 D) | 1/2 | In Progress|  |
+| 15. Emit Round-Trip + Gates (v2.1 D) | 2/2 | Complete   | 2026-07-15 |
 | 16. Local Memory Web UI (v2.1 E) | 0/TBD | Not started | - |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
@@ -498,7 +498,7 @@ Plans:
 - [x] 15-01-PLAN.md — Wave 1 · Run the Phase-7 emitter, commit the measured delta (2 new + 8 changed + AGENTS.md splice + manifest), then regenerate the projected-tree `.ambr` — emit strictly BEFORE snapshot-regen (gate-theft guard)
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 15-02-PLAN.md — Wave 2 · Prove the gates (model-id incl. the body coverage gap, GEN-04 post-regen, full suite, emit-drift replica), fix the stale `test_coexist` module docstring 19→20, record the SC1 mis-wording
+- [x] 15-02-PLAN.md — Wave 2 · Prove the gates (model-id incl. the body coverage gap, GEN-04 post-regen, full suite, emit-drift replica), fix the stale `test_coexist` module docstring 19→20, record the SC1 mis-wording
 
 ### Phase 16: Local Memory Web UI *(v2.1 E)*
 
