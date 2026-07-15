@@ -108,3 +108,40 @@ later). The `contract-guard` runtime enforcement that gates this very ADR is the
   reworded skill).
 - Enforcement precedent: [ADR-0004](0004-constitution-hook-fail-open-posture.md) (the `contract-guard`
   gate that ratifies this record); requirements MEM2-01 / MEM2-03 / MEM2-06 (`.planning/REQUIREMENTS.md`).
+
+## Errata
+
+*2026-07-16 (Phase 14 / MEM2-04). Appended, not edited: no decision word above is altered. Permitted
+by [`README.md`](README.md) — "Fixing typos/links is fine; changing the recorded decision is not."
+This corrects a factual claim in `### Consequences`, not the decision in `## Decision Outcome`, so
+supersede-with-a-new-ADR is not the right instrument.*
+
+**The "one committed seed" does not exist, and never did.** The `### Consequences` bullet above
+states the tier ships as "a **scaffold** — `_TEMPLATE.md` + README + one committed seed". Only the
+first two shipped. Verifiable:
+
+```
+$ git ls-files .memory/agreements/
+.memory/agreements/README.md
+.memory/agreements/_TEMPLATE.md
+```
+
+Commit `96b8db2` ("docs(memory): add working agreements tier") added exactly those two files. No
+seed was ever removed — none was ever written.
+
+**The empty active set is CORRECT — do not "repair" it.** This is the load-bearing half of this
+errata. An agent reading the claim above, finding the directory empty, and helpfully authoring a
+seed agreement would have to **invent user feedback** to fill the `provenance:` stamp. That is
+precisely the anti-invent violation this channel is designed to prevent (§2 property 2: "an agent
+**must not invent** entries"; threat T-13-01). An agreement exists only because a user gave explicit
+process feedback. Zero feedback so far means zero agreements — that is the channel working, not a
+defect.
+
+The error is instructive rather than embarrassing: a ratified record on the constitution plane
+asserted a fact that no test or gate checked, and it survived until someone diffed the claim against
+`git ls-files`. That is the same failure mode Phase 13 caught three times (a prose guarantee with no
+test behind it). The correction is a dated note citing falsifiable evidence — not manufactured
+evidence retrofitted to match the claim.
+
+**Scope:** the model, the four-plane decision, the tier's shape, and the reframe in
+`## Decision Outcome` are all unaffected and remain in force.
