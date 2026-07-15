@@ -2,7 +2,7 @@
 phase: 15
 slug: emit-round-trip-gates-v2-1-d
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: true
 created: 2026-07-16
 ---
@@ -78,16 +78,16 @@ and mitigated here by the mandated manual re-emit + `git diff` replica.
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 5s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (none — existing infrastructure suffices)
+- [x] No watch-mode flags
+- [x] Feedback latency < 5s
+- [x] `nyquist_compliant: true` set in frontmatter
 
 **Gate-theft guard (phase-specific):** `--snapshot-update` alone turns the suite green while the
 committed trees still lack `/agree`. Regenerating the `.ambr` is legitimate (SC1's "fixtures
 updated") **only after** the emitter has actually run and its output is committed. Snapshot-update
 before emit is gate theft and must fail review.
 
-**Approval:** pending
+**Approval:** approved 2026-07-16 (gsd-plan-checker Dimension 8 walkthrough 8a–8e passed against 15-01/15-02)

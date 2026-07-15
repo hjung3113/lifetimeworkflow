@@ -494,7 +494,10 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
+**Wave 1**
 - [ ] 15-01-PLAN.md — Wave 1 · Run the Phase-7 emitter, commit the measured delta (2 new + 8 changed + AGENTS.md splice + manifest), then regenerate the projected-tree `.ambr` — emit strictly BEFORE snapshot-regen (gate-theft guard)
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 15-02-PLAN.md — Wave 2 · Prove the gates (model-id incl. the body coverage gap, GEN-04 post-regen, full suite, emit-drift replica), fix the stale `test_coexist` module docstring 19→20, record the SC1 mis-wording
 
 ### Phase 16: Local Memory Web UI *(v2.1 E)*
