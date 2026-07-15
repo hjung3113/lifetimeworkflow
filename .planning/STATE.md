@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: MEM2 — Process Memory & Provenance Reframe
 status: executing
-stopped_at: "**Phase 13 PLANNED — 4 plans / 3 waves, checker VERIFICATION PASSED (no blockers).** Wave 1: 13-01 (state stamp + /checkpoint) ‖ 13-02 (determinism net); Wave 2: 13-03 (injector reframe — sole owner of inject.py, incl. the D-09 agreements_dir param); Wave 3: 13-04 (re-enable injection, rm .memory/.inject-disabled). Operator ratified Q4 + 2 open items inline → 13-CONTEXT.md D-01..D-20: cap N=6/M=700 (named constants), re-enable in Phase 13, all four T-13-01 mitigations. KEY: the delete+regen determinism net SC2 calls 'preserved' does NOT exist — 13-02 builds it BEFORE the reframe. BASELINE: `uv run pytest tools/harness_emit` is already 1 failed/46 passed on a clean tree (Phase 12's deferred re-emit) — do NOT fix or regenerate that .ambr; it is Phase 15's gate. Next: `/gsd:execute-phase 13`."
+stopped_at: "**Phase 13 (v2.1 B) COMPLETE — executed by Codex (gpt-5.6-terra) in Orca worktree `phase13-codex`, FF-merged at 9b93d28 (9 commits, 4 plans / 3 waves).** SessionStart injection is now LIVE again (`.memory/.inject-disabled` removed, D-20). Payload verified end-to-end, not just by tests: delete+regen byte-identical (sha d0cd72ad…), 3016/4000 chars, zero wall-clock in `inject.py`, banner reads data-scoped ('which artifact wins a contradiction', not 'distrust your own work'), pointer reworded to a progress log carrying a verbatim `[updated: …]` stamp. Fixture probe confirmed agreements compose at priority-0 above the banner, sorted, retired excluded, and a SECRET-CANARY planted in `provenance` did NOT leak (D-16/T-13-01 mitigation works). Gate: `tools/memory_regen`+`tools/harness_lint` = 313 passed; `harness_emit` still EXACTLY 1 failed/46 passed — that inherited Phase-12 re-emit failure is Phase 15's gate and was correctly NOT fixed. Next: `/gsd:plan-phase 14` (Write Path + Anti-Churn Guard, MEM2-04 — the `/agree` write half + provenance lint, T-13-01's durable mitigation)."
 last_updated: "2026-07-15T15:25:07.159Z"
 last_activity: 2026-07-15 -- Phase 13 planning complete
 progress:
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-14)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** v2.1 MEM2 — Phase 13 planned (4 plans / 3 waves, checker passed); ready to execute
+**Current focus:** v2.1 MEM2 — Phase 13 done (injection live again); ready to plan Phase 14
 
 ## Current Position
 
-Phase: 13 — Injector Reframe + Channel Wiring (v2.1 B, MEM2-02/MEM2-05) — Planned
-Plan: 13-01 ‖ 13-02 (W1) → 13-03 (W2) → 13-04 (W3) — none started
-Status: Ready to execute (`/gsd:execute-phase 13`)
-Last activity: 2026-07-15 -- Phase 13 planning complete
+Phase: 13 — Injector Reframe + Channel Wiring (v2.1 B, MEM2-02/MEM2-05) — COMPLETE (merged 9b93d28)
+Plan: 13-01 ✓ ‖ 13-02 ✓ (W1) → 13-03 ✓ (W2) → 13-04 ✓ (W3) — 4/4
+Status: Ready to plan Phase 14 (`/gsd:plan-phase 14`)
+Last activity: 2026-07-16 -- Phase 13 executed via Codex, verified, merged
 
 ## Performance Metrics
 
