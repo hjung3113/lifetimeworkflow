@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 Phase: 13 — Injector Reframe + Channel Wiring (v2.1 B, MEM2-02/MEM2-05) — COMPLETE (merged 9b93d28)
 Plan: 13-01 ✓ ‖ 13-02 ✓ (W1) → 13-03 ✓ (W2) → 13-04 ✓ (W3) — 4/4
 Status: Ready to plan Phase 14 (`/gsd:plan-phase 14`)
-Last activity: 2026-07-16 -- Phase 13 executed via Codex, verified, merged
+Last activity: 2026-07-15 -- Completed quick task 260716-16x: fixed 6 silently-dead GSD node hooks
 
 ## Performance Metrics
 
@@ -197,6 +197,12 @@ None yet.
 - Toolchain: .NET 10 SDK is NOT installed in this ephemeral env — Phase 1 (BOOT-01) install script gates all .NET-side execution.
 - Research flag: opencode.ai is proxy-403'd; re-verify exact hook event names, 15-key permission matrix semantics, and skill size caps against live docs before Phase 4 (hooks) and Phase 6 (emitter).
 - Research flag: internal inconsistency on Claude skill description cap (≤200 vs ≤1024 chars) — resolve precisely at Phase 6 emitter-validator implementation.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260716-16x | Fix 6 broken GSD hooks — hardcoded `/opt/node22/bin/node` did not exist on macOS, so every node-based GSD guard hook failed **silently at exit 0** and had been inert on this host. Replaced with `"$(command -v node \|\| echo /opt/node22/bin/node)"`, mirroring the pattern `memory-inject.sh:18-20` already used (which is why it was the one node hook still working). Portable: PATH node on macOS, `/opt/node22` fallback in the remote Linux container. 5 of the 6 (`check-update`, `context-monitor`, `read-injection-scanner`, `prompt-guard`, `workflow-guard`) genuinely resume running under Claude Code; `read-guard` early-exits under Claude Code **by design** (native read-before-edit) so its fix benefits other runtimes. | 2026-07-15 | 085064c | [260716-16x-fix-6-broken-gsd-hooks-hardcoded-opt-nod](./quick/260716-16x-fix-6-broken-gsd-hooks-hardcoded-opt-nod/) |
 
 ## Deferred Items
 
