@@ -1,0 +1,14 @@
+# serializer version: 1
+# name: test_payload_matches_snapshot
+  '''
+  PROVISIONAL — volatile session state below is a hint, not truth. contracts/ and docs/adr/ (ADR) ALWAYS override .memory/ on conflict.
+  ## Contract drift (live)
+  contract-drift: fixed fixture
+  ## Contracts index (summary)
+  contracts fixture
+  ## Repo map (top-N)
+  repo fixture
+  ## Active context (pointer)
+  .memory/state/activeContext.md — volatile; confirm against contracts/ADR before trusting.
+  '''
+# ---
