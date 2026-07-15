@@ -131,11 +131,78 @@ resolution (Phase 16 / MEM2-07); per-instance agreement overlays.
 - **D-13:** The empty active set is **correct**, and the errata must say so plainly, so a future
   agent reading 0006 does not "repair" the dir by inventing an entry.
 
+### Amendments from research (2026-07-16, post-`14-RESEARCH.md`)
+
+Research contradicted three locked decisions. Each was **independently re-verified** before amending —
+this is the adversarial pass working, not drift. The amendments below **supersede** the text above
+where they conflict.
+
+- **D-02 — MECHANISM CORRECTED, decision unchanged.** D-02 claimed `_TEMPLATE.md:3`'s
+  `added: YYYY-MM-DD` parses to a `datetime.date`. **It does not** — verified live:
+  `YYYY-MM-DD` is not a parseable date, so it yields `str` today. The hazard is real but *latent*:
+  `added: 2026-07-16` (unquoted, what `/agree` will actually write) → `datetime.date`;
+  `added: "2026-07-16"` → `str`. So the fix stands (quote the template, lint requires `str`), but
+  the reason is "the template teaches a shape that becomes a date object once a real date is
+  substituted" — not "the template is broken today." **Ordering constraint:** the `isinstance(str)`
+  check MUST precede the regex, or the lint raises `TypeError` on a `date` object instead of failing
+  cleanly. No `import datetime` anywhere (see D-17).
+
+- **D-14 (NEW, resolves research OQ-1) — share LAYERS 1–4 ONLY; do NOT share the `status` filter.**
+  Research found the `inject.py` predicate is **five layers, not three** (`inject.py:90-115`):
+  L1 sorted `glob`, L2 `_`/README/symlink exclusion, L3 confine, L4 fail-closed parse — all
+  *"what is an agreement file"* — plus **L5 `status != "active"`, which is the injector's RENDER
+  POLICY, not identity.** Sharing L5 would make **D-01's own `status ∈ {active,retired}` rule
+  unenforceable**: a `status: pending` typo would be skipped by the filter before the lint could flag
+  it, and retired entries would go unlinted forever. Share L1–L4; let each caller apply its own status
+  policy. Cost today: zero.
+
+- **D-15 (NEW) — YAML-serialize `--because`; never f-string it into the template.** No prior decision
+  covered this. A `"` or a newline in the user's verbatim feedback breaks the quoted scalar and can
+  **forge sibling frontmatter keys** (e.g. inject `status: active` into a retired entry). Use a real
+  YAML serializer for the `provenance:` value. This is a genuine injection surface on the write path,
+  which is exactly what this phase exists to harden — do not treat it as cosmetic.
+
+- **D-16 — ROADMAP SC2's "follows the existing `stale-derived` gate pattern (regenerate → verify)"
+  is a CATEGORY ERROR; D-04 wins.** The stale-derived gate regenerates *derived* artifacts and diffs
+  them. Agreements are **never regenerated** (`.memory/agreements/README.md:4-5`) — there is nothing
+  to regenerate, so the pattern cannot apply. D-04's runnable-lint + pytest shape is the correct
+  reading of SC2's intent. Flag this so `/verify-work` does not fail the phase on SC2's literal
+  wording. (Third mis-worded criterion in this phase's own source, after `EXPECTED_COMMANDS` (D-11)
+  and "cannot auto-invent" (D-03) — treat ROADMAP SC wording as intent, not spec.)
+
+- **D-17 — extraction moves code out from under a LIVE gate; widen it in the SAME task.**
+  `tools/memory_regen/tests/test_inject_determinism.py:70-75` reads **`inject.py` as TEXT** and scans
+  for 5 wall-clock tokens. Moving the predicate into `tools/harness_lint/agreements.py` silently
+  removes it from that gate's scope. The extraction task MUST widen the no-wall-clock gate to cover
+  the new module in the same commit — otherwise the phase quietly loses a Phase-13 guarantee. Also:
+  `_agreements_block`'s name/signature is called directly by **7 tests** — extraction must preserve
+  it or update all 7 deliberately.
+
+- **D-18 — import direction is SETTLED: `memory_regen` → `harness_lint`.** `inject.py:15` already
+  does `from tools.harness_lint import parse_frontmatter`, so putting the predicate in
+  `tools/harness_lint/agreements.py` adds **zero new edges**. The reverse direction cycles AND drags
+  `contract_drift` (`inject.py:14`) into a lint. Import the submodule directly — no `__init__.py`
+  change, no PEP-562 collection hazard. This resolves D-05's "extraction vs fixture-parity" question
+  in favor of **extraction**.
+
+- **D-19 — `/agree`'s home is a NEW `tools/agree/` member.** `tools/memory_regen` is **forbidden** by
+  the tier's own contract (`.memory/agreements/README.md:4-5`: "never written by
+  `tools/memory_regen`"). A new `tools/agree/` is auto-enrolled by the existing `tools/*` workspace
+  glob; measured lockfile cost = **4 deterministic lines, zero resolution, zero guard tests**.
+  Phase 2's D-01 `uv.lock` warning is about *external dependency* contention and does not apply.
+
+- **D-20 — `secret_scan` will fire on plans that quote `approve.py:57` verbatim.** The researcher's
+  first write of `14-RESEARCH.md` was **denied** by `secret_scan` because it quoted that line and
+  matched `token = <16+ chars>` (`secret_scan.py:47`). It reworded rather than bypassed — correct.
+  Downstream plans/summaries quoting `approve.py`'s token logic will hit the same deny. **Reword; do
+  not bypass, and do not weaken `secret_scan` to accommodate a doc.** (It is also a live, unplanned
+  demonstration of D-03's shape-not-truth model.)
+
 ### Claude's Discretion
 
 - Module/file naming, argument parser layout, and test decomposition within the shapes fixed above.
-- Whether the shared predicate (D-05) lands as an extraction or a fixture-parity test — decide from
-  what the `inject.py` code actually permits; extraction preferred.
+- ~~Whether the shared predicate (D-05) lands as an extraction or a fixture-parity test~~ —
+  **resolved by D-18: extraction**, subject to D-17's gate-widening obligation.
 
 </decisions>
 
