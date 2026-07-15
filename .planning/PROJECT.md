@@ -37,16 +37,19 @@
 - ✓ **Context-economy fan-out/synthesize (v2.0 β)** — 팬아웃→요약회수→합성 skill/command + citation-bearing 반환 계약 + delegate-vs-inline 컨텍스트-예산 배선. *(v2.0, Phase 10)*
 - ✓ **Multi-repo workspace (v2.0 γ)** — `workspace.toml` 매니페스트(project.toml 슬롯 한 단계 상향) + repo-scoped β 팬아웃 + 크로스-레포 contract drift/golden 게이트 + repo:stage 파이프라인 edge + core→workspace-member GEN-04 가드. *(v2.0, Phase 11)*
 
+- ✓ **ADR-0006 + emit 왕복 (v2.1 MEM2-06)** — 사람-게이트 append-only ADR-0006 + `/agree`·갱신 skill·`AGENTS.md` managed block을 Phase-7 emitter로 두 런타임(`.opencode/` + `.claude/`)에 왕복. emit-drift clean, 모델 id 없음(placeholder tier만), GEN-04 green. *(v2.1, ADR=Phase 12 / emit=Phase 15)*
+
 ### Active
 
 <!-- 하네스 산출물. 모두 검증 전까지 가설. v2.1 MEM2 — 상세 REQ-ID는 REQUIREMENTS.md. -->
+
+<!-- Validated in Phase 15: MEM2-06 (ADR 부분은 Phase 12). -->
 
 - [ ] **PROCESS 메모리 채널 (v2.1 MEM2-01)** — per-guideline `.memory/agreements/<slug>.md`, committed·curated.
 - [ ] **Injector provenance 재구성 (v2.1 MEM2-02)** — full-body working-agreements 지시문 + data-scoped 배너, determinism+budget 보존.
 - [ ] **Distrust 문구 재구성 (v2.1 MEM2-03)** — echo되는 모든 곳에서 data-authority로.
 - [ ] **`/agree` write path + anti-churn 가드 (v2.1 MEM2-04)** — 전용 커맨드 + harness_lint provenance 가드.
 - [ ] **Progress staleness 가드 (v2.1 MEM2-05)** — `updated:` stamp + agent-side freshness 판단.
-- [ ] **ADR-0006 + emit 왕복 (v2.1 MEM2-06)** — 사람-게이트 ADR, 두 런타임 emit, 모델 id 없음, GEN-04 green.
 - [ ] **로컬 메모리 웹 UI (v2.1 MEM2-07)** — pointer-aware 참조 무결성 툴.
 
 <!-- v1.0 하네스 표면 (shipped in phases 1–8) -->
@@ -119,4 +122,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-14 — milestone v2.1 (MEM2 — Process Memory & Provenance Reframe) started. Goal: durable authoritative process-memory channel + data-scoped provenance reframe. 7 requirements (MEM2-01..07); kickoff decisions Q1–Q6 recorded above. v1.0 (phases 1–8) + v2.0 (phases 9–11) archived. Design source: `.planning/MEMORY-UPGRADE-PROPOSAL.md` (§7 operator refinements authoritative).*
+*Last updated: 2026-07-16 — Phase 15 complete: emit round-trip settled (MEM2-06 validated; `/agree` + updated skills + `AGENTS.md` managed block projected to both runtimes, emit-drift clean, 659 tests green). Follow-up carried: the CI `emit-drift` gate's bare `git diff` is blind to untracked files (15-REVIEW.md CR-01). milestone v2.1 (MEM2 — Process Memory & Provenance Reframe) started. Goal: durable authoritative process-memory channel + data-scoped provenance reframe. 7 requirements (MEM2-01..07); kickoff decisions Q1–Q6 recorded above. v1.0 (phases 1–8) + v2.0 (phases 9–11) archived. Design source: `.planning/MEMORY-UPGRADE-PROPOSAL.md` (§7 operator refinements authoritative).*
