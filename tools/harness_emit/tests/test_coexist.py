@@ -36,12 +36,20 @@ def _claude_commands(tmp_path: Path, written: list[Path]) -> list[Path]:
     return [p for p in written if commands_dir in p.parents and p.suffix == ".md"]
 
 
-def test_all_19_commands_emit_to_both_trees(tmp_path: Path) -> None:
-    """19 commands land in .opencode/command/*.md AND .claude/commands/*.md (top-level).
+def test_all_20_commands_emit_to_both_trees(tmp_path: Path) -> None:
+    """20 commands land in .opencode/command/*.md AND .claude/commands/*.md (top-level).
 
     Phase 9 adds /refresh-memory (the curator's local derived-freshness macro), taking the count
     from 17 → 18; Phase 10 adds /fan-out-synthesize (the context-economy fan-out entry point),
-    taking it 18 → 19.
+    taking it 18 → 19; Phase 14 adds /agree (the agreements write path, MEM2-04), taking it 19 → 20.
+
+    This count tracks the runtime-neutral SOURCE (``harness/commands/*.md``), NOT the committed
+    ``.opencode/`` / ``.claude/`` trees: ``_emit`` projects into ``tmp_path``. So authoring a new
+    source command bumps this count immediately — whether or not the real trees are re-emitted.
+    Phase 14 is deliberately source-only (its 14-CONTEXT D-10 originally assumed the opposite and
+    was wrong); the committed trees still hold 19 and Phase 15 (MEM2-06) owns re-emitting them.
+    That deferral is tracked by ``test_projected_tree_matches_committed_snapshot``, which is a
+    DIFFERENT test and stays red on purpose until Phase 15. Do not "fix" it here.
     """
     written, _ = _emit(tmp_path)
     opencode_cmds = [
@@ -50,8 +58,8 @@ def test_all_19_commands_emit_to_both_trees(tmp_path: Path) -> None:
         if (tmp_path / ".opencode" / "command") in p.parents and p.suffix == ".md"
     ]
     claude_cmds = _claude_commands(tmp_path, written)
-    assert len(opencode_cmds) == 19, f"expected 19 opencode commands, got {len(opencode_cmds)}"
-    assert len(claude_cmds) == 19, f"expected 19 Claude commands, got {len(claude_cmds)}"
+    assert len(opencode_cmds) == 20, f"expected 20 opencode commands, got {len(opencode_cmds)}"
+    assert len(claude_cmds) == 20, f"expected 20 Claude commands, got {len(claude_cmds)}"
 
 
 def test_harness_commands_are_top_level_never_under_gsd(tmp_path: Path) -> None:
