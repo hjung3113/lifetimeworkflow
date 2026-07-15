@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: MEM2 — Process Memory & Provenance Reframe
 status: executing
-stopped_at: "Phase 14 context gathered (--auto: 6 gray areas auto-resolved; D-01..D-13). Next: /gsd:plan-phase 14"
-last_updated: "2026-07-15T18:20:13.024Z"
-last_activity: 2026-07-15 -- Phase 15 planning complete
+stopped_at: "Phase 15 plan 01 COMPLETE (emit round-trip; 0 failed/659 passed, emit-drift clean). Next: plan/execute 15-02"
+last_updated: "2026-07-15T18:24:55.593Z"
+last_activity: 2026-07-15
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 15
-  completed_plans: 13
-  percent: 87
+  completed_plans: 14
+  percent: 93
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-14)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** v2.1 MEM2 — Phase 14 done (/agree write path + provenance lint live); ready to plan Phase 15
+**Current focus:** Phase 15 — Emit Round-Trip + Gates *(v2.1 D)*
 
 ## Current Position
 
-Phase: 14 — Write Path + Anti-Churn Guard (v2.1 C, MEM2-04) — COMPLETE (merged fa1aea8 + errata ff832ac)
+Phase: 15 (Emit Round-Trip + Gates *(v2.1 D)*) — EXECUTING
 Previous: Phase 13 — Injector Reframe + Channel Wiring (v2.1 B, MEM2-02/MEM2-05) — COMPLETE (merged 9b93d28)
-Plan: 13-01 ✓ ‖ 13-02 ✓ (W1) → 13-03 ✓ (W2) → 13-04 ✓ (W3) — 4/4
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-07-15 -- Phase 15 planning complete
+Last activity: 2026-07-15
 
 ## Performance Metrics
 
@@ -106,6 +106,7 @@ Last activity: 2026-07-15 -- Phase 15 planning complete
 | Phase 11 P03 | 7min | 3 tasks | 5 files |
 | Phase 11 P04 | 8min | 2 tasks | 7 files |
 | Phase 11 P04 | 8min | 2 tasks | 7 files |
+| Phase 15 P01 | 9min | 2 tasks tasks | 14 files files |
 
 ## Accumulated Context
 
@@ -183,6 +184,7 @@ Recent decisions affecting current work:
 - [Phase 11]: workspace.toml pointer exemption is key-scoped (root/from/to/contract), not a blanket file pass — a non-pointer member leak stays flagged (T-11-05)
 - [Phase 11]: Cross-repo drift reuses run_gate per member (no merged manifest) + resolves each edge's contract in its producer; _confine widened via a threaded allowed_roots param (guard extended, not removed); enforced by a separate workspace CI job in gate.needs (MREPO-03)
 - [Phase 11]: [11-04] MREPO-02 prose-wired the Phase-10 fan-out substrate: orchestrator routes workspace-wide analysis by fanning out one read-only worker per member repo; fan-out-synthesize documents member-repo-as-unit + no-sibling-read guarantee (T-11-10). NO new surface (EXPECTED_SKILLS=11/EXPECTED_PERSONAS=5), round-tripped byte-identical to both runtimes (no model id). Phase closeout: 563 passed, emit-drift clean, GEN-04 twins green. Phase 11 COMPLETE (4/4).
+- [Phase ?]: [15-01] MEM2-06 emit round-trip: ran the Phase-7 emitter and committed exactly its output (84 artifacts, ZERO emitter code change — glob discovery already covered /agree). Both runtime trees now carry /agree + the Phase-13/14 body edits; AGENTS.md managed fence lists agree (1-line splice at 104, nothing outside moved); manifest owns both agree.md paths. Measured delta matched research EXACTLY (A2 re-measured, not trusted). opencode.json + .claude/settings.json confirmed byte-identical no-ops (absent from the diff); no agent path moved; uv.lock empty. GATE-THEFT AVOIDED BY ORDERING: emit committed (0f39e6d) BEFORE the .ambr regen (2da29e9) — verified test_projected_tree_matches_committed_snapshot STILL FAILED after the emit commit, positive proof the snapshot was not touched early. Proof is the CI replica (re-emit && git diff --exit-code = exit 0), NOT the green suite: no local test reads the committed trees, so --snapshot-update alone would green 659 over stale trees. Suite 0 failed / 659 passed; GEN-04 18 passed post-regen. EXPECTED_COMMANDS NOT created (0 source hits, D-11 held a 3rd time). Two plan acceptance criteria are mis-specified and always pass/fail regardless of correctness (AGENTS.md grep '^[+-][^+-]' can never return 2 on a markdown list line; 'tools/**/__snapshots__' pathspec matches nothing since git * does not cross /) — verified the substance via numstat + explicit ls-files instead; recorded for Plan 02. Unblocks PR #3 (both red jobs were this one debt) -> ADR-0004/0005/0006/0007 ratification.
 
 ### Pending Todos
 
@@ -223,9 +225,9 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-15T16:20:36.896Z
-Stopped at: Phase 14 context gathered (--auto: 6 gray areas auto-resolved; D-01..D-13). Next: /gsd:plan-phase 14
-Resume file: .planning/phases/14-write-path-anti-churn-guard-v2-1-c/14-CONTEXT.md
+Last session: 2026-07-15T18:24:55.589Z
+Stopped at: Phase 15 plan 01 COMPLETE (emit round-trip; 0 failed/659 passed, emit-drift clean). Next: plan/execute 15-02
+Resume file: None
 
 ## Operator Next Steps
 

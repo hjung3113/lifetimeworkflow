@@ -265,7 +265,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 12. Model + ADR + Doc Reframe (v2.1 A) | 3/3 | Complete | 2026-07-14 |
 | 13. Injector Reframe + Channel Wiring (v2.1 B) | 0/TBD | Not started | - |
 | 14. Write Path + Anti-Churn Guard (v2.1 C) | 0/TBD | Not started | - |
-| 15. Emit Round-Trip + Gates (v2.1 D) | 0/TBD | Not started | - |
+| 15. Emit Round-Trip + Gates (v2.1 D) | 1/2 | In Progress|  |
 | 16. Local Memory Web UI (v2.1 E) | 0/TBD | Not started | - |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
@@ -495,7 +495,7 @@ Plans:
 
 Plans:
 **Wave 1**
-- [ ] 15-01-PLAN.md — Wave 1 · Run the Phase-7 emitter, commit the measured delta (2 new + 8 changed + AGENTS.md splice + manifest), then regenerate the projected-tree `.ambr` — emit strictly BEFORE snapshot-regen (gate-theft guard)
+- [x] 15-01-PLAN.md — Wave 1 · Run the Phase-7 emitter, commit the measured delta (2 new + 8 changed + AGENTS.md splice + manifest), then regenerate the projected-tree `.ambr` — emit strictly BEFORE snapshot-regen (gate-theft guard)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 15-02-PLAN.md — Wave 2 · Prove the gates (model-id incl. the body coverage gap, GEN-04 post-regen, full suite, emit-drift replica), fix the stale `test_coexist` module docstring 19→20, record the SC1 mis-wording

@@ -27,7 +27,7 @@ Requirements for milestone v2.1. Each maps to exactly one roadmap phase (phases 
 
 ### ADR & Emit Round-Trip
 
-- [ ] **MEM2-06**: The model change is recorded as **ADR-0006** (append-only, next number, authored via the human-ratified constitution path — an agent Write to `docs/adr/` is correctly denied). Every new/changed agent, skill, and command (the `/agree` command, updated skills, updated `AGENTS.md` managed block) round-trips through the Phase-7 emitter (`tools/harness_emit`) to **both** runtimes (`.opencode/` + `.claude/`) with **no model id**; emit-drift is clean, `EXPECTED_COMMANDS`/counts updated, and GEN-04 core→example independence stays green.
+- [x] **MEM2-06**: The model change is recorded as **ADR-0006** (append-only, next number, authored via the human-ratified constitution path — an agent Write to `docs/adr/` is correctly denied). Every new/changed agent, skill, and command (the `/agree` command, updated skills, updated `AGENTS.md` managed block) round-trips through the Phase-7 emitter (`tools/harness_emit`) to **both** runtimes (`.opencode/` + `.claude/`) with **no model id**; emit-drift is clean, `EXPECTED_COMMANDS`/counts updated, and GEN-04 core→example independence stays green.
 
 ### Memory Management Tooling
 
@@ -64,7 +64,7 @@ Which phases cover which requirements. **Filled by the roadmapper during roadmap
 | MEM2-03 | Phase 12 | Pending |
 | MEM2-04 | Phase 14 | Pending |
 | MEM2-05 | Phase 13 | Pending |
-| MEM2-06 | Phase 15 | Pending |
+| MEM2-06 | Phase 15 | Complete |
 | MEM2-07 | Phase 16 | Pending |
 
 > **Note on MEM2-06:** its scope spans two phases. Traceability owner is **Phase 15** (the emit round-trip + gates). The **ADR-0006 authoring** portion is delivered in **Phase 12** (human-ratified constitution path), consistent with proposal §5's Phase-A/Phase-D split — but MEM2-06 is counted once (Phase 15) for coverage.
