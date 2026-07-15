@@ -1,37 +1,58 @@
 {
   "version": "1.0",
-  "timestamp": "2026-07-14T15:36:11.687Z",
-  "phase": "13",
-  "phase_name": "Injector Reframe + Channel Wiring (v2.1 B)",
-  "phase_dir": ".planning/phases/13-... (not yet created)",
+  "timestamp": "2026-07-15T15:44:42.742Z",
+  "phase": "14",
+  "phase_name": "Write Path + Anti-Churn Guard (v2.1 C)",
+  "phase_dir": ".planning/phases/14-... (not yet created)",
   "plan": null,
   "task": null,
   "total_tasks": null,
   "status": "between_phases",
   "completed_tasks": [
-    {"id": "12", "name": "Phase 12 — Model + ADR + Doc Reframe (v2.1 A)", "status": "done", "commit": "ea776cd"},
-    {"id": "12-adr", "name": "ADR-0006 landed (human-gated)", "status": "done", "commit": "bea92ef"},
-    {"id": "17", "name": "Phase 17 — Constitution-Gate Dev/Enforce Decoupling (infra)", "status": "done", "commit": "7d5edca"},
-    {"id": "17-adr", "name": "ADR-0007 landed (human-gated)", "status": "done", "commit": "ad6f644"}
+    {"id": "13-01", "name": "State stamp + tight progress + /checkpoint write path (MEM2-05)", "status": "done", "commit": "120d4bd"},
+    {"id": "13-02", "name": "Determinism safety net — byte-identity, snapshot, no-wall-clock (MEM2-02 SC2)", "status": "done", "commit": "8d71722"},
+    {"id": "13-03", "name": "Injector reframe — agreements at priority-0, data-scoped banner, verbatim stamp", "status": "done", "commit": "a315911"},
+    {"id": "13-04", "name": "Re-enable injection — rm .memory/.inject-disabled, strip stale surfaces", "status": "done", "commit": "58f5965"},
+    {"id": "13-merge", "name": "FF-merge phase13-codex + record completion", "status": "done", "commit": "e601ddb"}
   ],
   "remaining_tasks": [
-    {"id": "13", "name": "Phase 13 — Injector Reframe + Channel Wiring (MEM2-02, MEM2-05)", "status": "not_started"},
-    {"id": "14", "name": "Phase 14 — Write Path + Anti-Churn Guard (MEM2-04)", "status": "not_started"},
-    {"id": "15", "name": "Phase 15 — Emit Round-Trip + Gates (MEM2-06 emit)", "status": "not_started"},
+    {"id": "14", "name": "Phase 14 — Write Path + Anti-Churn Guard (MEM2-04): /agree write path + provenance/anti-invent lint", "status": "not_started"},
+    {"id": "15", "name": "Phase 15 — Emit Round-Trip + Gates (MEM2-06 emit). OWNS the currently-red harness_emit snapshot.", "status": "not_started"},
     {"id": "16", "name": "Phase 16 — Local Memory Web UI (MEM2-07)", "status": "not_started"}
   ],
   "blockers": [],
   "human_actions_pending": [
-    {"action": "Open a PR and let CODEOWNERS review the constitution-plane changes (ADR-0006, ADR-0007)", "context": "The branch is pushed; the runtime hooks allowed the ADR writes via raw-shell, but CODEOWNERS at PR merge is the real ratification for docs/adr/. Use /gsd:ship or /gsd:pr-branch.", "blocking": false},
-    {"action": "Optionally enable HARNESS_DEV_BYPASS in .claude/settings.local.json", "context": "Phase 17 shipped the flag; setting {\"env\":{\"HARNESS_DEV_BYPASS\":\"1\"}} lets the dev agent land future constitution writes in-session (CODEOWNERS still gates merge), ending the manual raw-shell ADR handoff.", "blocking": false}
+    {
+      "action": "Open a PR and let CODEOWNERS review the constitution-plane changes (ADR-0006, ADR-0007)",
+      "context": "Carried over from the Phase 12/17 handoff and STILL NOT DONE. Three phases of work (12, 17, 13) now sit on top of these two ADRs. The runtime hooks allowed the writes via raw-shell/dev-bypass, but CODEOWNERS at PR merge is the real ratification for docs/adr/. Use /gsd:ship or /gsd:pr-branch.",
+      "blocking": false
+    },
+    {
+      "action": "Push the branch — 13 commits are unpushed on claude/data-pipeline-harness-8aypct",
+      "context": "Phase 13's 9 execution commits plus the planning/state commits are local-only. Prior phases were pushed; this one is not.",
+      "blocking": false
+    },
+    {
+      "action": "Optionally enable HARNESS_DEV_BYPASS in .claude/settings.local.json",
+      "context": "Phase 17 shipped the flag; setting {\"env\":{\"HARNESS_DEV_BYPASS\":\"1\"}} lets the dev agent land future constitution writes in-session (CODEOWNERS still gates merge). Still not enabled.",
+      "blocking": false
+    }
   ],
   "decisions": [
-    {"decision": "Execute delegated to Codex via orca-cli (gpt-5.6, medium, fast off)", "rationale": "User's standing workflow preference; saved as memory execute-via-codex-orca. Claude orchestrates/verifies/merges, Codex implements in an isolated Orca worktree.", "phase": "12/17"},
-    {"decision": "Switched Codex model luna → terra mid-run", "rationale": "User flagged luna as too expensive for implementation; terra is a lower/cheaper tier.", "phase": "17"},
-    {"decision": "Took over Phase 17 Tasks 2-3 directly instead of Codex", "rationale": "The terra Codex terminal stalled on MCP-server startup after committing Task 1; Phase 17 code is under tools/hooks/ (NOT constitution-gated), so direct implementation was reliable and cost-free.", "phase": "17"},
-    {"decision": "Phase 17 inserted as standalone infra (not inside v2.1 MEM2 chain)", "rationale": "Dogfooding entanglement surfaced mid-Phase-12 (product guard governs the dev session); it is independent of the memory-model milestone.", "phase": "17"}
+    {"decision": "Agreements-block cap N=6 entries / M=700 chars, as named module constants", "rationale": "Ratified open-Q4. Measured, not estimated: base 3216 after the SC1 rewording leaves 784 of the 4000 budget; header 76 + 6x97 = 658 <= 700 -> total 3917, repo-map survives. M=800 -> 4017 -> repo-map evicted every session. 700 is the arithmetic knee. Named constants make re-ratification a one-line edit. Recorded as D-01/D-02/D-03 in 13-CONTEXT.md.", "phase": "13"},
+    {"decision": "Overflow degrades whole-block -> pointer, with NO count interpolated", "rationale": "A varying count in the pointer text would churn bytes and weaken the byte-identity guarantee. D-03.", "phase": "13"},
+    {"decision": "Re-enable injection in Phase 13 (rm .memory/.inject-disabled) after the reframe went green", "rationale": "No Success Criterion mandated it, but both the flag file and activeContext.md:12-13 named Phase 13 as the re-enable trigger. Operator ratified. D-20.", "phase": "13"},
+    {"decision": "All four T-13-01 mitigations adopted: scope-limiting header, title+rule-only render, fail-closed status filter, no-secrets README line", "rationale": "Phase 13 converts .memory/agreements/ (committed-but-writable, NOT path-denied per Q1) into an executable priority-0 directive channel. Genuine prompt-injection surface. The durable provenance lint is Phase 14's job. D-15..D-19.", "phase": "13"},
+    {"decision": "Built the determinism net BEFORE the reframe rather than assuming it existed", "rationale": "inject.py:20-22 CLAIMED delete+regen byte-identity but no test asserted it. SC2 said determinism was 'preserved' — it could not be preserved, only built. 13-02 landed it in Wave 1. D-07.", "phase": "13"},
+    {"decision": "Execution delegated to Codex (gpt-5.6-terra, medium) in Orca worktree phase13-codex; Claude orchestrated/verified/merged", "rationale": "User's standing workflow preference (memory execute-via-codex-orca). Terra ran clean this time — no MCP stall. FF-merged at 9b93d28, worktree removed.", "phase": "13"},
+    {"decision": "Updated memory execute-via-codex-orca: luna -> terra", "rationale": "The memory said luna but the Phase 17 handoff recorded the user flagging luna as too expensive and switching to terra. Memory was never updated, causing a recurring conflict. Reconfirmed with the user at Phase 13 and fixed, plus recorded the MCP-stall failure mode.", "phase": "13"},
+    {"decision": "Skipped the gsd-pattern-mapper (workflow §7.8)", "rationale": "Optional and non-blocking. The research already delivered what it produces — closest analogs with citations (test_docs_sync_determinism.py:43, _confine, frontmatter.py:40). Running it would duplicate work.", "phase": "13"},
+    {"decision": "Skipped the UI-SPEC gate (workflow §5.6)", "rationale": "The workflow's crude grep matched 'ui' inside the word 'guidelines'. Phase 13 is inject.py plumbing with zero frontend; the memory web UI is Phase 16. Generating a UI design contract would have been nonsense.", "phase": "13"}
   ],
-  "uncommitted_files": [".planning/config.json (pre-existing, not this session)", ".mcp.json (untracked, pre-existing)"],
-  "next_action": "/gsd:plan-phase 13  (Injector Reframe + Channel Wiring — consumes the .memory/agreements/ channel + reworded surfaces from Phase 12; dependency-locked 12→13)",
-  "context_notes": "Two phases completed and PUSHED (origin/claude/data-pipeline-harness-8aypct, 43808c1..7d5edca, 19 commits). No mid-task work is paused — this is a clean stop between phases. Phase 12 (v2.1 A) done; Phase 17 (infra decoupling) done. Full hooks+harness_lint suite = 348 passed. The v2.1 MEM2 chain resumes at Phase 13 (13→14→15→16, dependency-locked). ADR-0006 + ADR-0007 both landed and pushed but not yet PR-reviewed by CODEOWNERS."
+  "uncommitted_files": [
+    ".planning/config.json (pre-existing, modified before this session)",
+    ".mcp.json (untracked, pre-existing)"
+  ],
+  "next_action": "/gsd:plan-phase 14 (Write Path + Anti-Churn Guard, MEM2-04 — the /agree write half + the provenance/anti-invent lint that is T-13-01's durable mitigation; dependency-locked 13->14). Alternatively open the PR for ADR-0006/0007 CODEOWNERS review first — that action has now been deferred across three phases.",
+  "context_notes": "Clean stop BETWEEN phases — nothing is mid-edit. Phase 13 (v2.1 B) is COMPLETE and FF-merged at 9b93d28; STATE.md recorded at e601ddb. SessionStart injection is LIVE again for the first time since the MEM2 upgrade began. Verified end-to-end beyond the suite, not just by tests: delete+regen byte-identical (sha d0cd72ad...), payload 3016/4000 chars, zero wall-clock in inject.py, banner reads data-scoped ('which artifact wins a contradiction'), pointer reworded to a progress log with a verbatim [updated: ...] stamp. A SECRET-CANARY planted in a fixture agreement's provenance field did NOT reach the payload, confirming D-16/T-13-01 works. Gate: tools/memory_regen + tools/harness_lint = 313 passed. CRITICAL FOR THE RESUMING AGENT: tools/harness_emit is EXACTLY 1 failed / 46 passed and that is CORRECT — see the blocking constraint in .continue-here.md. The v2.1 MEM2 chain resumes at Phase 14 (14->15->16, dependency-locked)."
 }
