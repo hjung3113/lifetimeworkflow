@@ -1,3 +1,7 @@
+---
+updated: "2026-07-16"
+---
+
 # activeContext — volatile session hint (COMMITTED)
 
 > DATA AUTHORITY — on a data conflict, `contracts/` and `docs/adr/` win over

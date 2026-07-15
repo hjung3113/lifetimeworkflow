@@ -10,6 +10,7 @@ frontmatter must contain `status:` (`active` or `retired`), `added:` (an ISO dat
 `provenance:` (`"added because <verbatim user feedback>"`). Its body contains a title, one-line
 working-style or methodology rule, and a `Related:` link. Retire an agreement with
 `status: retired`; never delete it.
+Agreements are committed and injected verbatim into every session, so they must never contain secrets, tokens, credentials, or PII.
 
 An agreement is working-style or methodology only. A project or architecture decision belongs in
 `docs/adr/` and `.planning/PROJECT.md` Key Decisions; link to those sources with `Related:`, never
