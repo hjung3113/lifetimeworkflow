@@ -14,7 +14,6 @@ Parsing is delegated to the shared ``parse_frontmatter`` (Plan 02) — no per-te
 
 from __future__ import annotations
 
-import re
 import warnings
 from pathlib import Path
 
@@ -22,45 +21,25 @@ import pytest
 
 from tools.harness_lint import parse_frontmatter
 
+# Skill caps now live in ONE place (tools/harness_lint/caps.py) so the emit-time validators
+# (tools/harness_emit) and this gate share a single definition (07-01, D-04). Re-imported here
+# with values UNCHANGED so the existing assertions stay green.
+from tools.harness_lint.caps import (
+    _BODY_WARN_LINES,
+    _DESC_MAX,
+    _NAME_MAX,
+    _NAME_RE,
+    _RESERVED_WORDS,
+    _XML_CHARS,
+    EXPECTED_SKILLS,
+)
+
 # test_skills.py -> tests -> harness_lint -> tools -> repo root (parents[3]).
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _SKILLS_DIR = _REPO_ROOT / "harness" / "skills"
 
-# Shared caps (BOTH runtimes — the 200-vs-1024 correction; body cap is a warn threshold).
-_NAME_MAX = 64
-_DESC_MAX = 1024
-_BODY_WARN_LINES = 500
-
-# name regex: lowercase alnum segments joined by single hyphens.
-_NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
-
 # A routing-signal description must carry an invocation trigger token (P7 guard — mirrors agents).
 _ROUTING_TRIGGERS = ("use", "when")
-
-# Reserved vendor words banned from a skill name/description (Claude skill rules, T-03-19).
-_RESERVED_WORDS = ("anthropic", "claude")
-
-# Angle-bracket XML tags are forbidden in name/description (T-03-19).
-_XML_CHARS = ("<", ">")
-
-# The enumerated CORE skills — the instance's domain skills and its instance-language skill
-# moved to the log-parser example instance (Phase 5.5). Phase 5.7 (Lifecycle Completeness) adds
-# four domain-neutral lifecycle skills: golden-debug, polyglot-boundary, gate-model,
-# two-plane-memory. Phase 8 (Pipeline Topology) adds one topology-trace skill: pipeline-map.
-# No more, no fewer (anti-sprawl).
-EXPECTED_SKILLS = frozenset(
-    {
-        "python-conventions",
-        "golden-testing",
-        "data-contracts",
-        "skill-creator",
-        "golden-debug",
-        "polyglot-boundary",
-        "gate-model",
-        "two-plane-memory",
-        "pipeline-map",
-    }
-)
 
 
 def _skill_files() -> list[Path]:

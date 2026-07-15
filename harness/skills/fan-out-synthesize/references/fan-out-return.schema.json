@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "harness/skills/fan-out-synthesize/references/fan-out-return.schema.json",
+  "title": "Fan-out analysis worker return",
+  "description": "Compact, citation-bearing summary a read-only fan-out worker returns to the conductor. Paths plus claims, never raw file dumps.",
+  "type": "object",
+  "required": ["unit", "claims"],
+  "additionalProperties": false,
+  "properties": {
+    "unit": {
+      "type": "string",
+      "description": "The analysis unit this worker was assigned during decompose."
+    },
+    "status": {
+      "type": "string",
+      "description": "How completely the worker covered its unit.",
+      "enum": ["complete", "partial", "not-found"]
+    },
+    "claims": {
+      "type": "array",
+      "description": "The findings — each a terse claim backed by at least one citation. This is the whole payload the conductor synthesizes from.",
+      "items": {
+        "type": "object",
+        "required": ["claim", "citations"],
+        "additionalProperties": false,
+        "properties": {
+          "claim": {
+            "type": "string",
+            "description": "A single terse assertion, NOT a file excerpt."
+          },
+          "confidence": {
+            "type": "string",
+            "description": "How strongly the citations support the claim.",
+            "enum": ["high", "medium", "low"]
+          },
+          "citations": {
+            "type": "array",
+            "description": "Where the claim is grounded — path plus optional line range and symbol, never pasted content.",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["path"],
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Repo-relative file path."
+                },
+                "lines": {
+                  "type": "string",
+                  "description": "A line or range, e.g. \"42\" or \"42-58\"."
+                },
+                "symbol": {
+                  "type": "string",
+                  "description": "Optional symbol or heading anchor."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "description": "Gaps the worker could not resolve within its unit.",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

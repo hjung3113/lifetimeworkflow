@@ -11,7 +11,25 @@ from __future__ import annotations
 
 import dataclasses
 
-from tools.hooks._stdin import Event, emit_block, emit_deny, parse_event
+import pytest
+
+from tools.hooks._stdin import DEV_BYPASS_ENV, Event, dev_bypassed, emit_block, emit_deny, parse_event
+
+
+def test_dev_bypassed_for_nonblank_value(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(DEV_BYPASS_ENV, "1")
+    assert dev_bypassed() is True
+
+
+@pytest.mark.parametrize("value", [None, "", "   ", "\t\n"])
+def test_dev_bypassed_false_for_unset_or_blank(
+    monkeypatch: pytest.MonkeyPatch, value: str | None
+) -> None:
+    if value is None:
+        monkeypatch.delenv(DEV_BYPASS_ENV, raising=False)
+    else:
+        monkeypatch.setenv(DEV_BYPASS_ENV, value)
+    assert dev_bypassed() is False
 
 # --- parse_event: crafted PreToolUse event -> typed record --------------------------------------
 

@@ -8,11 +8,13 @@ byte-for-byte identical (success criterion 4, proven by a committed syrupy snaps
 Input:  ``contracts/**/*.schema.json`` read with the stdlib ``json`` module — the SAME read path
         as :mod:`tools.contract_hash` (T-03-23: no second hash/read impl that could disagree with
         the drift gate; T-03-SC: zero new deps).
-Output: one ``docs/reference/<name>.md`` per schema (5 seed schemas → 5 pages). Every write is
-        CONFINED under ``docs/reference/`` (mirrors ``tools/golden_runner/runner.py::_confine``,
-        T-03-21): a schema name that would traverse outside the reference dir is refused. ONLY
-        the reference quadrant is generated — tutorials/how-to/explanation stay human-authored
-        (DOCS-03 anti-feature), and ``docs/reference/README.md`` is left intact.
+Output: one ``docs/reference/<name>.md`` per current schema (prune-then-write: after writing the
+        current pages, orphaned ``<name>.md`` whose backing schema no longer exists are removed;
+        ``README.md`` is preserved). Every write AND every prune-delete is CONFINED under
+        ``docs/reference/`` (mirrors ``tools/golden_runner/runner.py::_confine``, T-03-21): a name
+        that would traverse outside the reference dir is refused. ONLY the reference quadrant is
+        generated — tutorials/how-to/explanation stay human-authored (DOCS-03 anti-feature), and
+        ``docs/reference/README.md`` is left intact.
 
 Entrypoint: ``python -m tools.docs_sync``.
 """
@@ -223,19 +225,34 @@ def write(
     contracts: str | Path = CONTRACTS_DIR,
     out: str | Path = REFERENCE_DIR,
 ) -> list[Path]:
-    """Regenerate one ``<out>/<name>.md`` per schema; return the written paths (all confined).
+    """Regenerate one ``<out>/<name>.md`` per current schema; return the written paths (confined).
 
-    Every target is confined under ``out`` (T-03-21) BEFORE writing, so a traversal-shaped schema
-    name is refused rather than escaping the reference quadrant. ``README.md`` and the other
-    Diátaxis quadrants are never touched — only ``<name>.md`` pages are written.
+    Prune-then-write: first write one page per current schema, then delete any orphaned
+    ``<name>.md`` whose backing schema no longer exists (RESEARCH P2 — the derived reference tree
+    must be self-healing so the stale-derived gate stays green). Every target — written OR deleted —
+    is confined under ``out`` (T-03-21) BEFORE the filesystem op, so a traversal-shaped name is
+    refused rather than escaping the reference quadrant. ``README.md`` is PRESERVED by exact name,
+    and any non-``<name>.md`` file (the other Diátaxis quadrants' indexes) is never touched — the
+    prune deletes only schema-shaped pages. The prune has zero effect on written-page bytes, so
+    delete + regenerate stays byte-identical (Pitfall P12 determinism preserved).
     """
     out_dir = _resolve(out)
     out_dir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
+    current: set[str] = set()
     for name, schema in iter_schemas(contracts):
         target = _confine(out_dir / f"{name}.md", out_dir)
         target.write_text(render(name, schema), encoding="utf-8")
         written.append(target)
+        current.add(name)
+
+    # Prune orphaned pages: any <name>.md whose stem is not a current schema is deleted (deletes
+    # confined to out_dir, README.md exempt by exact name — ASVS V12 File/Path). Sorted for
+    # determinism; has no effect on the written-page bytes above.
+    for page in sorted(out_dir.glob("*.md")):
+        if page.name == "README.md" or page.stem in current:
+            continue
+        _confine(page, out_dir).unlink()
     return written
 
 

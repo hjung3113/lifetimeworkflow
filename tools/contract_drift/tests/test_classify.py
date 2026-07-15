@@ -76,3 +76,27 @@ def test_removed_enum_case_is_breaking():
     new = copy.deepcopy(_BASE)
     new["properties"]["tsv_escape"]["enum"] = ["backslash"]  # dropped a previously-allowed value
     assert classify(_BASE, new) == "breaking"
+
+
+def test_added_required_column_is_breaking():
+    # A brand-new property that is ALSO required: existing instances omit it -> now invalid.
+    new = copy.deepcopy(_BASE)
+    new["properties"]["param_value"] = {"type": "string"}
+    new["required"] = ["timestamp", "record_id", "param_value"]
+    assert classify(_BASE, new) == "breaking"
+
+
+def test_promoting_optional_to_required_is_breaking():
+    # `newline` existed as an optional property; demanding it of every instance is breaking.
+    new = copy.deepcopy(_BASE)
+    new["required"] = ["timestamp", "record_id", "newline"]
+    assert classify(_BASE, new) == "breaking"
+
+
+def test_added_required_where_none_existed_is_breaking():
+    # A schema with no `required` list gains one — the listed field is now demanded of all.
+    base = copy.deepcopy(_BASE)
+    del base["required"]
+    new = copy.deepcopy(base)
+    new["required"] = ["timestamp"]
+    assert classify(base, new) == "breaking"

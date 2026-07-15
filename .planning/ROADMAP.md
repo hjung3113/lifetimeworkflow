@@ -23,8 +23,23 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5.5: Authored-Surface Genericization** *(INSERTED — GEN-05, data-plane follow-up)* - Demote domain skills (`normalization-catalog`, `new-normalization-rule`, `pipeline-patterns`) to the example, derive per-language personas from the `harness/project.toml` slot, sweep residual `libs/dotnet`-style domain prose in core, and extend the GEN-04 guard to prose. (completed 2026-07-09)
 - [x] **Phase 5.7: Lifecycle Completeness** *(INSERTED — LIFE-01..11, adversarial-review reinforcement)* - The authored surface is too thin for an agent to carry a unit of work through the full dev lifecycle. An adversarial audit (2026-07-09) found load-bearing gaps: a dangling `/contract-check`, ZERO golden-mismatch/§4.3-4.6 debug surface, the polyglot Core Value scattered as tribal prose, no neutral language-engineer template, and MISSING plan/onboard/review/integrate assets. Add domain-neutral skills/commands (contract-check, golden-debug, polyglot-boundary, gate-model, two-plane-memory, /orient, /review, /verify-work, language-engineer scaffold) + de-domain `/new-normalization-rule`, so the contract→implement→test→debug inner loop and the full lifecycle are actually executable end-to-end. **DONE 2026-07-09** — 057-RESEARCH/VALIDATION/01-PLAN/02-PLAN; two waves; `EXPECTED_SKILLS` 4→8; non-example suite green (402); GEN-04/05 prose guard clean.
 - [x] **Phase 6: CI + Gates (generic)** - Non-bypassable CI mirror of the in-session gates plus the human ratification path (CODEOWNERS, PR template), driven by a **config-derived** language matrix rather than hardcoded `dotnet test`/`pytest` jobs; the example instance supplies its own .NET+Python matrix. (completed 2026-07-09)
-- [ ] **Phase 7: Single-Source Dual-Runtime Emitter** - One authored source compiles into both opencode (primary) + Claude Code (secondary) artifacts, with per-runtime limit validators that fail loud.
+- [x] **Phase 7: Single-Source Dual-Runtime Emitter** - One authored source compiles into both opencode (primary) + Claude Code (secondary) artifacts, with per-runtime limit validators that fail loud. (completed 2026-07-12)
 - [x] **Phase 8: Pipeline-Topology Conductor + Per-Component Agents** *(ADDED — post-Phase-6 user request; independent of Phase 7)* - Evolve the agent model from per-language to pipeline-aware: a generic pipeline-topology slot in the neutral core, an `orchestrator` upgraded into a dataflow-aware conductor that routes by pipeline stage/component, a neutral `component-engineer` template, and a concrete 4-component demonstration in `examples/log-parser/` (parser→converter→scheduler→collector). (completed 2026-07-11)
+
+**Milestone v2.0 — Long-Horizon** *(phases 9/10/11 — numbering continues after v1.0 = phases 1–8; reuses existing machinery, no rebuild)*
+
+- [x] **Phase 9: Self-Maintaining Derived Artifacts + Curator** *(v2.0 α)* - A read-mostly `curator` agent + a CI “stale-derived” gate keep derived artifacts (repo-map, contracts-index, docs `reference/`, memory) fresh automatically — machines regenerate, CI verifies on PR, humans never hand-edit; heavy regen deferred to PR/CI (not per-commit). (completed 2026-07-13)
+- [x] **Phase 10: Context-Economy Fan-out/Synthesize Orchestration** *(v2.0 β)* - A first-class fan-out → schema-bounded citation-bearing summary → synthesize workflow keeps long-lived sessions small; the reusable substrate γ builds on. (completed 2026-07-13)
+- [x] **Phase 11: Multi-Repo Workspace** *(v2.0 γ)* - Declare and operate several repos as one workspace: a workspace manifest, repo-scoped subagents running the β fan-out, cross-repo contract-drift/golden gates, and repo-crossing pipeline edges. (completed 2026-07-14)
+
+**Milestone v2.1 — MEM2 — Process Memory & Provenance Reframe** *(phases 12–16 — numbering continues after v2.0 = phases 9–11; reuses existing machinery — `tools/memory_regen`, `/checkpoint`, `tools/harness_lint`, Phase-7 emitter, `adr`+CODEOWNERS — no rebuild)*
+
+- [x] **Phase 12: Model + ADR + Doc Reframe** *(v2.1 A)* - Scaffold the new PROCESS memory tier (`.memory/agreements/<slug>.md` per-guideline, committed human-authored — NOT derived), reword the distrust framing to data-authority everywhere it echoes, and ratify the memory-model change as ADR-0006 via the human-gated constitution path. (completed 2026-07-14)
+- [ ] **Phase 13: Injector Reframe + Channel Wiring** *(v2.1 B)* - Split the SessionStart banner into a full-body priority-0 working-agreements directive + a data-scoped provenance banner, and surface a verbatim progress `updated:` stamp — preserving `inject.py` determinism and the ~4000-char budget.
+- [ ] **Phase 14: Write Path + Anti-Churn Guard** *(v2.1 C)* - A dedicated `/agree` command adds/retires a working-agreement only on explicit user feedback, backed by a `tools/harness_lint` provenance/anti-invent guard.
+- [ ] **Phase 15: Emit Round-Trip + Gates** *(v2.1 D)* - Round-trip every new/changed surface (`/agree`, updated skills, AGENTS.md managed block) through the Phase-7 emitter to both runtimes with no model id; emit-drift clean, GEN-04 green.
+- [ ] **Phase 16: Local Memory Web UI** *(v2.1 E)* - A local, no-network, no-auth tool to view/edit/retire memory items with pointer-aware referential integrity over a machine-built derived pointer-index.
+- [x] **Phase 17: Constitution-Gate Dev/Enforce Decoupling** *(infra — independent of v2.1 MEM2)* - A secure-default `HARNESS_DEV_BYPASS` env opt-out so the product's constitution gates stop governing the Claude dev session (default enforce; blank = no bypass; distinct from `GOLDEN_APPROVE_HUMAN`; byte-hygiene never waived), honored by `contract_guard`/`commit_gate`; ADR-0007 records it; CODEOWNERS stays the real gate. (completed 2026-07-15)
 
 ## Phase Details
 
@@ -205,12 +220,33 @@ Plans:
   3. Per-runtime limit validators (Claude skill description/body caps, opencode permission-matrix shape) FAIL the build rather than silently truncating.
   4. A CI check re-emits and diffs the generated surfaces to catch any hand-edited generated-artifact drift.
 
-**Plans**: TBD
+**Plans**: 5 plans (5 waves)
+
+Plans:
+**Wave 1** *(agent-first walking slice — D-05: through EVERY mechanic)*
+
+- [x] 07-01-PLAN.md — Agents walking slice: emit spine + agent projection + loud-fail validators + ownership manifest + committed .opencode/agent + .claude/agents + emit-drift CI gate (EMIT-01/02)
+
+**Wave 2** *(blocked on 07-01)*
+
+- [x] 07-02-PLAN.md — Widen: commands (17) + skills (9, references/ byte-copy); GSD command non-collision (EMIT-01/02)
+
+**Wave 3** *(blocked on 07-02)*
+
+- [x] 07-03-PLAN.md — opencode primary: verbatim .ts plugin copy + permission-matrix→opencode.json 15-key block + schema loud-fail (EMIT-01/02)
+
+**Wave 4** *(blocked on 07-03 — risky merge surface #1)*
+
+- [x] 07-04-PLAN.md — merge.py Markdown managed-block splice into shared AGENTS.md + CLAUDE.md (preserve GSD/human content) (EMIT-02)
+
+**Wave 5** *(blocked on 07-04 — risky merge surface #2, Pitfall-4 double-wiring)*
+
+- [x] 07-05-PLAN.md — merge.py settings.json signature merge: idempotent coexistence, exactly 4 SessionStart groups, GSD hooks survive (EMIT-02)
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -221,8 +257,16 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 5. De-specialization & Template Extraction | 5/5 | Complete   | 2026-07-09 |
 | 5.5. Authored-Surface Genericization (INSERTED) | 3/3 | Complete|  |
 | 6. CI + Gates (generic) | 3/3 | Complete   | 2026-07-09 |
-| 7. Single-Source Dual-Runtime Emitter | 0/TBD | Not started | - |
+| 7. Single-Source Dual-Runtime Emitter | 5/5 | Complete   | 2026-07-12 |
 | 8. Pipeline-Topology Conductor + Per-Component Agents | 6/6 | Complete   | 2026-07-11 |
+| 9. Self-Maintaining Derived Artifacts + Curator | 4/4 | Complete   | 2026-07-13 |
+| 10. Context-Economy Fan-out/Synthesize Orchestration | 3/3 | Complete    | 2026-07-13 |
+| 11. Multi-Repo Workspace | 4/4 | Complete    | 2026-07-14 |
+| 12. Model + ADR + Doc Reframe (v2.1 A) | 3/3 | Complete | 2026-07-14 |
+| 13. Injector Reframe + Channel Wiring (v2.1 B) | 0/TBD | Not started | - |
+| 14. Write Path + Anti-Churn Guard (v2.1 C) | 0/TBD | Not started | - |
+| 15. Emit Round-Trip + Gates (v2.1 D) | 0/TBD | Not started | - |
+| 16. Local Memory Web UI (v2.1 E) | 0/TBD | Not started | - |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
 
@@ -238,3 +282,219 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
   4. New skill(s)/command(s) make the pipeline model executable (topology-trace / `/pipeline`); full non-example `uv run pytest` green; GEN-04/05 + persona guards clean; the Phase 7 emit surface is unaffected.
 
 **Plans**: TBD
+
+### Phase 9: Self-Maintaining Derived Artifacts + Curator *(v2.0 α)*
+
+**Goal**: The derived plane stays fresh on its own — repo-map, contracts-index, docs `reference/`, and `.memory/` are regenerated by machines and verified by CI, with a single `curator` agent owning “derived freshness” and no human ever hand-editing a derived artifact. Reuses the existing `tools/memory_regen`, `/docs-sync`, and two-plane-memory machinery (no rebuild).
+**Mode:** standard
+**Depends on**: Phase 8 (last shipped v1.0 phase; first v2.0 phase)
+**Requirements**: MAINT-01, MAINT-02, MAINT-03, MAINT-04
+**Success Criteria** (what must be TRUE):
+
+  1. A read-mostly `curator` agent exists (no constitution/golden write — machines gate, humans ratify) and is the single owner of derived freshness: it regenerates repo-map, contracts-index, docs `reference/`, and `.memory/` purely by invoking the existing `tools/memory_regen` + `/docs-sync`, and never hand-edits a derived file.
+  2. A CI “stale-derived” gate regenerates the committed derived artifacts on a PR and FAILS on any diff — mirroring the Phase-7 re-emit-diff gate — so a stale derived plane cannot merge; machine-write + CI-verify satisfies the derived-never-hand-edited rule.
+  3. Hook posture is split by cost: on-write hooks do only cheap refresh (format-on-write class), while heavy regeneration is deferred to PR/CI — there is no heavy per-commit local hook (slow/noisy is avoided).
+  4. `/refresh-memory` (or an equivalent `curator` invocation) runs the full regen set locally before handoff, and `/verify-work` incorporates that freshness check so drift is caught pre-handoff, not in CI.
+  5. The new `curator` agent (and any new command/hook) round-trips the Phase-7 emitter to BOTH runtimes (opencode primary, Claude secondary) with no model identifier, and the core stays example-independent (GEN-04 guard green).
+
+**Plans**: 4 plans (3 waves)
+
+Plans:
+**Wave 1** *(foundation — reconcile pre-existing drift + flip contracts-index; no emitter touch, parallel-safe)*
+
+- [x] 09-01-PLAN.md — Reconcile docs/reference drift + docs_sync prune-then-write + prune/determinism tests (MAINT-02)
+- [x] 09-02-PLAN.md — Flip contracts-index to committed-derived: .gitignore contents-form + negation + track the file (MAINT-02)
+
+**Wave 2** *(blocked on 09-01, 09-02 — the sole emitter-round-trip owner)*
+
+- [x] 09-03-PLAN.md — Curator persona + /refresh-memory + /verify-work freshness + two-plane doc + caps bump 4→5; re-emit both runtimes (MAINT-01, MAINT-03, MAINT-04)
+
+**Wave 3** *(blocked on 09-01, 09-02, 09-03 — lands last so CI is green on arrival)*
+
+- [x] 09-04-PLAN.md — stale-derived CI job (regen → git add -A → git diff --cached --exit-code) + gate.needs + structural/negative-control test (MAINT-02)
+
+**KEY DECISION (RESOLVED at plan time, D-01/D-02):** committed-derived set = `docs/reference/**` + `contracts-index` (the gated scope); `repo-map` stays gitignored/session-ephemeral (PageRank churn = noise, not signal).
+
+
+### Phase 10: Context-Economy Fan-out/Synthesize Orchestration *(v2.0 β)*
+
+**Goal**: Long-lived, multi-session work stays context-cheap. A first-class fan-out → dispatch N analysis subagents → recover schema-bounded summaries → synthesize workflow lets a conductor (and a human) cover large surfaces without a single context ballooning — by returning compact citation-bearing claims instead of raw file dumps. This is the reusable substrate Phase 11 (γ) applies across repos.
+**Mode:** standard
+**Depends on**: Phase 9
+**Requirements**: ECON-01, ECON-02, ECON-03
+**Success Criteria** (what must be TRUE):
+
+  1. A `fan-out-synthesize` skill/command decomposes a task, dispatches N analysis subagents, recovers schema-bounded summaries, and synthesizes a result — usable by BOTH a human and the primary orchestrator/conductor (one shared workflow, not two).
+  2. A summary/return contract is enforced so subagents return compact, citation-bearing output (paths + claims, not file dumps), letting the conductor synthesize WITHOUT re-reading the raw files each subagent touched.
+  3. A delegate-vs-inline context-budget guide/skill (a heuristic for when to fan out vs work inline) is wired into the `orchestrator` persona and `/orient`, so the routing decision is observable and repeatable.
+  4. Every new agent/skill/command round-trips the Phase-7 emitter to both runtimes (opencode primary, Claude secondary, no model identifier), and the core stays example-independent (GEN-04 guard green).
+
+**Plans**: 3 plans (3 waves)
+
+Plans:
+**Wave 1**
+
+- [x] 10-01-PLAN.md — fan-out-synthesize skill + citation-bearing return-contract schema + /fan-out-synthesize command + return-contract test (ECON-01, ECON-02)
+
+**Wave 2** *(blocked on 10-01 — shared caps.py enumeration)*
+
+- [x] 10-02-PLAN.md — context-budget skill wired into orchestrator + /orient + wiring test (ECON-03)
+
+**Wave 3** *(blocked on 10-01, 10-02 — emitter round-trip lands last)*
+
+- [x] 10-03-PLAN.md — re-emit both runtimes + commit derived trees + full-suite/GEN-04/emit-drift/anti-sprawl gate (ECON-01, ECON-02, ECON-03 / D-12)
+
+### Phase 11: Multi-Repo Workspace *(v2.0 γ)*
+
+**Goal**: Several repos are declared and operated as ONE workspace. The `harness/project.toml` slot pattern is raised one level into a workspace manifest, repo-scoped subagents run the β fan-out per-repo with workspace-level synthesis (no single context holds all repos), contract-drift/golden gates extend across repo boundaries, and the Phase-8 pipeline topology generalizes so an edge can cross a repo boundary — all while the core depends on no workspace member (GEN-04 generalized to core→workspace-member).
+**Mode:** standard
+**Depends on**: Phase 10 (β fan-out/synthesize is the reusable substrate γ applies across repos)
+**Requirements**: MREPO-01, MREPO-02, MREPO-03, MREPO-04
+**Success Criteria** (what must be TRUE):
+
+  1. A workspace model + manifest declares member repos and cross-repo edges (which repo produces/consumes which contract), raising the `harness/project.toml` slot pattern one level; the manifest is pure DATA (loader passthrough + consistency gate), consistent with the GEN-03/PIPE-01 slot pattern.
+  2. Repo-scoped subagents apply the Phase-10 β fan-out/synthesize across the workspace (per-repo analysis → workspace-level synthesis) so no single context has to hold every repo at once.
+  3. Cross-repo contract-drift/golden gates extend the Phase-6 CI + `contract_drift` machinery across the workspace, failing on a drift or golden break whose edge spans a repo boundary — machines gate, humans ratify (constitution plane stays human-owned).
+  4. The Phase-8 pipeline topology generalizes so a declared edge can cross a repo boundary, and a guard proves core→workspace-member single-direction dependency (GEN-04 generalized — core never imports/path-references a workspace member); new agents/commands round-trip the Phase-7 emitter to both runtimes.
+
+**Plans**: 4 plans (3 waves)
+**KEY DECISION (RESOLVED at plan time):** workspace model **b — workspace manifest as pure DATA** (top-level `workspace.toml`, raising the `harness/project.toml` GEN-03 slot pattern one level; declares `[[members]]` + `[pipeline].edges` with `repo:stage` endpoints so one table serves both cross-repo drift/golden member-resolution and repo-crossing topology). No enforcement in the manifest; a `tools/workspace_config` loader passthrough + a `test_workspace_config.py` consistency gate enforce well-formedness. Fan-out reuse is prose-wired (no new skill/command); the 2-member demo fixture lives INSIDE `REPO_ROOT` (`tests/fixtures/workspace/`) so `golden_runner._confine` passes unchanged.
+
+Plans:
+**Wave 1**
+
+- [x] 11-01-PLAN.md — MREPO-01: `workspace.toml` DATA slot + `tools/workspace_config` loader/gate + minimal 2-member fixture (fully baselined, in-repo)
+
+**Wave 2** *(blocked on 11-01; parallel — no file overlap)*
+
+- [x] 11-02-PLAN.md — MREPO-04: `repo:stage` edge generalization + generalized core→workspace-member GEN-04 guard twin
+- [x] 11-03-PLAN.md — MREPO-03: cross-repo contract-drift + workspace-aware golden (`_confine` widened) + separate `workspace` CI job in `gate.needs`
+
+**Wave 3** *(blocked on 11-01/02/03 — closeout)*
+
+- [x] 11-04-PLAN.md — MREPO-02: prose-wire member-repo fan-out reuse into orchestrator + fan-out-synthesize skill; emitter round-trip to both runtimes + full phase gate
+
+### Phase 17: Constitution-Gate Dev/Enforce Decoupling *(infra — independent of v2.1 MEM2)*
+
+**Goal:** The product's constitution gates (`contract_guard`, `commit_gate`) stop governing the Claude **dev** session while staying enforce-by-default everywhere else. Add a secure-default `HARNESS_DEV_BYPASS` env opt-out (default = enforce; blank/whitespace = no bypass; distinct from `GOLDEN_APPROVE_HUMAN` so a dev-bypassed write is never mislabeled "human ratified"), honored by both gates via a shared `dev_bypassed()` helper in `tools/hooks/_stdin.py`. Byte-hygiene (§4.3-4.6 BOM/CRLF) is **never** waived. Flag lives only in gitignored `.claude/settings.local.json`. ADR-0007 records the posture change; CODEOWNERS at PR merge remains the real, non-bypassable gate. Design source: `docs/superpowers/specs/2026-07-14-contract-guard-dev-bypass-design.md`.
+
+**Requirements**: none new (references the approved brainstorm spec)
+**Depends on:** None (harness-core; independent of the Phase 12–16 memory chain)
+**Plans:** 2 plans (2 waves)
+
+Plans:
+- [ ] 17-01-PLAN.md — HARNESS_DEV_BYPASS: shared dev_bypassed() + thread into contract_guard/commit_gate + tests (SC1–SC6)
+- [ ] 17-02-PLAN.md — ADR-0007 recording the posture (draft-to-scratch + human-gated landing)
+
+---
+
+## Milestone v2.1 — MEM2 — Process Memory & Provenance Reframe
+
+> **Numbering continues (do NOT reset).** v2.0 ended at Phase 11; this milestone runs **Phases 12–16**. Design source: `.planning/MEMORY-UPGRADE-PROPOSAL.md` (§7 operator refinements are AUTHORITATIVE, supersede §2/§5 on conflict). Every phase **reuses existing machinery** (`tools/memory_regen`/`inject.py`, `/checkpoint`, `tools/harness_lint`, the Phase-7 emitter `tools/harness_emit`, the `adr` skill + CODEOWNERS path) — no new machinery is invented. Sequencing is dependency-locked 12 → 13 → 14 → 15 → 16: the model+ADR ground the injector; the injector consumes the channel the write-path fills; emit round-trips the surface changes; the UI operates on the finished, committed channel.
+>
+> **Cross-cutting non-negotiables (all phases):** contract-first / constitution gated (ADR-0006 lands via the human-ratified path — an agent Write to `docs/adr/` is correctly denied by contract-guard); machines gate / humans ratify (agreements are written **only** on explicit user feedback — the user is the ratifier); the new agreements channel is a **committed human-authored tier** (like `state/`), NOT a derived artifact — never regenerated, never colliding with `.memory/derived/`; every surface change round-trips the emitter to both runtimes with **no model id**; GEN-04 core→example independence stays green; project decisions are **linked** (ADR / PROJECT.md Key Decisions), never restated in the PROCESS channel (§7c).
+
+### Phase 12: Model + ADR + Doc Reframe *(v2.1 A)*
+
+**Goal**: The PROCESS memory channel exists as a scaffolded per-guideline tier and the distrust framing reads as *data authority* everywhere it echoes — and the memory-model change is ratified as ADR-0006 through the human-gated constitution path. This is the model + documentation foundation the injector (Phase 13) and write-path (Phase 14) build on.
+**Mode:** standard
+**Depends on**: Phase 11 (last shipped)
+**Requirements**: MEM2-01, MEM2-03 *(also authors the ADR-0006 portion of MEM2-06 — the emit portion of MEM2-06 is owned by Phase 15)*
+**Success Criteria** (what must be TRUE):
+
+  1. `.memory/agreements/` exists as a committed, human-authored tier with a defined per-guideline entry shape — one file per guideline (`<slug>.md`: title + one-line rule + `status` active/retired + a provenance stamp "added because &lt;user feedback&gt;" + added-date) — documented (schema/fixture) and scaffolded (empty or seed), and it is explicitly a committed tier like `state/`, NOT a derived artifact (it never regenerates, never collides with `.memory/derived/`).
+  2. No session-start surface tells an agent to "confirm before trusting" its own grounded work: the distrust prose is reworded to data-authority ("which artifact wins a DATA conflict") in `.memory/README.md`, `.memory/state/activeContext.md`, `.memory/state/progress.md`, `harness/skills/two-plane-memory/SKILL.md`, and `AGENTS.md`.
+  3. The agreements-entry shape links to ADRs / PROJECT.md Key-Decisions and never restates a project decision (§7c) — the PROCESS channel is working-style/methodology only.
+  4. ADR-0006 records the memory-model change (append-only, next number after 0005) and lands via the human-ratified path — an agent Write to `docs/adr/` is correctly denied by contract-guard, and CODEOWNERS ratifies at merge (mirrors the ADR-0004/0005 posture).
+
+**Plans**: 3 plans (2 waves)
+
+Plans:
+**Wave 1** *(parallel — zero file overlap)*
+
+- [ ] 12-01-PLAN.md — Scaffold `.memory/agreements/` committed tier (`_TEMPLATE.md` + tier README) + four-plane `.memory/README.md` + data-authority reword of the two shared docs (README STATE section + two-plane-memory SKILL source) (MEM2-01, MEM2-03)
+- [ ] 12-02-PLAN.md — Data-authority reword of the three non-shared surfaces: `.memory/state/activeContext.md`, `.memory/state/progress.md`, `AGENTS.md` (edit outside the HARNESS-MANAGED block) (MEM2-03)
+
+**Wave 2** *(blocked on 12-01, 12-02)*
+
+- [ ] 12-03-PLAN.md — Author ADR-0006 (memory-model change) via the human-ratified constitution path; agent Write correctly denied, human token/CODEOWNERS ratifies (MEM2-06 ADR portion) [autonomous: false]
+
+### Phase 13: Injector Reframe + Channel Wiring *(v2.1 B)*
+
+**Goal**: SessionStart injects the working-agreements as a full-body priority-0 directive plus a separate data-scoped provenance banner, and surfaces a verbatim progress freshness stamp — all while preserving `inject.py` determinism and the ~4000-char budget. This consumes the channel scaffolded in Phase 12.
+**Mode:** standard
+**Depends on**: Phase 12 (the `.memory/agreements/` shape + reworded prose it composes/surfaces)
+**Requirements**: MEM2-02, MEM2-05
+**Success Criteria** (what must be TRUE):
+
+  1. `inject.py` emits two distinct blocks: (a) a full-body **working-agreements directive** composed from the active `.memory/agreements/*` files at a new priority-0 (never-dropped, honored as a directive), **capped** (N entries / M chars; overflow degrades to a pointer per Q4) so it cannot crowd out drift + index; and (b) a **data-scoped** provenance banner that reads as "which artifact wins a data conflict" — NOT "distrust/retract your own grounded work". The activeContext pointer is reworded to a progress-log pointer.
+  2. delete+regen of the injector payload is **byte-identical** (determinism at `inject.py:20-22` preserved) and the assembled payload stays within the ~4000-char budget (`inject.py:105`) even with the capped agreements block present.
+  3. `/checkpoint` writes an `updated: <ISO-date>` stamp into `.memory/state/activeContext.md` / `progress.md`; `assemble()` surfaces that stamp **verbatim** — NO wall-clock inside `assemble()` (determinism intact) and NO hook-wrapper wall-clock code — freshness is judged **agent-side** against the session date (no fixed threshold, per Q6).
+  4. Progress state stays tight by design (in-flight + remaining + a short last-N-done summary); no ever-growing done-log is introduced (full history lives in git, §7a).
+
+**Plans**: 4 plans in 3 waves
+
+Plans:
+**Wave 1**
+- [ ] 13-01-PLAN.md — Wave 1 · State stamp + /checkpoint mandate + agreements no-secrets line (MEM2-05 write half, SC3/SC4)
+- [ ] 13-02-PLAN.md — Wave 1 · Determinism safety net backfill: byte-identity + snapshot + no-wall-clock statics (MEM2-02 SC2 prerequisite)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 13-03-PLAN.md — Wave 2 · Injector reframe: agreements directive at priority-0, data-scoped banner, verbatim stamp (sole owner of inject.py)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 13-04-PLAN.md — Wave 3 · Re-enable injection + retire the superseded provisional/banner-first prose (D-20/D-06)
+
+### Phase 14: Write Path + Anti-Churn Guard *(v2.1 C)*
+
+**Goal**: A dedicated `/agree` command is the sanctioned — and only — way a working-agreement is added or retired, and it fires only on explicit user feedback; a `tools/harness_lint` provenance/anti-invent guard enforces that every entry is origin-stamped and that agents cannot self-invent unsolicited entries.
+**Mode:** standard
+**Depends on**: Phase 13 (the injector consumes the files this command writes)
+**Requirements**: MEM2-04
+**Success Criteria** (what must be TRUE):
+
+  1. A dedicated **`/agree`** command appends a new per-guideline agreement **only in response to explicit user feedback**, and retires one by flipping that file's `status` to `retired` (per Q5/§7b) — never auto-churned, never silently rotated like the progress log.
+  2. A `tools/harness_lint` check **fails when an agreement file lacks a well-formed provenance/origin stamp** ("added because &lt;user feedback&gt;" + added-date), so agents cannot auto-invent entries; the guard follows the existing `stale-derived` gate pattern (regenerate → verify).
+  3. `/agree` is added to `EXPECTED_COMMANDS` (source side; its emit round-trip to both runtimes is owned by Phase 15).
+
+**Plans**: 4 plans in 3 waves
+
+Plans:
+**Wave 1**
+- [ ] 14-01-PLAN.md — Wave 1 · Extract the shared L1-L4 agreements predicate into tools/harness_lint/agreements.py + widen the no-wall-clock gate with a negative control (D-05/D-14/D-17/D-18; sole owner of inject.py)
+- [ ] 14-04-PLAN.md — Wave 1 · ADR-0006 `## Errata`: correct the phantom "committed seed" claim, declare the empty active set CORRECT (D-12/D-13; constitution write, human-gated)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 14-02-PLAN.md — Wave 2 · The provenance lint: tools/harness_lint/provenance.py + tests + `added:` template quoting + presence-safe /lint step (D-01/D-02/D-03/D-04/D-16)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 14-03-PLAN.md — Wave 3 · The /agree write path: new zero-dep tools/agree/ member, refusal-first writer, YAML-serialized provenance, source-only command (D-07/D-08/D-09/D-10/D-11/D-15/D-19/D-20)
+
+### Phase 15: Emit Round-Trip + Gates *(v2.1 D)*
+
+**Goal**: Every new/changed surface from this milestone (`/agree`, updated skills, the updated `AGENTS.md` managed block) round-trips the Phase-7 emitter to both runtimes with no model id — proving emit-drift clean, GEN-04 green, and counts/fixtures updated. This is the emit portion of MEM2-06 (its ADR portion landed in Phase 12).
+**Mode:** standard
+**Depends on**: Phase 14 (the full set of surface changes must exist before the round-trip)
+**Requirements**: MEM2-06
+**Success Criteria** (what must be TRUE):
+
+  1. Re-running `tools/harness_emit` (glob discovery, mirroring the Phase-10/11 emitter round-trip — no emitter code change expected) projects `/agree` + the updated skills + the updated `AGENTS.md` managed block to BOTH runtimes (`.opencode/` + `.claude/`); emit fixtures/counts + `EXPECTED_COMMANDS` are updated to match.
+  2. The **emit-drift gate is clean** (re-emit + diff over the full documented path set) and **no model id** appears anywhere in the emitted trees (placeholder tiers only).
+  3. **GEN-04 core→example independence stays green** and the full non-example test suite passes.
+
+**Plans**: TBD
+
+### Phase 16: Local Memory Web UI *(v2.1 E)*
+
+**Goal**: A lightweight, local, no-network, no-auth tool lets a user view / edit / retire memory items (progress state + per-guideline agreements) with pointer-aware referential integrity — surfacing "what points to this item" over a machine-built derived pointer-index and keeping references consistent on edit/retire, so memory hygiene is systematized rather than manual.
+**Mode:** standard
+**Depends on**: Phase 15 (operates on the finished, committed memory channel + emitted surface)
+**Requirements**: MEM2-07
+**Success Criteria** (what must be TRUE):
+
+  1. A **local** web tool (no external network, no auth surface) lists the committed memory items — progress state + per-guideline agreements — and lets a user view, edit, and retire them.
+  2. A machine-built **derived pointer-index** surfaces "what points to this item" (docs / skills / `inject.py` pointers that reference memory files); the index is treated like other derived artifacts (generated, not hand-maintained).
+  3. Editing or retiring an item keeps references consistent — an edit/retire that would orphan a pointer is surfaced and reconciled — so a hand-edit can no longer silently break references.
+
+**Plans**: TBD
+**UI hint**: yes

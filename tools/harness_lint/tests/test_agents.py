@@ -12,51 +12,37 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import json
+
 import pytest
 
 from tools.harness_lint import parse_frontmatter
 
+# Cap constants + the read-only predicate now live in ONE place (tools/harness_lint/caps.py) so the
+# emit-time validators (tools/harness_emit) and this gate share a single definition (07-01, D-04).
+# Re-imported here so the existing assertions — and downstream importers of these names via
+# ``test_agents`` (e.g. test_agent_templates) — stay green with values UNCHANGED.
+from tools.harness_lint.caps import (  # noqa: F401  (re-exported for test_agent_templates)
+    ALLOWED_PERMISSION_KEYS,
+    EXPECTED_PERSONAS,
+    READ_ONLY_PERSONAS,
+    VALID_MODES,
+    VALID_PERMISSION_KEYS,
+    WRITE_AFFORDANCE_ALIAS,
+    _permission,
+    is_read_only,
+)
+
 # test_agents.py -> tests -> harness_lint -> tools -> repo root (parents[3]).
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _AGENTS_DIR = _REPO_ROOT / "harness" / "agents"
+_PERMISSION_MATRIX = _REPO_ROOT / "harness" / "permission-matrix.json"
 
-# The 15 valid opencode permission keys (CONFIG-02, mirrors harness/permission-matrix.json).
-VALID_PERMISSION_KEYS = frozenset(
-    {
-        "read",
-        "edit",
-        "bash",
-        "glob",
-        "grep",
-        "list",
-        "task",
-        "external_directory",
-        "todowrite",
-        "question",
-        "webfetch",
-        "websearch",
-        "lsp",
-        "skill",
-        "doom_loop",
-    }
-)
-
-# "write" is NOT a native opencode key (file writes fall under "edit"); it is tolerated ONLY as an
-# explicit deny authored defensively for the read-only invariant — never as an "allow".
-WRITE_AFFORDANCE_ALIAS = frozenset({"write"})
-ALLOWED_PERMISSION_KEYS = VALID_PERMISSION_KEYS | WRITE_AFFORDANCE_ALIAS
-
-VALID_MODES = frozenset({"primary", "subagent", "all"})
-
-# Exactly the four enumerated CORE personas — the instance-language persona
-# moved to the log-parser example instance (Phase 5.5). No more, no less.
-EXPECTED_PERSONAS = frozenset({"orchestrator", "python-engineer", "code-reviewer", "explorer"})
-
-# Personas that MUST be read-only in both representations (AGENT-04 reviewer, AGENT-05 explorer).
-READ_ONLY_PERSONAS = frozenset({"code-reviewer", "explorer"})
-
-# Write/shell affordance tokens forbidden from a read-only persona's Claude tools allowlist.
-_WRITE_TOOL_TOKENS = ("Write", "Bash", "Edit")
+# The constitution-plane globs that MUST be denied for every persona (including curator's
+# derived-only write boundary — MAINT-01/D-05). opencode's `edit` key is not path-globbable, so the
+# curator's "never write the constitution" boundary is a fact of this GLOBAL data + the Phase-4
+# contract-guard hook, not a per-persona frontmatter list.
+_CONSTITUTION_DENY_GLOBS = ("contracts/**", "docs/adr/**", "golden/**")
 
 # A routing-signal description must carry an invocation trigger token (P7 guard).
 _ROUTING_TRIGGERS = ("use", "when")
@@ -75,26 +61,6 @@ def _agent_files() -> list[Path]:
 def _load(path: Path) -> dict:
     fm, _ = parse_frontmatter(path.read_text(encoding="utf-8"))
     return fm
-
-
-def _permission(fm: dict) -> dict:
-    perm = fm.get("permission", {})
-    return perm if isinstance(perm, dict) else {}
-
-
-def is_read_only(fm: dict) -> bool:
-    """True iff the persona grants NO write/shell affordance in EITHER representation.
-
-    Checks BOTH the opencode ``permission`` block (``edit``/``bash``/``write`` must not resolve to
-    an "allow" — present-and-deny or absent are both fine) AND the Claude ``tools`` allowlist string
-    (must contain none of Write/Bash/Edit).
-    """
-    perm = _permission(fm)
-    for key in ("edit", "bash", "write"):
-        if str(perm.get(key, "deny")) == "allow":
-            return False
-    tools = str(fm.get("tools", ""))
-    return not any(tok in tools for tok in _WRITE_TOOL_TOKENS)
 
 
 def test_expected_personas_present_no_sprawl() -> None:
@@ -179,3 +145,55 @@ def test_read_only_personas_have_no_write_affordance(name: str) -> None:
         f"permission block (no edit/bash/write allow) AND the Claude tools list "
         f"(no Write/Bash/Edit)"
     )
+
+
+def test_read_only_sees_through_per_glob_permission_dict() -> None:
+    """A per-glob permission dict granting ``allow`` is a write affordance — not read-only.
+
+    opencode permission values may be a mapping (``{"git *": "allow", "*": "deny"}``), not just a
+    bare string. ``str({...}) == "allow"`` is always False, so a naive check would wrongly report
+    such a persona as read-only. Guard against that dict-bypass regression.
+    """
+    granting = {"permission": {"bash": {"git *": "allow", "*": "deny"}}}
+    assert not is_read_only(granting), (
+        "a per-glob permission dict granting bash 'allow' slipped past is_read_only (dict-bypass)"
+    )
+    # An all-deny mapping (and the string 'deny') remain genuinely read-only.
+    denying = {"permission": {"bash": {"git *": "deny", "*": "deny"}, "edit": "deny"}}
+    assert is_read_only(denying), "an all-deny permission mapping must still read as read-only"
+
+
+def test_curator_is_admitted_persona() -> None:
+    """The curator (MAINT-01) is the 5th enumerated persona and exists on disk."""
+    assert "curator" in EXPECTED_PERSONAS, "curator must be an enumerated core persona"
+    assert (_AGENTS_DIR / "curator.md").is_file(), "harness/agents/curator.md must exist"
+
+
+def test_curator_is_not_read_only_but_denies_write() -> None:
+    """Curator writes DERIVED (edit+bash allow) so is NOT read-only, yet denies the write alias.
+
+    MAINT-01/D-05: curator needs edit+bash to write the derived plane and run generators, so it is
+    deliberately excluded from READ_ONLY_PERSONAS and is_read_only() must return False. But it still
+    authors an explicit ``write: deny`` — a defensive floor, distinct from the derived edits it makes.
+    """
+    assert "curator" not in READ_ONLY_PERSONAS, (
+        "curator must stay OUT of READ_ONLY_PERSONAS — it writes the derived plane"
+    )
+    fm = _load(_AGENTS_DIR / "curator.md")
+    assert not is_read_only(fm), "curator has edit+bash allow, so is_read_only() must be False"
+    assert fm["mode"] == "subagent", "curator is a subagent — orchestrator stays the sole primary"
+    perm = _permission(fm)
+    assert str(perm.get("write")) == "deny", "curator must author an explicit write: deny floor"
+
+
+def test_constitution_paths_denied_globally() -> None:
+    """Constitution paths are denied in permission-matrix path_deny_globs (curator's write boundary).
+
+    The curator's derived-only boundary is enforced by this GLOBAL deny + the contract-guard hook,
+    not a per-persona glob (opencode's ``edit`` key is not path-globbable). Assert the constitution
+    globs are present so the boundary that keeps curator out of contracts/adr/golden holds.
+    """
+    matrix = json.loads(_PERMISSION_MATRIX.read_text(encoding="utf-8"))
+    deny = set(matrix.get("path_deny_globs", []))
+    missing = set(_CONSTITUTION_DENY_GLOBS) - deny
+    assert not missing, f"constitution globs missing from path_deny_globs: {sorted(missing)}"

@@ -25,7 +25,7 @@ command -v node >/dev/null 2>&1 || NODE=/opt/node22/bin/node
 uv run python -m tools.memory_regen.repo_map        >/dev/null 2>&1 || true
 uv run python -m tools.memory_regen.contracts_index >/dev/null 2>&1 || true
 
-# Assemble the capped, banner-first, priority-truncated payload (single injection contract, D-01).
+# Assemble the capped, directive-first, priority-truncated payload (single injection contract, D-01).
 PAYLOAD="$(uv run python -m tools.memory_regen.inject 2>/dev/null || echo '')"
 
 # Node-encode so embedded newlines/quotes escape correctly; PAYLOAD via argv (no interpolation).

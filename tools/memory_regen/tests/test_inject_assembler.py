@@ -1,122 +1,164 @@
-"""Unit tests for the shared session-start injection assembler (HOOK-05, D-02/D-07, Crit-4).
-
-`inject.assemble()` is the ONE payload source both runtimes (Claude now, opencode deferred)
-honor. These tests pin the injection *contract*: a capped, banner-first, drift-aware,
-pointer-only payload that priority-truncates whole low-priority sections (repo-map dropped
-before banner/drift) rather than blind mid-line cutting, and that never leaks full contract
-schema bodies (T-02-06 / P13).
-"""
+"""Contract tests for the reframed SessionStart injection assembler."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from tools.memory_regen import inject
 
-# ---- banner / cap (D-02, D-07 Crit-4) --------------------------------------------------------
+
+def _dirs(tmp_path: Path) -> tuple[Path, Path]:
+    derived, state = tmp_path / "derived", tmp_path / "state"
+    derived.mkdir()
+    state.mkdir()
+    (derived / "contracts-index.md").write_text("contracts\n", encoding="utf-8")
+    (derived / "repo-map.md").write_text("repo\n", encoding="utf-8")
+    (state / "activeContext.md").write_text(
+        '---\nupdated: "2026-01-02"\n---\n# state\n', encoding="utf-8"
+    )
+    return derived, state
 
 
-def test_first_line_is_provisional_banner() -> None:
-    """Payload leads with the provisional banner (D-02 — non-ignorable, banner-first)."""
-    payload = inject.assemble()
-    first = payload.splitlines()[0]
-    assert first == inject.BANNER
-    assert "provisional" in first.lower()
-
-
-def test_banner_asserts_adr_contract_override() -> None:
-    """Banner declares ADR/contracts override .memory/ on conflict (D-02 / P13)."""
+def test_banner_is_data_scoped() -> None:
     banner = inject.BANNER.lower()
-    assert "provisional" in banner
-    assert "contract" in banner
-    assert "adr" in banner
-    assert "override" in banner or "overrides" in banner
+    assert all(token in banner for token in ("data", "contract", "adr"))
+    assert not any(
+        token in banner for token in ("provisional", "hint, not truth", "confirm before trusting")
+    )
 
 
 def test_default_payload_within_budget() -> None:
-    """assemble(budget_chars=4000) is at most 4000 chars (~1k tokens soft cap, D-07)."""
+    assert len(inject.assemble()) <= 4000
+
+
+def test_only_active_non_template_agreements_compose(tmp_agreements_tree: Path) -> None:
+    (tmp_agreements_tree / "missing.md").write_text("# Missing\nNo status.\n", encoding="utf-8")
+    block = inject._agreements_block(tmp_agreements_tree)
+    assert "Ground claims" in block and "Proceed deliberately" in block
+    assert (
+        "Retired" not in block and "One-line working-style" not in block and "Missing" not in block
+    )
+
+
+def test_agreements_order_is_sorted_not_filesystem(tmp_agreements_tree: Path) -> None:
+    block = inject._agreements_block(tmp_agreements_tree)
+    assert block.index("Ground claims") < block.index("Proceed deliberately")
+
+
+def test_overflow_degrades_to_pointer(tmp_agreements_tree: Path) -> None:
+    for number in range(7):
+        (tmp_agreements_tree / f"extra-{number}.md").write_text(
+            f"---\nstatus: active\n---\n# Extra {number}\nA short rule.\n", encoding="utf-8"
+        )
+    assert inject._agreements_block(tmp_agreements_tree) == inject.AGREEMENTS_POINTER
+    assert not any(char.isdigit() for char in inject.AGREEMENTS_POINTER)
+    large = tmp_agreements_tree / "large.md"
+    large.write_text("---\nstatus: active\n---\n# Large\n" + "x" * 800 + "\n", encoding="utf-8")
+    assert inject._agreements_block(tmp_agreements_tree) == inject.AGREEMENTS_POINTER
+
+
+def test_render_excludes_provenance(tmp_agreements_tree: Path) -> None:
+    block = inject._agreements_block(tmp_agreements_tree)
+    assert not any(value in block for value in ("provenance", "added:", "status:", "Related:"))
+
+
+def test_agreements_header_states_scope_limit() -> None:
+    assert "contracts/" in inject.AGREEMENTS_HEADER and "docs/adr/" in inject.AGREEMENTS_HEADER
+    assert "never override" in inject.AGREEMENTS_HEADER.lower()
+
+
+def test_agreements_reads_are_confined(tmp_agreements_tree: Path, tmp_path: Path) -> None:
+    outside = tmp_path / "outside.md"
+    outside.write_text("---\nstatus: active\n---\n# Outside\nDo not read.\n", encoding="utf-8")
+    (tmp_agreements_tree / "escape.md").symlink_to(outside)
+    assert "Outside" not in inject._agreements_block(tmp_agreements_tree)
+
+
+def test_two_distinct_blocks_emitted(tmp_agreements_tree: Path, tmp_path: Path) -> None:
+    derived, state = _dirs(tmp_path)
+    payload = inject.assemble(
+        derived_dir=derived, state_dir=state, agreements_dir=tmp_agreements_tree
+    )
+    assert inject.AGREEMENTS_HEADER in payload and inject.BANNER in payload
+    assert payload.index(inject.AGREEMENTS_HEADER) < payload.index(inject.BANNER)
+
+
+def test_agreements_banner_drift_never_dropped(tmp_agreements_tree: Path, tmp_path: Path) -> None:
+    derived, state = _dirs(tmp_path)
+    payload = inject.assemble(1, derived, state, tmp_agreements_tree)
+    assert (
+        inject.AGREEMENTS_HEADER in payload
+        and inject.BANNER in payload
+        and inject.DRIFT_HEADER in payload
+    )
+
+
+def test_pointer_is_progress_log_not_imperative() -> None:
     payload = inject.assemble()
-    assert len(payload) <= 4000
+    assert "progress log" in inject.ACTIVE_HEADER.lower()
+    assert "confirm against contracts/ADR before trusting" not in payload
 
 
-def test_generous_budgets_are_respected() -> None:
-    """For any budget comfortably above the mandatory banner+drift, len(payload) <= budget."""
-    for budget in (1500, 2000, 3000, 4000):
-        payload = inject.assemble(budget_chars=budget)
-        assert len(payload) <= budget, f"payload exceeded budget {budget}"
+def test_updated_stamp_surfaced_verbatim(tmp_path: Path) -> None:
+    derived, state = _dirs(tmp_path)
+    assert "[updated: 2026-01-02]" in inject.assemble(derived_dir=derived, state_dir=state)
 
 
-# ---- priority-truncation (D-07 — whole sections, reverse priority) ---------------------------
-
-
-def test_repo_map_present_under_generous_budget(tmp_path: Path) -> None:
-    """When a repo-map derived file exists and budget allows, its section is included."""
-    derived = tmp_path / "derived"
-    derived.mkdir()
-    (derived / "repo-map.md").write_text(
-        "DERIVED — do not hand-edit\n1. tools/foo.py\n2. libs/bar.py\n", encoding="utf-8"
-    )
-    payload = inject.assemble(budget_chars=4000, derived_dir=derived)
-    assert inject.REPO_MAP_HEADER in payload
-
-
-def test_tiny_budget_drops_repo_map_but_keeps_banner_and_drift(tmp_path: Path) -> None:
-    """Over budget → repo-map (priority 3) dropped; banner (0) + drift (1) survive (D-07)."""
-    derived = tmp_path / "derived"
-    derived.mkdir()
-    (derived / "repo-map.md").write_text(
-        "DERIVED — do not hand-edit\n1. tools/foo.py\n2. libs/bar.py\n", encoding="utf-8"
-    )
-    # Budget = just enough for banner + drift, nothing more.
-    mandatory = len(inject.BANNER) + len(inject._drift_summary()) + 1
-    payload = inject.assemble(budget_chars=mandatory + 4, derived_dir=derived)
-    assert inject.BANNER in payload
-    assert inject.DRIFT_HEADER in payload
-    assert inject.REPO_MAP_HEADER not in payload, "repo-map must be priority-truncated first"
-
-
-def test_banner_and_drift_never_dropped_even_over_budget() -> None:
-    """Even at an absurdly tiny budget, banner + drift are never dropped (priority 0/1)."""
-    payload = inject.assemble(budget_chars=1)
-    assert inject.BANNER in payload
-    assert inject.DRIFT_HEADER in payload
-
-
-# ---- pointer-only / no full contract bodies (T-02-06 / P13) ----------------------------------
+@pytest.mark.parametrize(
+    "content", ["# no frontmatter\n", "---\nname: x\n---\n# missing\n", "---\n- list\n---\n# bad\n"]
+)
+def test_absent_stamp_degrades_gracefully(tmp_path: Path, content: str) -> None:
+    derived, state = _dirs(tmp_path)
+    (state / "activeContext.md").write_text(content, encoding="utf-8")
+    assert "updated: unknown" in inject.assemble(derived_dir=derived, state_dir=state)
+    (state / "activeContext.md").unlink()
+    assert "updated: unknown" in inject.assemble(derived_dir=derived, state_dir=state)
 
 
 def test_no_full_contract_schema_body_leaks() -> None:
-    """The payload injects index summaries/pointers only — never a JSON schema body (T-02-06)."""
-    payload = inject.assemble()
-    assert "$schema" not in payload
+    assert "$schema" not in inject.assemble()
 
 
 def test_active_context_is_pointer_not_body(repo_root: Path) -> None:
-    """activeContext appears as a pointer PATH, never its file contents (P13)."""
     payload = inject.assemble()
-    assert ".memory/state/activeContext.md" in payload
-    body = (repo_root / ".memory" / "state" / "activeContext.md").read_text(encoding="utf-8")
-    # A distinctive line from the committed body must NOT appear in the injected payload.
-    distinctive = "## In flight"
-    assert distinctive in body, "fixture guard: expected marker missing from activeContext.md"
-    assert distinctive not in payload, "activeContext BODY leaked — inject a pointer only"
+    body = (repo_root / ".memory/state/activeContext.md").read_text(encoding="utf-8")
+    assert (
+        ".memory/state/activeContext.md" in payload
+        and "## In flight" in body
+        and "## In flight" not in payload
+    )
 
 
-def test_contracts_summary_degrades_when_index_absent(tmp_path: Path) -> None:
-    """When the contracts-index derived file is absent, a short 'pending' line is emitted."""
-    empty_derived = tmp_path / "derived"
-    empty_derived.mkdir()
-    payload = inject.assemble(derived_dir=empty_derived)
-    assert "pending" in payload.lower()
-
-
-# ---- CLI ------------------------------------------------------------------------------------
-
-
-def test_main_prints_banner_first(capsys) -> None:
-    """`python -m tools.memory_regen.inject` prints a banner-first, capped payload."""
-    rc = inject.main([])
-    out = capsys.readouterr().out
-    assert rc == 0
+def test_main_prints_capped_payload(capsys) -> None:
+    assert inject.main([]) == 0
+    out = capsys.readouterr().out.rstrip("\n")
     assert out.splitlines()[0] == inject.BANNER
-    assert len(out.rstrip("\n")) <= 4000
+    assert len(out) <= 4000
+
+
+def _full_cap_agreements(tmp_path: Path) -> Path:
+    agreements = tmp_path / "agreements"
+    agreements.mkdir()
+    for number in range(6):
+        (agreements / f"entry-{number}.md").write_text(
+            f"---\nstatus: active\n---\n# Entry {number}\n" + "x" * 70 + "\n",
+            encoding="utf-8",
+        )
+    return agreements
+
+
+def test_budget_holds_with_full_agreements_block(tmp_path: Path) -> None:
+    derived, state = _dirs(tmp_path)
+    agreements = _full_cap_agreements(tmp_path)
+    payload = inject.assemble(derived_dir=derived, state_dir=state, agreements_dir=agreements)
+    assert len(inject._agreements_block(agreements)) <= inject._AGREEMENTS_MAX_CHARS
+    assert len(payload) <= 4000
+
+
+def test_repo_map_survives_full_cap_agreements(tmp_path: Path) -> None:
+    derived, state = _dirs(tmp_path)
+    agreements = _full_cap_agreements(tmp_path)
+    payload = inject.assemble(derived_dir=derived, state_dir=state, agreements_dir=agreements)
+    assert inject.REPO_MAP_HEADER in payload

@@ -4,12 +4,14 @@ requires-python = ">=3.11"
 
 [manifest]
 members = [
+    "logparser-agree",
     "logparser-contract-drift",
     "logparser-contract-hash",
     "logparser-docs-sync",
     "logparser-golden-runner",
     "logparser-harness",
     "logparser-harness-config",
+    "logparser-harness-emit",
     "logparser-harness-lint",
     "logparser-harness-perms",
     "logparser-hooks",
@@ -17,6 +19,7 @@ members = [
     "logparser-normalize",
     "logparser-polyglot-lint",
     "logparser-strangler-guard",
+    "logparser-workspace-config",
 ]
 
 [[package]]
@@ -194,6 +197,11 @@ wheels = [
 ]
 
 [[package]]
+name = "logparser-agree"
+version = "0.0.0"
+source = { virtual = "tools/agree" }
+
+[[package]]
 name = "logparser-contract-drift"
 version = "0.0.0"
 source = { virtual = "tools/contract_drift" }
@@ -264,6 +272,11 @@ version = "0.0.0"
 source = { virtual = "tools/harness_config" }
 
 [[package]]
+name = "logparser-harness-emit"
+version = "0.0.0"
+source = { virtual = "tools/harness_emit" }
+
+[[package]]
 name = "logparser-harness-lint"
 version = "0.0.0"
 source = { virtual = "tools/harness_lint" }
@@ -313,6 +326,11 @@ source = { virtual = "tools/polyglot_lint" }
 name = "logparser-strangler-guard"
 version = "0.0.0"
 source = { virtual = "tools/strangler_guard" }
+
+[[package]]
+name = "logparser-workspace-config"
+version = "0.0.0"
+source = { virtual = "tools/workspace_config" }
 
 [[package]]
 name = "networkx"

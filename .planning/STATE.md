@@ -1,42 +1,40 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: phase_complete
-stopped_at: Phase 08 complete + verified (6/6 plans, VERIFICATION passed)
-last_updated: "2026-07-11T12:59:29.368Z"
-last_activity: 2026-07-11 -- Phase 08 executed + verified (passed); gap closed
+milestone: v2.1
+milestone_name: MEM2 — Process Memory & Provenance Reframe
+status: executing
+stopped_at: "Phase 14 context gathered (--auto: 6 gray areas auto-resolved; D-01..D-13). Next: /gsd:plan-phase 14"
+last_updated: "2026-07-15T16:57:44.496Z"
+last_activity: 2026-07-15 -- Phase 14 planning complete
 progress:
-  total_phases: 8
-  completed_phases: 7
-  total_plans: 38
-  completed_plans: 38
-  percent: 88
+  total_phases: 6
+  completed_phases: 3
+  total_plans: 13
+  completed_plans: 9
+  percent: 69
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-07-07)
+See: .planning/PROJECT.md (updated 2026-07-14)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 08 — pipeline-topology-conductor-per-component-agents
+**Current focus:** v2.1 MEM2 — Phase 13 done (injection live again); ready to plan Phase 14
 
 ## Current Position
 
-Phase: 08 (pipeline-topology-conductor-per-component-agents) — EXECUTING
-Plan: 6 of 6
-Status: Phase complete — ready for verification
-Last activity: 2026-07-11
-
-Progress: [██████████] 97%
+Phase: 13 — Injector Reframe + Channel Wiring (v2.1 B, MEM2-02/MEM2-05) — COMPLETE (merged 9b93d28)
+Plan: 13-01 ✓ ‖ 13-02 ✓ (W1) → 13-03 ✓ (W2) → 13-04 ✓ (W3) — 4/4
+Status: Ready to execute
+Last activity: 2026-07-15 -- Phase 14 planning complete
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0
+- Total plans completed: 11
 - Average duration: — min
 - Total execution time: 0.0 hours
 
@@ -44,7 +42,9 @@ Progress: [██████████] 97%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 09 | 4 | - | - |
+| 10 | 3 | - | - |
+| 11 | 4 | - | - |
 
 **Recent Trend:**
 
@@ -88,11 +88,31 @@ Progress: [██████████] 97%
 | Phase 08 P05 | 10min | 2 tasks | 3 files |
 | Phase 08 P04 | 10min | 3 tasks | 6 files |
 | Phase 08 P06 | 12min | 2 tasks | 3 files |
+| Phase 07 P01 | 24min | 3 tasks | 20 files |
+| Phase 07 P02 | 9min | 2 tasks | 10 files |
+| Phase 07 P03 | 10min | 2 tasks | 8 files |
+| Phase 07 P04 | 9min | 2 tasks | 5 files |
+| Phase 07 P05 | 4min | 2 tasks | 4 files |
+| Phase 09 P01 | 12min | 2 tasks | 7 files |
+| Phase 09 P02 | 3min | 2 tasks | 2 files |
+| Phase 09 P03 | 9min | 3 tasks | 18 files |
+| Phase 09 P04 | 12min | 2 tasks | 2 files |
+| Phase 10 P10-01 | 6min | 2 tasks | 5 files |
+| Phase 10 P10-02 | 9min | 2 tasks tasks | 6 files files |
+| Phase 10 P10-03 | 6min | 2 tasks | 16 files |
+| Phase 11 P01 | 12min | 3 tasks | 15 files |
+| Phase 11 P02 | 3min | 2 tasks | 2 files |
+| Phase 11 P03 | 7min | 3 tasks | 5 files |
+| Phase 11 P04 | 8min | 2 tasks | 7 files |
+| Phase 11 P04 | 8min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
 ### Roadmap Evolution
 
+- **Phase 17 added (2026-07-14): Constitution-Gate Dev/Enforce Decoupling** *(infra — independent of the v2.1 MEM2 chain)*. Origin: dogfooding entanglement surfaced mid-Phase-12 — the product guard `contract_guard` (HOOK-04, wired at `.claude/settings.json:125`) live-denies the Claude **dev** session's own legitimate constitution writes (verified when an agent Write to `docs/adr/0006-*.md` was correctly refused). Decision (brainstorm-approved, `docs/superpowers/specs/2026-07-14-contract-guard-dev-bypass-design.md`): add a secure-default `HARNESS_DEV_BYPASS` env opt-out (default = enforce → SC4 preserved; blank/whitespace = no bypass, mirrors the token rule; **distinct** from `GOLDEN_APPROVE_HUMAN` so a dev-bypassed write is never mislabeled "human ratified") honored by `contract_guard` + `commit_gate` via a shared `dev_bypassed()` helper in `tools/hooks/_stdin.py`; byte-hygiene (§4.3-4.6) **never** waived; flag lives only in gitignored `.claude/settings.local.json`; ADR-0007 records the posture change; CODEOWNERS at PR merge stays the real, non-bypassable gate. Not planned yet (run /gsd:plan-phase 17).
+- **Milestone v2.1 roadmap created (2026-07-14): phases 12–16 appended, numbering continued after v2.0 (phases 9–11).** MEM2 — Process Memory & Provenance Reframe. Phase 12 (A) Model + ADR + Doc Reframe (MEM2-01, MEM2-03, + ADR-0006 authoring portion of MEM2-06); Phase 13 (B) Injector Reframe + Channel Wiring (MEM2-02, MEM2-05); Phase 14 (C) Write Path + Anti-Churn Guard (MEM2-04); Phase 15 (D) Emit Round-Trip + Gates (MEM2-06, emit portion — traceability owner); Phase 16 (E) Local Memory Web UI (MEM2-07, UI hint). Sequencing locked 12→13→14→15→16 (model+ADR ground the injector; injector consumes the channel the write-path fills; emit round-trips the surface; UI operates on the finished committed channel). All 7 v2.1 requirements mapped 1:1; coverage 7/7. MEM2-06 spans Phase 12 (ADR authoring) + Phase 15 (emit) but is counted once (Phase 15). Every phase REUSES existing machinery (`tools/memory_regen`/`inject.py`, `/checkpoint`, `tools/harness_lint`, Phase-7 emitter `tools/harness_emit`, `adr`+CODEOWNERS) — no new machinery. Non-negotiables reasserted: ADR-0006 via human-ratified path (agent Write to `docs/adr/` correctly denied by contract-guard); agreements written ONLY on explicit user feedback (machines gate, humans ratify); the new `.memory/agreements/` channel is a committed human-authored tier like `state/`, NOT derived — never regenerated; every surface change round-trips the emitter to both runtimes with NO model id; GEN-04 core→example independence green; determinism (`inject.py:20-22` byte-identical) + ~4000-char budget (`inject.py:105`) preserved; NO wall-clock in `assemble()`/hook-wrapper (agent-side freshness); progress stays tiny (git is the done-log, §7a); project decisions linked, never restated in PROCESS channel (§7c). Design source `.planning/MEMORY-UPGRADE-PROPOSAL.md` §7 authoritative. Kickoff Q1–Q6 recorded in PROJECT.md/REQUIREMENTS.md.
+- Milestone v2.0 roadmap created (2026-07-12): **phases 9/10/11** appended, numbering continued after v1.0 (phases 1–8). Phase 9 (α) Self-Maintaining Derived Artifacts + Curator (MAINT-01..04); Phase 10 (β) Context-Economy Fan-out/Synthesize (ECON-01..03); Phase 11 (γ) Multi-Repo Workspace (MREPO-01..04). Sequencing locked 9→10→11 (β is the reusable fan-out substrate γ builds on). All 11 v2.0 requirements mapped 1:1; coverage 11/11. Two plan-time KEY DECISIONS carried, unresolved: (α) which derived artifacts flip gitignored-derived → committed-derived for PR refresh; (γ) workspace model a/b/c (lean b: workspace manifest). Cross-cutting non-negotiables reasserted: derived-never-hand-edited (machine-write + CI-verify OK), machines-gate/humans-ratify on the constitution plane, GEN-04 core→example/workspace-member no-dependency, every new agent/skill/hook round-trips the Phase-7 emitter to both runtimes, PR/CI enforcement preferred over heavy per-commit hooks.
 - Phase 8 added (2026-07-10): **Pipeline-Topology Conductor + Per-Component Agents** (PIPE-01..06). Post-Phase-6 user request — evolve the agent model from per-language to pipeline-aware. Independent of Phase 7 (emitter). Locked with user: build BOTH neutral core mechanism AND concrete `examples/log-parser/` demo; EVOLVE the existing primary `orchestrator` (no second primary/tier); formal GSD phase.
 
 ### Decisions
@@ -135,13 +155,33 @@ Recent decisions affecting current work:
 - [Phase 05]: [05-01] D-05 commit-gate drift approval path — check_drift honors a non-empty GOLDEN_APPROVE_HUMAN token (drift FAIL -> logged WARN+PASS, verbatim contract_guard:91 mirror); DRIFT-ONLY (polyglot §4.3-4.6 + golden stay hard, proven by test_approval_does_not_bypass_polyglot); empty/blank never authorizes. Core-only commit lands clean with no token — opens the sanctioned landing path for the 05-02/03/05 domain-move commits.
 - [Phase 05]: [05-02] GEN-02 generic default instance — parametrized the golden runner (built-in language-agnostic `run_identity_converter` verbatim stdlib byte-copy + `converter`/`golden_dir` params; §4.3-4.6 `normalize_tsv` compare path untouched, default stays "dotnet"). Added domain-neutral `contracts/sample/greeting.schema.json` (zero semiconductor vocab) + `golden/sample/*` identity golden case whose seed→baseline diff is ROW-ORDER only (R8) so it PASSes without .NET; seed byte-clean (LF/no-BOM) for the ADDED-file polyglot lint. Rebaselined the 6-schema root manifest (drift reads clean), added `greeting` to docs-sync EXPECTED_PAGES + regenerated docs-sync AND memory_regen contracts-index determinism snapshots. Core now points at a generic instance, not a void — precondition for the 05-03 domain move. NOTE: 3 commit_gate drift-block tests fail ONLY while GOLDEN_APPROVE_HUMAN is live in-shell (pre-existing test-isolation gap; green in CI/token-unset: 364 passed); logged as DEF-05-02-1.
 - [Phase 05]: [05-03] GEN-01 domain MOVE — semiconductor seed + the example's .NET language-side impl relocated under `examples/log-parser/` via history-preserving `git mv` (verbatim, renames stay `R` → excluded from commit_gate `--diff-filter=ACM` so the intentionally-dirty BOM/CRLF golden seeds are NOT re-linted, P2). Moved: contracts/{log-specs,reference-data,state} + normalization/correction-rules.*, components/toy-converter, `libs/dotnet` WHOLESALE (not a uv member, no core Python importer; ADR-0002 core-is-language-neutral), golden/{repr-only,value-regression}, + the 3 domain golden_runner tests + tests/recorded/*. STAYED core: libs/python/normalize + libs/normalize-fixtures (uv members / core-imported), format-conventions.schema.json. De-pinned core golden_runner (dropped TOY_CONVERTER_PROJECT default → project required via run_golden_case(project=...); deleted dead toy_converter_project fixture). Rebaselined root manifest to generic only (format-conventions + sample/greeting) → live drift clean; built the example's own manifest. Repointed core tests to surviving material (docs-sync EXPECTED_PAGES→{format-conventions,greeting} + rows() target; test_agents_md drops libs/dotnet as a core plane) + regenerated docs-sync & contracts-index snapshots (repo-map .ambr unchanged, fixture-based). Landed ONE commit (ebe4276) through the LIVE gate with GOLDEN_APPROVE_HUMAN — no --no-verify. Non-example suite green (361 passed).
-- [Phase 05]: [05-04] GEN-03 language/toolchain SSOT — harness/project.toml is a data-only slot ([instance] root + [[languages]] dotnet/python: bash_scope/test/format/persona/sdk_bootstrap) carrying the log-parser EXAMPLE INSTANCE's values (not a core hardcode). tools/harness_config is a new tools/* uv member (package=false, PEP 562 lazy re-export) parsing it with stdlib tomllib; language_bash_scopes() folds the implicit `pytest *`. "Derived-not-hardcoded" satisfied by a CONSISTENCY TEST (D-03 "codegen is overkill"), not codegen: test_language_config asserts permission-matrix allow-scopes == config-derived set + each persona file exists — divergence FAILS (config = SSOT). Existing hardcoded values kept & proven consistent, not ripped out. Zero external deps (uv.lock registers in-repo member only). Precondition for Phase-6 config-derived CI matrix.
+- [Phase 05]: [05-04] GEN-03 language/toolchain SSOT — harness/project.toml is a data-only slot ([instance] root + [[languages]] dotnet/python: bash_scope/test/format/persona/sdk_bootstrap) carrying the log-parser EXAMPLE INSTANCE's values (not a core hardcode). tools/harness_config is a new tools/* uv member (package=false, PEP 562 lazy re-export) parsing it with stdlib tomllib; language_bash_scopes() folds the implicit `pytest *`. "Derived-not-hardcoded" satisfied by a CONSISTENCY TEST (D-03 "codegen is overkill"), not codegen: test_language_config asserts permission-matrix allow-scopes == config-derived set + each persona file exists — divergence FAILS (config = SSOT). Existing hardcoded values kept & proven consistent, not ripped out. Precondition for Phase-6 config-derived CI matrix.
 - [Phase ?]: [05-05] GEN-04 core→example guard + ADR-0002 de-specialization; SCOPE A guard scans tools/harness/libs for examples/ refs + import examples + moved components/toy-converter (self-excluded, [instance] root exempt, live negative controls); bare libs/dotnet prose deferred to GEN-05; ADR-0002 (accepted, complements 0001) records generic re-scope + normalize split (python normalize+fixtures STAY as language-neutral core, libs/dotnet MOVES because core-is-language-neutral) + project.toml language slot + GOLDEN_APPROVE_HUMAN drift-only path; landed via live gate, non-example suite 366 passed; Phase 5 COMPLETE.
 - [Phase ?]: [Phase 08]: [08-01] PIPE-01 generic pipeline-topology DATA slot — cloned the [[languages]] -> loader.languages() -> test_language_config.py triad verbatim: harness/project.toml gains a banner-scoped GENERIC-ONLY source/sink/sample-record default ([[components]] + [pipeline]); loader.components()/pipeline() are pure passthrough (no enforcement); consistency lives in the gate test_pipeline_config.py (component.language in declared languages, ids unique, edges well-formed: endpoints declared + contract in from.produces AND to.consumes). Concrete multi-component topology deferred to instance overlay (Plan 04) to keep core GEN-04 green. Non-example suite 418 passed.
 - [Phase ?]: [Phase 08]: [08-02] PIPE-02 conductor evolved IN PLACE — the primary orchestrator now reads the declared [[components]]/[pipeline] topology (tools.harness_config) and routes by pipeline stage/component (not only language): new 'Trace the topology' intake step + stage/component routing rows + /pipeline entry; test_orchestrator_topology.py pins single-primary + topology-intake + stage/component routing. EXPECTED_PERSONAS stays 4 (no second primary). Fixed a pre-existing GEN-04 prose leak in 08-01's test_pipeline_config.py (literal examples/ token slipped the guard which scans git ls-files, file committed after guard ran). Full non-example suite 421 passed.
 - [Phase ?]: [Phase 08]: [08-03] PIPE-03 neutral component-engineer template (anti-sprawl-EXEMPT under harness/agents/templates/ like engineer.md) — stage-keyed fill-in-the-blanks persona; /component gains a mandated-order+all-three-or-none section deriving the agent into the instance agents/ and registering the [[components]]/[pipeline] slot; new test_agent_templates.py closes the templates/*.md gap (EXPECTED_TEMPLATES={engineer,component-engineer}, imports VALID_MODES/ALLOWED_PERMISSION_KEYS from test_agents). EXPECTED_PERSONAS stays 4; GEN-04 green; full non-example suite 430 passed.
 - [Phase 08]: [08-04] PIPE-04 instance overlay demonstration: examples/log-parser/project.toml declares the concrete parser(1,.NET)→converter(2,.NET)→scheduler(3,py)→collector(4,py) topology with real domain-contract edges (standard-log, equipment-progress x2) as an OVERLAY of the neutral core slot (loaded path-locally via load_project(path=); core [instance] root stays ""). 4 per-stage component agents instantiate the component-engineer template (mode:subagent, name==component.id, least-privilege bash). Instance topology gate runs ONLY in the example leg (off root testpaths, no GEN-04 trip). Core 439 passed; example leg 9 passed/2 skipped.
 - [Phase ?]: [Phase 08]: [08-06] PIPE-06 closeout — extended persona anti-sprawl to the conductor (test_single_primary_carries_conductor_signal; EXPECTED_PERSONAS stays 4). Full guard surface green: core 440 passed/3 snapshots + instance leg 9 passed/2 skipped (expected .NET egress). ADR-0003 (accepted, complements ADR-0002) records pipeline-topology pure-DATA slot + instance overlay: generic default in core, concrete parser→converter→scheduler→collector topology in examples/log-parser/project.toml, GEN-04 as PRIMARY driver; landed via human GOLDEN_APPROVE_HUMAN gate. Phase 8 COMPLETE (6/6).
+- [Phase ?]: [07-01] EMIT-01/02 agent-first emit walking skeleton (D-05): tools/harness_emit projects runtime-neutral harness/agents to .opencode/agent (mode+permission) + .claude/agents (tools); DERIVED marker on line 2 so first line stays --- and frontmatter loads; permission.bash kept in authored last-wins order (P3); byte-identical re-emit proven by sha256 + committed syrupy .ambr.
+- [Phase ?]: [07-01] Caps + is_read_only + READ_ONLY_PERSONAS extracted to tools/harness_lint/caps.py as single source shared by lints AND emit validate.py; validate-then-write raises HarnessEmitError writing nothing on over-cap desc / invalid permission key / real model ID / read-only-gains-write (never truncate).
+- [Phase ?]: [07-01] emit-manifest.json prune-then-write owns ONLY harness paths with gsd-* exclusion (D-03); emit-drift CI job (re-emit + git diff --exit-code over full documented path set) in non-bypassable gate.needs — later-wave paths pre-covered.
+- [Phase ?]: [07-02] EMIT commands+skills widening: project_command (opencode keeps agent/subtask, Claude description-only) + project_skill (identical both runtimes, references/** byte-copied to both trees). Loud-fail check_command/check_skill/check_skill_set from caps.py; test_coexist proves gsd/ non-collision; re-emit byte-identical.
+- [Phase ?]: [07-03] EMIT plugins+config: 5 harness .ts plugins byte-verbatim-copied to .opencode/plugin (never parsed/executed, D-01/T-07-04); permission-matrix.json projected to opencode.json full 15-key block via permissions.build_permission_block (strips _note+path_deny_globs), bash *-first last-wins order preserved (P3/T-07-06); emitter owns root opencode.json wholesale; check_opencode_config loud-fails on jsonschema-invalid (T-07-07) + any real model id (placeholder-tier regex, T-07-03); re-emit byte-identical.
+- [Phase ?]: [Phase 07]: [07-04] EMIT-02 Regime B-md managed-block merge — merge.splice_managed_block is a hand-rolled two-marker (BEGIN/END HTML-comment) string splice: replaces ONLY inside the fence, preserves outside verbatim (T-07-02), appends once when markers absent (idempotent), LF/no-BOM/single trailing newline, fails loud (ValueError) on a single/malformed marker. generate.emit() reads->splices->writes root AGENTS.md (deterministic sorted agent/command/skill index) + CLAUDE.md (emitter pointer); NEVER full-write; both EXCLUDED from emit-manifest.json (Regime B not A). GSD Project/Developer-Profile + nearest-wins rules preserved byte-for-byte; committed-then-re-emit clean over the full emit-drift path set; 38 harness_emit tests green.
+- [Phase ?]: settings.json signature merge is order-preserving (Regime B-json, no sort_keys) — reproduces live bytes byte-for-byte; opencode.json/frontmatter stay globally sorted
+- [Phase ?]: Harness hook groups coexist idempotently with GSD wiring (no ownership migration); SessionStart pinned at 4 groups
+- [Phase ?]: [09-01] docs_sync.write() gains prune-then-write: orphaned <name>.md pages deleted under _confine(page,out_dir), README.md exempt by exact name; docs/reference reconciled to {README, format-conventions, greeting} — precondition for the Plan-04 stale-derived gate.
+- [Phase ?]: [09-02] MAINT-02 committed-derived flip: contracts-index.md flipped gitignored->tracked via .gitignore contents-form (.memory/derived/* + !.memory/derived/contracts-index.md); directory-form CANNOT re-include (P3). repo-map.md stays session-ephemeral. Generator INDEX_PATH + inject.py UNCHANGED (D-03/A1). Byte-identical regen preserved; now guarded by the Plan-04 stale-derived gate.
+- [Phase ?]: [09-03] curator persona admitted as 5th EXPECTED_PERSONA (read-mostly: edit+bash allow + write:deny, no model id, domain-neutral); writes DERIVED only, regenerates ONLY via tools.memory_regen.*/tools.docs_sync (D-06); constitution deny is GLOBAL path_deny_globs + contract-guard hook. /refresh-memory (agent: curator) + /verify-work step 5 freshness; two-plane-memory documents committed-derived (machine-write+CI-verify) tier for contracts-index + docs/reference; no on-write regen hook (MAINT-03/D-09); emitter round-tripped ONCE to both runtimes, byte-identical, GEN-04 green (D-11).
+- [Phase ?]: [09-04] MAINT-02 stale-derived CI gate: distinct job from emit-drift (D-07) regenerates docs/reference + contracts-index then git add -A + git diff --cached --exit-code (untracked-safe P1, NOT bare git diff); wired into gate.needs (non-bypassable); on-failure echoes /refresh-memory fix (D-08); permissions contents:read + no github.event.* interpolation; proven by structural + negative-control test. Phase 9 COMPLETE (4/4).
+- [Phase ?]: [10-01] ECON-01/02 fan-out-synthesize substrate: skill (decompose->dispatch N read-only explorer subtasks via native task affordance, NO bespoke engine->recover schema-bounded citation-bearing summaries->orchestrator synthesizes) + self-contained Draft-2020-12 return schema in skill references/ (NOT contracts/, no $ref, additionalProperties:false) + thin /fan-out-synthesize command (agent:orchestrator, subtask:true). EXPECTED_PERSONAS stays 5; EXPECTED_SKILLS 9->10. Source-only; emit round-trip is 10-03.
+- [Phase 10]: [10-02] ECON-03 delegate-vs-inline surface: dedicated context-budget skill (heuristic-map shape, invariant 'a single context must not balloon' + decision-forcing table + Related->fan-out-synthesize/orient) wired at BOTH orchestrator (2 routing rows + named 'Budget the context' intake step) AND /orient read-order step 4, surfacing fan-out-synthesize too; EXPECTED_SKILLS 10->11, EXPECTED_PERSONAS stays 5 (D-05/D-10/D-11). test_context_budget_wiring.py mirrors topology gate. Fixed pre-existing GEN-04 self-leak in 10-01 test_fan_out_return_contract.py. Source-only; emit is 10-03.
+- [Phase ?]: [10-03] D-12 emit round-trip: re-ran the Phase-7 emitter (glob discovery, zero emitter code change) projecting fan-out-synthesize + context-budget skills, the fan-out-return.schema.json reference (byte-identical), and /fan-out-synthesize command to BOTH runtimes; regenerated opencode.json + emit-manifest.json + AGENTS.md managed block. Updated emit-fixture twins (command count 18->19, projected-tree .ambr snapshot). Phase gate GREEN: 537 passed, GEN-04 green, emit-drift clean, 11 skills / 5 personas, no model id. Phase 10 COMPLETE (3/3).
+- [Phase ?]: [11-01] MREPO-01: raised GEN-03 slot pattern one level into pure-DATA workspace.toml (2 members + one repo:stage edge). Single [pipeline].edges repo:stage table serves both MREPO-03 (member resolution) and MREPO-04 (topology). tools/workspace_config mirrors harness_config (tomllib passthrough + split_endpoint; loader hardcodes no member path -> GEN-04-clean). Gate: member unique/exists, edge endpoints declared, edge contract tracked under PRODUCER via rglob, visible SKIP on zero edges. 2-member fixture fully baselined in-repo (per-member self-relative manifests not merged; identity golden case R8-only, no .NET). Member root local-only; # url = deferred. 547 passed.
+- [Phase 11]: MREPO-04 GEN-04 twin derives forbidden member-root markers from members(load_workspace()) at test time — never hardcodes fixture paths, so the guard tracks the manifest
+- [Phase 11]: workspace.toml pointer exemption is key-scoped (root/from/to/contract), not a blanket file pass — a non-pointer member leak stays flagged (T-11-05)
+- [Phase 11]: Cross-repo drift reuses run_gate per member (no merged manifest) + resolves each edge's contract in its producer; _confine widened via a threaded allowed_roots param (guard extended, not removed); enforced by a separate workspace CI job in gate.needs (MREPO-03)
+- [Phase 11]: [11-04] MREPO-02 prose-wired the Phase-10 fan-out substrate: orchestrator routes workspace-wide analysis by fanning out one read-only worker per member repo; fan-out-synthesize documents member-repo-as-unit + no-sibling-read guarantee (T-11-10). NO new surface (EXPECTED_SKILLS=11/EXPECTED_PERSONAS=5), round-tripped byte-identical to both runtimes (no model id). Phase closeout: 563 passed, emit-drift clean, GEN-04 twins green. Phase 11 COMPLETE (4/4).
 
 ### Pending Todos
 
@@ -157,6 +197,14 @@ None yet.
 - Toolchain: .NET 10 SDK is NOT installed in this ephemeral env — Phase 1 (BOOT-01) install script gates all .NET-side execution.
 - Research flag: opencode.ai is proxy-403'd; re-verify exact hook event names, 15-key permission matrix semantics, and skill size caps against live docs before Phase 4 (hooks) and Phase 6 (emitter).
 - Research flag: internal inconsistency on Claude skill description cap (≤200 vs ≤1024 chars) — resolve precisely at Phase 6 emitter-validator implementation.
+- **[PHASE 14 — carry into discuss-phase 14] ADR-0006 Consequences contains a factual error.** `docs/adr/0006-*.md:92-93` states the agreements tier ships as "`_TEMPLATE.md` + README + **one committed seed**". There is no seed and there never was — `git ls-files .memory/agreements/` returns only `README.md` + `_TEMPLATE.md`, and `96b8db2` (the only add-commit for the dir) added exactly those two. **Why it matters, not cosmetic:** Phase 13's constraint says an empty active set is *correct behavior, not a bug to fix*, but a ratified ADR (constitution plane = highest authority) asserts a seed exists. A future agent reading 0006, seeing the empty dir, and "repairing" it would **self-invent an agreement** — precisely the T-13-01 threat and the MEM2-04 anti-invent rule. Phase 14 owns the agreements write path + provenance lint, so it is the natural owner: decide there whether to (a) ship a real seed via `/agree`, (b) append an errata note, or (c) supersede with ADR-0008. Operator ratified deferral to Phase 14 on 2026-07-16. Do NOT let an agent resolve this by authoring an agreement.
+- **CODEOWNERS review has never been reachable on this repo — structural, not neglect.** The GitHub **default branch is `claude/data-pipeline-harness-8aypct`** (the working branch itself), so every push lands on the default branch and bypasses CODEOWNERS entirely; `main` is a separate branch that only receives merges via PR (precedent: PR #1 = phases 1–6, PR #2 = 2026-07-12). That is why "PR + CODEOWNERS review" drifted across four phases. Also: the handoff named only ADR-0006/0007, but **ADR-0004 and ADR-0005 are equally unmerged to `main`** — four unratified ADRs, not two. Second, independent blocker already documented in `.github/CODEOWNERS`: @hjung3113 is the sole owner AND the PR author, and GitHub forbids self-approval — "Require review from Code Owners" cannot be satisfied without a second account or an admin waiver. **STATUS (2026-07-16): PR #3 OPENED** (`claude/data-pipeline-harness-8aypct` → `main`, 182 commits / 296 files; CODEOWNERS-scoped diff = 5 files / 422 lines, all `docs/adr/`). Branch pushed (17 commits, `77f4983..bfb6463`). **Empirically confirmed the caveat: `reviewRequests` came back EMPTY** — GitHub does not auto-request review from the PR author, so the mechanical CODEOWNERS gate did not fire and cannot fire on a solo-authored PR. Ratification of ADR-0004/0005/0006/0007 is therefore a manual human read of the diff, not an automated gate. To make CODEOWNERS actually bite on future work, the durable fix is repo-config: flip the GitHub **default branch back to `main`** so branch work naturally routes through PR. **PR #3 IS RED AND CANNOT MERGE YET — correctly.** CI: `core-suite` FAIL + `emit-drift` FAIL; everything else green (setup/contract-check/drift/stale-derived/workspace pass). Reproduced locally: `uv run pytest` = **1 failed / 620 passed**, the single failure being `test_projected_tree_matches_committed_snapshot` — i.e. BOTH red jobs are the one inherited Phase-12/13 re-emit debt, not a regression (Phase 13 edited `harness/skills/checkpoint` etc. without re-emitting; the `.claude/`/`.opencode/` trees lag). `gate` lists both in `needs:`, so **ADR-0004/0005/0006/0007 cannot be merged until Phase 15 (MEM2-06) settles the emit round-trip.** Ratification is therefore sequenced 14 → 15 → merge #3, not a standalone human click. Do NOT run `--snapshot-update` to green the PR: that blesses the un-emitted tree and steals Phase 15's gate.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260716-16x | Fix 6 broken GSD hooks — hardcoded `/opt/node22/bin/node` did not exist on macOS, so every node-based GSD guard hook failed **silently at exit 0** and had been inert on this host. Replaced with `"$(command -v node \|\| echo /opt/node22/bin/node)"`, mirroring the pattern `memory-inject.sh:18-20` already used (which is why it was the one node hook still working). Portable: PATH node on macOS, `/opt/node22` fallback in the remote Linux container. 5 of the 6 (`check-update`, `context-monitor`, `read-injection-scanner`, `prompt-guard`, `workflow-guard`) genuinely resume running under Claude Code; `read-guard` early-exits under Claude Code **by design** (native read-before-edit) so its fix benefits other runtimes. | 2026-07-15 | 085064c | [260716-16x-fix-6-broken-gsd-hooks-hardcoded-opt-nod](./quick/260716-16x-fix-6-broken-gsd-hooks-hardcoded-opt-nod/) |
 
 ## Deferred Items
 
@@ -168,6 +216,18 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-11T12:59:20.951Z
-Stopped at: Completed 08-04-PLAN.md
-Resume file: None
+Last session: 2026-07-15T16:20:36.896Z
+Stopped at: Phase 14 context gathered (--auto: 6 gray areas auto-resolved; D-01..D-13). Next: /gsd:plan-phase 14
+Resume file: .planning/phases/14-write-path-anti-churn-guard-v2-1-c/14-CONTEXT.md
+
+## Operator Next Steps
+
+**► NEXT — plan Phase 12 (Model + ADR + Doc Reframe).**
+
+- `/gsd:plan-phase 12` — decompose Phase 12 (MEM2-01 `.memory/agreements/` scaffold + entry shape; MEM2-03 reword distrust prose to data-authority in the 5 echo sites; ADR-0006 authoring via the human-ratified constitution path). Machinery: `adr` skill / `/adr`, CODEOWNERS ratification. NOTE: an agent Write to `docs/adr/` is correctly denied by contract-guard — the ADR lands via the human-ratified path (mirrors ADR-0004/0005).
+- Locked kickoff decisions (PROJECT.md / REQUIREMENTS.md): Q1=committed-but-writable (`.memory/agreements/`, provenance-lint is the guard) · Q2=dedicated `/agree` · Q3=per-guideline files (§7b) · Q4=capped full-body · Q5=retire via per-file status · Q6=agent-side freshness (no fixed threshold, no wall-clock in `assemble()`/hook-wrapper).
+- Design source: read `.planning/MEMORY-UPGRADE-PROPOSAL.md` §7 (operator refinements are AUTHORITATIVE) before planning.
+
+---
+
+Clean milestone boundary otherwise — v2.0 complete + archived, full-harness audit done, v2.1 roadmap set.

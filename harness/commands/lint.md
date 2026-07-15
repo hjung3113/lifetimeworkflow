@@ -36,9 +36,18 @@ tracked `*.tsv` files → the loop is a no-op and the step exits 0 (never a fals
 
 !`fail=0; files=$(git ls-files '*.tsv'); if [ -z "$files" ]; then echo "SKIP: no tracked *.tsv wire files — polyglot §4.3-4.6 check is a no-op (exit 0)."; else printf '%s\n' "$files" | while IFS= read -r f; do echo "polyglot-lint: $f"; done; for f in $files; do uv run python -m tools.polyglot_lint.lint "$f" || fail=1; done; if [ "$fail" -ne 0 ]; then echo "FAIL: polyglot §4.3-4.6 boundary violation(s) above — fix before committing (POLY-01)."; exit 1; fi; echo "OK: all tracked *.tsv wire files pass §4.3-4.6 (POLY-01)."; fi`
 
+## Agreement provenance — validate in place
+
+The agreement provenance engine selects entries through the shared predicate and is
+**presence-safe**: an empty agreement set is valid and passes. It adds no shell-side rules.
+
+!`if [ ! -d .memory/agreements ]; then echo "SKIP: .memory/agreements is absent — provenance check is a no-op (exit 0)."; else uv run python -m tools.harness_lint.provenance; fi`
+
 ## Notes
 
 - `ruff format --check` reports drift without rewriting; use the format-on-write hook to fix.
 - The dotnet format check is **presence-gated** (announced skip when the SDK is absent).
 - The polyglot §4.3-4.6 check reuses the POLY-01 engine (`tools.polyglot_lint.lint`) — the same
   engine wired on-write (contract-guard/format-on-write) and into the commit-gate; CI is Phase 5.
+- The provenance check reuses `tools.harness_lint.provenance`, the same engine called by the pytest
+  merge gate; it enforces shape, not truth.

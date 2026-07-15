@@ -31,9 +31,10 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 
 from tools.harness_perms import resolve_path
-from tools.hooks._stdin import emit_deny, parse_event, read_stdin
+from tools.hooks._stdin import dev_bypassed, emit_deny, parse_event, read_stdin, repo_relative
 from tools.polyglot_lint import lint_bytes
 
 # CONSTITUTION-ONLY subset — the human-owned, CODEOWNERS-gated plane. Deliberately EXCLUDES *.env
@@ -44,6 +45,16 @@ CONSTITUTION_GLOBS = ["contracts/**", "docs/adr/**", "golden/**"]
 # Human confirmation token; a NON-EMPTY value == human-authorized session. Reuses the existing
 # GOLDEN_APPROVE_HUMAN precedent (tools/golden_runner/approve.py) — agents must not fabricate it.
 APPROVAL_ENV = "GOLDEN_APPROVE_HUMAN"
+
+
+def _on_constitution_plane(file_path: str) -> bool:
+    """True iff ``file_path`` resolves onto the CODEOWNERS-gated constitution plane.
+
+    Extracted so both :func:`decide` (the deny logic) and :func:`main` (the dev-note emit) share one
+    on-plane test — no logic drift between the gate and its note.
+    """
+    relative_path = repo_relative(file_path)
+    return bool(relative_path) and resolve_path(CONSTITUTION_GLOBS, relative_path) == "deny"
 
 
 def decide(file_path: str, content: str, approved: bool) -> dict | None:
@@ -57,8 +68,9 @@ def decide(file_path: str, content: str, approved: bool) -> dict | None:
       (BOM/CRLF) -> deny (the plane must be byte-pristine even when access-approved, D-04).
     * On the constitution plane, approved, byte-pristine -> ``None`` (the bypass).
     """
-    on_plane = bool(file_path) and resolve_path(CONSTITUTION_GLOBS, file_path) == "deny"
-    if not on_plane:
+    # Claude's file_path is absolute; the deny globs are repo-relative. Normalize at this seam so
+    # the prefix-anchored globs actually match a real absolute write (else the gate no-ops).
+    if not _on_constitution_plane(file_path):
         return None
 
     if not approved:
@@ -88,10 +100,21 @@ def main() -> int:
     stdout (Claude blocks the tool call); otherwise prints nothing (normal permission flow).
     """
     event = parse_event(read_stdin())
-    approved = bool((os.environ.get(APPROVAL_ENV) or "").strip())
+    token_present = bool((os.environ.get(APPROVAL_ENV) or "").strip())
+    approved = token_present or dev_bypassed()
     result = decide(event.file_path, event.content, approved)
     if result is not None:
         print(json.dumps(result))
+    elif dev_bypassed() and not token_present and _on_constitution_plane(event.file_path):
+        # Allowed ONTO the constitution plane via the local-dev opt-out, NOT a human token. Emit a
+        # non-blocking dev-only note that never claims human approval — the audit meaning of the
+        # token is preserved; CODEOWNERS at merge stays the real gate. On-plane only: source-path
+        # writes get no note.
+        print(
+            f"contract-guard: constitution write to '{event.file_path}' allowed via "
+            "HARNESS_DEV_BYPASS (dev-only) — CODEOWNERS still gates merge",
+            file=sys.stderr,
+        )
     return 0
 
 

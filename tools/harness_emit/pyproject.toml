@@ -1,0 +1,16 @@
+[project]
+name = "logparser-harness-emit"
+version = "0.0.0"
+description = "EMIT-01/02 single-source dual-runtime emitter — reads the runtime-neutral harness/ source and writes the two runtime-native artifact trees (.opencode/ primary + the harness slice of .claude/). Clones the tools/docs_sync determinism discipline (fixed ordered frontmatter, DERIVED header, LF/no-BOM, byte-identical delete+regenerate) and the tools/contract_drift re-emit-diff drift gate. Per-runtime cap/shape validators LOUD-FAIL before any write (never truncate). Zero new external deps; invoked as `python -m tools.harness_emit`."
+requires-python = ">=3.11"
+# EMIT-02 / T-07-SC: zero new external packages this phase. Frontmatter is read with the shared
+# tools.harness_lint.parse_frontmatter (ruamel, already in the lock); cap constants come from
+# tools.harness_lint.caps. Nothing is declared here, so `uv sync --all-packages` must not mutate
+# uv.lock — no package-install / slopcheck surface.
+dependencies = []
+
+[tool.uv]
+# Virtual member: no build-system, nothing to package. Imported by module path from the shared uv
+# workspace environment (`python -m tools.harness_emit`); no wheel is built. Mirrors
+# tools/docs_sync + tools/contract_hash + tools/golden_runner + tools/memory_regen.
+package = false

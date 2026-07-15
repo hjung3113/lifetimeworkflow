@@ -22,9 +22,10 @@ Delete-and-rebuild reproduces these byte-identically — they are derived, so re
 
 ## 2. Print the orientation payload (the injector's own output)
 
-The same `assemble()` payload both runtimes honor: provisional banner → live contract-drift → the
-contracts-index summary → repo-map top-N → the activeContext pointer. Capped (~1k tokens), pointer-
-only.
+The same `assemble()` payload both runtimes honor: working-agreements directive → data-provenance
+banner → live contract-drift → contracts-index summary → repo map top-N → progress-log pointer.
+The agreements block is omitted when the active set is empty, so the banner leads by default.
+Capped (~1k tokens), pointer-only.
 
 !`uv run python -m tools.memory_regen.inject`
 
@@ -34,13 +35,17 @@ After the payload above, read in this order — shallow first, deep only on dema
 
 1. **`AGENTS.md`** (root) — the nearest-wins rules + the golden-path command table. Read a
    per-package `AGENTS.md` only when you touch that package (lazy-load).
-2. **`.memory/state/activeContext.md`** — what was in flight (provisional; contracts/ADR override it).
+2. **`.memory/state/activeContext.md`** — the session progress log; on a data conflict,
+   contracts/ADR win, and git holds the full completed history.
 3. A specific **`contracts/`** schema — only when the task needs it (never preload all bodies).
 4. The relevant **skill** for the work shape: `polyglot-boundary` (§4.3–4.6), `golden-debug` (red
-   golden), `data-contracts` (contracts/), `gate-model` (what's gated), `two-plane-memory` (planes).
+   golden), `data-contracts` (contracts/), `gate-model` (what's gated), `two-plane-memory` (planes),
+   `context-budget` (delegate-vs-inline), `fan-out-synthesize` (large-surface coverage).
 
 ## Notes
 
-- Provisional-banner-first: `.memory/` is a hint, not truth — `contracts/` and `docs/adr/` always win.
+- The payload is directive-first, banner-second. The banner is data-scoped: `contracts/` and
+  `docs/adr/` win a data conflict, not because grounded working context should be distrusted or
+  re-verified.
 - This command only touches the **derived** plane; it never writes the constitution plane or
   `.memory/state/` (that is `/checkpoint`'s job).

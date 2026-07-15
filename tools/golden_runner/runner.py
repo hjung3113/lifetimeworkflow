@@ -85,27 +85,40 @@ def resolve_dotnet() -> str:
     return os.path.join(root, "dotnet")
 
 
-def _confine(path: Path) -> Path:
-    """Resolve and confine a path to the repo or the system temp area (T-06-02)."""
+def _confine(path: Path, allowed_roots: tuple[Path, ...] | None = None) -> Path:
+    """Resolve and confine a path to the repo, the system temp area, or a declared member root.
+
+    The base allowlist is always ``(REPO_ROOT, /tmp, $TMPDIR)`` (T-06-02). ``allowed_roots`` is an
+    ADDITIVE widening (MREPO-03): each extra root is resolved and appended so a golden case living
+    under a declared workspace-member root confines cleanly — the escape guard is EXTENDED, never
+    removed. A path outside EVERY allowed root (base + threaded) still raises ``GoldenRunnerError``.
+    """
     resolved = path.resolve()
-    allowed_roots = (
+    roots = (
         REPO_ROOT.resolve(),
         Path(os.path.realpath("/tmp")),
         Path(os.environ.get("TMPDIR", "/tmp")).resolve(),
     )
-    for root in allowed_roots:
+    if allowed_roots:
+        roots = roots + tuple(Path(r).resolve() for r in allowed_roots)
+    for root in roots:
         try:
             resolved.relative_to(root)
             return resolved
         except ValueError:
             continue
-    raise GoldenRunnerError(f"path escapes confinement (repo/temp): {resolved}")
+    raise GoldenRunnerError(f"path escapes confinement (repo/temp/member): {resolved}")
 
 
 # --- pure comparison logic (no .NET needed) ---------------------------------------------------
 
 
-def compare(output_bytes: bytes, case: str, golden_dir: Path | None = None) -> GoldenResult:
+def compare(
+    output_bytes: bytes,
+    case: str,
+    golden_dir: Path | None = None,
+    allowed_roots: tuple[Path, ...] | None = None,
+) -> GoldenResult:
     """Normalize the converter output AND the approved baseline via the §4-5 core, then diff.
 
     On mismatch, write ``expected/baseline.received.tsv`` (the raw converter output — the exact
@@ -113,9 +126,16 @@ def compare(output_bytes: bytes, case: str, golden_dir: Path | None = None) -> G
 
     ``golden_dir`` overrides the case root (default ``REPO_ROOT/golden``) so the identical
     §4.3-4.6 compare path serves both the domain golden tree and a tmp/generic instance.
+
+    ``case`` is CLI-controlled, so BOTH the verified-baseline read and the received-baseline write
+    are routed through :func:`_confine` — the SAME trust boundary the converter I/O paths already
+    enforce (WR-04). ``allowed_roots`` widens that confinement to declared workspace-member roots
+    (additive — MREPO-03) so a member-rooted baseline still resolves.
     """
     normalized_new = normalize_tsv(output_bytes)
-    normalized_baseline = normalize_tsv(verified_path(case, golden_dir).read_bytes())
+    normalized_baseline = normalize_tsv(
+        _confine(verified_path(case, golden_dir), allowed_roots).read_bytes()
+    )
 
     if normalized_new == normalized_baseline:
         return GoldenResult(case=case, passed=True, diff="", received_path=None)
@@ -130,7 +150,7 @@ def compare(output_bytes: bytes, case: str, golden_dir: Path | None = None) -> G
         )
     )
 
-    rec = received_path(case, golden_dir)
+    rec = _confine(received_path(case, golden_dir), allowed_roots)
     rec.parent.mkdir(parents=True, exist_ok=True)
     rec.write_bytes(output_bytes)  # machine-proposed; .verified is left untouched (P9)
     return GoldenResult(case=case, passed=False, diff=diff, received_path=rec)
@@ -139,16 +159,19 @@ def compare(output_bytes: bytes, case: str, golden_dir: Path | None = None) -> G
 # --- built-in language-agnostic converter (no .NET — the template's generic default) ----------
 
 
-def run_identity_converter(seed: Path, out_path: Path) -> None:
+def run_identity_converter(
+    seed: Path, out_path: Path, allowed_roots: tuple[Path, ...] | None = None
+) -> None:
     """Copy the seed bytes verbatim to ``out_path`` — pure stdlib, zero canonicalization.
 
     This is the language-agnostic converter the template ships: it performs NO decimal/timezone
     canonicalization (that is the domain converter's job), so a case driven by it PASSes only when
     the seed→baseline diff is limited to what ``normalize_tsv`` neutralizes (R1 BOM / R2 CRLF /
-    R8 row-order). No ``dotnet``, no subprocess. Paths are confined (T-06-02).
+    R8 row-order). No ``dotnet``, no subprocess. Paths are confined (T-06-02); ``allowed_roots``
+    widens the confinement allowlist to declared member roots (additive — MREPO-03).
     """
-    src = _confine(seed)
-    dst = _confine(out_path)
+    src = _confine(seed, allowed_roots)
+    dst = _confine(out_path, allowed_roots)
     dst.parent.mkdir(parents=True, exist_ok=True)
     dst.write_bytes(src.read_bytes())
 
@@ -161,6 +184,7 @@ def run_converter(
     out_path: Path,
     dotnet_exe: str | None = None,
     project: Path | None = None,
+    allowed_roots: tuple[Path, ...] | None = None,
 ) -> int:
     """Spawn a .NET converter over the A-model CLI boundary; return its exit code.
 
@@ -174,8 +198,8 @@ def run_converter(
             "run_converter requires an explicit converter project (.csproj); the core template "
             "names no domain converter — pass project=... (e.g. from the example's tests)."
         )
-    seed = _confine(seed)
-    out_path = _confine(out_path)
+    seed = _confine(seed, allowed_roots)
+    out_path = _confine(out_path, allowed_roots)
 
     proc = subprocess.run(
         [
@@ -210,6 +234,7 @@ def run_golden_case(
     project: Path | None = None,
     converter: str = "dotnet",
     golden_dir: Path | None = None,
+    allowed_roots: tuple[Path, ...] | None = None,
 ) -> GoldenResult:
     """Full loop for one case: run converter → read --out → normalize both sides → diff.
 
@@ -217,14 +242,54 @@ def run_golden_case(
     language-agnostic :func:`run_identity_converter` (no .NET, no ``resolve_dotnet``); any other
     value keeps the default .NET spawn (backward-compatible). ``golden_dir`` overrides the case
     root so the generic instance (or a tmp fixture) runs the identical §4.3-4.6 loop.
+    ``allowed_roots`` is threaded into the converter's path confinement (additive — MREPO-03) so a
+    case rooted under a declared workspace-member root confines cleanly without weakening the guard.
     """
     seed = seed_path(case, golden_dir)
     if converter == "identity":
-        run_identity_converter(seed, out_path)
+        run_identity_converter(seed, out_path, allowed_roots=allowed_roots)
     else:
-        run_converter(seed, out_path, dotnet_exe=dotnet_exe, project=project)
+        run_converter(
+            seed, out_path, dotnet_exe=dotnet_exe, project=project, allowed_roots=allowed_roots
+        )
     output_bytes = Path(out_path).read_bytes()
-    return compare(output_bytes, case, golden_dir=golden_dir)
+    return compare(output_bytes, case, golden_dir=golden_dir, allowed_roots=allowed_roots)
+
+
+def workspace_golden_case(
+    case: str,
+    member_id: str,
+    out_path: Path,
+    ws_path: str | Path | None = None,
+    dotnet_exe: str | None = None,
+    project: Path | None = None,
+    converter: str = "identity",
+) -> GoldenResult:
+    """Workspace-aware golden entry (MREPO-03): resolve ``case`` under a declared member's golden.
+
+    Looks up ``member_id`` in ``workspace.toml`` (via :mod:`tools.workspace_config`, so no member
+    path is hardcoded here — GEN-04-clean), points :func:`run_golden_case` at
+    ``<member_root>/golden`` (reusing the existing ``golden_dir`` override verbatim), and threads
+    the member root into the converter's confinement allowlist so a case whose edge spans a repo
+    boundary runs against the correct member root. Defaults to the ``identity`` converter (no .NET)
+    so the in-repo demo fixture goes green without a .NET runtime.
+    """
+    from tools.workspace_config import load_workspace, members
+
+    cfg = load_workspace(ws_path) if ws_path is not None else load_workspace()
+    by_id = {m["id"]: m["root"] for m in members(cfg)}
+    if member_id not in by_id:
+        raise GoldenRunnerError(f"member {member_id!r} is not declared in the workspace manifest")
+    member_root = (REPO_ROOT / by_id[member_id]).resolve()
+    return run_golden_case(
+        case,
+        out_path,
+        dotnet_exe=dotnet_exe,
+        project=project,
+        converter=converter,
+        golden_dir=member_root / "golden",
+        allowed_roots=(member_root,),
+    )
 
 
 def main(argv: list[str] | None = None) -> int:

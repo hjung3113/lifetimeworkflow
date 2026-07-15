@@ -1,17 +1,25 @@
-# activeContext — volatile session hint (COMMITTED, PROVISIONAL)
+---
+updated: "2026-07-16"
+---
 
-> PROVISIONAL — this file is a hint, not truth. `contracts/` and `docs/adr/` always
-> override `.memory/state/` on conflict. No secrets, tokens, credentials, or PII here.
+# activeContext — volatile session hint (COMMITTED)
+
+> DATA AUTHORITY — on a data conflict, `contracts/` and `docs/adr/` win over
+> `.memory/state/`. This is a session progress log, not a reason to re-verify grounded work.
+> No secrets, tokens, credentials, or PII here.
 > The SessionStart injector injects only a *pointer* to this file, never its body.
 
 ## In flight
 
-- Phase 2 — Two-Plane Memory + Rules. 02-01 laid the `.memory/` two-plane skeleton +
-  `tools/memory_regen` member. 02-02 fixed the single injection contract
-  (`inject.assemble`) and wired the Claude SessionStart injector as the 4th slot
-  (coexists) + authored-deferred opencode adapter.
+- **Milestone v2.1 — MEM2 (Process Memory & Provenance Reframe)** started + roadmap written
+  (phases 12–16, 7/7 requirements mapped). No phase planned/executed yet. Nothing mid-edit.
+- SessionStart injection is live and emits the reframed working-agreements and data-provenance payload.
 
 ## Next
 
-- 02-03 contracts-index and 02-04 repo-map produce `.memory/derived/*.md` — `assemble()`
-  already reads their heads and degrades gracefully until they exist. 02-05 AGENTS.md rules.
+- **`/gsd:plan-phase 12`** — Model + ADR + Doc Reframe (v2.1 A): scaffold `.memory/agreements/`
+  process tier, reword distrust framing to data-authority, ratify as ADR-0006. Then 13→14→15→16.
+- Design source of truth: `.planning/MEMORY-UPGRADE-PROPOSAL.md` (§7 operator refinements authoritative).
+- Kickoff open Qs still to settle at planning: Q1 gating strength, Q2 `/checkpoint` vs `/agree`,
+  Q4 inject budget, Q6 staleness threshold (Q3/Q5 already decided: per-guideline files; per-file retire).
+- Deferred (non-blocking): golden-comparator Batch B (H2/M1, ADR-0005), optional `/gsd:complete-milestone v1.0`.

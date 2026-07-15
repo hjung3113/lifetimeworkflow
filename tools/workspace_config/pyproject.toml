@@ -1,0 +1,13 @@
+[project]
+name = "logparser-workspace-config"
+version = "0.0.0"
+description = "MREPO-01 workspace-manifest core: thin stdlib tomllib loader over the root workspace.toml — the multi-repo SINGLE SOURCE OF TRUTH slot (member repos + cross-repo edges), one level up from GEN-03's harness/project.toml. Exposes load_workspace()/members()/edges() + the split_endpoint() `repo:stage` helper; zero external deps, no I/O beyond reading the TOML. Imported by module path `tools.workspace_config`; the consistency gate lives in tools.harness_lint.tests.test_workspace_config."
+requires-python = ">=3.11"
+# Stdlib-only (tomllib, guaranteed by requires-python >=3.11). NO external deps — this member must
+# never mutate uv.lock beyond registering the in-repo member itself.
+dependencies = []
+
+[tool.uv]
+# Virtual member: no build-system, nothing to package. Imported by module path from the shared uv
+# workspace environment. Mirrors tools/harness_config (package = false).
+package = false

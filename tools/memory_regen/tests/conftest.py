@@ -13,6 +13,7 @@ Fixtures:
                          determinism tests.
 - ``tmp_contracts_tree`` — a throwaway tree with a couple of real ``contracts/**/*.schema.json``
                          copied in, for the Wave-2 contracts-index tests. Skips if none on disk.
+- Agreement fixtures are re-exported from harness_lint so both consumers share one corpus.
 """
 
 from __future__ import annotations
@@ -30,6 +31,11 @@ _LIBS_PYTHON = _REPO_ROOT / "libs" / "python"
 for _p in (str(_REPO_ROOT), str(_LIBS_PYTHON)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
+
+from tools.harness_lint.tests.conftest import (  # noqa: E402, F401
+    _AGREEMENTS_CREATION_ORDER,
+    tmp_agreements_tree,
+)
 
 
 @pytest.fixture(scope="session")

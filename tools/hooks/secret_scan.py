@@ -30,7 +30,7 @@ import json
 import re
 
 from tools.harness_perms import resolve_path
-from tools.hooks._stdin import emit_deny, parse_event, read_stdin
+from tools.hooks._stdin import emit_deny, parse_event, read_stdin, repo_relative
 
 # SECRET-specific path denies — the *.env subset ONLY. NOT the full matrix constitution deny key
 # (see the composition invariant in the module docstring). Fed to the reused resolver (D-02).
@@ -61,10 +61,13 @@ def decide(file_path: str, content: str) -> dict | None:
     OR the content matches a shape-anchored pattern and the path is not allow-listed. Constitution
     -plane paths with no secret content return ``None`` — that plane is not this gate's job.
     """
-    if file_path and resolve_path(SECRET_PATH_GLOBS, file_path) == "deny":
+    # Normalize Claude's absolute file_path to repo-relative so both the *.env path-deny and the
+    # tests/golden/fixtures allow-list match a real absolute write (not just relative test input).
+    relative_path = repo_relative(file_path)
+    if relative_path and resolve_path(SECRET_PATH_GLOBS, relative_path) == "deny":
         return emit_deny(f"secret_scan: refusing to touch secret file path '{file_path}' (*.env)")
 
-    if content and not _allowlisted(file_path):
+    if content and not _allowlisted(relative_path):
         for pattern in PATTERNS:
             if pattern.search(content):
                 return emit_deny(

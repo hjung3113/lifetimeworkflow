@@ -51,10 +51,15 @@ def _norm_datetime(value: str) -> str:
 def normalize_cell(value: str, kind: str, null_token: str = DEFAULT_NULL_TOKEN) -> str:
     """Canonicalize a single cell per its ``kind`` (``decimal`` | ``datetime`` | ``string``).
 
-    The null-token check (R6) runs first so a null is never mis-parsed as a decimal/datetime.
+    The null-token check (R6) runs first so a null is never mis-parsed as a decimal/datetime. An
+    empty cell is likewise short-circuited before type parsing: it is distinct from null (R6,
+    ``"" != null``) and has no value to canonicalize, so it stays ``""`` for every kind — without
+    this guard a ``decimal``/``datetime`` empty cell raises ``InvalidOperation``/``ValueError``.
     """
     if value == null_token:
         return NULL_SENTINEL
+    if value == "":
+        return value  # R6: empty stays empty; nothing to canonicalize, and it is not null
     if kind == "decimal":
         return _norm_decimal(value)
     if kind == "datetime":
