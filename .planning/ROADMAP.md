@@ -432,7 +432,13 @@ Plans:
   3. `/checkpoint` writes an `updated: <ISO-date>` stamp into `.memory/state/activeContext.md` / `progress.md`; `assemble()` surfaces that stamp **verbatim** — NO wall-clock inside `assemble()` (determinism intact) and NO hook-wrapper wall-clock code — freshness is judged **agent-side** against the session date (no fixed threshold, per Q6).
   4. Progress state stays tight by design (in-flight + remaining + a short last-N-done summary); no ever-growing done-log is introduced (full history lives in git, §7a).
 
-**Plans**: TBD
+**Plans**: 4 plans in 3 waves
+
+Plans:
+- [ ] 13-01-PLAN.md — Wave 1 · State stamp + /checkpoint mandate + agreements no-secrets line (MEM2-05 write half, SC3/SC4)
+- [ ] 13-02-PLAN.md — Wave 1 · Determinism safety net backfill: byte-identity + snapshot + no-wall-clock statics (MEM2-02 SC2 prerequisite)
+- [ ] 13-03-PLAN.md — Wave 2 · Injector reframe: agreements directive at priority-0, data-scoped banner, verbatim stamp (sole owner of inject.py)
+- [ ] 13-04-PLAN.md — Wave 3 · Re-enable injection + retire the superseded provisional/banner-first prose (D-20/D-06)
 
 ### Phase 14: Write Path + Anti-Churn Guard *(v2.1 C)*
 
