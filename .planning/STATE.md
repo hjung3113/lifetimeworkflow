@@ -197,6 +197,8 @@ None yet.
 - Toolchain: .NET 10 SDK is NOT installed in this ephemeral env — Phase 1 (BOOT-01) install script gates all .NET-side execution.
 - Research flag: opencode.ai is proxy-403'd; re-verify exact hook event names, 15-key permission matrix semantics, and skill size caps against live docs before Phase 4 (hooks) and Phase 6 (emitter).
 - Research flag: internal inconsistency on Claude skill description cap (≤200 vs ≤1024 chars) — resolve precisely at Phase 6 emitter-validator implementation.
+- **[PHASE 14 — carry into discuss-phase 14] ADR-0006 Consequences contains a factual error.** `docs/adr/0006-*.md:92-93` states the agreements tier ships as "`_TEMPLATE.md` + README + **one committed seed**". There is no seed and there never was — `git ls-files .memory/agreements/` returns only `README.md` + `_TEMPLATE.md`, and `96b8db2` (the only add-commit for the dir) added exactly those two. **Why it matters, not cosmetic:** Phase 13's constraint says an empty active set is *correct behavior, not a bug to fix*, but a ratified ADR (constitution plane = highest authority) asserts a seed exists. A future agent reading 0006, seeing the empty dir, and "repairing" it would **self-invent an agreement** — precisely the T-13-01 threat and the MEM2-04 anti-invent rule. Phase 14 owns the agreements write path + provenance lint, so it is the natural owner: decide there whether to (a) ship a real seed via `/agree`, (b) append an errata note, or (c) supersede with ADR-0008. Operator ratified deferral to Phase 14 on 2026-07-16. Do NOT let an agent resolve this by authoring an agreement.
+- **CODEOWNERS review has never been reachable on this repo — structural, not neglect.** The GitHub **default branch is `claude/data-pipeline-harness-8aypct`** (the working branch itself), so every push lands on the default branch and bypasses CODEOWNERS entirely; `main` is a separate branch that only receives merges via PR (precedent: PR #1 = phases 1–6, PR #2 = 2026-07-12). That is why "PR + CODEOWNERS review" drifted across four phases. Also: the handoff named only ADR-0006/0007, but **ADR-0004 and ADR-0005 are equally unmerged to `main`** — four unratified ADRs, not two. Second, independent blocker already documented in `.github/CODEOWNERS`: @hjung3113 is the sole owner AND the PR author, and GitHub forbids self-approval — "Require review from Code Owners" cannot be satisfied without a second account or an admin waiver.
 
 ### Quick Tasks Completed
 
@@ -214,9 +216,9 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-14
-Stopped at: **Milestone v2.1 (MEM2) roadmap created.** Phases 12–16 appended to ROADMAP.md (numbering continued after v2.0=11); REQUIREMENTS.md traceability filled (7/7 mapped, 0 unmapped); design source `.planning/MEMORY-UPGRADE-PROPOSAL.md` §7 authoritative. Sequencing 12→13→14→15→16. Next: `/gsd:plan-phase 12`.
-Resume file: None
+Last session: 2026-07-16
+Stopped at: Session resumed (`/gsd:resume-work --auto --chain`) from a clean between-phases stop. Phases 12, 17, 13 complete; SessionStart injection LIVE. Ran `/gsd:plan-phase 14` → hit the no-CONTEXT.md gate; operator chose discuss-first. Phase dir `.planning/phases/14-write-path-anti-churn-guard-v2-1-c/` created (empty). Next: `/gsd:discuss-phase 14`, then `/gsd:plan-phase 14`. Carried non-blocking human actions: PR + CODEOWNERS review of ADR-0006/0007 (deferred across three phases), 16 unpushed commits on `claude/data-pipeline-harness-8aypct`.
+Resume file: `.planning/phases/13-injector-reframe-channel-wiring-v2-1-b/.continue-here.md` (authoritative) + `.planning/HANDOFF.json`. NOTE: root `.planning/.continue-here.md` is STALE — it predates Phase 13 and still names `/gsd:plan-phase 13` as next; prefer the phase-13 file.
 
 ## Operator Next Steps
 
