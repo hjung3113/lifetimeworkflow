@@ -1,6 +1,6 @@
 ---
 status: active # active | retired
-added: YYYY-MM-DD
+added: "YYYY-MM-DD"
 provenance: "added because <verbatim user feedback>"
 ---
 
