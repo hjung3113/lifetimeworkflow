@@ -136,3 +136,29 @@ def test_main_prints_capped_payload(capsys) -> None:
     out = capsys.readouterr().out.rstrip("\n")
     assert out.splitlines()[0] == inject.BANNER
     assert len(out) <= 4000
+
+
+def _full_cap_agreements(tmp_path: Path) -> Path:
+    agreements = tmp_path / "agreements"
+    agreements.mkdir()
+    for number in range(6):
+        (agreements / f"entry-{number}.md").write_text(
+            f"---\nstatus: active\n---\n# Entry {number}\n" + "x" * 70 + "\n",
+            encoding="utf-8",
+        )
+    return agreements
+
+
+def test_budget_holds_with_full_agreements_block(tmp_path: Path) -> None:
+    derived, state = _dirs(tmp_path)
+    agreements = _full_cap_agreements(tmp_path)
+    payload = inject.assemble(derived_dir=derived, state_dir=state, agreements_dir=agreements)
+    assert len(inject._agreements_block(agreements)) <= inject._AGREEMENTS_MAX_CHARS
+    assert len(payload) <= 4000
+
+
+def test_repo_map_survives_full_cap_agreements(tmp_path: Path) -> None:
+    derived, state = _dirs(tmp_path)
+    agreements = _full_cap_agreements(tmp_path)
+    payload = inject.assemble(derived_dir=derived, state_dir=state, agreements_dir=agreements)
+    assert inject.REPO_MAP_HEADER in payload

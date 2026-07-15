@@ -26,14 +26,19 @@ def _fixture_dirs(tmp_path: Path) -> tuple[Path, Path]:
     return derived, state
 
 
-def test_assemble_is_byte_identical(tmp_path: Path) -> None:
+def test_assemble_is_byte_identical(tmp_path: Path, tmp_agreements_tree: Path) -> None:
     """Two assembles over the same fixture tree have identical SHA-256 digests."""
     derived, state = _fixture_dirs(tmp_path)
-    first = inject.assemble(derived_dir=derived, state_dir=state)
-    second = inject.assemble(derived_dir=derived, state_dir=state)
-    assert hashlib.sha256(first.encode("utf-8")).hexdigest() == hashlib.sha256(
-        second.encode("utf-8")
-    ).hexdigest()
+    first = inject.assemble(
+        derived_dir=derived, state_dir=state, agreements_dir=tmp_agreements_tree
+    )
+    second = inject.assemble(
+        derived_dir=derived, state_dir=state, agreements_dir=tmp_agreements_tree
+    )
+    assert (
+        hashlib.sha256(first.encode("utf-8")).hexdigest()
+        == hashlib.sha256(second.encode("utf-8")).hexdigest()
+    )
 
 
 def test_assemble_delete_regenerate_is_byte_identical(tmp_path: Path) -> None:
