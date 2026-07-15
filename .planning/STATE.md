@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: MEM2 — Process Memory & Provenance Reframe
-status: executing
-stopped_at: "**Phase 13 (v2.1 B) COMPLETE — executed by Codex (gpt-5.6-terra) in Orca worktree `phase13-codex`, FF-merged at 9b93d28 (9 commits, 4 plans / 3 waves).** SessionStart injection is now LIVE again (`.memory/.inject-disabled` removed, D-20). Payload verified end-to-end, not just by tests: delete+regen byte-identical (sha d0cd72ad…), 3016/4000 chars, zero wall-clock in `inject.py`, banner reads data-scoped ('which artifact wins a contradiction', not 'distrust your own work'), pointer reworded to a progress log carrying a verbatim `[updated: …]` stamp. Fixture probe confirmed agreements compose at priority-0 above the banner, sorted, retired excluded, and a SECRET-CANARY planted in `provenance` did NOT leak (D-16/T-13-01 mitigation works). Gate: `tools/memory_regen`+`tools/harness_lint` = 313 passed; `harness_emit` still EXACTLY 1 failed/46 passed — that inherited Phase-12 re-emit failure is Phase 15's gate and was correctly NOT fixed. Next: `/gsd:plan-phase 14` (Write Path + Anti-Churn Guard, MEM2-04 — the `/agree` write half + provenance lint, T-13-01's durable mitigation)."
-last_updated: "2026-07-15T15:25:07.159Z"
-last_activity: 2026-07-15 -- Phase 13 planning complete
+status: planning
+stopped_at: "Phase 14 context gathered (--auto: 6 gray areas auto-resolved; D-01..D-13). Next: /gsd:plan-phase 14"
+last_updated: "2026-07-15T16:20:36.901Z"
+last_activity: "2026-07-15 -- Completed quick task 260716-16x: fixed 6 silently-dead GSD node hooks"
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 9
-  completed_plans: 5
-  percent: 56
+  completed_plans: 9
+  percent: 100
 ---
 
 # Project State
@@ -216,9 +216,9 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-16
-Stopped at: Session resumed (`/gsd:resume-work --auto --chain`) from a clean between-phases stop. Phases 12, 17, 13 complete; SessionStart injection LIVE. Ran `/gsd:plan-phase 14` → hit the no-CONTEXT.md gate; operator chose discuss-first. Phase dir `.planning/phases/14-write-path-anti-churn-guard-v2-1-c/` created (empty). Next: `/gsd:discuss-phase 14`, then `/gsd:plan-phase 14`. Carried non-blocking human actions: PR + CODEOWNERS review of ADR-0006/0007 (deferred across three phases), 16 unpushed commits on `claude/data-pipeline-harness-8aypct`.
-Resume file: `.planning/phases/13-injector-reframe-channel-wiring-v2-1-b/.continue-here.md` (authoritative) + `.planning/HANDOFF.json`. NOTE: root `.planning/.continue-here.md` is STALE — it predates Phase 13 and still names `/gsd:plan-phase 13` as next; prefer the phase-13 file.
+Last session: 2026-07-15T16:20:36.896Z
+Stopped at: Phase 14 context gathered (--auto: 6 gray areas auto-resolved; D-01..D-13). Next: /gsd:plan-phase 14
+Resume file: .planning/phases/14-write-path-anti-churn-guard-v2-1-c/14-CONTEXT.md
 
 ## Operator Next Steps
 
