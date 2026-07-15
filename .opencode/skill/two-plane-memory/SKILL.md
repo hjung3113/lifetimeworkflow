@@ -27,8 +27,8 @@ all three — *machine-write, never hand-edit* — but what git does with each d
 
 - **Committed state — `.memory/state/`** — *committed* volatile state (`activeContext.md`,
   `progress.md`). It survives the ephemeral container because it is committed (via `/checkpoint`). It
-  is **provisional**: contracts/ and docs/adr/ always override it on conflict. Decisions do NOT live
-  here — they belong in append-only ADRs.
+  is subject to data authority: on a **data conflict**, `contracts/` and `docs/adr/` are
+  authoritative over it. Decisions do NOT live here — they belong in append-only ADRs.
 - **Committed-derived (machine-write + CI-verify) — `docs/reference/**` + `.memory/derived/contracts-index.md`** —
   *tracked*, auto-regenerated. `docs/reference/**` has always been committed-derived (rendered from
   `contracts/**` by `tools/docs_sync`); `.memory/derived/contracts-index.md` was **flipped from
@@ -43,12 +43,20 @@ all three — *machine-write, never hand-edit* — but what git does with each d
   it.** `tools/memory_regen` rebuilds it; delete + rerun reproduces it byte-identically. A hand edit
   is lost on the next regeneration and is a lie in the meantime.
 
+## Plane 3 — PROCESS agreements (committed, human-authored, curated)
+
+- **Committed agreements — `.memory/agreements/`** — committed, human-authored via feedback, and
+  curated; it is a peer of the committed-state tier. It is **not regenerated** and is not derived.
+  One `<slug>.md` per working-style or methodology guideline records frontmatter provenance and
+  links to project decisions rather than restating them. See `.memory/agreements/README.md`.
+
 ## The decision the plane forces
 
 | You want to… | Plane | Allowed? |
 |---|---|---|
 | Change a contract/ADR/golden baseline | Constitution | Only via the gated human-ratified path |
 | Record what you're working on now | `.memory/state/` | Yes — via `/checkpoint` (committed) |
+| Record a working-style agreement from feedback | `.memory/agreements/` | Yes — committed, curated, never regenerated |
 | "Fix" the repo-map / contracts-index | `.memory/derived/` | No — regenerate it (`/orient` / `tools.memory_regen`) |
 | Record a decision | ADR (constitution) | Yes — append a new ADR, never edit `.memory/state/` |
 
@@ -57,7 +65,7 @@ all three — *machine-write, never hand-edit* — but what git does with each d
 Do not preload full contract bodies into context. The derived plane exists so a session starts from
 **pointers** (repo-map / contracts-index summaries + the activeContext pointer), and you read a
 specific contract only when the task needs it. The SessionStart injector (and `/orient`) assemble
-that capped, pointer-only, provisional-banner-first payload — never a full schema body.
+that capped, pointer-only, data-authority-banner-first payload — never a full schema body.
 
 ## Related
 - `harness/skills/gate-model/SKILL.md` — how the constitution plane is enforced.
