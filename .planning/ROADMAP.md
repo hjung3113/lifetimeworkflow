@@ -457,7 +457,18 @@ Plans:
   2. A `tools/harness_lint` check **fails when an agreement file lacks a well-formed provenance/origin stamp** ("added because &lt;user feedback&gt;" + added-date), so agents cannot auto-invent entries; the guard follows the existing `stale-derived` gate pattern (regenerate → verify).
   3. `/agree` is added to `EXPECTED_COMMANDS` (source side; its emit round-trip to both runtimes is owned by Phase 15).
 
-**Plans**: TBD
+**Plans**: 4 plans in 3 waves
+
+Plans:
+**Wave 1**
+- [ ] 14-01-PLAN.md — Wave 1 · Extract the shared L1-L4 agreements predicate into tools/harness_lint/agreements.py + widen the no-wall-clock gate with a negative control (D-05/D-14/D-17/D-18; sole owner of inject.py)
+- [ ] 14-04-PLAN.md — Wave 1 · ADR-0006 `## Errata`: correct the phantom "committed seed" claim, declare the empty active set CORRECT (D-12/D-13; constitution write, human-gated)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 14-02-PLAN.md — Wave 2 · The provenance lint: tools/harness_lint/provenance.py + tests + `added:` template quoting + presence-safe /lint step (D-01/D-02/D-03/D-04/D-16)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 14-03-PLAN.md — Wave 3 · The /agree write path: new zero-dep tools/agree/ member, refusal-first writer, YAML-serialized provenance, source-only command (D-07/D-08/D-09/D-10/D-11/D-15/D-19/D-20)
 
 ### Phase 15: Emit Round-Trip + Gates *(v2.1 D)*
 
