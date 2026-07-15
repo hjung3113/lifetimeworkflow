@@ -1,0 +1,9 @@
+[project]
+name = "logparser-agree"
+version = "0.0.0"
+description = "Refusal-first writer for .memory/agreements working agreements."
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv]
+package = false
