@@ -435,9 +435,14 @@ Plans:
 **Plans**: 4 plans in 3 waves
 
 Plans:
+**Wave 1**
 - [ ] 13-01-PLAN.md — Wave 1 · State stamp + /checkpoint mandate + agreements no-secrets line (MEM2-05 write half, SC3/SC4)
 - [ ] 13-02-PLAN.md — Wave 1 · Determinism safety net backfill: byte-identity + snapshot + no-wall-clock statics (MEM2-02 SC2 prerequisite)
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 13-03-PLAN.md — Wave 2 · Injector reframe: agreements directive at priority-0, data-scoped banner, verbatim stamp (sole owner of inject.py)
+
+**Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 13-04-PLAN.md — Wave 3 · Re-enable injection + retire the superseded provisional/banner-first prose (D-20/D-06)
 
 ### Phase 14: Write Path + Anti-Churn Guard *(v2.1 C)*

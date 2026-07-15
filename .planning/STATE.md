@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: MEM2 — Process Memory & Provenance Reframe
 status: executing
-stopped_at: "**Clean stop between phases.** Phase 12 (v2.1 A — Model+ADR+Doc Reframe, 3 plans, ADR-0006 landed) DONE and pushed. Phase 17 (standalone infra — Constitution-Gate Dev/Enforce Decoupling, 2 plans, ADR-0007 landed) DONE and pushed. No mid-task work paused. 348 hooks+harness_lint tests green. v2.1 MEM2 chain resumes at Phase 13 (13→14→15→16, dependency-locked). Next: `/gsd:plan-phase 13`."
-last_updated: "2026-07-14T15:36:11.687Z"
-last_activity: 2026-07-14 -- Phase 12 + 17 complete, pushed; next Phase 13
+stopped_at: "**Phase 13 PLANNED — 4 plans / 3 waves, checker VERIFICATION PASSED (no blockers).** Wave 1: 13-01 (state stamp + /checkpoint) ‖ 13-02 (determinism net); Wave 2: 13-03 (injector reframe — sole owner of inject.py, incl. the D-09 agreements_dir param); Wave 3: 13-04 (re-enable injection, rm .memory/.inject-disabled). Operator ratified Q4 + 2 open items inline → 13-CONTEXT.md D-01..D-20: cap N=6/M=700 (named constants), re-enable in Phase 13, all four T-13-01 mitigations. KEY: the delete+regen determinism net SC2 calls 'preserved' does NOT exist — 13-02 builds it BEFORE the reframe. BASELINE: `uv run pytest tools/harness_emit` is already 1 failed/46 passed on a clean tree (Phase 12's deferred re-emit) — do NOT fix or regenerate that .ambr; it is Phase 15's gate. Next: `/gsd:execute-phase 13`."
+last_updated: "2026-07-15T15:25:07.159Z"
+last_activity: 2026-07-15 -- Phase 13 planning complete
 progress:
-  total_phases: 5
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 20
+  total_phases: 6
+  completed_phases: 2
+  total_plans: 9
+  completed_plans: 5
+  percent: 56
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-14)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** v2.1 MEM2 — Phase 12 + 17 done & pushed; ready to plan Phase 13
+**Current focus:** v2.1 MEM2 — Phase 13 planned (4 plans / 3 waves, checker passed); ready to execute
 
 ## Current Position
 
-Phase: 13 — Injector Reframe + Channel Wiring (v2.1 B, MEM2-02/MEM2-05) — Not started
-Plan: —
-Status: Ready to plan (`/gsd:plan-phase 13`); dependency-locked on Phase 12 (done)
-Last activity: 2026-07-14 -- Phase 12 + 17 complete, pushed
+Phase: 13 — Injector Reframe + Channel Wiring (v2.1 B, MEM2-02/MEM2-05) — Planned
+Plan: 13-01 ‖ 13-02 (W1) → 13-03 (W2) → 13-04 (W3) — none started
+Status: Ready to execute (`/gsd:execute-phase 13`)
+Last activity: 2026-07-15 -- Phase 13 planning complete
 
 ## Performance Metrics
 

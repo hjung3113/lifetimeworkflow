@@ -891,7 +891,17 @@ writes, and the only live path would be the absent-stamp fallback — SC3 unprov
 | A8 | The red `harness_emit` snapshot is Phase 12's, not Phase 13's | Scope Fence | **Verified** — red on a clean tree; diff shows only Phase-12 `SKILL.md` text. Low risk |
 | A9 | `/checkpoint` is prose-only (no runnable) | §5 | **Verified** — `checkpoint.md:6` `agent: orchestrator`; steps are prose + `!` shell lines. Makes the stamp-write an instruction edit |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> **All four were ratified by the operator during `/gsd:plan-phase 13` and are recorded as LOCKED
+> decisions in `13-CONTEXT.md`. They are kept here for the reasoning trail — do not re-litigate.**
+>
+> | Q | Resolution | Decision |
+> |---|---|---|
+> | 1. Cap values | **N=6 / M=700**, named module constants; overflow = whole-block → pointer, no count interpolated | **D-01/D-02/D-03** |
+> | 2. Re-enable `.inject-disabled` | **Yes, in Phase 13** — final plan (13-04), after the reframe is green | **D-20** |
+> | 3. Emission order | `0` agreements → `1` banner → `2` drift → `3` contracts-index → `4` repo-map → `5` pointer; retires D-02 banner-first | **D-04/D-05/D-06** |
+> | 4. Scope-limit header | **Yes** — plus all three other T-13-01 mitigations (title+rule-only render, fail-closed filter, no-secrets README line) | **D-15..D-19** |
 
 1. **Cap values (Q4 — locked as "capped", values open).**
    - Known: headroom after reword = **784 chars** (measured); a realistic entry ≈ 96 chars; M≥800 evicts the repo-map.
