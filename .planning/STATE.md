@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: MEM2 — Process Memory & Provenance Reframe
 status: executing
-stopped_at: "**Milestone v2.1 (MEM2) roadmap created.** Phases 12–16 appended to ROADMAP.md (numbering continued after v2.0=11); REQUIREMENTS.md traceability filled (7/7 mapped, 0 unmapped); design source `.planning/MEMORY-UPGRADE-PROPOSAL.md` §7 authoritative. Sequencing 12→13→14→15→16. Next: `/gsd:plan-phase 12`."
-last_updated: "2026-07-14T14:11:56.615Z"
-last_activity: 2026-07-14 -- Phase 12 planning complete
+stopped_at: "**Clean stop between phases.** Phase 12 (v2.1 A — Model+ADR+Doc Reframe, 3 plans, ADR-0006 landed) DONE and pushed. Phase 17 (standalone infra — Constitution-Gate Dev/Enforce Decoupling, 2 plans, ADR-0007 landed) DONE and pushed. No mid-task work paused. 348 hooks+harness_lint tests green. v2.1 MEM2 chain resumes at Phase 13 (13→14→15→16, dependency-locked). Next: `/gsd:plan-phase 13`."
+last_updated: "2026-07-14T15:36:11.687Z"
+last_activity: 2026-07-14 -- Phase 12 + 17 complete, pushed; next Phase 13
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_plans: 3
+  percent: 20
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-14)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** v2.1 MEM2 roadmap created (phases 12–16) — ready to plan Phase 12
+**Current focus:** v2.1 MEM2 — Phase 12 + 17 done & pushed; ready to plan Phase 13
 
 ## Current Position
 
-Phase: 12 — Model + ADR + Doc Reframe (v2.1 A) — Not started
+Phase: 13 — Injector Reframe + Channel Wiring (v2.1 B, MEM2-02/MEM2-05) — Not started
 Plan: —
-Status: Ready to execute
-Last activity: 2026-07-14 -- Phase 12 planning complete
+Status: Ready to plan (`/gsd:plan-phase 13`); dependency-locked on Phase 12 (done)
+Last activity: 2026-07-14 -- Phase 12 + 17 complete, pushed
 
 ## Performance Metrics
 
