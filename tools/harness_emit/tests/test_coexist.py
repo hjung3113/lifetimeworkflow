@@ -1,6 +1,6 @@
 """EMIT-02 command coexistence — the harness command surface must never collide with GSD (T-07-02).
 
-The emitter writes its 19 harness commands as TOP-LEVEL ``.claude/commands/*.md`` (Claude) and
+The emitter writes its 20 harness commands as TOP-LEVEL ``.claude/commands/*.md`` (Claude) and
 ``.opencode/command/*.md`` (opencode). GSD owns the ``.claude/commands/gsd/**`` subtree; the two
 sets must be provably DISJOINT — a harness command must never land under ``gsd/`` and a seeded
 ``gsd/`` fixture must survive an emit byte-for-byte and never be enumerated by the ownership
