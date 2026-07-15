@@ -193,7 +193,6 @@ None yet.
 
 [Issues that affect future work]
 
-- **[MEM2 context — SessionStart injection is DISABLED]** SessionStart memory injection is currently OFF (flag `.memory/.inject-disabled`, no-op in `.claude/hooks/memory-inject.sh`) until MEM2 (Phase 13) reframes it. Re-enable with `rm .memory/.inject-disabled` once the Phase-13 injector reframe lands. Until then a fresh session does NOT auto-inject repo-map/contracts-index/banner — run `/orient` manually for that context.
 - **[BLOCKING — plan 01-01] BOOT-01 .NET 10 install egress-denied:** `tools/bootstrap/install.sh` + `verify.sh` are committed and correct, but the .NET 10 download hosts are blocked by this container's egress policy (`builds.dotnet.microsoft.com`, `dotnetcli.azureedge.net`, `dotnetcli.blob.core.windows.net`, `aka.ms` → 403 CONNECT). The proxy README forbids routing around policy denials. **Human action:** allowlist those hosts in the egress policy (or ship a pre-installed .NET 10), then run `bash tools/bootstrap/install.sh && bash tools/bootstrap/verify.sh` to finish the plan. uv workspace (BOOT-02) and SessionStart wiring (BOOT-03) are DONE and green.
 - Toolchain: .NET 10 SDK is NOT installed in this ephemeral env — Phase 1 (BOOT-01) install script gates all .NET-side execution.
 - Research flag: opencode.ai is proxy-403'd; re-verify exact hook event names, 15-key permission matrix semantics, and skill size caps against live docs before Phase 4 (hooks) and Phase 6 (emitter).

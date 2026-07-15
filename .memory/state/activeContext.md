@@ -13,8 +13,7 @@ updated: "2026-07-16"
 
 - **Milestone v2.1 — MEM2 (Process Memory & Provenance Reframe)** started + roadmap written
   (phases 12–16, 7/7 requirements mapped). No phase planned/executed yet. Nothing mid-edit.
-- SessionStart memory injection is temporarily **DISABLED** (`.memory/.inject-disabled`) — MEM2
-  Phase 13 reframes it; re-enable with `rm .memory/.inject-disabled`.
+- SessionStart injection is live and emits the reframed working-agreements and data-provenance payload.
 
 ## Next
 
