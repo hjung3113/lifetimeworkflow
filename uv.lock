@@ -5,6 +5,7 @@ requires-python = ">=3.11"
 [manifest]
 members = [
     "evidence-adapters",
+    "harness-handoff",
     "harness-task-control",
     "harness-task-packet",
     "logparser-agree",
@@ -160,6 +161,11 @@ wheels = [
 name = "evidence-adapters"
 version = "0.0.0"
 source = { virtual = "tools/evidence" }
+
+[[package]]
+name = "harness-handoff"
+version = "0.0.0"
+source = { virtual = "tools/handoff" }
 
 [[package]]
 name = "harness-task-control"

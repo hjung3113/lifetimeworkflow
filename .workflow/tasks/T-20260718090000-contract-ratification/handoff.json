@@ -13,5 +13,24 @@
   "current_ref": "71456f772b26430a1fdeb02819f9f1822a01f2b7",
   "next_action": "Validate the ratification fixtures.",
   "evidence_ids": [],
-  "finding_ids": []
+  "finding_ids": [],
+  "critical_constraint_refs": [],
+  "decisions": [],
+  "changed_paths": [],
+  "unresolved_items": [],
+  "stop_condition": "Stop if HANDOFF validation or /phase-gate reports refresh required.",
+  "required_read_paths": [
+    ".workflow/tasks/T-20260718090000-contract-ratification/evidence.json",
+    ".workflow/tasks/T-20260718090000-contract-ratification/state.json",
+    ".workflow/tasks/T-20260718090000-contract-ratification/task.json"
+  ],
+  "state_ref": {
+    "path": ".workflow/tasks/T-20260718090000-contract-ratification/state.json",
+    "sha256": "92eec4373a740a66abea1e38c7932bdfe2ad6cf385f757a16a31fa306f468582"
+  },
+  "evidence_ref": {
+    "path": ".workflow/tasks/T-20260718090000-contract-ratification/evidence.json",
+    "sha256": "463a7aff328c2fcf62b3e9ddf98993054b4c24905816cc7e74d956ef3c822d39"
+  },
+  "artifact_refs": []
 }

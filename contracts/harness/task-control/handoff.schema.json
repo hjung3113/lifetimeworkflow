@@ -17,7 +17,16 @@
     "current_ref",
     "next_action",
     "evidence_ids",
-    "finding_ids"
+    "finding_ids",
+    "critical_constraint_refs",
+    "decisions",
+    "changed_paths",
+    "unresolved_items",
+    "stop_condition",
+    "required_read_paths",
+    "state_ref",
+    "evidence_ref",
+    "artifact_refs"
   ],
   "properties": {
     "task_id": { "$ref": "#/$defs/taskId" },
@@ -55,11 +64,74 @@
       "type": "array",
       "items": { "$ref": "#/$defs/findingId" },
       "uniqueItems": true
+    },
+    "critical_constraint_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/pathHashRef" },
+      "uniqueItems": true
+    },
+    "decisions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/pathHashRef" },
+      "uniqueItems": true
+    },
+    "changed_paths": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/repoPath" },
+      "uniqueItems": true
+    },
+    "unresolved_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "kind": { "enum": ["blocker", "finding"] }
+        }
+      },
+      "uniqueItems": true
+    },
+    "stop_condition": { "type": "string", "minLength": 1 },
+    "required_read_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/repoPath" },
+      "uniqueItems": true
+    },
+    "state_ref": { "$ref": "#/$defs/pathHashRef" },
+    "evidence_ref": { "$ref": "#/$defs/pathHashRef" },
+    "artifact_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/artifactRef" },
+      "uniqueItems": true
     }
   },
   "$defs": {
     "taskId": { "type": "string", "pattern": "^T-[0-9]{14}-[a-z0-9]+(?:-[a-z0-9]+)*$" },
     "constraintId": { "type": "string", "pattern": "^C-[0-9]{2,}$" },
+    "repoPath": { "type": "string", "minLength": 1, "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "pathHashRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/repoPath" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "artifactRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "path", "sha256"],
+      "properties": {
+        "evidence_id": { "$ref": "#/$defs/evidenceId" },
+        "path": { "type": "string", "pattern": "^artifacts/(?!(?:.*/)?\\.\\.(?:/|$)).+" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
     "evidenceId": { "type": "string", "pattern": "^E-[0-9]{2,}$" },
     "findingId": { "type": "string", "pattern": "^F-[0-9]{2,}$" },
     "lane": { "enum": ["FAST", "STANDARD", "STRICT", "CONTROLLED"] },

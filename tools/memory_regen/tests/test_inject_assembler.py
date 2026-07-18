@@ -162,3 +162,19 @@ def test_repo_map_survives_full_cap_agreements(tmp_path: Path) -> None:
     agreements = _full_cap_agreements(tmp_path)
     payload = inject.assemble(derived_dir=derived, state_dir=state, agreements_dir=agreements)
     assert inject.REPO_MAP_HEADER in payload
+
+
+def test_active_task_snapshot_is_capped_and_pointer_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    derived, state = _dirs(tmp_path)
+    (state / "active-task.json").write_text(
+        '{"handoff_path":".workflow/tasks/T-20260719000000-fixture/handoff.json",'
+        '"state_revision":7,"task_id":"T-20260719000000-fixture"}\n', encoding="utf-8"
+    )
+    monkeypatch.setattr(inject, "validate_handoff", lambda *_: {
+        "task_id": "T-20260719000000-fixture", "phase": "EXECUTE", "lane": "STANDARD",
+        "state_revision": 7, "next_action": "perform exactly one action",
+    })
+    payload = inject.assemble(derived_dir=derived, state_dir=state)
+    assert inject.TASK_HEADER in payload and len(payload) <= 4000
+    assert "task body" not in payload and "output.log" not in payload and "$schema" not in payload
+    assert "phase-gate" in payload

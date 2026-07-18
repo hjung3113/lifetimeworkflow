@@ -9,11 +9,13 @@ agreements are absent the directive is omitted and the banner leads again.
 from __future__ import annotations
 
 import sys
+import json
 from pathlib import Path
 
 from tools.contract_drift.drift import run_gate
 from tools.harness_lint import parse_frontmatter
 from tools.harness_lint.agreements import iter_agreement_files, load_agreement
+from tools.handoff.handoff import HandoffError, validate as validate_handoff
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 DERIVED_DIR = _REPO_ROOT / ".memory" / "derived"
@@ -32,6 +34,7 @@ DRIFT_HEADER = "## Contract drift (live)"
 CONTRACTS_HEADER = "## Contracts index (summary)"
 REPO_MAP_HEADER = "## Repo map (top-N)"
 ACTIVE_HEADER = "## Progress log (pointer)"
+TASK_HEADER = "## Active task (validated HANDOFF pointer)"
 AGREEMENTS_HEADER = (
     "## Working agreements\n"
     "Working-style directives never override contracts/, docs/adr/, or the gates."
@@ -125,6 +128,25 @@ def _active_context_pointer(state_dir: Path = STATE_DIR) -> str:
     )
 
 
+def _active_task_pointer(state_dir: Path = STATE_DIR) -> str:
+    """Render only the bounded active pointer; never task/evidence/artifact bodies."""
+    try:
+        value = json.loads((Path(state_dir) / "active-task.json").read_bytes().removeprefix(b"\xef\xbb\xbf"))
+        if not isinstance(value, dict) or set(value) != {"task_id", "handoff_path", "state_revision"}:
+            raise ValueError
+        handoff_path = _REPO_ROOT / str(value["handoff_path"])
+        handoff = validate_handoff(handoff_path.parent, handoff_path)
+        if handoff["task_id"] != value["task_id"] or handoff["state_revision"] != value["state_revision"]:
+            raise ValueError
+        return (
+            f"{TASK_HEADER}\n{handoff['task_id']} — phase {handoff['phase']}; lane {handoff['lane']}; "
+            f"revision {handoff['state_revision']}; next action: {handoff['next_action']}.\n"
+            f"Read and validate {value['handoff_path']}, then run /phase-gate before EXECUTE, REVIEW, or VERIFY."
+        )
+    except (OSError, ValueError, KeyError, HandoffError):
+        return ""
+
+
 def assemble(
     budget_chars: int = 4000,
     derived_dir: Path = DERIVED_DIR,
@@ -141,6 +163,7 @@ def assemble(
         ("drift", _drift_summary()),
         ("contracts", _contracts_summary(derived_dir)),
         ("repomap", _repo_map_topN(derived_dir)),
+        ("task", _active_task_pointer(state_dir)),
         ("active", _active_context_pointer(state_dir)),
     ]
     out: list[str] = []

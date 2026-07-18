@@ -125,6 +125,15 @@ def _base_packet(lane: str = "STRICT", phase: str = "REVIEW", revision: int = 6,
         "next_action": state["next_action"],
         "evidence_ids": ["E-01"],
         "finding_ids": ["F-01"],
+        "critical_constraint_refs": [{"path": "constraints.md", "sha256": SHA256}],
+        "decisions": [],
+        "changed_paths": [],
+        "unresolved_items": [{"id": "F-01", "kind": "finding"}],
+        "stop_condition": "Stop if validation fails.",
+        "required_read_paths": ["task.json", "state.json", "evidence.json", "constraints.md"],
+        "state_ref": {"path": "state.json", "sha256": SHA256},
+        "evidence_ref": {"path": "evidence.json", "sha256": SHA256},
+        "artifact_refs": [{"evidence_id": "E-01", "path": "artifacts/schema-validation.txt", "sha256": SHA256}],
     }
     return {"task": task, "state": state, "evidence": evidence, "handoff": handoff}
 
