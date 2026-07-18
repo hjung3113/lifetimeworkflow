@@ -61,7 +61,7 @@ def make_task(tmp_path: Path, lane: str = "STANDARD") -> tuple[Path, Path]:
     decision = decide(policy, {"scores": {key: 0 for key in ("ambiguity", "change_scope", "data_security", "reversibility", "impact", "coordination", "context_pressure")}, "human_override": {"lane": lane, "reason": "fixture"}})
     decision.pop("scores")
     task = {"task_id": "T-20260718000000-fixture", "goal": "fixture", "non_goals": [], "risk_inputs": {key: 0 for key in ("ambiguity", "change_scope", "data_security", "reversibility", "impact", "coordination", "context_pressure")}, "lane": lane, "risk_decision": decision, "acceptance_criteria": [{"id": "AC-01", "description": "works"}], "constraints": [{"id": "C-01", "description": "keep gate", "source_path": "constraints.md", "source_sha256": digest(source)}], "decision_refs": []}
-    evidence = {"task_id": task["task_id"], "gate_runs": [], "findings": []}
+    evidence = {"task_id": task["task_id"], "gate_runs": [], "findings": [], "redaction_report": {"status": "CLEAR", "refused_fields": []}}
     state = {"task_id": task["task_id"], "phase": "INTAKE", "revision": 0, "baseline": {"repo_root": ".", "commit": commit}, "current_ref": commit, "completed_items": [], "next_action": "start", "blockers": [], "transition": None}
     dump(task_dir / "task.json", task); dump(task_dir / "evidence.json", evidence); create(task_dir, state)
     attest(task_dir, attestation_draft())
@@ -72,8 +72,8 @@ def cover_constraints(task_dir: Path, artifact: Path | None = None, *, artifacts
     referenced = artifacts or [artifact or add_artifact(task_dir, "brief_spec")]
     runs = []
     for index, item in enumerate(referenced, start=1):
-        runs.append({"id": f"E-{index:02}", "gate": "test", "status": "PASSED", "criterion_ids": ["AC-01"], "finding_ids": ["F-01"] if index == 1 else [], "artifact": {"path": item.relative_to(task_dir).as_posix(), "summary": "ok", "sha256": "d" * 64}})
-    dump(task_dir / "evidence.json", {"task_id": show(task_dir)["task_id"], "findings": [{"id": "F-01", "summary": "covered", "constraint_ids": ["C-01"]}], "gate_runs": runs})
+        runs.append({"id": f"E-{index:02}", "gate": "test", "status": "PASSED", "criterion_ids": ["AC-01"], "finding_ids": ["F-01"] if index == 1 else [], "argv": ["fixture"], "exit_code": 0, "gate_version": "fixture", "started_at": "2026-07-19T00:00:00Z", "ended_at": "2026-07-19T00:00:00Z", "source": "local", "artifact": {"path": item.relative_to(task_dir).as_posix(), "summary": "ok", "sha256": digest(item)}})
+    dump(task_dir / "evidence.json", {"task_id": show(task_dir)["task_id"], "findings": [{"id": "F-01", "summary": "covered", "constraint_ids": ["C-01"], "severity": "minor", "disposition": "resolved", "evidence_ref": "E-01"}], "gate_runs": runs, "redaction_report": {"status": "CLEAR", "refused_fields": []}})
 
 
 def satisfy_target(task_dir: Path, lane: str, target: str) -> None:
@@ -251,3 +251,45 @@ def test_phase_artifact_contract_matches_policy_and_is_monotonic() -> None:
         required_artifacts_for_phase("UNKNOWN", "EXECUTE")
     with pytest.raises(ValueError, match="missing"):
         required_artifacts_for_phase("FAST", "UNKNOWN")
+
+
+def test_verify_requires_passing_evidence_for_every_required_criterion(tmp_path: Path) -> None:
+    root, task_dir = make_task(tmp_path, "FAST")
+    state = transition(task_dir, "EXECUTE", 0)
+    artifact = add_artifact(task_dir, "brief_spec")
+    cover_constraints(task_dir, artifact)
+    evidence = json.loads((task_dir / "evidence.json").read_text())
+    evidence["gate_runs"][0]["criterion_ids"] = []
+    dump(task_dir / "evidence.json", evidence)
+    with pytest.raises(TaskControlError, match="criterion"):
+        transition(task_dir, "VERIFY", state["revision"])
+
+
+def test_complete_rejects_unresolved_major_finding(tmp_path: Path) -> None:
+    root, task_dir = make_task(tmp_path, "FAST")
+    state = transition(task_dir, "EXECUTE", 0)
+    artifact = add_artifact(task_dir, "brief_spec")
+    cover_constraints(task_dir, artifact)
+    state = transition(task_dir, "VERIFY", state["revision"])
+    evidence = json.loads((task_dir / "evidence.json").read_text())
+    evidence["findings"][0].update({"severity": "major", "disposition": "open"})
+    dump(task_dir / "evidence.json", evidence)
+    with pytest.raises(TaskControlError, match="unresolved"):
+        transition(task_dir, "COMPLETE", state["revision"])
+
+
+def test_complete_requires_approval_reference_for_constitution_diff(tmp_path: Path) -> None:
+    root, task_dir = make_task(tmp_path, "FAST")
+    state = transition(task_dir, "EXECUTE", 0)
+    artifact = add_artifact(task_dir, "brief_spec")
+    cover_constraints(task_dir, artifact)
+    state = transition(task_dir, "VERIFY", state["revision"])
+    (root / "contracts").mkdir(); (root / "contracts" / "changed.json").write_text("{}\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(root), "add", "."], check=True); subprocess.run(["git", "-C", str(root), "commit", "-qm", "constitution"], check=True)
+    state = refresh_ref(task_dir, state["revision"], git(root, "rev-parse", "HEAD"))
+    with pytest.raises(TaskControlError, match="approval"):
+        transition(task_dir, "COMPLETE", state["revision"])
+    evidence = json.loads((task_dir / "evidence.json").read_text())
+    evidence["gate_runs"][0]["human_approval_ref"] = "approvals/fixture"
+    dump(task_dir / "evidence.json", evidence)
+    assert transition(task_dir, "COMPLETE", state["revision"])["phase"] == "COMPLETE"

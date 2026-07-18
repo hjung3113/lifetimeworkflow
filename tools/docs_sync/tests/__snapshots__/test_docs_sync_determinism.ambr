@@ -25,6 +25,7 @@
   | --- | --- | --- | --- | --- |
   | findings | array | yes |  |  |
   | gate_runs | array | yes |  |  |
+  | redaction_report | object | no |  |  |
   | task_id | ref | yes |  |  |
   
   ===== handoff =====

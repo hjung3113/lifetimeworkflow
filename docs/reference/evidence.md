@@ -10,4 +10,5 @@ Index of immutable gate artifacts and criterion/finding trace references.
 | --- | --- | --- | --- | --- |
 | findings | array | yes |  |  |
 | gate_runs | array | yes |  |  |
+| redaction_report | object | no |  |  |
 | task_id | ref | yes |  |  |

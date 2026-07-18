@@ -15,7 +15,12 @@ Distinct from:
   proves correctness, checkpoint saves context.
 
 Run the five gates in order; stop at the first hard failure and fix before proceeding.
-
+When an active `.workflow/tasks/<id>/` packet exists, capture each gate's **existing command**
+through `python -m tools.evidence.capture --task-dir <task-dir> --gate <gate> -- <existing argv>`.
+The adapter is only a child-process recorder: keep the five commands below, their order, and their
+presence-safe behavior unchanged. Record the observed `PASSED`, `FAILED`, `SKIPPED`, or `BLOCKED`
+result; never convert an announced skip into a pass. Attach the applicable `AC-*` IDs to the capture.
+Use `--source ci` only for a CI-produced reference, otherwise retain the default `local` source.
 ## 1. Lint + format + polyglot boundary (`/lint`)
 
 !`ruff check . && ruff format --check . && { fail=0; files=$(git ls-files '*.tsv'); if [ -n "$files" ]; then for f in $files; do uv run python -m tools.polyglot_lint.lint "$f" || fail=1; done; fi; [ "$fail" -eq 0 ] || { echo 'FAIL: polyglot §4.3-4.6'; exit 1; }; echo 'lint OK'; }`

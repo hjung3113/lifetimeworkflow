@@ -12,6 +12,7 @@ import json
 import os
 import tempfile
 import fcntl
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +21,7 @@ from jsonschema import Draft202012Validator
 from tools.risk_router.router import REPO_ROOT as RISK_ROUTER_ROOT
 from tools.risk_router.router import decide, load_overlay, load_policy
 from tools.task_packet.transitions import is_transition_allowed, required_artifacts_for_phase
+from tools.evidence.capture import EvidenceError, validate_evidence
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 STATE_SCHEMA = REPO_ROOT / "contracts/harness/task-control/state.schema.json"
@@ -234,6 +236,49 @@ def _evidence_covers_constraints(task_dir: str | Path) -> bool:
     return required <= covered
 
 
+def _evidence_covers_criteria(task_dir: str | Path) -> bool:
+    task = _json(Path(task_dir) / "task.json")
+    evidence = _json(Path(task_dir) / "evidence.json")
+    _validate_document("evidence", evidence, EVIDENCE_SCHEMA)
+    required = {item["id"] for item in task.get("acceptance_criteria", [])}
+    covered = {
+        criterion_id
+        for run in evidence.get("gate_runs", [])
+        if run.get("status") == "PASSED"
+        for criterion_id in run.get("criterion_ids", [])
+    }
+    return required <= covered
+
+
+def _has_unresolved_major_finding(task_dir: str | Path) -> bool:
+    evidence = _json(Path(task_dir) / "evidence.json")
+    return any(
+        finding.get("severity") in {"blocker", "major"}
+        and finding.get("disposition") == "open"
+        for finding in evidence.get("findings", [])
+    )
+
+
+def _constitution_diff_requires_approval(task_dir: str | Path) -> bool:
+    state = _read_state(task_dir)
+    root = Path(task_dir).resolve()
+    repository = next((parent for parent in root.parents if (parent / ".git").exists()), None)
+    if repository is None:
+        return False
+    try:
+        changed = subprocess.run(
+            ["git", "-C", str(repository), "diff", "--name-only", state["baseline"]["commit"], state["current_ref"]],
+            text=True, capture_output=True, check=True,
+        ).stdout.splitlines()
+    except subprocess.CalledProcessError as exc:
+        raise TaskControlError("cannot inspect constitution-plane diff") from exc
+    constitution = any(path == "golden" or path.startswith(("contracts/", "golden/", "docs/adr/")) for path in changed)
+    if not constitution:
+        return False
+    evidence = _json(root / "evidence.json")
+    return not any(isinstance(run.get("human_approval_ref"), str) for run in evidence.get("gate_runs", []))
+
+
 def transition(task_dir: str | Path, target: str, expected_revision: int, *, next_action: str | None = None, current_ref: str | None = None) -> dict[str, Any]:
     state = _read_state(task_dir)
     if state["blockers"] and target != "BLOCKED":
@@ -251,8 +296,17 @@ def transition(task_dir: str | Path, target: str, expected_revision: int, *, nex
         missing = missing_artifacts(task_dir, required)
         if missing:
             raise TaskControlError(f"missing required artifacts: {', '.join(missing)}")
-    if target in {"VERIFY", "COMPLETE"} and not _evidence_covers_constraints(task_dir):
-        raise TaskControlError("required evidence does not cover every constraint")
+    if target in {"VERIFY", "COMPLETE"}:
+        try:
+            validate_evidence(task_dir)
+        except EvidenceError as exc:
+            raise TaskControlError(f"evidence.json: {exc}") from exc
+        if not _evidence_covers_constraints(task_dir) or not _evidence_covers_criteria(task_dir):
+            raise TaskControlError("required evidence does not cover every constraint and criterion")
+    if target == "COMPLETE" and _has_unresolved_major_finding(task_dir):
+        raise TaskControlError("unresolved blocker or major finding prevents COMPLETE")
+    if target == "COMPLETE" and _constitution_diff_requires_approval(task_dir):
+        raise TaskControlError("constitution-plane diff requires human approval reference")
     next_state = dict(state)
     next_state.update({"phase": target, "revision": expected_revision + 1, "transition": {"from": state["phase"], "to": target}})
     if next_action is not None:
