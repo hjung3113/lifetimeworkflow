@@ -17,8 +17,8 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
-from tools.risk_router.router import load_policy
-from tools.risk_router.router import decide
+from tools.risk_router.router import REPO_ROOT as RISK_ROUTER_ROOT
+from tools.risk_router.router import decide, load_overlay, load_policy
 from tools.task_packet.transitions import is_transition_allowed, required_artifacts_for_phase
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -171,8 +171,24 @@ def _required_artifacts(task_dir: str | Path) -> list[str]:
     declared = decision["required_artifacts"]
     if not set(declared) >= set(required):
         raise TaskControlError("task required artifacts weaken current policy")
-    current_hash = decide(policy, {"scores": {key: 0 for key in ("ambiguity", "change_scope", "data_security", "reversibility", "impact", "coordination", "context_pressure")}})["policy_hashes"]["effective"]
-    if decision["policy_hashes"]["effective"] != current_hash:
+    provenance = decision["overlay_provenance"]
+    overlay = None
+    if provenance is not None:
+        source = provenance["source"]
+        snapshot = Path(task_dir) / "risk-overlay.toml"
+        overlay_path = snapshot if snapshot.is_file() else RISK_ROUTER_ROOT / source
+        try:
+            overlay = load_overlay(overlay_path, policy)
+        except Exception as exc:
+            raise TaskControlError(f"task overlay cannot be replayed: {exc}") from exc
+        if overlay.get("_provenance", {}).get("content_sha256") != provenance["content_sha256"]:
+            raise TaskControlError("task overlay provenance does not match current overlay")
+    current_hashes = decide(
+        policy,
+        {"scores": {key: 0 for key in ("ambiguity", "change_scope", "data_security", "reversibility", "impact", "coordination", "context_pressure")}},
+        overlay,
+    )["policy_hashes"]
+    if decision["policy_hashes"]["effective"] != current_hashes["effective"]:
         raise TaskControlError("task policy hash does not match current policy")
     return list(required)
 
@@ -292,7 +308,7 @@ def validate(task_dir: str | Path) -> dict[str, Any]:
     state = _read_state(task_dir)
     missing = missing_artifacts(task_dir)
     root = Path(task_dir)
-    residues = sorted(path.name for path in root.iterdir() if path.name.endswith(".tmp") or path.name.endswith(".cas") or path.name.endswith(".lock"))
+    residues = sorted(path.name for path in root.iterdir() if path.name.endswith(".tmp") or path.name.endswith(".cas"))
     return {"state": state, "missing_artifacts": missing, "orphan_artifacts": orphan_artifacts(task_dir), "write_residues": residues}
 
 
@@ -306,10 +322,16 @@ def refresh_ref(task_dir: str | Path, expected_revision: int, current_ref: str) 
 
 def attest(task_dir: str | Path, records: dict[str, Any]) -> dict[str, Any]:
     """Write attestation records with source hashes derived from the immutable task packet."""
-    root = Path(task_dir)
+    root = Path(task_dir).resolve()
     task = _json(root / "task.json")
     _validate_document("task", task, TASK_SCHEMA)
     by_id = {constraint["id"]: constraint for constraint in task["constraints"]}
+    repository = next(
+        (ancestor for ancestor in root.parents if ancestor / ".workflow" / "tasks" / root.name == root),
+        None,
+    )
+    if repository is None:
+        raise TaskControlError("task directory is not under .workflow/tasks")
     output = dict(records)
     constraints = output.get("constraints")
     if not isinstance(constraints, list):
@@ -318,7 +340,7 @@ def attest(task_dir: str | Path, records: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(record, dict) or record.get("constraint_id") not in by_id:
             raise TaskControlError("attestation has unknown constraint ID")
         constraint = by_id[record["constraint_id"]]
-        source = root.parents[2] / constraint["source_path"]
+        source = repository / constraint["source_path"]
         if not source.is_file():
             raise TaskControlError(f"missing constraint source: {constraint['source_path']}")
         record["source_path"] = constraint["source_path"]

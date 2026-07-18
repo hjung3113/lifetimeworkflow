@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 
+from tools.risk_router.intake import create_packet
 from tools.risk_router.router import decide, load_policy
 from tools.task_control.manager import TaskControlError, attest, block, create, missing_artifacts, orphan_artifacts, refresh_ref, resume, show, transition, validate
 from tools.task_control.phase_gate import phase_gate
@@ -67,9 +68,12 @@ def make_task(tmp_path: Path, lane: str = "STANDARD") -> tuple[Path, Path]:
     return root, task_dir
 
 
-def cover_constraints(task_dir: Path, artifact: Path | None = None) -> None:
-    artifact = artifact or add_artifact(task_dir, "brief_spec")
-    dump(task_dir / "evidence.json", {"task_id": show(task_dir)["task_id"], "findings": [{"id": "F-01", "summary": "covered", "constraint_ids": ["C-01"]}], "gate_runs": [{"id": "E-01", "gate": "test", "status": "PASSED", "criterion_ids": ["AC-01"], "finding_ids": ["F-01"], "artifact": {"path": artifact.relative_to(task_dir).as_posix(), "summary": "ok", "sha256": "d" * 64}}]})
+def cover_constraints(task_dir: Path, artifact: Path | None = None, *, artifacts: list[Path] | None = None) -> None:
+    referenced = artifacts or [artifact or add_artifact(task_dir, "brief_spec")]
+    runs = []
+    for index, item in enumerate(referenced, start=1):
+        runs.append({"id": f"E-{index:02}", "gate": "test", "status": "PASSED", "criterion_ids": ["AC-01"], "finding_ids": ["F-01"] if index == 1 else [], "artifact": {"path": item.relative_to(task_dir).as_posix(), "summary": "ok", "sha256": "d" * 64}})
+    dump(task_dir / "evidence.json", {"task_id": show(task_dir)["task_id"], "findings": [{"id": "F-01", "summary": "covered", "constraint_ids": ["C-01"]}], "gate_runs": runs})
 
 
 def satisfy_target(task_dir: Path, lane: str, target: str) -> None:
@@ -106,10 +110,16 @@ def test_phase_oriented_artifacts_allow_strict_and_controlled_lifecycle(tmp_path
     for lane in ("STRICT", "CONTROLLED"):
         root, task_dir = make_task(tmp_path / lane, lane)
         revision = 0
+        phase_gate(task_dir, revision, repo_root=root)
         for target in ("CLARIFY", "SPEC", "PLAN", "EXECUTE", "REVIEW", "VERIFY", "COMPLETE"):
             satisfy_target(task_dir, lane, target)
+            if target in {"VERIFY", "COMPLETE"}:
+                cover_constraints(task_dir, artifacts=sorted((task_dir / "artifacts").rglob("result.txt")))
+            # The documented gate runs before every transition, not only after lifecycle completion.
+            phase_gate(task_dir, revision, repo_root=root)
             state = transition(task_dir, target, revision)
             revision = state["revision"]
+            phase_gate(task_dir, revision, repo_root=root)
         assert state["phase"] == "COMPLETE"
 
 
@@ -117,6 +127,10 @@ def test_policy_tampering_and_invalid_evidence_are_rejected(tmp_path: Path) -> N
     root, task_dir = make_task(tmp_path, "CONTROLLED")
     task = json.loads((task_dir / "task.json").read_text()); task["risk_decision"]["required_artifacts"] = ["task_packet"]; dump(task_dir / "task.json", task)
     with pytest.raises(TaskControlError, match="weaken"):
+        transition(task_dir, "CLARIFY", 0)
+    root, task_dir = make_task(tmp_path / "hash", "CONTROLLED")
+    task = json.loads((task_dir / "task.json").read_text()); task["risk_decision"]["policy_hashes"]["effective"] = "0" * 64; dump(task_dir / "task.json", task)
+    with pytest.raises(TaskControlError, match="policy hash"):
         transition(task_dir, "CLARIFY", 0)
     root, task_dir = make_task(tmp_path / "evidence", "FAST")
     state = show(task_dir); state.update({"phase": "EXECUTE", "revision": 1, "transition": {"from": "INTAKE", "to": "EXECUTE"}}); dump(task_dir / "state.json", state)
@@ -141,7 +155,7 @@ def test_crash_after_fsync_leaves_valid_canonical_and_next_mutation_succeeds(tmp
     assert crashed.returncode == 86
     assert show(task_dir)["revision"] == 0
     assert transition(task_dir, "EXECUTE", 0)["revision"] == 1
-    assert validate(task_dir)["write_residues"]
+    assert any(name.endswith((".tmp", ".cas")) for name in validate(task_dir)["write_residues"])
 
 
 def test_two_process_writers_with_one_revision_have_exactly_one_winner(tmp_path: Path) -> None:
@@ -185,9 +199,55 @@ def test_attest_refresh_ref_and_phase_gate(tmp_path: Path) -> None:
     phase_gate(task_dir, refreshed["revision"], repo_root=root)
 
 
-def test_orphans_are_phase_gate_refresh_items(tmp_path: Path) -> None:
+def test_orphans_are_diagnostic_before_verify_and_block_verify(tmp_path: Path) -> None:
     root, task_dir = make_task(tmp_path)
-    add_artifact(task_dir, "brief_spec")
+    artifact = add_artifact(task_dir, "brief_spec")
+    cover_constraints(task_dir, artifact)
+    orphan = add_artifact(task_dir, "spec")
     assert orphan_artifacts(task_dir)
+    assert phase_gate(task_dir, 0, repo_root=root) == [f"orphan artifact: {orphan.relative_to(task_dir).as_posix()}"]
+    state = show(task_dir); state.update({"phase": "VERIFY", "revision": 1, "transition": {"from": "EXECUTE", "to": "VERIFY"}}); dump(task_dir / "state.json", state)
     with pytest.raises(TaskControlError, match="orphan artifact"):
-        phase_gate(task_dir, 0, repo_root=root)
+        phase_gate(task_dir, 1, repo_root=root)
+
+
+def test_phase_gate_accepts_every_strict_and_controlled_phase(tmp_path: Path) -> None:
+    for lane in ("STRICT", "CONTROLLED"):
+        root, task_dir = make_task(tmp_path / f"gate-{lane}", lane)
+        revision = 0
+        phase_gate(task_dir, revision, repo_root=root)
+        for target in ("CLARIFY", "SPEC", "PLAN", "EXECUTE", "REVIEW", "VERIFY", "COMPLETE"):
+            satisfy_target(task_dir, lane, target)
+            if target in {"VERIFY", "COMPLETE"}:
+                cover_constraints(task_dir, artifacts=sorted((task_dir / "artifacts").rglob("result.txt")))
+            state = transition(task_dir, target, revision)
+            revision = state["revision"]
+            phase_gate(task_dir, revision, repo_root=root)
+
+
+def test_overlay_packet_transitions_and_tampering_is_rejected(tmp_path: Path) -> None:
+    root, commit = make_repo(tmp_path)
+    task_dir = root / ".workflow/tasks/T-20260718000000-overlay"
+    overlay = tmp_path / "overlay.toml"
+    overlay.write_text('[lanes.FAST]\nrequired_gates_add = ["local_audit"]\n', encoding="utf-8")
+    request = {"task": {"task_id": "T-20260718000000-overlay", "goal": "overlay", "non_goals": [], "acceptance_criteria": [{"id": "AC-01", "description": "works"}], "constraints": [], "decision_refs": []}, "routing": {"scores": {key: 0 for key in ("ambiguity", "change_scope", "data_security", "reversibility", "impact", "coordination", "context_pressure")}}, "baseline": {"commit": commit}}
+    create_packet(request, task_dir, overlay_path=overlay)
+    assert (task_dir / "risk-overlay.toml").read_bytes() == overlay.read_bytes()
+    assert transition(task_dir, "EXECUTE", 0)["phase"] == "EXECUTE"
+    task = json.loads((task_dir / "task.json").read_text()); task["risk_decision"]["policy_hashes"]["effective"] = "0" * 64; dump(task_dir / "task.json", task)
+    with pytest.raises(TaskControlError, match="policy hash"):
+        transition(task_dir, "VERIFY", 1)
+
+
+def test_phase_artifact_contract_matches_policy_and_is_monotonic() -> None:
+    policy = load_policy()
+    ordered = ("EXECUTE", "REVIEW", "VERIFY", "COMPLETE")
+    for lane, lane_policy in policy["lanes"].items():
+        assert {phase: required_artifacts_for_phase(lane, phase) for phase in PHASES}
+        phase_sets = [set(required_artifacts_for_phase(lane, phase)) for phase in ordered]
+        assert phase_sets[-1] == set(lane_policy["required_artifacts"])
+        assert all(earlier <= later for earlier, later in zip(phase_sets, phase_sets[1:]))
+    with pytest.raises(ValueError, match="lane"):
+        required_artifacts_for_phase("UNKNOWN", "EXECUTE")
+    with pytest.raises(ValueError, match="missing"):
+        required_artifacts_for_phase("FAST", "UNKNOWN")

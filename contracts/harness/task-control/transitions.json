@@ -102,27 +102,48 @@
   },
   "required_artifacts_by_target_phase": {
     "FAST": {
+      "INTAKE": [],
+      "CLARIFY": [],
+      "SPEC": [],
+      "PLAN": [],
       "EXECUTE": ["task_packet"],
       "VERIFY": ["task_packet"],
-      "COMPLETE": ["task_packet"]
+      "COMPLETE": ["task_packet"],
+      "REVIEW": ["task_packet"],
+      "BLOCKED": []
     },
     "STANDARD": {
+      "INTAKE": [],
+      "CLARIFY": [],
+      "SPEC": [],
+      "PLAN": [],
       "EXECUTE": ["task_packet", "brief_spec"],
       "REVIEW": ["task_packet", "brief_spec"],
       "VERIFY": ["task_packet", "brief_spec"],
-      "COMPLETE": ["task_packet", "brief_spec"]
+      "COMPLETE": ["task_packet", "brief_spec"],
+      "BLOCKED": []
     },
     "STRICT": {
+      "INTAKE": [],
+      "CLARIFY": [],
+      "SPEC": [],
+      "PLAN": [],
       "EXECUTE": ["task_packet", "brief_spec", "spec", "plan"],
       "REVIEW": ["task_packet", "brief_spec", "spec", "plan"],
       "VERIFY": ["task_packet", "brief_spec", "spec", "plan", "review_record"],
-      "COMPLETE": ["task_packet", "brief_spec", "spec", "plan", "review_record"]
+      "COMPLETE": ["task_packet", "brief_spec", "spec", "plan", "review_record"],
+      "BLOCKED": []
     },
     "CONTROLLED": {
+      "INTAKE": [],
+      "CLARIFY": [],
+      "SPEC": [],
+      "PLAN": [],
       "EXECUTE": ["task_packet", "brief_spec", "spec", "plan"],
       "REVIEW": ["task_packet", "brief_spec", "spec", "plan"],
       "VERIFY": ["task_packet", "brief_spec", "spec", "plan", "review_record", "rollback_plan", "audit_evidence"],
-      "COMPLETE": ["task_packet", "brief_spec", "spec", "plan", "review_record", "rollback_plan", "audit_evidence"]
+      "COMPLETE": ["task_packet", "brief_spec", "spec", "plan", "review_record", "rollback_plan", "audit_evidence"],
+      "BLOCKED": []
     }
   }
 }

@@ -57,7 +57,12 @@ def is_transition_allowed(lane: str, source: str, target: str) -> bool:
 
 def required_artifacts_for_phase(lane: str, target: str) -> list[str]:
     """Return the ratified predecessor artifacts required before entering *target*."""
-    values = _PHASE_ARTIFACTS.get(lane, {}).get(target, [])
+    if lane not in ALLOWED_TRANSITIONS:
+        raise ValueError(f"invalid phase artifact contract lane: {lane}")
+    lane_values = _PHASE_ARTIFACTS.get(lane)
+    if not isinstance(lane_values, dict) or target not in lane_values:
+        raise ValueError(f"missing phase artifact contract for {lane}/{target}")
+    values = lane_values[target]
     if not isinstance(values, list) or not all(isinstance(item, str) and item for item in values):
         raise ValueError(f"invalid phase artifact contract for {lane}/{target}")
     if len(values) != len(set(values)):

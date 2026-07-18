@@ -51,6 +51,10 @@ def create_packet(request: object, output: str | Path, *, policy_path: str | Pat
         "transition": None,
     })
     _write_json(root / "evidence.json", {"task_id": task_id, "gate_runs": [], "findings": []})
+    if overlay_path:
+        # Preserve the exact reviewed overlay bytes so later task-control checks can
+        # rederive the same effective policy even when intake used an external path.
+        (root / "risk-overlay.toml").write_bytes(Path(overlay_path).read_bytes())
     validate_packet(root)
     return decision
 
