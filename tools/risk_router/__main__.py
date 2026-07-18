@@ -25,6 +25,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         raw = args.input.read_text(encoding="utf-8") if args.input else sys.stdin.read()
+        raw = raw.removeprefix("\ufeff")
         payload = json.loads(raw)
         core = load_policy(args.policy)
         overlay = load_overlay(args.overlay, core) if args.overlay else None

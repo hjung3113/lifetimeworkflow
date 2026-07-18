@@ -77,6 +77,11 @@ def _validate_core_policy(policy: dict[str, Any]) -> None:
                 raise RiskRouterError(f"invalid {key} for {lane}")
             if len(values) != len(set(values)):
                 raise RiskRouterError(f"duplicate {key} for {lane}")
+            lower_lane = LANES.index(lane) - 1
+            if lower_lane >= 0:
+                lower_values = lanes[LANES[lower_lane]][key]
+                if not set(values) >= set(lower_values):
+                    raise RiskRouterError(f"{key} for {lane} must include every lower-lane requirement")
     if expected_start != 22:
         raise RiskRouterError("cuts must cover totals 0 through 21")
     for reason, lane in promotions.items():
@@ -102,9 +107,10 @@ def _schema_validate_overlay(overlay: dict[str, Any]) -> None:
 
 
 def validate_overlay(core: dict[str, Any], overlay: dict[str, Any]) -> None:
-    """Reject every overlay relaxation; only monotonic additions are representable."""
+    """Pure semantic overlay validation; schema validation belongs at the load boundary."""
     _validate_core_policy(core)
-    _schema_validate_overlay(overlay)
+    if not isinstance(overlay, dict):
+        raise RiskRouterError("overlay must be a TOML table")
     core_promotions = core["promotions"]
     for reason, lane in overlay.get("minimum_lanes", {}).items():
         if reason in core_promotions and _lane_index(lane) < _lane_index(core_promotions[reason]):
@@ -123,7 +129,18 @@ def validate_overlay(core: dict[str, Any], overlay: dict[str, Any]) -> None:
 def load_overlay(path: str | Path, core: dict[str, Any]) -> dict[str, Any]:
     """Load a declarative instance-owned overlay after fail-closed validation."""
     overlay = _read_toml(path)
+    _schema_validate_overlay(overlay)
     validate_overlay(core, overlay)
+    resolved = Path(path).resolve()
+    try:
+        source = resolved.relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        # Test and API callers may supply an external file; never leak its host path into audit data.
+        source = f"external/{resolved.name}"
+    overlay["_provenance"] = {
+        "source": source,
+        "content_sha256": hashlib.sha256(resolved.read_bytes()).hexdigest(),
+    }
     return overlay
 
 
@@ -160,6 +177,13 @@ def _effective_policy(core: dict[str, Any], overlay: dict[str, Any] | None) -> d
             for item in additions.get(source, []):
                 if item not in effective["lanes"][lane][target]:
                     effective["lanes"][lane][target].append(item)
+    # Overlay additions at a lower lane are obligations, not exemptions for later escalation.
+    for index, lane in enumerate(LANES[1:], start=1):
+        lower = effective["lanes"][LANES[index - 1]]
+        for key in ("required_artifacts", "required_gates"):
+            for item in lower[key]:
+                if item not in effective["lanes"][lane][key]:
+                    effective["lanes"][lane][key].append(item)
     return effective
 
 
@@ -197,10 +221,8 @@ def _score_lane(total: int, cuts: dict[str, list[int]]) -> str:
 
 
 def decide(core: dict[str, Any], payload: object, overlay: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Return a JSON-safe deterministic routing decision from policy data and structured input."""
+    """Pure evaluator over already-validated policy and overlay data; it never reads files."""
     _validate_core_policy(core)
-    if overlay is not None:
-        validate_overlay(core, overlay)
     effective = _effective_policy(core, overlay)
     scores, triggered, override_lane, override_reason = _validate_input(payload, set(effective["promotions"]))
     total = sum(scores[axis] for axis in SCORE_FIELDS)
@@ -210,9 +232,11 @@ def decide(core: dict[str, Any], payload: object, overlay: dict[str, Any] | None
     for promotion in promotions:
         if _lane_index(promotion["minimum_lane"]) > _lane_index(lane):
             lane = promotion["minimum_lane"]
+    human_override_audit = None
     if override_lane is not None:
         if _lane_index(override_lane) < _lane_index(lane):
             raise RiskRouterError("human override cannot lower the computed lane")
+        human_override_audit = {"reason": override_reason, "lane": override_lane}
         if _lane_index(override_lane) > _lane_index(lane):
             lane = override_lane
             promotions.append({"reason": override_reason, "minimum_lane": override_lane, "source": "human_override"})
@@ -225,6 +249,7 @@ def decide(core: dict[str, Any], payload: object, overlay: dict[str, Any] | None
         "score_lane": score_lane,
         "lane": lane,
         "promotion_reasons": promotions,
+        "human_override_audit": human_override_audit,
         "required_artifacts": sorted(effective["lanes"][lane]["required_artifacts"]),
         "required_gates": sorted(effective["lanes"][lane]["required_gates"]),
         "policy_hashes": {
@@ -232,6 +257,7 @@ def decide(core: dict[str, Any], payload: object, overlay: dict[str, Any] | None
             "overlay": overlay_hash,
             "effective": _canonical_hash(effective),
         },
+        "overlay_provenance": None if overlay is None else overlay.get("_provenance"),
     }
 
 

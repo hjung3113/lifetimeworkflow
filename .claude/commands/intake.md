@@ -14,21 +14,24 @@ from the supplied JSON — it does not inspect the repository or make a language
 Record each as an integer `0..3`: `ambiguity`, `change_scope`, `data_security`, `reversibility`,
 `impact`, `coordination`, and `context_pressure`. Record only known fact flags from the policy:
 `auth_authorization`, `payment`, `secret_pii`, `destructive_data_change`, `unclear_rollback`,
-`external_contract_break`, `constitution_plane_touch`, and `repeated_constraint_violation`.
+`external_contract_break`, `constitution_plane_touch`, `golden_or_contract_mutation`, and
+`repeated_constraint_violation`. Set `golden_or_contract_mutation` for any `golden/` or
+`contracts/` mutation; it deterministically routes to CONTROLLED.
 
 ## 2. Route the structured input
 
-Pass one JSON object on standard input. A human override may raise the lane with an audit reason;
-it may never lower the computed lane.
+Pass an intake JSON object on standard input. Its `routing` member is the router input and its
+`task` member supplies the immutable task intent. A human override may raise the lane with an audit
+reason; it may never lower the computed lane.
 
 ``` !`shell`
-uv run python -m tools.risk_router
+uv run python -m tools.risk_router.intake --output .workflow/tasks/<task-id>
 ```
 
-The command reads JSON from standard input and writes one canonical decision JSON. Use that result
-as the source for `task.json`: copy the seven `scores` into `risk_inputs`, copy `lane`, and retain
-the decision's policy hashes and promotion reasons in the intake record. Create the remaining
-Phase-18 task-packet documents under `.workflow/tasks/<task-id>/`, then validate them with:
+The command writes `task.json`, `state.json`, and `evidence.json`, then validates the packet. The
+canonical router decision is stored in `task.json.risk_decision` (including policy hashes,
+promotion reasons, override audit, requirements, and overlay provenance); its seven scores are
+copied into `risk_inputs` and its lane into `lane`. Validate the generated Phase-18 packet with:
 
 ``` !`shell`
 uv run python -m tools.task_packet.validate .workflow/tasks/<task-id>

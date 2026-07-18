@@ -11,6 +11,7 @@
     "non_goals",
     "risk_inputs",
     "lane",
+    "risk_decision",
     "acceptance_criteria",
     "constraints",
     "decision_refs"
@@ -46,6 +47,51 @@
       }
     },
     "lane": { "$ref": "#/$defs/lane" },
+    "risk_decision": {
+      "description": "Canonical router output captured at deterministic intake.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["router_version", "total", "score_lane", "lane", "promotion_reasons", "human_override_audit", "required_artifacts", "required_gates", "policy_hashes", "overlay_provenance"],
+      "properties": {
+        "router_version": { "type": "integer", "minimum": 1 },
+        "total": { "type": "integer", "minimum": 0, "maximum": 21 },
+        "score_lane": { "$ref": "#/$defs/lane" },
+        "lane": { "$ref": "#/$defs/lane" },
+        "promotion_reasons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["reason", "minimum_lane"],
+            "properties": {
+              "reason": { "type": "string", "minLength": 1 },
+              "minimum_lane": { "$ref": "#/$defs/lane" },
+              "source": { "const": "human_override" }
+            }
+          }
+        },
+        "human_override_audit": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "object", "additionalProperties": false, "required": ["reason", "lane"], "properties": { "reason": { "type": "string", "minLength": 1 }, "lane": { "$ref": "#/$defs/lane" } } }
+          ]
+        },
+        "required_artifacts": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "required_gates": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "policy_hashes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["core", "overlay", "effective"],
+          "properties": { "core": { "$ref": "#/$defs/sha256" }, "overlay": { "$ref": "#/$defs/sha256" }, "effective": { "$ref": "#/$defs/sha256" } }
+        },
+        "overlay_provenance": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "object", "additionalProperties": false, "required": ["source", "content_sha256"], "properties": { "source": { "$ref": "#/$defs/repoPath" }, "content_sha256": { "$ref": "#/$defs/sha256" } } }
+          ]
+        }
+      }
+    },
     "acceptance_criteria": {
       "type": "array",
       "minItems": 1,

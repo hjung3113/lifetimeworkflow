@@ -16,6 +16,7 @@ destructive_data_change = "CONTROLLED"
 unclear_rollback = "STRICT"
 external_contract_break = "STRICT"
 constitution_plane_touch = "STRICT"
+golden_or_contract_mutation = "CONTROLLED"
 repeated_constraint_violation = "STRICT"
 
 [lanes.FAST]
@@ -27,9 +28,9 @@ required_artifacts = ["task_packet", "brief_spec"]
 required_gates = ["lint", "test", "review"]
 
 [lanes.STRICT]
-required_artifacts = ["task_packet", "spec", "plan", "review_record"]
+required_artifacts = ["task_packet", "brief_spec", "spec", "plan", "review_record"]
 required_gates = ["lint", "test", "review", "human_review"]
 
 [lanes.CONTROLLED]
-required_artifacts = ["task_packet", "spec", "plan", "rollback_plan", "audit_evidence"]
+required_artifacts = ["task_packet", "brief_spec", "spec", "plan", "review_record", "rollback_plan", "audit_evidence"]
 required_gates = ["lint", "test", "review", "human_review", "dry_run", "rollback_verified"]

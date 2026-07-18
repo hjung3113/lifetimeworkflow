@@ -49,6 +49,18 @@ def _base_packet(lane: str = "STRICT", phase: str = "REVIEW", revision: int = 6,
             "context_pressure": 1,
         },
         "lane": lane,
+        "risk_decision": {
+            "router_version": 1,
+            "total": 6,
+            "score_lane": "STANDARD",
+            "lane": lane,
+            "promotion_reasons": [],
+            "human_override_audit": None,
+            "required_artifacts": ["task_packet"],
+            "required_gates": ["lint", "test"],
+            "policy_hashes": {"core": SHA256, "overlay": SHA256, "effective": SHA256},
+            "overlay_provenance": None,
+        },
         "acceptance_criteria": [{"id": "AC-01", "description": "Validation passes."}],
         "constraints": [
             {
