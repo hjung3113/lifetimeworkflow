@@ -1,36 +1,50 @@
 {
   "version": "1.0",
-  "timestamp": "2026-07-17T06:45:59.749Z",
-  "phase": "milestone-close",
-  "phase_name": "v2.1 MEM2 milestone completion (BLOCKED — gaps found)",
-  "phase_dir": ".planning",
-  "plan": null,
-  "task": null,
-  "total_tasks": null,
+  "timestamp": "2026-07-18T00:00:00Z",
+  "phase": "milestone-boundary",
+  "phase_name": "v2.1 shipped; next milestone scoping deferred to next session",
   "status": "paused",
-  "completed_tasks": [
-    {"id": 1, "name": "Phase 15 (Emit Round-Trip + Gates) planned, executed, verified 8/8, marked complete", "status": "done", "commit": "a78fd2b"},
-    {"id": 2, "name": "Phase 17 (Constitution-Gate Dev Bypass) verified 10/10 post-hoc and marked complete (was shipped in an earlier session, never verified)", "status": "done", "commit": "see 17-VERIFICATION.md"},
-    {"id": 3, "name": "Milestone-close preflight audit — discovered v2.1 is NOT actually complete", "status": "done"}
+  "completed_this_session": [
+    {"id": 1, "name": "v2.1 (MEM2) milestone audit — refreshed to status: passed, 7/7 requirements"},
+    {"id": 2, "name": "Phase 16 (Local Memory Web UI, MEM2-07) — discuss(--auto) → UI-spec → research → pattern-map → plan(6 plans/5 waves) → execute → code-review(CR-01 + 3 warnings fixed) → verify. Browser round-trip 5/5 verified live via Orca CLI browser.", "status": "complete"},
+    {"id": 3, "name": "Phases 12/13/14 goal-verification — generated the missing VERIFICATION.md (12: 4/4, 13: 4/4, 14: 6/6, all passed). Closed the recurring 'has SUMMARY != verified' gap.", "status": "complete"},
+    {"id": 4, "name": "Nyquist backfill — Phases 13 & 14 VALIDATION.md finalized (status: final, nyquist_compliant: true). 13 got 2 new test files (7 tests); 14 was already covered (5/5).", "status": "complete"},
+    {"id": 5, "name": "Quick task 260716-16x (6 broken GSD hooks) — confirmed already fixed + committed (085064c); cleared from audit-open (stale global gsd-sdk needed a bare SUMMARY.md alias).", "status": "complete"},
+    {"id": 6, "name": "tools/memory_ui/README.md written", "status": "complete"},
+    {"id": 7, "name": "Milestone v2.1 archived (milestones/v2.1-{ROADMAP,REQUIREMENTS,MILESTONE-AUDIT}.md + v2.1-phases/12..16; REQUIREMENTS.md deleted; ROADMAP collapsed; MILESTONES/PROJECT/STATE updated). Commit 3b8a39e.", "status": "complete"},
+    {"id": 8, "name": "git tag v2.1 created + pushed; branch claude/data-pipeline-harness-8aypct pushed to origin (github.com/hjung3113/lifetimeworkflow).", "status": "complete"}
   ],
-  "remaining_tasks": [
-    {"id": 4, "name": "Phase 16 (Local Memory Web UI / MEM2-07) — never planned or executed; no phase-16 directory exists. Discuss -> plan -> execute.", "status": "not_started"},
-    {"id": 5, "name": "Verify Phases 12, 13, 14 — shipped code but no VERIFICATION.md; MEM2-01/02/03/04/05 still 'Pending' in traceability. Fastest path: /gsd:audit-milestone.", "status": "not_started"},
-    {"id": 6, "name": "Resolve open quick task 260716-16x-fix-6-broken-gsd-hooks-hardcoded-opt-nod (status: missing)", "status": "not_started"},
-    {"id": 7, "name": "Then re-run /gsd:complete-milestone 2.1", "status": "not_started"}
+  "milestone_state": {
+    "shipped": "v2.1 MEM2 — Process Memory & Provenance Reframe (2026-07-18)",
+    "tag": "v2.1 (pushed to origin)",
+    "full_suite": "690 passed / 0 failed",
+    "archived_milestones": ["v1.0 (phases 1-8, not formally milestone-closed)", "v2.0 (phases 9-11)", "v2.1 (phases 12-16)"],
+    "live_phases": ["17-constitution-gate-dev-enforce-decoupling (infra, complete, independent of MEM2)", "01-08 (v1.0, never formally archived)"]
+  },
+  "next_action": {
+    "command": "/gsd:new-milestone",
+    "version": "v2.2 (minor) or v3.0 (major) — user picks",
+    "theme": "harness hardening / gate-tightening PLUS additional features the user will specify next session",
+    "user_directive": "1번(하네스 하드닝) 포함 + 다른 기능도 추가 예정 — 다음 세션에서 스코핑",
+    "note": "new-milestone was entered this session but intentionally paused at the 'what to build next' gate; NO new-milestone artifacts (requirements/roadmap) were written. Re-run /gsd:new-milestone fresh next session and answer its questioning with the theme below + the user's additional features."
+  },
+  "candidate_requirements_for_hardening_theme": [
+    "CI-gate the provenance lint: there is NO .pre-commit-config.yaml and no dedicated CI step running `python -m tools.harness_lint.provenance` against the live .memory/agreements/ dir. tools/harness_lint/provenance.py is unit-tested + wired into /lint, but a malformed agreement committed without running /lint is not caught automatically. (v2.1 integration warning 1)",
+    "Fix check_agreement() body-shape gap: it validates frontmatter only (status/added/provenance). A valid-frontmatter/empty-body agreement passes lint but _render_agreement() silently returns None and drops the entry — fails silently. Add a body check (# Title line + non-empty rule line). (v2.1 integration warning 2)",
+    "Verify/harden the CI emit-drift gate against untracked files: 15-REVIEW.md CR-01 flagged bare `git diff --exit-code` being blind to untracked emitted artifacts. Phase 16-04 verified emit via a CI replica using `git add -A` + `git diff --cached`; confirm the ACTUAL .github/workflows/ci.yml emit-drift leg uses the untracked-safe idiom (the fix idiom already exists at ci.yml:206).",
+    "Reword the EXPECTED_COMMANDS mis-wording: MEM2-04 requirement text + ROADMAP Phase 15 SC1 name a constant `EXPECTED_COMMANDS` that has never existed in source (0 repo hits). Substance is satisfied by glob-driven test_commands.py discovery. Reword the docs so a future phase doesn't rediscover the ghost. (D-11)",
+    "(deferred, optional) MEM2-F1: per-instance agreement overlays for examples/* (like project.toml/ADR-0003 overlays) — v2.1 explicitly deferred; MVP was one global core channel.",
+    "+ ADDITIONAL FEATURES: the user will specify these next session — do NOT assume; ask in new-milestone questioning."
   ],
-  "blockers": [
-    {"description": "STATE.md falsely reports status: milestone_complete / percent: 117. Set when phase.complete ran on Phase 17 (is_last_phase=true) — but 17 is infra, independent of v2.1 MEM2, and Phase 16 was never built. The flag is a bookkeeping artifact, not truth.", "type": "technical", "workaround": "Do not trust STATE.md milestone flag; trust REQUIREMENTS.md traceability (6/7 Pending) + per-phase VERIFICATION.md presence."},
-    {"description": "No milestone audit file (.planning/v2.1-MILESTONE-AUDIT.md missing). complete-milestone step 0 wants it.", "type": "technical", "workaround": "Run /gsd:audit-milestone."}
+  "required_reading_next_session": [
+    ".planning/PROJECT.md — Current State + Next Milestone (theme note)",
+    ".planning/MILESTONES.md — v2.1 accomplishments",
+    ".planning/milestones/v2.1-MILESTONE-AUDIT.md — the passed audit + tech_debt list (source of the hardening candidates)",
+    ".planning/milestones/v2.1-REQUIREMENTS.md — the v2 Requirements / Out of Scope (MEM2-F1)"
   ],
-  "human_actions_pending": [
-    {"action": "Decide: audit-milestone first, or discuss Phase 16 first", "context": "Both are required before milestone close; order is a judgment call.", "blocking": false}
-  ],
-  "decisions": [
-    {"decision": "Refused to run /gsd:complete-milestone", "rationale": "Only 1 of 7 MEM2 requirements (MEM2-06) is Complete; Phase 16 unbuilt; Phases 12-14 unverified. Archiving would git-rm REQUIREMENTS.md and tag v2.1 over unfinished work.", "phase": "milestone-close"},
-    {"decision": "Verified Phase 17 post-hoc instead of discussing/replanning it", "rationale": "It was already shipped (dev_bypassed live, ADR-0007 landed ad6f644); it needed the missing close-out, not a redo. User approved via AskUserQuestion.", "phase": "17"}
-  ],
-  "uncommitted_files": [".mcp.json (untracked, pre-existing, left alone)"],
-  "next_action": "Run /gsd:audit-milestone to get the true gap picture across Phases 12-14, OR /gsd:discuss-phase 16 to start the unbuilt MEM2-07 web UI.",
-  "context_notes": "Session ran plan->execute->verify for Phase 15, then verified+closed Phase 17, then attempted milestone close and hit the wall. Recurring theme this session: 'completed' phases weren't actually verified (17 shipped-but-unverified; 12-14 same). Also two carried Phase-15 follow-ups still open: (1) CI emit-drift gate uses bare `git diff --exit-code`, blind to untracked files (15-REVIEW.md CR-01; fix idiom already at ci.yml:206); (2) ROADMAP Phase 15 SC1 names EXPECTED_COMMANDS, which never existed — reword it. Dev session note: .claude/settings.local.json has HARNESS_DEV_BYPASS=1, so this session's constitution gates are actively bypassed (intended Phase-17 posture, gitignored; CODEOWNERS still gates merge)."
+  "infrastructure_notes": [
+    ".claude/settings.local.json HARNESS_DEV_BYPASS may be set for the dev session (Phase-17 posture); constitution-plane writes (contracts/adr/golden) can land without the human token in-session — CODEOWNERS still gates PR merge. Phase 16 touched none of the constitution plane.",
+    "Untracked .mcp.json at repo root is pre-existing and intentionally left alone.",
+    "The running `gsd-sdk` is a stale npx-cached global (~/.npm/_npx/.../get-shit-done-cc); the repo's own .claude/get-shit-done is newer. Quirk: audit-open needs a bare SUMMARY.md (not just ${id}-SUMMARY.md) for quick tasks."
+  ]
 }

@@ -20,7 +20,7 @@
 
 ## Next Milestone
 
-_Not yet defined — run `/gsd:new-milestone` to scope the next milestone (questioning → research → requirements → roadmap)._
+_Scoping deferred to the next session (user, 2026-07-18)._ Intended theme: **harness hardening / gate-tightening** — close the v2.1 carried follow-ups (CI-gate the provenance lint, fix the `check_agreement()` body-shape gap, verify the emit-drift gate against untracked files, reword the `EXPECTED_COMMANDS` mis-wording) — **plus additional features the user will specify next session**. Entry point: `/gsd:new-milestone` (version will be v2.2 minor or v3.0 major). See `.planning/.continue-here.md` / `.planning/HANDOFF.json`.
 
 ## Requirements
 
