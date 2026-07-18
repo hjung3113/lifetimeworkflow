@@ -11,19 +11,19 @@ Requirements for milestone v2.1. Each maps to exactly one roadmap phase (phases 
 
 ### Process Channel (the new 4th memory tier)
 
-- [ ] **MEM2-01**: An agent (or user) can record a working-agreement as a **per-guideline file** `.memory/agreements/<slug>.md` (§7b) carrying a defined entry shape — title, one-line rule, `status` (active/retired), and a provenance stamp ("added because <user feedback>", added-date). The channel is committed, user-authored, and curated (added on feedback, retired explicitly); it is a committed human-authored tier like `state/`, NOT a regenerated derived artifact. Entries **link** to ADRs/Key-Decisions and never restate project decisions (§7c).
+- [x] **MEM2-01**: An agent (or user) can record a working-agreement as a **per-guideline file** `.memory/agreements/<slug>.md` (§7b) carrying a defined entry shape — title, one-line rule, `status` (active/retired), and a provenance stamp ("added because <user feedback>", added-date). The channel is committed, user-authored, and curated (added on feedback, retired explicitly); it is a committed human-authored tier like `state/`, NOT a regenerated derived artifact. Entries **link** to ADRs/Key-Decisions and never restate project decisions (§7c).
 
 ### Provenance Reframe (scope "provisional/verify" to DATA only)
 
-- [ ] **MEM2-02**: At SessionStart the injector (`tools/memory_regen/inject.py`) emits **two distinct blocks**: (a) a full-body **working-agreements directive** section (new priority-0, never-dropped, honored as a directive) composed from the active `.memory/agreements/*` files, **capped** (N entries / M chars; overflow degrades to a pointer per Q4) so it cannot crowd out drift+index; and (b) a **data-scoped** provenance banner that reads as "which artifact wins a data conflict" — NOT "distrust/retract your own grounded work". The activeContext pointer is reworded to a progress-log pointer. `assemble()` determinism (`inject.py:20-22`, delete+regen byte-identical) and the ~4000-char budget (`inject.py:105`) are preserved.
+- [x] **MEM2-02**: At SessionStart the injector (`tools/memory_regen/inject.py`) emits **two distinct blocks**: (a) a full-body **working-agreements directive** section (new priority-0, never-dropped, honored as a directive) composed from the active `.memory/agreements/*` files, **capped** (N entries / M chars; overflow degrades to a pointer per Q4) so it cannot crowd out drift+index; and (b) a **data-scoped** provenance banner that reads as "which artifact wins a data conflict" — NOT "distrust/retract your own grounded work". The activeContext pointer is reworded to a progress-log pointer. `assemble()` determinism (`inject.py:20-22`, delete+regen byte-identical) and the ~4000-char budget (`inject.py:105`) are preserved.
 
-- [ ] **MEM2-03**: The distrust framing is reworded to *data authority* (not behavior) everywhere it is echoed: `.memory/README.md`, `.memory/state/activeContext.md`, `.memory/state/progress.md`, `harness/skills/two-plane-memory/SKILL.md`, and `AGENTS.md`. After the change, no session-start surface tells an agent to "confirm before trusting" its own grounded working context.
+- [x] **MEM2-03**: The distrust framing is reworded to *data authority* (not behavior) everywhere it is echoed: `.memory/README.md`, `.memory/state/activeContext.md`, `.memory/state/progress.md`, `harness/skills/two-plane-memory/SKILL.md`, and `AGENTS.md`. After the change, no session-start surface tells an agent to "confirm before trusting" its own grounded working context.
 
 ### Write Path & Guards
 
-- [ ] **MEM2-04**: A dedicated **`/agree`** command appends or retires a working-agreement **only in response to explicit user feedback** (retire = flip the file's `status` to retired, per Q5/§7b). A `tools/harness_lint` check enforces that every entry carries a provenance/origin stamp and that agents cannot auto-invent unsolicited entries (provenance is present + well-formed). `/agree` is added to `EXPECTED_COMMANDS`.
+- [x] **MEM2-04**: A dedicated **`/agree`** command appends or retires a working-agreement **only in response to explicit user feedback** (retire = flip the file's `status` to retired, per Q5/§7b). A `tools/harness_lint` check enforces that every entry carries a provenance/origin stamp and that agents cannot auto-invent unsolicited entries (provenance is present + well-formed). `/agree` is added to `EXPECTED_COMMANDS`.
 
-- [ ] **MEM2-05**: Progress state (`.memory/state/activeContext.md`, `progress.md`) carries an `updated: <ISO-date>` stamp written by `/checkpoint`. `assemble()` surfaces the stamp **verbatim** (no wall-clock inside `assemble()`, preserving determinism); freshness is judged **agent-side** against the session date (no fixed threshold, no hook-wrapper wall-clock code, per Q6). Progress stays tight by design — in-flight + remaining + a short last-N-done summary; full completed history lives in git, not memory (§7a).
+- [x] **MEM2-05**: Progress state (`.memory/state/activeContext.md`, `progress.md`) carries an `updated: <ISO-date>` stamp written by `/checkpoint`. `assemble()` surfaces the stamp **verbatim** (no wall-clock inside `assemble()`, preserving determinism); freshness is judged **agent-side** against the session date (no fixed threshold, no hook-wrapper wall-clock code, per Q6). Progress stays tight by design — in-flight + remaining + a short last-N-done summary; full completed history lives in git, not memory (§7a).
 
 ### ADR & Emit Round-Trip
 
@@ -59,11 +59,11 @@ Which phases cover which requirements. **Filled by the roadmapper during roadmap
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MEM2-01 | Phase 12 | Pending |
-| MEM2-02 | Phase 13 | Pending |
-| MEM2-03 | Phase 12 | Pending |
-| MEM2-04 | Phase 14 | Pending |
-| MEM2-05 | Phase 13 | Pending |
+| MEM2-01 | Phase 12 | Complete |
+| MEM2-02 | Phase 13 | Complete |
+| MEM2-03 | Phase 12 | Complete |
+| MEM2-04 | Phase 14 | Complete |
+| MEM2-05 | Phase 13 | Complete |
 | MEM2-06 | Phase 15 | Complete |
 | MEM2-07 | Phase 16 | Complete |
 
