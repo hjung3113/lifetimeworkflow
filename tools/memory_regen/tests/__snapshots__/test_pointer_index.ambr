@@ -1,0 +1,17 @@
+# serializer version: 1
+# name: test_render_matches_committed_snapshot
+  '''
+  # DERIVED — do not hand-edit (tools/memory_regen/pointer_index.py)
+  
+  Reference index — what points to each memory item (`python -m tools.memory_regen.pointer_index`). 4 memory item(s); referrer/line/kind only, no scores; regenerated each session.
+  
+  | memory item | referrer | line | kind |
+  | --- | --- | --- | --- |
+  | .memory/agreements/plan.md | AGENTS.md | 2 | path |
+  | .memory/agreements/plan.md | docs/guide.md | 3 | slug |
+  | .memory/agreements/retire-me.md | (none) | | |
+  | .memory/state/activeContext.md | docs/guide.md | 2 | path |
+  | .memory/state/progress.md | (none) | | |
+  
+  '''
+# ---
