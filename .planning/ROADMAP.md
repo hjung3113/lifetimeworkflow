@@ -38,7 +38,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 13: Injector Reframe + Channel Wiring** *(v2.1 B)* - Split the SessionStart banner into a full-body priority-0 working-agreements directive + a data-scoped provenance banner, and surface a verbatim progress `updated:` stamp — preserving `inject.py` determinism and the ~4000-char budget.
 - [ ] **Phase 14: Write Path + Anti-Churn Guard** *(v2.1 C)* - A dedicated `/agree` command adds/retires a working-agreement only on explicit user feedback, backed by a `tools/harness_lint` provenance/anti-invent guard.
 - [x] **Phase 15: Emit Round-Trip + Gates** *(v2.1 D)* - Round-trip every new/changed surface (`/agree`, updated skills, AGENTS.md managed block) through the Phase-7 emitter to both runtimes with no model id; emit-drift clean, GEN-04 green. (completed 2026-07-15)
-- [ ] **Phase 16: Local Memory Web UI** *(v2.1 E)* - A local, no-network, no-auth tool to view/edit/retire memory items with pointer-aware referential integrity over a machine-built derived pointer-index.
+- [x] **Phase 16: Local Memory Web UI** *(v2.1 E)* - A local, no-network, no-auth tool to view/edit/retire memory items with pointer-aware referential integrity over a machine-built derived pointer-index. (completed 2026-07-18)
 - [x] **Phase 17: Constitution-Gate Dev/Enforce Decoupling** *(infra — independent of v2.1 MEM2)* - A secure-default `HARNESS_DEV_BYPASS` env opt-out so the product's constitution gates stop governing the Claude dev session (default enforce; blank = no bypass; distinct from `GOLDEN_APPROVE_HUMAN`; byte-hygiene never waived), honored by `contract_guard`/`commit_gate`; ADR-0007 records it; CODEOWNERS stays the real gate. (completed 2026-07-15)
 
 ## Phase Details
@@ -266,7 +266,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 13. Injector Reframe + Channel Wiring (v2.1 B) | 0/TBD | Not started | - |
 | 14. Write Path + Anti-Churn Guard (v2.1 C) | 0/TBD | Not started | - |
 | 15. Emit Round-Trip + Gates (v2.1 D) | 2/2 | Complete    | 2026-07-15 |
-| 16. Local Memory Web UI (v2.1 E) | 5/6 | In Progress|  |
+| 16. Local Memory Web UI (v2.1 E) | 6/6 | Complete    | 2026-07-18 |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
 
@@ -518,5 +518,5 @@ Plans:
 - [x] 16-03-PLAN.md — Wave 2: UI route logic + progress stamp writer; surface-and-confirm orphan guard [SC1/SC3]
 - [x] 16-04-PLAN.md — Wave 2: wire pointer-index into SessionStart/orient/refresh-memory + emit round-trip [SC2]
 - [x] 16-05-PLAN.md — Wave 3: localhost-only HTTP shell + inlined page + entrypoint [SC1]
-- [ ] 16-06-PLAN.md — Wave 4: human browser round-trip verification [SC1/SC3]
+- [x] 16-06-PLAN.md — Wave 4: human browser round-trip verification [SC1/SC3]
 **UI hint**: yes
