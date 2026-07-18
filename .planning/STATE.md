@@ -7,10 +7,10 @@ last_updated: "2026-07-18T11:21:05.862Z"
 last_activity: 2026-07-18
 progress:
   total_phases: 6
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 17
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
+  percent: 33
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-18)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** v2.2 Adaptive Task Control Plane. **Phase 18 COMPLETE** (merged `e8cc23e`) — task packet contracts (4 schemas + transitions.json), `.workflow/tasks/` convention, `tools/task_packet` validator/transition checker, contract-drift baseline. TCP-01/02 validated. Built by codex sol, adversarially reviewed by claude fable (2 major fixed), Claude verified + merged. Next: Phase 19 (Deterministic Risk Router).
+**Current focus:** v2.2 Adaptive Task Control Plane. **Phase 18 + 19 COMPLETE.** P18 (merged `e8cc23e`): task packet contracts + `.workflow/tasks/` + validator. P19 (merged `19c8afc`): deterministic risk router (`harness/risk-policy.toml` + `tools/risk_router`), escalate-only overlay slot, `/intake` command (both runtimes). TCP-01..06 validated. Execution: build = codex terra (medium, fast off) headless; review alternates fable↔sol; Claude verifies + merges. Next: Phase 20 (Atomic State Manager + Context/Transition Gate).
 
 ## Current Position
 
-Phase: 19 — Deterministic Risk Router (ready to plan)
-Plan: Phase 18 done (94 task_packet tests green, 763 tools tests green, contract-drift clean)
-Status: Phase 18 merged; ready for Phase 19
-Last activity: 2026-07-18 — Phase 18 shipped (sol build → fable review → Claude verify/merge)
+Phase: 20 — Atomic State Manager + Context/Transition Gate (ready to plan)
+Plan: P19 done (risk_router 42, tools 810 green, contract-drift clean, emit clean)
+Status: Phase 19 merged; ready for Phase 20
+Last activity: 2026-07-18 — Phase 19 shipped (terra build → sol review: 4 major fixed → Claude verify/merge)
 
 ## Performance Metrics
 

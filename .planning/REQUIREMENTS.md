@@ -14,10 +14,10 @@
 
 ### Deterministic Risk Router (Phase 19)
 
-- [ ] **TCP-03**: 7축(ambiguity·change-scope·data/security·reversibility·impact·coordination·context-pressure) 점수를 FAST/STANDARD/STRICT/CONTROLLED 레인으로 매핑하는 순수 함수 라우터가 동일 입력에 byte-identical decision을 낸다(레포 미접근·LLM 판단 없음).
-- [ ] **TCP-04**: 자동 승격 규칙(auth·payment·secret/PII·destructive data·unclear rollback·external contract break·헌법 평면 접촉)이 점수와 무관하게 최소 레인을 강제하고, 승격은 레인을 낮출 수 없다.
-- [ ] **TCP-05**: 각 레인이 필수 산출물/게이트 matrix를 선언하고, instance risk overlay는 선언적 데이터로 **escalate-only**(레인 하향·게이트 제거 불가)이며 core는 instance를 참조하지 않는다.
-- [ ] **TCP-06**: `/intake`가 작업을 점수화해 task packet을 생성하고, FAST 레인은 packet 외 추가 ceremony(상세 SPEC·PLAN·worktree·이중 review)를 자동 요구하지 않는다.
+- [x] **TCP-03**: 7축(ambiguity·change-scope·data/security·reversibility·impact·coordination·context-pressure) 점수를 FAST/STANDARD/STRICT/CONTROLLED 레인으로 매핑하는 순수 함수 라우터가 동일 입력에 byte-identical decision을 낸다(레포 미접근·LLM 판단 없음).
+- [x] **TCP-04**: 자동 승격 규칙(auth·payment·secret/PII·destructive data·unclear rollback·external contract break·헌법 평면 접촉)이 점수와 무관하게 최소 레인을 강제하고, 승격은 레인을 낮출 수 없다.
+- [x] **TCP-05**: 각 레인이 필수 산출물/게이트 matrix를 선언하고, instance risk overlay는 선언적 데이터로 **escalate-only**(레인 하향·게이트 제거 불가)이며 core는 instance를 참조하지 않는다.
+- [x] **TCP-06**: `/intake`가 작업을 점수화해 task packet을 생성하고, FAST 레인은 packet 외 추가 ceremony(상세 SPEC·PLAN·worktree·이중 review)를 자동 요구하지 않는다.
 
 ### Atomic State Manager + Context/Transition Gate (Phase 20)
 
@@ -79,10 +79,10 @@ Deferred to a later milestone (설계가이드 §14 우선순위 3·6·7 + 후�
 |-------------|-------|--------|
 | TCP-01 | Phase 18 | Complete |
 | TCP-02 | Phase 18 | Complete |
-| TCP-03 | Phase 19 | Pending |
-| TCP-04 | Phase 19 | Pending |
-| TCP-05 | Phase 19 | Pending |
-| TCP-06 | Phase 19 | Pending |
+| TCP-03 | Phase 19 | Complete |
+| TCP-04 | Phase 19 | Complete |
+| TCP-05 | Phase 19 | Complete |
+| TCP-06 | Phase 19 | Complete |
 | TCP-07 | Phase 20 | Pending |
 | TCP-08 | Phase 20 | Pending |
 | TCP-09 | Phase 20 | Pending |
