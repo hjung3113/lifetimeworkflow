@@ -1,0 +1,45 @@
+---
+description: >-
+  Use to turn a proposed task into a deterministic task-control intake: score seven structured risk
+  axes, run the policy router, and create the task packet using the resulting lane and requirements.
+agent: orchestrator
+subtask: true
+---
+
+# /intake — deterministic task-control entry point
+
+Use this command alongside the existing orchestrator topology and context-budget flow; it does not
+replace either. The agent gathers structured facts and user decisions, but the router only computes
+from the supplied JSON — it does not inspect the repository or make a language-model judgment.
+
+## 1. Score the seven axes
+
+Record each as an integer `0..3`: `ambiguity`, `change_scope`, `data_security`, `reversibility`,
+`impact`, `coordination`, and `context_pressure`. Record only known fact flags from the policy:
+`auth_authorization`, `payment`, `secret_pii`, `destructive_data_change`, `unclear_rollback`,
+`external_contract_break`, `constitution_plane_touch`, and `repeated_constraint_violation`.
+
+## 2. Route the structured input
+
+Pass one JSON object on standard input. A human override may raise the lane with an audit reason;
+it may never lower the computed lane.
+
+``` !`shell`
+uv run python -m tools.risk_router
+```
+
+The command reads JSON from standard input and writes one canonical decision JSON. Use that result
+as the source for `task.json`: copy the seven `scores` into `risk_inputs`, copy `lane`, and retain
+the decision's policy hashes and promotion reasons in the intake record. Create the remaining
+Phase-18 task-packet documents under `.workflow/tasks/<task-id>/`, then validate them with:
+
+``` !`shell`
+uv run python -m tools.task_packet.validate .workflow/tasks/<task-id>
+```
+
+## 3. Apply only the returned matrix
+
+The decision JSON contains `required_artifacts` and `required_gates`. FAST requires only the task
+packet plus lint and test; do not automatically add a detailed SPEC, PLAN, worktree, or double
+review. Higher lanes require only the artifacts and gates returned by the policy. Constitution-plane
+work still requires human ratification under the repository rules.

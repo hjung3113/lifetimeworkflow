@@ -18,6 +18,11 @@
 # harness overrides `root` (and the [[languages]] tables) from its own copy of this file.
 root = ""
 
+# TCP-05 risk-policy overlay slot.  A downstream instance may point this at its own
+# declarative TOML overlay; the core does not discover or reference instance paths.
+# An empty value means the runtime-neutral core policy is effective by itself.
+risk_overlay = ""
+
 [[languages]]
 id = "dotnet"
 bash_scope = "dotnet *"                      # matches permission-matrix.json bash allow-scope

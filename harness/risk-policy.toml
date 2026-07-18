@@ -1,0 +1,35 @@
+# TCP-03..06 runtime-neutral deterministic risk policy.  This is policy DATA only:
+# the router performs no repository access and has no provider-specific settings.
+version = 1
+
+[cuts]
+FAST = [0, 4]
+STANDARD = [5, 9]
+STRICT = [10, 14]
+CONTROLLED = [15, 21]
+
+[promotions]
+auth_authorization = "STRICT"
+payment = "CONTROLLED"
+secret_pii = "STRICT"
+destructive_data_change = "CONTROLLED"
+unclear_rollback = "STRICT"
+external_contract_break = "STRICT"
+constitution_plane_touch = "STRICT"
+repeated_constraint_violation = "STRICT"
+
+[lanes.FAST]
+required_artifacts = ["task_packet"]
+required_gates = ["lint", "test"]
+
+[lanes.STANDARD]
+required_artifacts = ["task_packet", "brief_spec"]
+required_gates = ["lint", "test", "review"]
+
+[lanes.STRICT]
+required_artifacts = ["task_packet", "spec", "plan", "review_record"]
+required_gates = ["lint", "test", "review", "human_review"]
+
+[lanes.CONTROLLED]
+required_artifacts = ["task_packet", "spec", "plan", "rollback_plan", "audit_evidence"]
+required_gates = ["lint", "test", "review", "human_review", "dry_run", "rollback_verified"]
