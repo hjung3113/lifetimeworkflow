@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1
-milestone_name: MEM2 — Process Memory & Provenance Reframe
-status: ready_to_plan
-stopped_at: Phase 16 UI-SPEC approved
-last_updated: "2026-07-18T02:14:39.084Z"
+milestone: v2.2
+milestone_name: Adaptive Task Control Plane
+status: planning
+last_updated: "2026-07-18T11:21:05.862Z"
 last_activity: 2026-07-18
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 21
-  completed_plans: 20
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,11 +24,10 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 
 ## Current Position
 
-Phase: 17
-Previous: Phase 13 — Injector Reframe + Channel Wiring (v2.1 B, MEM2-02/MEM2-05) — COMPLETE (merged 9b93d28)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-07-18
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-07-18 — Milestone v2.2 started
 
 ## Performance Metrics
 

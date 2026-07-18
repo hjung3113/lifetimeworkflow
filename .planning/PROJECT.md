@@ -18,9 +18,21 @@
 
 **v2.1 MEM2 shipped 2026-07-18** — the harness now carries a durable, authoritative PROCESS-memory channel (`.memory/agreements/`) with a data-scoped provenance reframe, a sanctioned `/agree` write path backed by a provenance/anti-invent guard, and a local, no-network pointer-aware memory web UI. v1.0 (phases 1–8) + v2.0 (phases 9–11) + v2.1 (phases 12–16) archived under `.planning/milestones/`. Phase 17 (Constitution-Gate Dev/Enforce Decoupling — infra, independent of the v2.1 MEM2 chain) remains live in the roadmap.
 
-## Next Milestone
+## Current Milestone: v2.2 Adaptive Task Control Plane
 
-_Scoping deferred to the next session (user, 2026-07-18)._ Intended theme: **harness hardening / gate-tightening** — close the v2.1 carried follow-ups (CI-gate the provenance lint, fix the `check_agreement()` body-shape gap, verify the emit-drift gate against untracked files, reword the `EXPECTED_COMMANDS` mis-wording) — **plus additional features the user will specify next session**. Entry point: `/gsd:new-milestone` (version will be v2.2 minor or v3.0 major). See `.planning/.continue-here.md` / `.planning/HANDOFF.json`.
+**Goal:** 기존 orchestrator·GSD·two-plane memory·`/review`·`/verify-work`·`/checkpoint`·contract/golden/CI 게이트를 재사용하면서, 작업을 기계 판독 가능한 **task packet**, 결정론적 **위험 레인**(FAST/STANDARD/STRICT/CONTROLLED), 원자적 **phase 전이**, **evidence bundle**, 재개 가능한 **HANDOFF**로 연결한다 — 설계가이드 §14 우선순위 1·2·4·5를 닫는 하나의 수직 슬라이스.
+
+**Target features (6 phases, 계속 번호 18–23):**
+- **Task Packet Contract Ratification** — TASK/STATE/EVIDENCE/HANDOFF JSON Schema 4종 + `.workflow/tasks/<id>/` 인스턴스 슬롯 + phase/lane enum + 전이표. (사람 승인 헌법 평면 진입, contract-drift 등록)
+- **Deterministic Risk Router** — 7축 점수 → 레인 순수 함수 계산기 + 자동 승격 reason code + 레인별 필수 산출물 matrix + escalate-only instance overlay 슬롯 + `/intake`.
+- **Atomic State Manager + Context/Transition Gate** — atomic replace + revision CAS 동시성 안전 상태 도구 + phase-start fail-closed 게이트(ref·baseline·constraint attestation) + `/phase-gate`.
+- **Evidence Bundle Adapters** — 기존 게이트 결과를 수집(재구현 X)해 command·exit·hash·criterion trace로 기록 + secret refusal + `/verify-work` 연결.
+- **Handoff + Fresh-Session Resume** — HANDOFF 생성/검증 + `/checkpoint`·`/orient`·SessionStart injector 개정(pointer-only, ~1k cap 보존) + `/handoff`.
+- **Lifecycle Evaluation + Docs + CI** — 레인별 5개 = 20 ratified fixture + stress/negative 사례 + CI fan-in + how-to + 구조 결정 ADR.
+
+**Key context (locked human decisions):** (A) task packet 저장 위치 = `.workflow/tasks/`(세션 memory와 이름으로 분리) — fable의 `.memory/tasks/` 대안 기각. (B) phase 수 = 6(evidence·handoff·eval 분리) — fable의 5 기각. 설계는 codex sol이 sol-vs-fable 토론으로 authored (`docs/explanation/next-milestone-task-control-plane.md`). 헌법 제약 전면 준수: contract-first / two-plane / harness/-emit / 모델 식별자 미포함 / 헌법 평면 사람 승인.
+
+_이전 Next-Milestone 초안(harness hardening 캐리 후속)은 이 마일스톤에 흡수하지 않고 별도 백로그로 남긴다._
 
 ## Requirements
 
@@ -111,4 +123,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-18 — milestone v2.1 (MEM2 — Process Memory & Provenance Reframe) complete and archived. All 5 phases (12–16) shipped, 7/7 requirements (MEM2-01..07) validated, audit passed (integration 6/6, browser round-trip 5/5, 690 tests green). Archived to `.planning/milestones/v2.1-*` (ROADMAP + REQUIREMENTS + audit + phases). MEM2 requirements moved Active → Validated. v1.0 (phases 1–8) + v2.0 (phases 9–11) + v2.1 (phases 12–16) archived; Phase 17 (infra) remains live. Next: `/gsd:new-milestone`.*
+*Last updated: 2026-07-18 — milestone v2.2 (Adaptive Task Control Plane) started via `/gsd:new-milestone`. Design authored by codex sol via a sol-vs-fable debate (Orca), human-approved (`docs/explanation/next-milestone-task-control-plane.md`); locked decisions A=`.workflow/tasks/`, B=6 phases. Requirements + roadmap (phases 18–23) derived directly from the approved design; research skipped (design complete). Prior milestone v2.1 (MEM2, phases 12–16) shipped + archived under `.planning/milestones/v2.1-*`; Phase 17 (infra) remains live.*
