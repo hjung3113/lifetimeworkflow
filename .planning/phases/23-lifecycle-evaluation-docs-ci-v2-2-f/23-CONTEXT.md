@@ -17,7 +17,7 @@
 ### 사람-ratified 평가 (TCP-16, TCP-17)
 - **D-01:** domain-neutral lifecycle fixture **20개(레인별 5: FAST/STANDARD/STRICT/CONTROLLED)**. expected lane·결과는 **사람 ratification 데이터** — agent는 draft만, **사용자가 expected lane을 승인**(자가승인 금지). fixture는 `examples/` 아닌 core 중립.
 - **D-02:** negative/stress 사례: buried constraint, stale handoff, wrong worktree/ref, missing/tampered evidence, concurrent writers, secret artifact, constitution change, illegal downgrade overlay — **모두 실행/COMPLETE 전 차단**됨을 실증. **P22 deferred 흡수**: un-resumed→transition→Write-deny 회귀 + `env VAR=1 git commit`/`git -C` prefix 우회 차단을 negative fixture로.
-- **D-03:** E2E lifecycle eval runner: create→intake(risk router)→transition→evidence→handoff→(별도 프로세스)orient→phase-gate 전 경로. false downgrade **0건**. FAST는 상세 SPEC/PLAN/worktree/이중review 없이 통과 + **사용자 의식 단계 상한(intake+verify 2회)** fixture로 고정. STRICT/CONTROLLED는 독립 review + rollback evidence 요구.
+- **D-03:** E2E lifecycle eval runner: create→intake(risk router)→transition→evidence→handoff→(별도 프로세스)orient→phase-gate 전 경로. false downgrade **0건**. FAST는 상세 SPEC/PLAN/worktree/이중review 없이 통과 + **사용자 의식 단계 상한(intake+verify 2회)** fixture로 고정. STRICT는 독립 review record, CONTROLLED는 독립 review record와 rollback evidence를 요구한다.
 - **D-04:** 아직 없는 production 통계로 false-escalation 비율을 출하 gate처럼 **꾸미지 않음**. shadow 지표(lane override·ceremony count·gate failure reason·evidence completeness·handoff reconstruction time)는 **정의만** — 후속 정책 보정 자료, 이번 deterministic gate 대체 아님.
 
 ### CI (TCP-16, TCP-18)
@@ -71,7 +71,7 @@
 <specifics>
 ## Specific Ideas
 
-- 완료기준: 설계 §Phase 6 완료기준 1~13 승격 — 20 fixture ratified lane 정확일치, false downgrade 0, FAST 상한(intake+verify), STRICT/CONTROLLED 독립review+rollback, buried-constraint prohibited action 차단+required evidence, tampered/missing evidence·stale handoff COMPLETE 전 차단, wrong worktree/ref·concurrent stale writer 실행 전 차단, 전체 pytest 회귀 0, contract-drift/golden/stale-derived/GEN-04 green, emit-drift 0, 모델 식별자 lint green, 사람 승인 ADR+constitution 변경 확인.
+- 완료기준: 설계 §Phase 6 완료기준 1~13 승격 — 20 fixture ratified lane 정확일치, false downgrade 0, FAST 상한(intake+verify), STRICT 독립review record·CONTROLLED 독립review record+rollback evidence, buried-constraint prohibited action 차단+required evidence, tampered/missing evidence·stale handoff COMPLETE 전 차단, wrong worktree/ref·concurrent stale writer 실행 전 차단, 전체 pytest 회귀 0, contract-drift/golden/stale-derived/GEN-04 green, emit-drift 0, 모델 식별자 lint green, 사람 승인 ADR+constitution 변경 확인.
 - 20 fixture는 사용자에게 expected lane 표로 제시해 ratify 받는다(자가승인 금지).
 </specifics>
 

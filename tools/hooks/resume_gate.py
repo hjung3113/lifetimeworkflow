@@ -19,11 +19,12 @@ from tools.task_control.manager import TaskControlError, show
 
 PROTECTED_PHASES = frozenset({"EXECUTE", "REVIEW", "VERIFY"})
 _MUTATING_BASH = re.compile(
-    # `env NAME=value git commit` and `git -C worktree commit` are still writes.
+    # `env -i NAME="value with spaces" git commit` and every git global-option
+    # spelling (including `-C.` and `--git-dir=...`) are still writes.
     # Keep this lexical and anchored: the hook is not a shell parser, but prefix
     # wrappers must not turn a protected mutation into an allow.
-    r"(?:^|[;&|]\s*)(?:(?:command|builtin)\s+|env(?:\s+[A-Za-z_][A-Za-z0-9_]*=[^\s]+)*\s+)*(?:"
-    r"git(?:\s+-C\s+[^\s]+)*\s+(?:add|apply|checkout|cherry-pick|commit|merge|mv|rebase|reset|restore|rm|switch)|"
+    r"(?:^|[;&|]\s*)(?:(?:command|builtin)\s+|env(?:\s+(?:-[^\s]+|[A-Za-z_][A-Za-z0-9_]*=(?:\"[^\"]*\"|'[^']*'|[^\s]+)))*\s+)*(?:"
+    r"git(?:\s+-[^\s]+(?:\s+(?:\"[^\"]*\"|'[^']*'|[^\s]+))?)*\s+(?:add|apply|checkout|cherry-pick|commit|merge|mv|rebase|reset|restore|rm|switch)|"
     r"(?:rm|mv|cp|touch|mkdir|rmdir)\b|(?:sed|perl)\s+-i\b|tee\b|apply_patch\b)|(?:^|[^<])>>?",
 )
 

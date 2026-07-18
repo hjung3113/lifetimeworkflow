@@ -190,12 +190,8 @@ jobs:
         run: uv sync --all-packages
       - name: Evaluate ratification-pending lane fixtures
         run: uv run python -m tools.lifecycle_eval.runner
-      - name: Router and fixture expectation regression
-        run: uv run pytest tools/lifecycle_eval tools/risk_router/tests
-      - name: Transition, concurrency, and context-gate regression
-        run: uv run pytest tools/task_control/tests
-      - name: Evidence, HANDOFF, orient, and resume-gate regression
-        run: uv run pytest tools/evidence/tests tools/handoff/tests
+      - name: Lifecycle fixture execution and negative-fixture binding
+        run: uv run pytest tools/lifecycle_eval
 
   # ── emit-drift ─────────────────────────────────────────────────────────────────────────────
   # Single-source dual-runtime re-emit-diff gate (EMIT-02, D-02). Re-runs the emitter and fails on

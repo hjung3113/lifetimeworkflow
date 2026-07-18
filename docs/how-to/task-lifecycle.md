@@ -27,7 +27,7 @@ Advance only with the current revision. A stale ref, wrong worktree, missing pre
 uv run python -m tools.task_control transition .workflow/tasks/T-YYYYMMDDHHMMSS-example EXECUTE --expected-revision 0
 ```
 
-FAST remains `INTAKE → EXECUTE → VERIFY → COMPLETE`: packet creation plus verification are its two user-visible ceremony steps. It does not require a detailed spec, plan, separate worktree, or double review. STRICT and CONTROLLED require the policy's independent review and rollback evidence.
+FAST remains `INTAKE → EXECUTE → VERIFY → COMPLETE`: packet creation plus verification are its two user-visible ceremony steps. It does not require a detailed spec, plan, separate worktree, or double review. STRICT requires the policy's independent review record; CONTROLLED additionally requires rollback evidence (the `rollback_plan` and `rollback_verified` gate).
 
 ## 3. Capture existing gates as evidence
 

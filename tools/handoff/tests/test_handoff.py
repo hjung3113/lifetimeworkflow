@@ -315,7 +315,11 @@ def test_resume_attestation_blocks_absent_and_stale_then_allows_a_real_process_r
         check=False,
     )
     assert json.loads(prefixed.stdout)["hookSpecificOutput"]["permissionDecision"] == "deny"
-    for bypass in ("env VAR=1 git commit -m x", "git -C . commit -m x"):
+    for bypass in (
+        "env VAR=1 git commit -m x", "env -i VAR=\"a b\" git commit -m x",
+        "git -C . commit -m x", "git -C. commit -m x", "git -c core.filemode=false commit -m x",
+        "git --git-dir=.git --work-tree=. commit -m x",
+    ):
         result = subprocess.run(
             [sys.executable, "-m", "tools.hooks.resume_gate"],
             input=json.dumps({"tool_name": "Bash", "cwd": str(root), "tool_input": {"command": bypass}}),
