@@ -315,6 +315,16 @@ def test_resume_attestation_blocks_absent_and_stale_then_allows_a_real_process_r
         check=False,
     )
     assert json.loads(prefixed.stdout)["hookSpecificOutput"]["permissionDecision"] == "deny"
+    for bypass in ("env VAR=1 git commit -m x", "git -C . commit -m x"):
+        result = subprocess.run(
+            [sys.executable, "-m", "tools.hooks.resume_gate"],
+            input=json.dumps({"tool_name": "Bash", "cwd": str(root), "tool_input": {"command": bypass}}),
+            text=True,
+            capture_output=True,
+            env=env,
+            check=False,
+        )
+        assert json.loads(result.stdout)["hookSpecificOutput"]["permissionDecision"] == "deny"
     resumed = subprocess.run(
         [
             sys.executable,

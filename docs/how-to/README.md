@@ -11,5 +11,6 @@ They are recipes for a specific goal, not lessons and not exhaustive reference.
 - `approve-a-golden.md` — the `/golden-approve` flow: review a `.received`, promote to `.verified` (machines gate, humans ratify).
 - `record-a-decision.md` — add the next numbered MADR ADR under `docs/adr/` (append-only, supersede-not-edit).
 - `run-the-full-stack-locally.md` — `bash tools/bootstrap/verify.sh` then `uv run pytest` to exercise bootstrap → normalize → spawn → diff → drift.
+- `task-lifecycle.md` — create, gate, evidence, handoff, fresh-session resume, and completion without crossing generator- or human-owned boundaries.
 
 > Stubs only. This is a skeleton (DOCS-01); page bodies are authored as the harness grows.
