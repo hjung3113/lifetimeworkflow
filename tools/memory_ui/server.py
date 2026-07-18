@@ -78,13 +78,35 @@ class MemoryUIHandler(BaseHTTPRequestHandler):
         if self.command != "HEAD":
             self.wfile.write(body)
 
-    def _read_json_body(self) -> dict | None:
-        """Return the parsed JSON body, or ``None`` when absent/over-bound/malformed.
+    def _content_length(self) -> int | None:
+        """Parse ``Content-Length``, returning ``0`` when absent and ``None`` when invalid.
 
-        Over-bound bodies are the ``413`` DoS guard (T-16-07): the caller maps ``None`` +
-        over-length to ``413`` before ever touching a route.
+        A ``Transfer-Encoding`` (e.g. ``chunked``) request has no fixed ``Content-Length`` framing:
+        we cannot bound or fully read its body here, and leaving those bytes unread would desync the
+        next request on a keep-alive connection (WR-02). Such requests — and any non-integer
+        ``Content-Length`` — return ``None`` so the caller refuses them instead of silently treating
+        the body as empty.
         """
-        length = int(self.headers.get("Content-Length") or 0)
+        if self.headers.get("Transfer-Encoding"):
+            return None
+        raw_len = self.headers.get("Content-Length")
+        if raw_len is None:
+            return 0
+        try:
+            return int(raw_len)
+        except ValueError:
+            return None
+
+    def _read_json_body(self) -> dict | None:
+        """Return the parsed JSON body, or ``None`` when unframed/over-bound/malformed.
+
+        Over-bound bodies are the ``413`` DoS guard (T-16-07); an absent/invalid ``Content-Length``
+        or a chunked ``Transfer-Encoding`` is refused rather than read (WR-02). The caller maps
+        ``None`` to the right status by re-inspecting the length.
+        """
+        length = self._content_length()
+        if length is None:
+            return None
         if length <= 0:
             return {}
         if length > MAX_BODY_BYTES:
@@ -146,11 +168,13 @@ class MemoryUIHandler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         payload = self._read_json_body()
         if payload is None:
-            length = int(self.headers.get("Content-Length") or 0)
-            if length > MAX_BODY_BYTES:
+            length = self._content_length()
+            if length is not None and length > MAX_BODY_BYTES:
                 self._json(413, {"error": "request body too large"})
             else:
-                self._json(400, {"error": "malformed JSON body"})
+                # Absent/invalid Content-Length, a chunked Transfer-Encoding, or malformed JSON:
+                # refuse rather than desync the connection by leaving the body unread (WR-02).
+                self._json(400, {"error": "malformed or unframed request body"})
             return
 
         if path == "/api/agreement/add":

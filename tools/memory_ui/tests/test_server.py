@@ -131,6 +131,32 @@ def test_pointers_uses_monkeypatched_base_and_roots(tmp_path, monkeypatch) -> No
     assert "docs/note.md" in files, "endpoint must scan the injected roots, not the real repo"
 
 
+def test_post_missing_content_length_is_refused(tmp_path, tmp_agreements_tree, monkeypatch) -> None:
+    """A chunked POST (no Content-Length) is refused, not silently read as empty (WR-02)."""
+    import http.client
+
+    from tools.memory_ui import server
+
+    monkeypatch.setattr(server, "AGREEMENTS_DIR", tmp_agreements_tree)
+    monkeypatch.setattr(server, "DERIVED_DIR", tmp_path / "derived")
+
+    with server.make_server(0) as httpd, _running(httpd):
+        host, port = str(httpd.server_address[0]), httpd.server_address[1]
+        conn = http.client.HTTPConnection(host, port)
+        # Force Transfer-Encoding: chunked (no Content-Length) via an iterable body.
+        conn.request(
+            "POST",
+            "/api/agreement/add",
+            body=iter([b'{"slug":"x"}']),
+            headers={"Content-Type": "application/json"},
+        )
+        resp = conn.getresponse()
+        status = resp.status
+        resp.read()
+        conn.close()
+    assert status == 400, "an unframed/chunked body must be refused (WR-02), never read as empty"
+
+
 def test_serve_module_has_no_wildcard_or_host_flag() -> None:
     """Static guard: the shell source never binds 0.0.0.0/"" and exposes no --host flag."""
     from tools.memory_ui import server
