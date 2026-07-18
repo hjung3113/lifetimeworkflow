@@ -33,7 +33,7 @@ function assemblePayload(cwd: string): string {
 
 function regenerateDerivedPlane(cwd: string): void {
   // Best-effort — a missing Wave-2 generator must never break session start (|| true parity).
-  for (const mod of ["tools.memory_regen.repo_map", "tools.memory_regen.contracts_index"]) {
+  for (const mod of ["tools.memory_regen.repo_map", "tools.memory_regen.contracts_index", "tools.memory_regen.pointer_index"]) {
     try {
       execFileSync("uv", ["run", "python", "-m", mod], { cwd, stdio: "ignore" });
     } catch {
