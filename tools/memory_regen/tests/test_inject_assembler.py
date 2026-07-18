@@ -174,3 +174,10 @@ def test_malformed_active_task_is_fail_closed_and_capped(tmp_path: Path) -> None
     assert inject.TASK_HEADER in payload and len(payload) <= 4000
     assert "ACTIVE HANDOFF INVALID" in payload
     assert "task body" not in payload and "output.log" not in payload and "$schema" not in payload
+
+
+def test_absent_active_task_is_normal_no_task_session(tmp_path: Path) -> None:
+    derived, state = _dirs(tmp_path)
+    payload = inject.assemble(derived_dir=derived, state_dir=state)
+    assert inject.TASK_HEADER not in payload
+    assert "ACTIVE HANDOFF INVALID" not in payload

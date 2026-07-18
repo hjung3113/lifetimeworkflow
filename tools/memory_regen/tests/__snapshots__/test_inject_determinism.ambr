@@ -4,8 +4,6 @@
   DATA PROVENANCE — these summaries resolve a DATA conflict: contracts/ and docs/adr/ (ADR) determine which artifact wins a contradiction. This precedence is not a reason to distrust, retract, or re-verify grounded working context.
   ## Contract drift (live)
   contract-drift: fixed fixture
-  ## Active task (validated HANDOFF pointer)
-  ACTIVE HANDOFF INVALID — resume is blocked; repair or remove the active pointer.
   ## Contracts index (summary)
   contracts fixture
   ## Repo map (top-N)

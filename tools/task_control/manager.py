@@ -103,7 +103,7 @@ def _atomic_replace(path: Path, value: dict[str, Any]) -> None:
         raise
 
 
-def _cas_write(task_dir: str | Path, expected_revision: int, next_state: dict[str, Any], *, lock_held: bool = False) -> dict[str, Any]:
+def _cas_write(task_dir: str | Path, expected_revision: int, next_state: dict[str, Any], *, lock_held: bool = False, allow_head_change: bool = False) -> dict[str, Any]:
     """Compare current on-disk revision immediately before one atomic replace."""
     if type(expected_revision) is not int or expected_revision < 0:
         raise TaskControlError("expected revision must be a non-negative integer")
@@ -130,7 +130,20 @@ def _cas_write(task_dir: str | Path, expected_revision: int, next_state: dict[st
         if next_state["revision"] != expected_revision + 1:
             raise TaskControlError("mutation must increment revision by exactly one")
         _validate_state(next_state)
+        previous_state_sha256 = sha256(path)
         _atomic_replace(path, next_state)
+        # Handoff imports this module, so keep the sanctioned lifecycle bridge lazy.
+        # It runs while the state CAS lock is held and only advances an already-valid
+        # resume proof; absent, malformed, or stale proofs remain fail-closed at the hook.
+        from tools.handoff.handoff import refresh_resume_attestation
+
+        refresh_resume_attestation(
+            task_dir,
+            current,
+            next_state,
+            previous_state_sha256=previous_state_sha256,
+            allow_head_change=allow_head_change,
+        )
         return next_state
 
 
@@ -415,9 +428,23 @@ def validate(task_dir: str | Path) -> dict[str, Any]:
 def refresh_ref(task_dir: str | Path, expected_revision: int, current_ref: str) -> dict[str, Any]:
     """Atomically refresh the repository ref without bypassing revision CAS."""
     state = _read_state(task_dir)
+    repository = next(
+        (parent for parent in (Path(task_dir).resolve(), *Path(task_dir).resolve().parents) if (parent / ".git").exists()),
+        None,
+    )
+    if repository is None:
+        raise TaskControlError("cannot locate repository for current ref refresh")
+    head = subprocess.run(
+        ["git", "-C", str(repository), "rev-parse", "HEAD"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if head.returncode or current_ref != head.stdout.strip():
+        raise TaskControlError("current ref refresh must name repository HEAD")
     next_state = dict(state)
     next_state.update({"current_ref": current_ref, "revision": expected_revision + 1})
-    return _cas_write(task_dir, expected_revision, next_state)
+    return _cas_write(task_dir, expected_revision, next_state, allow_head_change=True)
 
 
 def attest(task_dir: str | Path, records: dict[str, Any]) -> dict[str, Any]:

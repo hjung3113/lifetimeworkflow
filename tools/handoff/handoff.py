@@ -264,11 +264,25 @@ def _refuse_handoff_pii(handoff: dict[str, Any]) -> None:
         re.compile(r"\b\d{6}[- ]?[1-4]\d{6}\b"),
         re.compile(r"\b\d{3}-?\d{2}-?\d{4}\b"),
     )
-    sensitive_fields = ("goal", "non_goals", "next_action", "stop_condition")
-    for field in sensitive_fields:
-        values = handoff[field] if isinstance(handoff[field], list) else [handoff[field]]
-        if any(any(pattern.search(str(value)) for pattern in patterns) for value in values):
-            raise HandoffError(f"sensitive handoff refused: PII in {field}")
+    # Paths and nested metadata are durable handoff content too.  Scan every
+    # human-controlled string leaf, excluding opaque identifiers and hashes: the
+    # numeric PII patterns would otherwise mistake a task timestamp for a phone.
+    opaque_keys = {"commit", "current_ref", "sha256", "task_id", "state_revision", "evidence_id"}
+
+    def strings(value: Any, key: str | None = None) -> list[str]:
+        if key in opaque_keys or (key is not None and key.endswith("_id")):
+            return []
+        if isinstance(value, str):
+            return [value]
+        if isinstance(value, list):
+            return [text for item in value for text in strings(item, key)]
+        if isinstance(value, dict):
+            return [text for name, item in value.items() for text in strings(item, name)]
+        return []
+
+    values = [re.sub(r"T-\d{14}-[a-z0-9-]+", "TASK", value) for value in strings(handoff)]
+    if any(pattern.search(value) for value in values for pattern in patterns):
+        raise HandoffError("sensitive handoff refused: PII in handoff content")
     try:
         _refuse_if_sensitive({"handoff": _canonical(handoff).decode("ascii")})
     except EvidenceError as exc:
@@ -313,8 +327,14 @@ def validate(task_dir: str | Path, handoff_path: str | Path | None = None) -> di
     # A checkpoint publication commit contains the packet and pointer; its parent is the exact
     # code/state revision described by the handoff.  Direct publication at that revision is also
     # accepted for non-checkpoint workflows.
-    if handoff["current_ref"] not in {head, _git(root, "rev-parse", "HEAD^")}:
+    parents = _git(root, "rev-list", "--parents", "-n", "1", "HEAD").split()
+    publication_parent = parents[1] if len(parents) == 2 else None
+    if handoff["current_ref"] not in {head, publication_parent}:
         raise HandoffError("stale handoff: current ref is not the publication boundary")
+    # Publication-path discipline is enforced before the commit by /checkpoint's
+    # explicit path list and the commit hook.  Validation remains a trust-root
+    # verifier rather than a second staging-policy interpreter, so it can validate
+    # an existing legacy publication whose packet was first introduced with it.
     _validate_ref(root, handoff["state_ref"])
     _validate_ref(root, handoff["evidence_ref"])
     for reference in handoff["critical_constraint_refs"] + handoff["decisions"]:
@@ -421,6 +441,7 @@ def resume(state_dir: str | Path, repo_root: str | Path | None = None) -> dict[s
         "head": _git(root, "rev-parse", "HEAD"),
         "handoff_path": str(pointer["handoff_path"]),
         "handoff_sha256": sha256(handoff_path),
+        "state_sha256": sha256(packet / "state.json"),
         "attested_at": datetime.now(timezone.utc)
         .replace(microsecond=0)
         .isoformat()
@@ -442,7 +463,7 @@ def require_resume_attestation(state_dir: str | Path, repo_root: str | Path | No
     handoff_path = root / str(pointer["handoff_path"])
     packet = packet_root_from_handoff(handoff_path)
     state = show(packet)
-    if state["task_id"] != pointer["task_id"] or state["revision"] != pointer["state_revision"]:
+    if state["task_id"] != pointer["task_id"] or state["revision"] < pointer["state_revision"]:
         raise HandoffError("protected entry blocked: active task revision is stale")
     attestation = _load(Path(state_dir) / RESUME_ATTESTATION_NAME)
     expected_keys = {
@@ -452,6 +473,7 @@ def require_resume_attestation(state_dir: str | Path, repo_root: str | Path | No
         "head",
         "handoff_path",
         "handoff_sha256",
+        "state_sha256",
         "attested_at",
     }
     if set(attestation) != expected_keys:
@@ -459,13 +481,80 @@ def require_resume_attestation(state_dir: str | Path, repo_root: str | Path | No
     if (
         attestation.get("kind") != "handoff-resume-attestation"
         or attestation.get("task_id") != pointer["task_id"]
-        or attestation.get("state_revision") != pointer["state_revision"]
+        or attestation.get("state_revision") != state["revision"]
         or attestation.get("head") != _git(root, "rev-parse", "HEAD")
         or attestation.get("handoff_path") != pointer["handoff_path"]
     ):
         raise HandoffError("protected entry blocked: active handoff has not been resumed")
     if attestation.get("handoff_sha256") != sha256(handoff_path):
         raise HandoffError("protected entry blocked: resume attestation is stale")
+    if attestation.get("state_sha256") != sha256(packet / "state.json"):
+        raise HandoffError("protected entry blocked: active task state is stale")
+
+
+def refresh_resume_attestation(
+    task_dir: str | Path,
+    previous_state: dict[str, Any],
+    next_state: dict[str, Any],
+    *,
+    previous_state_sha256: str,
+    allow_head_change: bool = False,
+) -> None:
+    """Advance a valid resume proof only after a sanctioned CAS state mutation.
+
+    The pointer remains anchored to the immutable handoff that was resumed.  Its
+    attestation follows the verified state lineage, so a normal lifecycle transition
+    cannot freeze the session.  A new HEAD is accepted only for ``refresh_ref``,
+    whose caller verifies that the supplied ref is exactly HEAD.
+    """
+    packet = Path(task_dir)
+    root = _repo(packet)
+    state_dir = root / ".memory/state"
+    pointer_path = state_dir / ACTIVE_POINTER_NAME
+    attestation_path = state_dir / RESUME_ATTESTATION_NAME
+    if not pointer_path.exists():
+        return
+    try:
+        pointer = _load(pointer_path)
+    except HandoffError:
+        return
+    expected_pointer_keys = {"task_id", "handoff_path", "state_revision"}
+    if set(pointer) != expected_pointer_keys or pointer["task_id"] != next_state["task_id"]:
+        return
+    try:
+        attestation = _load(attestation_path)
+    except HandoffError:
+        return
+    expected_keys = {
+        "kind", "task_id", "state_revision", "head", "handoff_path",
+        "handoff_sha256", "state_sha256", "attested_at",
+    }
+    current_head = _git(root, "rev-parse", "HEAD")
+    if (
+        set(attestation) != expected_keys
+        or attestation.get("kind") != "handoff-resume-attestation"
+        or attestation.get("task_id") != next_state["task_id"]
+        or attestation.get("state_revision") != previous_state["revision"]
+        or attestation.get("handoff_path") != pointer["handoff_path"]
+        or attestation.get("handoff_sha256") != sha256(root / str(pointer["handoff_path"]))
+        or attestation.get("state_sha256") != previous_state_sha256
+    ):
+        return
+    if not allow_head_change and attestation.get("head") != current_head:
+        return
+    advanced = dict(attestation)
+    advanced.update(
+        {
+            "state_revision": next_state["revision"],
+            "head": current_head,
+            "state_sha256": sha256(packet / "state.json"),
+            "attested_at": datetime.now(timezone.utc)
+            .replace(microsecond=0)
+            .isoformat()
+            .replace("+00:00", "Z"),
+        }
+    )
+    _atomic_replace(attestation_path, advanced)
 
 
 def _atomic_replace(path: Path, document: dict[str, Any]) -> None:

@@ -304,6 +304,17 @@ def test_resume_attestation_blocks_absent_and_stale_then_allows_a_real_process_r
         check=False,
     )
     assert json.loads(absent.stdout)["hookSpecificOutput"]["permissionDecision"] == "deny"
+    prefixed = subprocess.run(
+        [sys.executable, "-m", "tools.hooks.resume_gate"],
+        input=json.dumps(
+            {"tool_name": "Bash", "cwd": str(root), "tool_input": {"command": "command git commit -m x"}}
+        ),
+        text=True,
+        capture_output=True,
+        env=env,
+        check=False,
+    )
+    assert json.loads(prefixed.stdout)["hookSpecificOutput"]["permissionDecision"] == "deny"
     resumed = subprocess.run(
         [
             sys.executable,
@@ -346,6 +357,68 @@ def test_resume_attestation_blocks_absent_and_stale_then_allows_a_real_process_r
     )
     assert denied.returncode == 0
     assert json.loads(denied.stdout)["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+def test_resume_transition_then_gated_checkpoint_commit_keeps_lifecycle_live(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The actual PreToolUse gate must permit a resumed sanctioned transition through commit."""
+    root, packet = _packet(tmp_path, monkeypatch)
+    (packet / "artifacts/brief_spec/run-1").mkdir(parents=True)
+    (packet / "artifacts/brief_spec/run-1/brief.md").write_text("brief\n", encoding="utf-8")
+    attestation = json.loads((packet / "context-attestation.json").read_text(encoding="utf-8"))
+    attestation["constraints"][0]["applies_to_phases"] = ["EXECUTE"]
+    attest(packet, attestation)
+    subprocess.run(["git", "-C", str(root), "add", ".workflow"], check=True)
+    subprocess.run(["git", "-C", str(root), "commit", "-qm", "execution prerequisites"], check=True)
+    transition(packet, "EXECUTE", 1, current_ref=_git(root, "rev-parse", "HEAD"))
+    generate(packet)
+    state_dir = root / ".memory/state"
+    state_dir.mkdir(parents=True)
+    activate(packet, state_dir)
+    subprocess.run(
+        ["git", "-C", str(root), "add", ".workflow", ".memory/state/active-task.json"], check=True
+    )
+    subprocess.run(["git", "-C", str(root), "commit", "-qm", "checkpoint publication"], check=True)
+    env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[3])}
+
+    def gated(command: str, tool_name: str = "Bash") -> None:
+        event = json.dumps({"tool_name": tool_name, "cwd": str(root), "tool_input": {"command": command}})
+        result = subprocess.run(
+            [sys.executable, "-m", "tools.hooks.resume_gate"], input=event, text=True,
+            capture_output=True, env=env, check=False,
+        )
+        assert result.returncode == 0 and not result.stdout, result.stdout
+
+    denied = subprocess.run(
+        [sys.executable, "-m", "tools.hooks.resume_gate"],
+        input=json.dumps({"tool_name": "Write", "cwd": str(root), "tool_input": {}}),
+        text=True, capture_output=True, env=env, check=False,
+    )
+    assert json.loads(denied.stdout)["hookSpecificOutput"]["permissionDecision"] == "deny"
+    assert resume(state_dir, root)["resume"]["task_id"] == "T-20260719000000-handoff"
+
+    # This CAS bump used to stale the sole attestation and deadlock the next mutation.
+    transition(packet, "REVIEW", 2)
+    gated("git add work.py")
+    (root / "work.py").write_text("after transition\n", encoding="utf-8")
+    gated("git add work.py .workflow/tasks/T-20260719000000-handoff/state.json")
+    subprocess.run(
+        ["git", "-C", str(root), "add", "work.py", ".workflow/tasks/T-20260719000000-handoff/state.json"],
+        check=True,
+    )
+    gated('git commit -m "checkpoint after transition"')
+    subprocess.run(["git", "-C", str(root), "commit", "-qm", "checkpoint after transition"], check=True)
+
+
+def test_pii_refusal_covers_required_read_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _, packet = _packet(tmp_path, monkeypatch)
+    task = json.loads((packet / "task.json").read_text(encoding="utf-8"))
+    task["constraints"][0]["source_path"] = "alice@example.com.txt"
+    _write(packet / "task.json", task)
+    with pytest.raises(HandoffError, match="PII in handoff content"):
+        generate(packet)
+    assert not (packet / "handoffs").exists()
 
 
 @pytest.mark.parametrize(
@@ -407,7 +480,7 @@ def test_pii_refusal_leaves_no_handoff_file(
     task = json.loads((packet / "task.json").read_text(encoding="utf-8"))
     task["goal"] = "contact alice@example.com"
     _write(packet / "task.json", task)
-    with pytest.raises(HandoffError, match="PII in goal"):
+    with pytest.raises(HandoffError, match="PII in handoff content"):
         generate(packet)
     assert not (packet / "handoffs").exists()
 

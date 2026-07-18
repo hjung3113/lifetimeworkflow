@@ -130,8 +130,11 @@ def _active_context_pointer(state_dir: Path = STATE_DIR) -> str:
 
 def _active_task_pointer(state_dir: Path = STATE_DIR) -> str:
     """Render only the bounded active pointer; never task/evidence/artifact bodies."""
+    pointer_path = Path(state_dir) / "active-task.json"
+    if not pointer_path.exists():
+        return ""
     try:
-        value = json.loads((Path(state_dir) / "active-task.json").read_bytes().removeprefix(b"\xef\xbb\xbf"))
+        value = json.loads(pointer_path.read_bytes().removeprefix(b"\xef\xbb\xbf"))
         if not isinstance(value, dict) or set(value) != {"task_id", "handoff_path", "state_revision"}:
             raise ValueError
         root = Path(state_dir).resolve().parents[1]

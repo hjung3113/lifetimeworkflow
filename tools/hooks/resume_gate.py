@@ -19,8 +19,9 @@ from tools.task_control.manager import TaskControlError, show
 
 PROTECTED_PHASES = frozenset({"EXECUTE", "REVIEW", "VERIFY"})
 _MUTATING_BASH = re.compile(
-    r"(?:^|[;&|]\s*)(?:git\s+(?:add|apply|checkout|cherry-pick|commit|merge|mv|rebase|reset|restore|rm|switch)|"
-    r"(?:rm|mv|cp|touch|mkdir|rmdir)\b|(?:sed|perl)\s+-i\b|tee\b|apply_patch\b)|(?:^|[^<])>>?",
+    r"(?:^|[;&|]\s*)(?:(?:(?:command|env|builtin)\s+)*(?:"
+    r"git\s+(?:add|apply|checkout|cherry-pick|commit|merge|mv|rebase|reset|restore|rm|switch)|"
+    r"(?:rm|mv|cp|touch|mkdir|rmdir)\b|(?:sed|perl)\s+-i\b|tee\b|apply_patch\b))|(?:^|[^<])>>?",
 )
 
 
