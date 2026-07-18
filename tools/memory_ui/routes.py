@@ -32,6 +32,7 @@ from datetime import date
 from pathlib import Path
 
 from tools.agree import write as agree_write
+from tools.harness_lint import parse_frontmatter
 from tools.harness_lint.agreements import iter_agreement_files, load_agreement
 from tools.memory_regen.pointer_index import build_index
 from tools.memory_ui import _stamp
@@ -87,12 +88,20 @@ def list_items(*, state_dir: Path, agreements_dir: Path, show_retired: bool = Fa
 
 
 def view_item(item_id: str, *, state_dir: Path, agreements_dir: Path) -> tuple:
-    """Return ``200`` + the raw markdown body of a state file or an agreement; confine the param."""
+    """Return ``200`` + the editable body of a state file (or the raw markdown of an agreement).
+
+    For a state file the frontmatter fence is stripped via the shared
+    :func:`tools.harness_lint.parse_frontmatter` splitter so the UI edits **body-only** — the
+    ``updated:`` stamp and sibling frontmatter keys are owned exclusively by :mod:`._stamp` and
+    must never round-trip through the edit textarea (CR-01 / WR-03). Agreements are read-only and
+    returned verbatim. The param is confined either way (T-16-03).
+    """
     if item_id in _STATE_ITEMS:
         target = _confine(item_id, Path(state_dir))
         if target is None or not target.is_file():
             return 404, dict(_JSON), _json_body({"error": f"not found: {item_id}"})
-        return 200, dict(_MD), target.read_bytes()
+        _frontmatter, body = parse_frontmatter(target.read_text(encoding="utf-8"))
+        return 200, dict(_MD), body.lstrip("\n").encode("utf-8")
 
     try:
         target = agree_write._target_for(item_id, agreements_dir)

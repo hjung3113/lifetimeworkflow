@@ -60,8 +60,17 @@ def stamp_progress(path: str | Path, body_text: str, *, today: str) -> Path:
     target = Path(path)
     frontmatter, _old_body = parse_frontmatter(target.read_text(encoding="utf-8"))
     frontmatter["updated"] = DoubleQuotedScalarString(today)
+
+    # Body normalization keeps the save round-trip idempotent (CR-01). This module owns the
+    # frontmatter exclusively, so if ``body_text`` itself carries a leading frontmatter fence
+    # (e.g. a caller that submitted the whole file), split it off and keep only the body — a second
+    # save must never nest a duplicate ``---`` block. Leading blank lines are then trimmed so the
+    # single canonical ``---\n\n`` separator never grows on repeated Edit→Save cycles.
+    _embedded_fm, body_only = parse_frontmatter(body_text)
+    body_only = body_only.lstrip("\n")
+
     target.write_text(
-        f"---\n{_dump_frontmatter(frontmatter)}---\n\n{body_text}",
+        f"---\n{_dump_frontmatter(frontmatter)}---\n\n{body_only}",
         encoding="utf-8",
         newline="\n",
     )

@@ -162,3 +162,56 @@ def test_progress_save_stamps_quoted_date(tmp_path: Path) -> None:
     assert re.search(r'updated:\s*"\d{4}-\d{2}-\d{2}"', text), "updated: must be a quoted ISO date"
     assert "new body line." in text  # body rewritten
     assert "harness" in text  # the pre-existing 'owner' frontmatter key is preserved
+
+
+def test_view_item_state_returns_body_only(tmp_path: Path, tmp_agreements_tree: Path) -> None:
+    """A state file's editable body has NO frontmatter fence: the UI edits body-only (CR-01)."""
+    from tools.memory_ui import routes
+
+    state = _state_dir(tmp_path)
+    _status, _headers, body = routes.view_item(
+        "progress.md", state_dir=state, agreements_dir=tmp_agreements_tree
+    )
+    text = body.decode("utf-8")
+    assert text.count("---") == 0, "view_item must strip the frontmatter fence from a state body"
+    assert "updated:" not in text and "owner:" not in text  # provenance keys never exposed to edit
+    assert "# Progress" in text and "tiny." in text  # real body content preserved
+
+
+def test_edit_save_round_trip_is_idempotent(tmp_path: Path, tmp_agreements_tree: Path) -> None:
+    """The real UI path (view_item → save_progress) yields exactly ONE frontmatter block, twice.
+
+    This exercises the exact round trip the browser performs: GET the editable region via
+    ``view_item``, POST it back unchanged via ``save_progress``. Regression for CR-01, where
+    ``view_item`` returned the whole file and ``stamp_progress`` re-prepended a second frontmatter
+    block, nesting deeper on every save. Two save cycles prove idempotency.
+    """
+    from tools.harness_lint import parse_frontmatter
+    from tools.memory_ui import routes
+
+    state = _state_dir(tmp_path)
+    target = state / "progress.md"
+
+    def _round_trip() -> str:
+        # 1) GET the editable region the page loads into the textarea.
+        _s, _h, body = routes.view_item(
+            "progress.md", state_dir=state, agreements_dir=tmp_agreements_tree
+        )
+        editable = body.decode("utf-8")
+        # 2) POST it back unmodified (what "Save changes" sends as `body`).
+        status, _h2, _b2 = routes.save_progress("progress.md", editable, state_dir=state)
+        assert status == 200
+        return target.read_text(encoding="utf-8")
+
+    first = _round_trip()
+    fm1, body1 = parse_frontmatter(first)
+    assert "---" not in body1, "body must not contain a nested frontmatter fence after one save"
+    assert re.search(r'updated:\s*"\d{4}-\d{2}-\d{2}"', first), "updated: stamp refreshed on save"
+    assert fm1.get("owner") == "harness", "sibling frontmatter keys preserved"
+    assert "# Progress" in body1 and "tiny." in body1, "body content preserved"
+
+    second = _round_trip()
+    fm2, body2 = parse_frontmatter(second)
+    assert "---" not in body2, "a SECOND save must still leave exactly one frontmatter block"
+    assert fm2.get("owner") == "harness", "sibling keys still preserved on the second cycle"
+    assert second == first, "the round trip is idempotent — no drift on repeated Edit→Save"
