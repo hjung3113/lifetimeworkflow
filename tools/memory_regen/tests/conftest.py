@@ -70,6 +70,74 @@ def tmp_source_tree(tmp_path: Path) -> Path:
 
 
 @pytest.fixture()
+def tmp_pointer_scan_tree(tmp_path: Path) -> Path:
+    """A throwaway repo-shaped tree for the pointer-index generator tests (Phase 16, D-16-02).
+
+    Contains the two memory-item KINDS the scanner enumerates (state files + active/retired
+    agreements) plus scan-root files (a ``docs/`` tree and a single-file ``AGENTS.md`` root) that
+    each reference a memory item by BOTH a ``.memory/...`` path string (``kind="path"``) and a bare
+    agreement slug (``kind="slug"``). One decoy line contains ``<slug>ner`` (``planner``) so the
+    word-boundary guard is falsifiable: slug ``plan`` must NOT match ``planner``.
+
+    Everything is written ONLY under ``tmp_path`` — no real ``.memory/`` plane is ever touched. The
+    returned tree is passed as both ``base_dir`` and (its subpaths) ``scan_roots`` so the random
+    ``tmp_path`` never leaks into the generated output.
+    """
+    tree = tmp_path / "repo"
+    state = tree / ".memory" / "state"
+    agreements = tree / ".memory" / "agreements"
+    derived = tree / ".memory" / "derived"
+    docs = tree / "docs"
+    for d in (state, agreements, derived, docs):
+        d.mkdir(parents=True, exist_ok=True)
+
+    # --- memory items: two state files + one active + one retired agreement (slug "plan") --------
+    (state / "activeContext.md").write_text(
+        '---\nupdated: "2026-07-18"\n---\n\n# Active context\n\nSession progress log.\n',
+        encoding="utf-8",
+    )
+    (state / "progress.md").write_text(
+        '---\nupdated: "2026-07-18"\n---\n\n# Progress\n\nGit holds the full history.\n',
+        encoding="utf-8",
+    )
+    (agreements / "plan.md").write_text(
+        "---\nstatus: active\n"
+        'added: "2026-07-18"\n'
+        'provenance: "synthetic scan fixture"\n---\n\n'
+        "# Plan before expanding\n\nUse the agreed plan first.\n",
+        encoding="utf-8",
+    )
+    (agreements / "retire-me.md").write_text(
+        "---\nstatus: retired\n"
+        'added: "2026-07-18"\n'
+        'provenance: "synthetic scan fixture"\n---\n\n'
+        "# Retired rule\n\nNo longer in force.\n",
+        encoding="utf-8",
+    )
+
+    # --- scan roots: a docs tree + a single-file AGENTS.md at the tree root ----------------------
+    # docs/guide.md references the active-context PATH and the "plan" SLUG, plus a "planner" decoy.
+    (docs / "guide.md").write_text(
+        "# Guide\n"
+        "See .memory/state/activeContext.md for the live session log.\n"
+        "Follow the plan agreement before expanding scope.\n"
+        "The planner subsystem is unrelated and must not match the slug.\n",
+        encoding="utf-8",
+    )
+    # AGENTS.md references the agreement file PATH.
+    (tree / "AGENTS.md").write_text(
+        "# Agents\nRead .memory/agreements/plan.md before acting on working style.\n",
+        encoding="utf-8",
+    )
+    # A derived artifact that MUST be excluded from any walk (self-reference churn guard).
+    (derived / "pointer-index.md").write_text(
+        "# DERIVED\n.memory/agreements/plan.md self-reference must not be scanned.\n",
+        encoding="utf-8",
+    )
+    return tree
+
+
+@pytest.fixture()
 def tmp_contracts_tree(tmp_path: Path, repo_root: Path) -> Path:
     """A throwaway copy of a couple of real contract schemas, for contracts-index tests."""
     schemas = sorted((repo_root / "contracts").glob("**/*.schema.json"))

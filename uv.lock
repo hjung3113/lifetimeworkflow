@@ -16,6 +16,7 @@ members = [
     "logparser-harness-perms",
     "logparser-hooks",
     "logparser-memory-regen",
+    "logparser-memory-ui",
     "logparser-normalize",
     "logparser-polyglot-lint",
     "logparser-strangler-guard",
@@ -311,6 +312,11 @@ requires-dist = [
     { name = "tree-sitter-c-sharp", specifier = "==0.23.5" },
     { name = "tree-sitter-python", specifier = "==0.25.0" },
 ]
+
+[[package]]
+name = "logparser-memory-ui"
+version = "0.0.0"
+source = { virtual = "tools/memory_ui" }
 
 [[package]]
 name = "logparser-normalize"
