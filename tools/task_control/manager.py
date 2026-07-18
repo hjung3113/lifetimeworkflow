@@ -11,16 +11,21 @@ import hashlib
 import json
 import os
 import tempfile
+import fcntl
 from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft202012Validator
 
 from tools.risk_router.router import load_policy
-from tools.task_packet.transitions import is_transition_allowed
+from tools.risk_router.router import decide
+from tools.task_packet.transitions import is_transition_allowed, required_artifacts_for_phase
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 STATE_SCHEMA = REPO_ROOT / "contracts/harness/task-control/state.schema.json"
+TASK_SCHEMA = REPO_ROOT / "contracts/harness/task-control/task.schema.json"
+EVIDENCE_SCHEMA = REPO_ROOT / "contracts/harness/task-control/evidence.schema.json"
+ATTESTATION_SCHEMA = REPO_ROOT / "contracts/harness/task-control/attestation.schema.json"
 
 
 class TaskControlError(ValueError):
@@ -44,12 +49,16 @@ def _state_path(task_dir: str | Path) -> Path:
 
 
 def _validate_state(state: dict[str, Any]) -> None:
-    schema = _json(STATE_SCHEMA)
-    errors = sorted(Draft202012Validator(schema).iter_errors(state), key=lambda e: list(e.path))
+    _validate_document("state", state, STATE_SCHEMA)
+
+
+def _validate_document(name: str, document: dict[str, Any], schema_path: Path) -> None:
+    schema = _json(schema_path)
+    errors = sorted(Draft202012Validator(schema).iter_errors(document), key=lambda e: list(e.path))
     if errors:
         error = errors[0]
         location = ".".join(str(part) for part in error.path) or "<root>"
-        raise TaskControlError(f"state.json:{location}: {error.message}")
+        raise TaskControlError(f"{name}.json:{location}: {error.message}")
 
 
 def _read_state(task_dir: str | Path) -> dict[str, Any]:
@@ -71,7 +80,12 @@ def _atomic_replace(path: Path, value: dict[str, Any]) -> None:
             handle.write(_canonical_bytes(value))
             handle.flush()
             os.fsync(handle.fileno())
+        # Test-only fault injection proves that a process death after durable temp
+        # creation leaves the old canonical state intact and releases flock locks.
+        if os.environ.get("TASK_CONTROL_FAULT_AFTER_FSYNC"):
+            os._exit(86)
         os.replace(temporary, path)
+        # Directory fsync is best-effort POSIX durability (not F_FULLFSYNC on macOS).
         directory = os.open(path.parent, os.O_RDONLY)
         try:
             os.fsync(directory)
@@ -90,15 +104,12 @@ def _cas_write(task_dir: str | Path, expected_revision: int, next_state: dict[st
     if type(expected_revision) is not int or expected_revision < 0:
         raise TaskControlError("expected revision must be a non-negative integer")
     path = _state_path(task_dir)
-    # O_EXCL reservation is deliberately short-lived.  It is not a daemon or a
-    # cross-worktree lock; it closes the check/replace window for competing CAS writers.
-    reservation = path.with_name(f".{path.name}.cas")
-    try:
-        fd = os.open(reservation, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-    except FileExistsError as exc:
-        raise TaskControlError("stale writer: another mutation is in progress") from exc
-    try:
-        os.close(fd)
+    # This is a local advisory lock, not a daemon or distributed transaction.  The
+    # kernel releases it on process death, including SIGKILL, so no stale reservation wedges a task.
+    lock_path = path.with_name(f".{path.name}.lock")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+b") as lock:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
         current = _read_state(task_dir)
         if current["revision"] != expected_revision:
             raise TaskControlError(f"stale writer: expected revision {expected_revision}, found {current['revision']}")
@@ -107,9 +118,29 @@ def _cas_write(task_dir: str | Path, expected_revision: int, next_state: dict[st
         _validate_state(next_state)
         _atomic_replace(path, next_state)
         return next_state
+
+
+def _atomic_create(path: Path, value: dict[str, Any]) -> None:
+    """Create *path* exactly once using a durable temp plus hard-link publication."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(_canonical_bytes(value))
+            handle.flush()
+            os.fsync(handle.fileno())
+        try:
+            os.link(temporary, path)
+        except FileExistsError as exc:
+            raise TaskControlError("state already exists") from exc
+        directory = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
     finally:
         try:
-            reservation.unlink()
+            os.unlink(temporary)
         except FileNotFoundError:
             pass
 
@@ -117,12 +148,10 @@ def _cas_write(task_dir: str | Path, expected_revision: int, next_state: dict[st
 def create(task_dir: str | Path, state: dict[str, Any]) -> dict[str, Any]:
     """Create initial state exactly once; state must be revision-zero INTAKE."""
     path = _state_path(task_dir)
-    if path.exists():
-        raise TaskControlError("state already exists")
     _validate_state(state)
     if state["revision"] != 0:
         raise TaskControlError("initial state revision must be zero")
-    _atomic_replace(path, state)
+    _atomic_create(path, state)
     return state
 
 
@@ -132,20 +161,26 @@ def show(task_dir: str | Path) -> dict[str, Any]:
 
 def _required_artifacts(task_dir: str | Path) -> list[str]:
     task = _json(Path(task_dir) / "task.json")
-    decision = task.get("risk_decision", {})
-    required = decision.get("required_artifacts")
-    if not isinstance(required, list) or not all(isinstance(item, str) and item for item in required):
-        lane = task.get("lane")
-        required = load_policy()["lanes"].get(lane, {}).get("required_artifacts")
+    _validate_document("task", task, TASK_SCHEMA)
+    policy = load_policy()
+    lane = task["lane"]
+    required = policy["lanes"].get(lane, {}).get("required_artifacts")
     if not isinstance(required, list):
         raise TaskControlError("task has no valid required artifact matrix")
+    decision = task["risk_decision"]
+    declared = decision["required_artifacts"]
+    if not set(declared) >= set(required):
+        raise TaskControlError("task required artifacts weaken current policy")
+    current_hash = decide(policy, {"scores": {key: 0 for key in ("ambiguity", "change_scope", "data_security", "reversibility", "impact", "coordination", "context_pressure")}})["policy_hashes"]["effective"]
+    if decision["policy_hashes"]["effective"] != current_hash:
+        raise TaskControlError("task policy hash does not match current policy")
     return list(required)
 
 
-def missing_artifacts(task_dir: str | Path) -> list[str]:
+def missing_artifacts(task_dir: str | Path, required: list[str] | None = None) -> list[str]:
     root = Path(task_dir)
     missing: list[str] = []
-    for artifact in _required_artifacts(root):
+    for artifact in (required if required is not None else _required_artifacts(root)):
         if artifact == "task_packet":
             present = all((root / name).is_file() for name in ("task.json", "state.json", "evidence.json"))
         else:
@@ -172,6 +207,7 @@ def orphan_artifacts(task_dir: str | Path) -> list[str]:
 def _evidence_covers_constraints(task_dir: str | Path) -> bool:
     task = _json(Path(task_dir) / "task.json")
     evidence = _json(Path(task_dir) / "evidence.json")
+    _validate_document("evidence", evidence, EVIDENCE_SCHEMA)
     required = {item["id"] for item in task.get("constraints", [])}
     covered: set[str] = set()
     findings = {item["id"]: set(item.get("constraint_ids", [])) for item in evidence.get("findings", [])}
@@ -179,19 +215,24 @@ def _evidence_covers_constraints(task_dir: str | Path) -> bool:
         if run.get("status") == "PASSED":
             for finding_id in run.get("finding_ids", []):
                 covered.update(findings.get(finding_id, set()))
-            covered.update(run.get("constraint_ids", []))  # forwards-compatible local evidence.
     return required <= covered
 
 
-def transition(task_dir: str | Path, target: str, expected_revision: int, *, next_action: str | None = None) -> dict[str, Any]:
+def transition(task_dir: str | Path, target: str, expected_revision: int, *, next_action: str | None = None, current_ref: str | None = None) -> dict[str, Any]:
     state = _read_state(task_dir)
     if state["blockers"] and target != "BLOCKED":
         raise TaskControlError("unresolved blockers permit only BLOCKED transition")
     task = _json(Path(task_dir) / "task.json")
+    # Always verify the task's policy snapshot, even when this target has no
+    # artifact prerequisite; otherwise early-phase transitions could launder a weakened packet.
+    _required_artifacts(task_dir)
     if not is_transition_allowed(task.get("lane", ""), state["phase"], target):
         raise TaskControlError(f"illegal transition: {state['phase']} -> {target}")
-    if target not in {"BLOCKED", "INTAKE", "CLARIFY", "SPEC", "PLAN"}:
-        missing = missing_artifacts(task_dir)
+    if target == "BLOCKED":
+        raise TaskControlError("use block with a non-empty blocker to enter BLOCKED")
+    required = required_artifacts_for_phase(task["lane"], target)
+    if required:
+        missing = missing_artifacts(task_dir, required)
         if missing:
             raise TaskControlError(f"missing required artifacts: {', '.join(missing)}")
     if target in {"VERIFY", "COMPLETE"} and not _evidence_covers_constraints(task_dir):
@@ -200,11 +241,16 @@ def transition(task_dir: str | Path, target: str, expected_revision: int, *, nex
     next_state.update({"phase": target, "revision": expected_revision + 1, "transition": {"from": state["phase"], "to": target}})
     if next_action is not None:
         next_state["next_action"] = next_action
+    if current_ref is not None:
+        next_state["current_ref"] = current_ref
     return _cas_write(task_dir, expected_revision, next_state)
 
 
 def block(task_dir: str | Path, expected_revision: int, blocker: dict[str, Any]) -> dict[str, Any]:
     state = _read_state(task_dir)
+    task = _json(Path(task_dir) / "task.json")
+    if not is_transition_allowed(task.get("lane", ""), state["phase"], "BLOCKED"):
+        raise TaskControlError(f"illegal transition: {state['phase']} -> BLOCKED")
     next_state = dict(state)
     blockers = list(state["blockers"])
     if any(item["id"] == blocker.get("id") for item in blockers):
@@ -245,7 +291,41 @@ def resume(
 def validate(task_dir: str | Path) -> dict[str, Any]:
     state = _read_state(task_dir)
     missing = missing_artifacts(task_dir)
-    return {"state": state, "missing_artifacts": missing, "orphan_artifacts": orphan_artifacts(task_dir)}
+    root = Path(task_dir)
+    residues = sorted(path.name for path in root.iterdir() if path.name.endswith(".tmp") or path.name.endswith(".cas") or path.name.endswith(".lock"))
+    return {"state": state, "missing_artifacts": missing, "orphan_artifacts": orphan_artifacts(task_dir), "write_residues": residues}
+
+
+def refresh_ref(task_dir: str | Path, expected_revision: int, current_ref: str) -> dict[str, Any]:
+    """Atomically refresh the repository ref without bypassing revision CAS."""
+    state = _read_state(task_dir)
+    next_state = dict(state)
+    next_state.update({"current_ref": current_ref, "revision": expected_revision + 1})
+    return _cas_write(task_dir, expected_revision, next_state)
+
+
+def attest(task_dir: str | Path, records: dict[str, Any]) -> dict[str, Any]:
+    """Write attestation records with source hashes derived from the immutable task packet."""
+    root = Path(task_dir)
+    task = _json(root / "task.json")
+    _validate_document("task", task, TASK_SCHEMA)
+    by_id = {constraint["id"]: constraint for constraint in task["constraints"]}
+    output = dict(records)
+    constraints = output.get("constraints")
+    if not isinstance(constraints, list):
+        raise TaskControlError("attestation constraints must be an array")
+    for record in constraints:
+        if not isinstance(record, dict) or record.get("constraint_id") not in by_id:
+            raise TaskControlError("attestation has unknown constraint ID")
+        constraint = by_id[record["constraint_id"]]
+        source = root.parents[2] / constraint["source_path"]
+        if not source.is_file():
+            raise TaskControlError(f"missing constraint source: {constraint['source_path']}")
+        record["source_path"] = constraint["source_path"]
+        record["source_sha256"] = sha256(source)
+    _validate_document("context-attestation", output, ATTESTATION_SCHEMA)
+    _atomic_replace(root / "context-attestation.json", output)
+    return output
 
 
 def sha256(path: Path) -> str:

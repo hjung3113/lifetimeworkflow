@@ -14,5 +14,6 @@ Human-ratified shape for immutable task intent and routing inputs.
 | goal | string | yes |  |  |
 | lane | ref | yes |  |  |
 | non_goals | array | yes |  |  |
+| risk_decision | object | yes |  | Canonical router output captured at deterministic intake. |
 | risk_inputs | object | yes |  |  |
 | task_id | ref | yes |  |  |

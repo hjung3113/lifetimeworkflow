@@ -45,6 +45,7 @@ def _load_edges(raw: object) -> frozenset[tuple[str, str]]:
 _CONTRACT = _load_contract()
 PHASES = frozenset(str(phase) for phase in _CONTRACT["phases"])
 ALLOWED_TRANSITIONS = {str(lane): _load_edges(edges) for lane, edges in _CONTRACT["lanes"].items()}
+_PHASE_ARTIFACTS = _CONTRACT.get("required_artifacts_by_target_phase", {})
 
 
 def is_transition_allowed(lane: str, source: str, target: str) -> bool:
@@ -52,3 +53,13 @@ def is_transition_allowed(lane: str, source: str, target: str) -> bool:
     if source not in PHASES or target not in PHASES:
         return False
     return (source, target) in ALLOWED_TRANSITIONS.get(lane, frozenset())
+
+
+def required_artifacts_for_phase(lane: str, target: str) -> list[str]:
+    """Return the ratified predecessor artifacts required before entering *target*."""
+    values = _PHASE_ARTIFACTS.get(lane, {}).get(target, [])
+    if not isinstance(values, list) or not all(isinstance(item, str) and item for item in values):
+        raise ValueError(f"invalid phase artifact contract for {lane}/{target}")
+    if len(values) != len(set(values)):
+        raise ValueError(f"duplicate phase artifact contract for {lane}/{target}")
+    return list(values)

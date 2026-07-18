@@ -25,6 +25,7 @@ from tools.docs_sync import generate as docs_sync
 # instance (greeting, GEN-02, 05-02), plus the Phase 18 task-control contracts.
 EXPECTED_PAGES = frozenset(
     {
+        "attestation",
         "evidence",
         "format-conventions",
         "greeting",

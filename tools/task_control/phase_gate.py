@@ -7,20 +7,32 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from tools.task_control.manager import TaskControlError, _json, missing_artifacts, sha256, show
+from tools.task_control.manager import ATTESTATION_SCHEMA, TaskControlError, _json, _validate_document, missing_artifacts, orphan_artifacts, sha256, show
 
 
 def _git(root: Path, *args: str) -> str:
     result = subprocess.run(["git", "-C", str(root), *args], text=True, capture_output=True, check=False)
     if result.returncode:
-        raise TaskControlError("not a readable git worktree")
+        detail = result.stderr.strip() or result.stdout.strip()
+        raise TaskControlError(f"git {' '.join(args)} failed: {detail or 'unknown git error'}")
     return result.stdout.strip()
+
+
+def _is_ancestor(root: Path, base: str, head: str) -> bool:
+    """Return False only for git's ordinary non-ancestor result; surface real git failures."""
+    result = subprocess.run(["git", "-C", str(root), "merge-base", "--is-ancestor", base, head], text=True, capture_output=True, check=False)
+    if result.returncode == 0:
+        return True
+    if result.returncode == 1:
+        return False
+    detail = result.stderr.strip() or result.stdout.strip()
+    raise TaskControlError(f"git merge-base failed: {detail or 'unknown git error'}")
 
 
 def phase_gate(task_dir: str | Path, expected_revision: int, *, repo_root: str | Path | None = None, baseline: str | None = None, prohibited_actions: list[str] | None = None) -> list[str]:
     """Return refresh items, raising a single deterministic error when any are needed."""
     packet = Path(task_dir).resolve()
-    root = Path(repo_root).resolve() if repo_root else Path(_git(packet, "rev-parse", "--show-toplevel"))
+    root = Path(repo_root).resolve() if repo_root else Path(_git(packet, "rev-parse", "--show-toplevel")).resolve()
     refresh: list[str] = []
     try:
         state = show(packet)
@@ -36,17 +48,19 @@ def phase_gate(task_dir: str | Path, expected_revision: int, *, repo_root: str |
         refresh.append("current ref")
     if baseline is not None and state["baseline"]["commit"] != baseline:
         refresh.append("baseline commit")
-    try:
-        _git(root, "merge-base", "--is-ancestor", state["baseline"]["commit"], "HEAD")
-    except TaskControlError:
+    if not _is_ancestor(root, state["baseline"]["commit"], "HEAD"):
         refresh.append("baseline commit")
     if state["blockers"]:
         refresh.append("unresolved blockers")
     refresh.extend(f"required artifact: {name}" for name in missing_artifacts(packet))
+    refresh.extend(f"orphan artifact: {path}" for path in orphan_artifacts(packet))
     task = _json(packet / "task.json")
+    if task.get("task_id") != state["task_id"]:
+        refresh.append("task/state task ID")
     attestation_path = packet / "context-attestation.json"
     try:
         attestation = _json(attestation_path)
+        _validate_document("context-attestation", attestation, ATTESTATION_SCHEMA)
         records = attestation.get("constraints") if isinstance(attestation.get("constraints"), list) else []
     except TaskControlError:
         records = []

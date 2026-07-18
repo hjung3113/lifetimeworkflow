@@ -84,5 +84,7 @@
 ## Deferred Ideas
 
 - Evidence 수집기(21), handoff·injector 배선(22), lifecycle fixture·ADR(23).
+- Artifact run의 완성 marker 및 evidence hash 검증은 Phase 21에서 evidence 수집/검증과 함께
+  도입한다. Phase 20은 phase-oriented presence만 소비하며, orphan은 phase-gate refresh에 노출한다.
 - `/checkpoint`·`/orient` 실제 개정은 Phase 22.
 </deferred>

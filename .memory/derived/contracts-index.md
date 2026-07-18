@@ -1,13 +1,14 @@
 # DERIVED — do not hand-edit (tools/memory_regen/contracts_index.py)
 
-Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reuses tools.contract_hash + tools.contract_drift). 7 contract(s).
+Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reuses tools.contract_hash + tools.contract_drift). 8 contract(s).
 
 | contract | kind | owner | hash | drift |
 | --- | --- | --- | --- | --- |
+| contracts/harness/task-control/attestation.schema.json | other | TBD | 2a708cb2a408 | clean |
 | contracts/harness/task-control/evidence.schema.json | other | TBD | 5728aa5e0921 | clean |
 | contracts/harness/task-control/handoff.schema.json | other | TBD | b9f33c2a761c | clean |
 | contracts/harness/task-control/state.schema.json | other | TBD | 8cabe6c29c2a | clean |
 | contracts/harness/task-control/task.schema.json | other | TBD | 0ed9c1f6f2a7 | clean |
-| contracts/harness/task-control/transitions.json | other | TBD | cdf8651ffa42 | clean |
+| contracts/harness/task-control/transitions.json | other | TBD | 82946fc544e3 | clean |
 | contracts/normalization/format-conventions.schema.json | normalization | TBD | 1af8935bf997 | clean |
 | contracts/sample/greeting.schema.json | other | TBD | 35f71ca2dbeb | clean |
