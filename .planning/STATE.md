@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: MEM2 — Process Memory & Provenance Reframe
-status: completed
-stopped_at: Phase 16 context gathered
-last_updated: "2026-07-18T01:01:14.281Z"
-last_activity: 2026-07-16
+status: executing
+stopped_at: Phase 16 UI-SPEC approved
+last_updated: "2026-07-18T01:32:15.172Z"
+last_activity: 2026-07-18 -- Phase 16 planning complete
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 15
+  total_plans: 21
   completed_plans: 15
-  percent: 100
+  percent: 71
 ---
 
 # Project State
@@ -28,8 +28,8 @@ See: .planning/PROJECT.md (updated 2026-07-14)
 Phase: 17
 Previous: Phase 13 — Injector Reframe + Channel Wiring (v2.1 B, MEM2-02/MEM2-05) — COMPLETE (merged 9b93d28)
 Plan: Not started
-Status: Milestone complete
-Last activity: 2026-07-16
+Status: Ready to execute
+Last activity: 2026-07-18 -- Phase 16 planning complete
 
 ## Performance Metrics
 
@@ -228,9 +228,9 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-18T01:01:14.274Z
-Stopped at: Phase 16 context gathered
-Resume file: .planning/phases/16-local-memory-web-ui-v2-1-e/16-CONTEXT.md
+Last session: 2026-07-18T01:14:11.540Z
+Stopped at: Phase 16 UI-SPEC approved
+Resume file: .planning/phases/16-local-memory-web-ui-v2-1-e/16-UI-SPEC.md
 
 ## Operator Next Steps
 
