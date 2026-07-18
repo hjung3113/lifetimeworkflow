@@ -5,6 +5,12 @@
     "path": ["task_id"],
     "value": "T-20261340000000-invalid-date"
   },
+  {
+    "name": "artifact-parent-traversal",
+    "document": "evidence",
+    "path": ["gate_runs", 0, "artifact", "path"],
+    "value": "artifacts/../x"
+  },
   { "name": "unknown-phase", "document": "state", "path": ["phase"], "value": "DEPLOY" },
   { "name": "unknown-lane", "document": "task", "path": ["lane"], "value": "EXPRESS" },
   {

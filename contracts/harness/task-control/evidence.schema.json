@@ -70,7 +70,7 @@
       "properties": {
         "path": {
           "type": "string",
-          "pattern": "^artifacts/(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+          "pattern": "^artifacts/(?!(?:.*/)?\\.\\.(?:/|$)).+$"
         },
         "summary": { "type": "string", "minLength": 1 },
         "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }

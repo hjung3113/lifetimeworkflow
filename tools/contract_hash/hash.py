@@ -1,10 +1,10 @@
-"""RFC 8785 (JCS) canonicalize + SHA-256 per-schema hasher → manifest (CONTRACT-04, D-07).
+"""RFC 8785 (JCS) canonicalize + SHA-256 contract JSON hasher → manifest (CONTRACT-04, D-07).
 
-``schema_hash`` canonicalizes one ``.schema.json`` with ``rfc8785`` (Trail of Bits, spec-exact
-number canonicalization) and SHA-256s the canonical bytes — NEVER hand-rolling either the
+``schema_hash`` canonicalizes one contract JSON document with ``rfc8785`` (Trail of Bits,
+spec-exact number canonicalization) and SHA-256s the canonical bytes — NEVER hand-rolling either the
 canonicalization or the hash (RESEARCH §Don't Hand-Roll). ``build_manifest`` maps every
-``contracts/**/*.schema.json`` relative path to its hash; the ``--write`` CLI emits the committed
-baseline ``contracts/.hashes/manifest.json``.
+``contracts/**/*.schema.json`` plus explicitly ratified data contracts to their hashes; the
+``--write`` CLI emits the committed baseline ``contracts/.hashes/manifest.json``.
 
 The manifest deliberately includes ``format-conventions.schema.json`` so a §4-5 cross-cutting
 convention change trips the drift gate exactly like a column reorder (PITFALLS P14).
@@ -27,6 +27,7 @@ MANIFEST_PATH = CONTRACTS_DIR / ".hashes" / "manifest.json"
 
 # Glob confined to the contracts/ subtree — no path traversal outside the repo.
 SCHEMA_GLOB = "**/*.schema.json"
+DATA_CONTRACT_PATHS = (Path("harness/task-control/transitions.json"),)
 
 
 def schema_hash(path: str | Path) -> str:
@@ -41,7 +42,7 @@ def schema_hash(path: str | Path) -> str:
 
 
 def build_manifest(contracts_dir: str | Path = CONTRACTS_DIR) -> dict[str, str]:
-    """Map every ``contracts/**/*.schema.json`` (repo-relative POSIX path) → its JCS SHA-256.
+    """Map tracked contract JSON documents (repo-relative POSIX path) → their JCS SHA-256.
 
     Keys are relative to ``contracts_dir``'s parent so both the real repo tree and a copied tmp
     tree (used by the drift tests) yield identical ``contracts/...`` keys. The glob is confined to
@@ -50,7 +51,9 @@ def build_manifest(contracts_dir: str | Path = CONTRACTS_DIR) -> dict[str, str]:
     root = Path(contracts_dir).resolve()
     base = root.parent
     manifest: dict[str, str] = {}
-    for p in sorted(root.glob(SCHEMA_GLOB)):
+    candidates = set(root.glob(SCHEMA_GLOB))
+    candidates.update(root / rel for rel in DATA_CONTRACT_PATHS if (root / rel).is_file())
+    for p in sorted(candidates):
         resolved = p.resolve()
         # Defense-in-depth: ignore anything a symlink might point outside the subtree.
         if root != resolved and root not in resolved.parents:
@@ -80,7 +83,7 @@ def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     parser = argparse.ArgumentParser(
         prog="python -m tools.contract_hash.hash",
-        description="Emit or (re)write the per-schema JCS SHA-256 manifest for a contracts tree.",
+        description="Emit or (re)write the JCS SHA-256 manifest for a contracts tree.",
     )
     parser.add_argument(
         "--write",
@@ -106,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
             shown = out.resolve().relative_to(REPO_ROOT)
         except ValueError:
             shown = out  # --manifest may target a path outside the repo (e.g. a tmp rebaseline)
-        print(f"wrote {shown} ({len(manifest)} schemas hashed)")
+        print(f"wrote {shown} ({len(manifest)} contract JSON documents hashed)")
     else:
         print(
             json.dumps(build_manifest(contracts_dir=args.contracts_dir), indent=2, sort_keys=True)

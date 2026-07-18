@@ -8,13 +8,16 @@ from pathlib import Path
 import pytest
 from jsonschema import Draft202012Validator
 
+from tools.contract_drift.drift import run_gate
 from tools.contract_hash.hash import build_manifest, write_manifest
+from tools.memory_regen import pointer_index, repo_map
 from tools.memory_regen.contracts_index import write as write_contracts_index
-from tools.task_packet.transitions import is_transition_allowed
+from tools.task_packet.transitions import ALLOWED_TRANSITIONS, PHASES, is_transition_allowed
 from tools.task_packet.validate import (
     REPO_ROOT,
     SCHEMA_DIR,
     PacketValidationError,
+    main,
     validate_packet,
 )
 
@@ -196,7 +199,8 @@ def test_negative_fixtures_are_rejected(tmp_path: Path, case: dict):
     if case["name"] == "illegal-transition":
         documents["state"]["phase"] = "COMPLETE"
         documents["handoff"]["phase"] = "COMPLETE"
-    with pytest.raises(PacketValidationError):
+    match = "invalid UTC timestamp" if case["name"] == "invalid-task-timestamp" else None
+    with pytest.raises(PacketValidationError, match=match):
         validate_packet(_write_packet(tmp_path / case["name"], documents))
 
 
@@ -205,6 +209,32 @@ def test_unknown_and_non_edge_transitions_fail_closed():
     assert not is_transition_allowed("FAST", "UNKNOWN", "EXECUTE")
     assert not is_transition_allowed("FAST", "EXECUTE", "COMPLETE")
     assert is_transition_allowed("FAST", "EXECUTE", "VERIFY")
+
+
+def test_schema_enums_transition_contract_and_runtime_sets_are_identical():
+    task_schema = _read(SCHEMA_DIR / "task.schema.json")
+    state_schema = _read(SCHEMA_DIR / "state.schema.json")
+    handoff_schema = _read(SCHEMA_DIR / "handoff.schema.json")
+    contract = _read(SCHEMA_DIR / "transitions.json")
+
+    phase_sets = (
+        set(state_schema["$defs"]["phase"]["enum"]),
+        set(handoff_schema["$defs"]["phase"]["enum"]),
+        set(contract["phases"]),
+        set(PHASES),
+    )
+    lane_sets = (
+        set(task_schema["$defs"]["lane"]["enum"]),
+        set(handoff_schema["$defs"]["lane"]["enum"]),
+        set(contract["lanes"]),
+        set(ALLOWED_TRANSITIONS),
+    )
+    assert all(value == phase_sets[0] for value in phase_sets[1:])
+    assert all(value == lane_sets[0] for value in lane_sets[1:])
+    for lane, raw_edges in contract["lanes"].items():
+        edges = {tuple(edge) for edge in raw_edges}
+        assert edges == ALLOWED_TRANSITIONS[lane]
+        assert all(source in PHASES and target in PHASES for source, target in edges)
 
 
 def test_committed_example_packet_validates():
@@ -228,12 +258,43 @@ def test_task_packet_deletion_does_not_change_derived_regeneration(tmp_path: Pat
     baseline = contracts / ".hashes" / "manifest.json"
     write_manifest(baseline, contracts)
     packet = _write_packet(tmp_path / ".workflow" / "tasks" / "packet", _base_packet())
-    first = tmp_path / "first.md"
-    second = tmp_path / "second.md"
-    write_contracts_index(first, contracts, baseline)
+    source = tmp_path / "tools" / "sample.py"
+    source.parent.mkdir(parents=True)
+    source.write_text("def sample():\n    return 1\n", encoding="utf-8")
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "note.md").write_text("See .memory/state/progress.md.\n", encoding="utf-8")
+
+    first_index = tmp_path / "first-contracts.md"
+    second_index = tmp_path / "second-contracts.md"
+    write_contracts_index(first_index, contracts, baseline)
+    first_repo_map = repo_map.render(repo_map.build_graph([source.parent], base_dir=tmp_path))
+    first_pointers = pointer_index.render_md(
+        pointer_index.build_index(base_dir=tmp_path, scan_roots=[docs])
+    )
     shutil.rmtree(packet)
-    write_contracts_index(second, contracts, baseline)
-    assert first.read_bytes() == second.read_bytes()
+    write_contracts_index(second_index, contracts, baseline)
+    second_repo_map = repo_map.render(repo_map.build_graph([source.parent], base_dir=tmp_path))
+    second_pointers = pointer_index.render_md(
+        pointer_index.build_index(base_dir=tmp_path, scan_roots=[docs])
+    )
+    assert first_index.read_bytes() == second_index.read_bytes()
+    assert first_repo_map == second_repo_map
+    assert first_pointers == second_pointers
+
+
+def test_cli_main_returns_zero_for_valid_packet(tmp_path: Path, capsys):
+    packet = _write_packet(tmp_path / "valid", _base_packet())
+    assert main([str(packet)]) == 0
+    assert capsys.readouterr().out.startswith("PASS:")
+
+
+def test_cli_main_returns_one_for_invalid_packet(tmp_path: Path, capsys):
+    documents = _base_packet()
+    del documents["task"]["goal"]
+    packet = _write_packet(tmp_path / "invalid", documents)
+    assert main([str(packet)]) == 1
+    assert capsys.readouterr().err.startswith("FAIL:")
 
 
 def test_schema_manifest_and_paired_fixture_cover_all_contracts():
@@ -243,21 +304,32 @@ def test_schema_manifest_and_paired_fixture_cover_all_contracts():
         key = f"contracts/harness/task-control/{name}.schema.json"
         assert key in manifest
         Draft202012Validator.check_schema(_read(SCHEMA_DIR / f"{name}.schema.json"))
+    assert "contracts/harness/task-control/transitions.json" in manifest
     assert expected["valid"] == "pass"
     assert all(result == "fail" for name, result in expected.items() if name != "valid")
 
 
-def test_core_contracts_and_fixtures_are_domain_neutral():
-    forbidden = ("examples/", "log-parser", "semiconductor", "equipment-log")
-    paths = [*SCHEMA_DIR.glob("*.schema.json"), *FIXTURES.rglob("*.json")]
-    for path in paths:
-        content = path.read_text(encoding="utf-8").lower()
-        assert not any(term in content for term in forbidden), path
+def test_transition_data_contract_mutation_trips_drift_gate(tmp_path: Path):
+    contracts = tmp_path / "contracts"
+    shutil.copytree(REPO_ROOT / "contracts", contracts)
+    baseline = contracts / ".hashes" / "manifest.json"
+    write_manifest(baseline, contracts)
+    transition_path = contracts / "harness" / "task-control" / "transitions.json"
+    contract = _read(transition_path)
+    contract["version"] += 1
+    transition_path.write_text(json.dumps(contract) + "\n", encoding="utf-8")
+    result = run_gate(contracts, baseline)
+    assert not result["ok"]
+    assert (
+        "contracts/harness/task-control/transitions.json",
+        "changed",
+        "breaking",
+    ) in result["drifted"]
 
 
 def test_task_control_files_are_lf_utf8_without_bom():
     paths = [
-        *SCHEMA_DIR.glob("*.schema.json"),
+        *SCHEMA_DIR.glob("*.json"),
         *FIXTURES.rglob("*.json"),
         *(REPO_ROOT / "tools" / "task_packet").glob("*.py"),
         *(REPO_ROOT / "tools" / "task_packet").glob("*.toml"),

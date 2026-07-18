@@ -90,6 +90,14 @@ def test_build_manifest_ignores_non_schema_files(tmp_path: Path) -> None:
     assert list(build_manifest(contracts)) == ["contracts/a.schema.json"]
 
 
+def test_build_manifest_includes_ratified_transition_data_contract(tmp_path: Path) -> None:
+    contracts = tmp_path / "contracts"
+    path = contracts / "harness" / "task-control" / "transitions.json"
+    path.parent.mkdir(parents=True)
+    path.write_text('{"version": 1, "phases": [], "lanes": {}}\n', encoding="utf-8")
+    assert list(build_manifest(contracts)) == ["contracts/harness/task-control/transitions.json"]
+
+
 def test_build_manifest_drops_symlink_escaping_subtree(tmp_path: Path) -> None:
     # A symlink inside contracts/ pointing at a schema OUTSIDE the subtree must be excluded by the
     # defence-in-depth guard (resolved parent not under root) — else drift could hash foreign files.
