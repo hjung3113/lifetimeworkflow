@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 import textwrap
 import types
@@ -15,6 +16,7 @@ from tools.evidence.capture import EvidenceError, EvidenceRefusal, add_finding, 
 def packet(tmp_path: Path) -> Path:
     root = tmp_path / "T-20260719000000-fixture"
     root.mkdir()
+    subprocess.run(["git", "init", "-q", str(root)], check=True)
     (root / "evidence.json").write_text(json.dumps({
         "task_id": "T-20260719000000-fixture",
         "gate_runs": [],
@@ -59,22 +61,20 @@ def test_hash_tamper_and_missing_artifact_fail_validation(tmp_path: Path, monkey
 def test_unexecuted_pass_and_stale_index_are_rejected(tmp_path: Path) -> None:
     root = packet(tmp_path)
     evidence = json.loads((root / "evidence.json").read_text())
-    evidence["gate_runs"] = [{"id": "E-01", "gate": "tests", "status": "PASSED", "criterion_ids": [], "finding_ids": [], "argv": ["uv", "run", "pytest"], "exit_code": 0, "gate_version": "v1", "started_at": "2026-07-19T00:00:00Z", "ended_at": "2026-07-19T00:00:00Z", "source": "local", "artifact": {"path": "artifacts/tests/E-01/output.log", "summary": "forged", "sha256": "0" * 64}}]
+    evidence["gate_runs"] = [{"id": "E-01", "gate": "tests", "status": "PASSED", "criterion_ids": [], "finding_ids": [], "argv": ["uv", "run", "pytest"], "cwd": root.as_posix(), "exit_code": 0, "gate_version": "v1", "started_at": "2026-07-19T00:00:00Z", "ended_at": "2026-07-19T00:00:00Z", "source": "local", "artifact": {"path": "artifacts/tests/E-01/output.log", "summary": "forged", "sha256": "0" * 64}}]
     (root / "evidence.json").write_text(json.dumps(evidence), encoding="utf-8")
     with pytest.raises(EvidenceError, match="integrity anchor mismatch"):
         validate_evidence(root)
 
 
-def test_sensitive_output_is_refused_without_plaintext_artifact(tmp_path: Path) -> None:
+def test_sensitive_output_is_refused_without_plaintext_artifact(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = packet(tmp_path)
     registry = tmp_path / "registry.json"
     command = ["uv", "run", "pytest", "-c", "password=super-secret-value"]
     registry.write_text(json.dumps({"version": "v1", "gates": {"fixture": {"argv": command, "criterion_pattern": "^AC-[0-9]{2,}$"}}, "secret_patterns": json.loads(capture_module.GATE_REGISTRY.read_text())["secret_patterns"]}), encoding="utf-8")
-    original = capture_module.GATE_REGISTRY
-    capture_module.GATE_REGISTRY = registry
+    monkeypatch.setattr(capture_module, "GATE_REGISTRY", registry)
     with pytest.raises(EvidenceRefusal):
         capture(root, "fixture", command)
-    capture_module.GATE_REGISTRY = original
     contents = "\n".join(path.read_text(errors="ignore") for path in root.rglob("*") if path.is_file())
     assert "super-secret-value" not in contents
     report = json.loads((root / "evidence.json").read_text())["redaction_report"]
@@ -105,6 +105,40 @@ def test_direct_anchor_edit_without_cas_revision_is_rejected(tmp_path: Path, mon
     (root / "state.json").write_text(json.dumps(state), encoding="utf-8")
     with pytest.raises(EvidenceError, match="integrity anchor mismatch"):
         validate_evidence(root)
+
+
+def test_same_revision_anchor_rewrite_is_rejected_at_head_boundary(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A same-revision rewrite is advisory in-session, but cannot cross COMPLETE's HEAD boundary."""
+    root = packet(tmp_path); fake_tests_command(monkeypatch)
+    capture(root, "tests", ["uv", "run", "pytest"])
+    subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.invalid"], check=True)
+    subprocess.run(["git", "-C", str(root), "config", "user.name", "Test"], check=True)
+    subprocess.run(["git", "-C", str(root), "add", "evidence.json"], check=True)
+    subprocess.run(["git", "-C", str(root), "commit", "-qm", "trusted-evidence"], check=True)
+    evidence = json.loads((root / "evidence.json").read_text())
+    evidence["gate_runs"][0]["artifact"]["summary"] = "same-revision forged rewrite"
+    state = json.loads((root / "state.json").read_text())
+    state["evidence_integrity"]["evidence_sha256"] = capture_module._digest(evidence)
+    state["evidence_integrity"]["run_hashes"] = {"E-01": capture_module._digest(evidence["gate_runs"][0])}
+    (root / "evidence.json").write_text(json.dumps(evidence), encoding="utf-8")
+    (root / "state.json").write_text(json.dumps(state), encoding="utf-8")
+    validate_evidence(root)
+    from tools.task_control.manager import _evidence_matches_head
+    assert not _evidence_matches_head(root)
+
+
+def test_capture_forces_task_repository_cwd_and_strips_gate_overrides(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = packet(tmp_path); planted = tmp_path / "planted"; planted.mkdir()
+    script = tmp_path / "context.py"
+    script.write_text("import os\nfrom pathlib import Path\nprint(Path.cwd())\nprint(os.getenv('PYTEST_ADDOPTS', ''))\nprint(os.getenv('RUFF_OUTPUT_FORMAT', ''))\n", encoding="utf-8")
+    command = [sys.executable, str(script)]
+    registry = tmp_path / "registry.json"
+    registry.write_text(json.dumps({"version": "v1", "gates": {"fixture": {"argv": command, "criterion_pattern": "^AC-[0-9]{2,}$"}}, "secret_patterns": []}), encoding="utf-8")
+    monkeypatch.setattr(capture_module, "GATE_REGISTRY", registry)
+    monkeypatch.setenv("PYTEST_ADDOPTS", "--collect-only"); monkeypatch.setenv("RUFF_OUTPUT_FORMAT", "concise"); monkeypatch.chdir(planted)
+    record = capture(root, "fixture", command)
+    assert record["cwd"] == root.as_posix()
+    assert (root / record["artifact"]["path"]).read_text(encoding="utf-8").splitlines()[:3] == [root.as_posix(), "", ""]
 
 
 def test_unregistered_argv_and_sensitive_finding_are_refused(tmp_path: Path) -> None:

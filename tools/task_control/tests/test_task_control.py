@@ -315,3 +315,20 @@ def test_complete_requires_approval_reference_for_constitution_diff(tmp_path: Pa
     subprocess.run(["git", "-C", str(root), "add", "approvals/fixture.json", task_dir.relative_to(root) / "evidence.json"], check=True)
     subprocess.run(["git", "-C", str(root), "commit", "-qm", "approval-and-evidence"], check=True)
     assert transition(task_dir, "COMPLETE", show(task_dir)["revision"])["phase"] == "COMPLETE"
+
+
+def test_complete_rejects_working_tree_rewrite_of_committed_approval(tmp_path: Path) -> None:
+    root, task_dir = make_task(tmp_path, "FAST")
+    transition(task_dir, "EXECUTE", 0); add_artifact(task_dir, "brief_spec"); cover_constraints(task_dir)
+    state = transition(task_dir, "VERIFY", show(task_dir)["revision"])
+    (root / "contracts").mkdir(); (root / "contracts" / "changed.json").write_text("{}\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(root), "add", "."], check=True); subprocess.run(["git", "-C", str(root), "commit", "-qm", "constitution"], check=True)
+    refresh_ref(task_dir, state["revision"], git(root, "rev-parse", "HEAD"))
+    (root / "approvals").mkdir(); approval = root / "approvals" / "fixture.json"
+    approval.write_text(json.dumps({"approved_paths": ["contracts/previous.json"]}), encoding="utf-8")
+    capture(task_dir, "tests", ["uv", "run", "pytest"], human_approval_ref="approvals/fixture.json")
+    subprocess.run(["git", "-C", str(root), "add", "approvals/fixture.json", task_dir.relative_to(root) / "evidence.json"], check=True)
+    subprocess.run(["git", "-C", str(root), "commit", "-qm", "wrong-approval-and-evidence"], check=True)
+    approval.write_text(json.dumps({"approved_paths": ["contracts/changed.json"]}), encoding="utf-8")
+    with pytest.raises(TaskControlError, match="approval"):
+        transition(task_dir, "COMPLETE", show(task_dir)["revision"])

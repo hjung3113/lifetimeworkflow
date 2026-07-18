@@ -6,6 +6,7 @@ import argparse
 import fcntl
 import hashlib
 import json
+import math
 import os
 import re
 import subprocess
@@ -109,7 +110,7 @@ def _looks_like_high_entropy_token(value: str) -> bool:
         if not any(char in "/+=" for char in candidate):
             continue
         frequencies = {char: candidate.count(char) / len(candidate) for char in set(candidate)}
-        entropy = -sum(probability * __import__("math").log2(probability) for probability in frequencies.values())
+        entropy = -sum(probability * math.log2(probability) for probability in frequencies.values())
         if entropy >= 4.3:
             return True
     return False
@@ -150,9 +151,29 @@ def _validate_gate(gate: str, argv: list[str], criterion_ids: list[str], gate_ve
     canonical = definition.get("argv")
     if not isinstance(canonical, list) or argv != canonical:
         raise EvidenceError("argv is not allowed for gate")
+    # The registry validates each gate's accepted AC identifier form. Which
+    # registered gate demonstrates a task-specific AC remains task-packet data;
+    # a global gate-to-AC mapping would incorrectly constrain reusable tasks.
     pattern = definition.get("criterion_pattern")
     if not isinstance(pattern, str) or any(re.fullmatch(pattern, item) is None for item in criterion_ids):
         raise EvidenceError("criterion is not allowed for gate")
+
+
+def _repository_root(task_root: Path) -> Path:
+    """Resolve the only trusted execution directory for a task capture."""
+    repository = next((parent for parent in (task_root.resolve(), *task_root.resolve().parents) if (parent / ".git").exists()), None)
+    if repository is None:
+        raise EvidenceError("capture requires task directory within a repository")
+    return repository
+
+
+def _gate_environment() -> dict[str, str]:
+    """Remove inherited options that can weaken a registered gate command."""
+    return {
+        key: value
+        for key, value in os.environ.items()
+        if key != "PYTEST_ADDOPTS" and not key.startswith("RUFF_")
+    }
 
 
 def _lock(root: Path):
@@ -203,7 +224,7 @@ def _mutate_evidence(root: Path, mutate: Any) -> dict[str, Any]:
 
 def capture(task_dir: str | Path, gate: str, argv: list[str], *, criterion_ids: list[str] | None = None,
             finding_ids: list[str] | None = None, gate_version: str = "v1", source: str = "local",
-            cwd: str | Path | None = None, human_approval_ref: str | None = None) -> dict[str, Any]:
+            human_approval_ref: str | None = None) -> dict[str, Any]:
     """Run a registered command once and append only its observed result."""
     root = Path(task_dir); command = normalize_argv(argv)
     criteria = sorted(set(criterion_ids or [])); findings = sorted(set(finding_ids or []))
@@ -211,7 +232,8 @@ def capture(task_dir: str | Path, gate: str, argv: list[str], *, criterion_ids: 
         raise EvidenceError("invalid gate capture metadata")
     _validate_gate(gate, command, criteria, gate_version)
     _refuse_if_sensitive({"argv": "\n".join(command)}, root)
-    started = datetime.now(UTC); child = subprocess.run(command, cwd=cwd, text=True, capture_output=True, check=False); ended = datetime.now(UTC)
+    execution_root = _repository_root(root)
+    started = datetime.now(UTC); child = subprocess.run(command, cwd=execution_root, env=_gate_environment(), text=True, capture_output=True, check=False); ended = datetime.now(UTC)
     _refuse_if_sensitive({"stdout": child.stdout, "stderr": child.stderr}, root)
     combined = child.stdout.encode() + b"\n--- STDERR ---\n" + child.stderr.encode()
     created_run_roots: list[Path] = []
@@ -224,7 +246,7 @@ def capture(task_dir: str | Path, gate: str, argv: list[str], *, criterion_ids: 
         record = {"id": run_id, "gate": gate, "status": _status(child.returncode, child.stdout, child.stderr),
                   "criterion_ids": criteria, "finding_ids": findings, "argv": command, "exit_code": child.returncode,
                   "gate_version": gate_version, "started_at": started.isoformat().replace("+00:00", "Z"),
-                  "ended_at": ended.isoformat().replace("+00:00", "Z"), "source": source, **({"human_approval_ref": human_approval_ref} if human_approval_ref else {}),
+                  "ended_at": ended.isoformat().replace("+00:00", "Z"), "source": source, "cwd": execution_root.as_posix(), **({"human_approval_ref": human_approval_ref} if human_approval_ref else {}),
                   "artifact": {"path": artifact.relative_to(root).as_posix(), "summary": f"captured {len(child.stdout)} stdout and {len(child.stderr)} stderr bytes", "sha256": hashlib.sha256(combined).hexdigest()}}
         evidence["gate_runs"].append(record); evidence.setdefault("findings", []); evidence.setdefault("redaction_report", {"status": "CLEAR", "refused_fields": []})
         return record
@@ -254,6 +276,9 @@ def add_finding(task_dir: str | Path, finding: dict[str, Any]) -> dict[str, Any]
 
 
 def validate_evidence(task_dir: str | Path) -> dict[str, Any]:
+    # This is an in-session consistency check only: an agent with write access can
+    # rewrite both evidence and its state anchor at one revision. COMPLETE's
+    # byte-identical HEAD comparison is the authoritative trust boundary.
     root = Path(task_dir); evidence = _load(root / "evidence.json"); _schema_validate(evidence)
     state = _load(root / "state.json")
     integrity = state.get("evidence_integrity")

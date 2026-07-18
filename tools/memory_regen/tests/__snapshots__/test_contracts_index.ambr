@@ -8,7 +8,7 @@
   | contract | kind | owner | hash | drift |
   | --- | --- | --- | --- | --- |
   | contracts/harness/task-control/attestation.schema.json | other | TBD | 2a708cb2a408 | clean |
-  | contracts/harness/task-control/evidence.schema.json | other | TBD | 495768997888 | clean |
+  | contracts/harness/task-control/evidence.schema.json | other | TBD | 2c34f666caa8 | clean |
   | contracts/harness/task-control/gate-registry.json | other | TBD | 04a9d3bf8962 | clean |
   | contracts/harness/task-control/handoff.schema.json | other | TBD | b9f33c2a761c | clean |
   | contracts/harness/task-control/state.schema.json | other | TBD | c2a64cab55f3 | clean |

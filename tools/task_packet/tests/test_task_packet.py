@@ -94,6 +94,7 @@ def _base_packet(lane: str = "STRICT", phase: str = "REVIEW", revision: int = 6,
                 "status": "PASSED",
                 "criterion_ids": ["AC-01"],
                 "finding_ids": ["F-01"],
+                "cwd": "/repository",
                 "artifact": {
                     "path": "artifacts/schema-validation.txt",
                     "summary": "Schema validation result.",

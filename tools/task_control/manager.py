@@ -295,14 +295,14 @@ def _constitution_diff_requires_approval(task_dir: str | Path) -> bool:
         reference = run.get("human_approval_ref")
         if not isinstance(reference, str) or not re.fullmatch(r"approvals/[A-Za-z0-9_-]+\.json", reference):
             continue
-        document = repository / reference
         # The approval is a human trust root only when it is already tracked by
-        # HEAD. A working-tree file is agent-writable and therefore not approval.
-        if subprocess.run(["git", "-C", str(repository), "cat-file", "-e", f"HEAD:{reference}"], capture_output=True, check=False).returncode != 0:
+        # HEAD. Read its committed bytes; a working-tree file is agent-writable.
+        committed = subprocess.run(["git", "-C", str(repository), "show", f"HEAD:{reference}"], capture_output=True, check=False)
+        if committed.returncode != 0:
             continue
         try:
-            approval = json.loads(document.read_bytes().removeprefix(b"\xef\xbb\xbf"))
-        except (OSError, json.JSONDecodeError):
+            approval = json.loads(committed.stdout.removeprefix(b"\xef\xbb\xbf"))
+        except json.JSONDecodeError:
             continue
         if isinstance(approval, dict) and set(approval) == {"approved_paths"} and isinstance(approval["approved_paths"], list) and all(isinstance(path, str) for path in approval["approved_paths"]) and sorted(set(approval["approved_paths"])) == constitution_paths:
             return False
