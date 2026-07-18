@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Adaptive Task Control Plane
 status: planning
-last_updated: "2026-07-18T11:21:05.862Z"
-last_activity: 2026-07-18
+last_updated: "2026-07-19T00:00:00.000Z"
+last_activity: 2026-07-19
 progress:
   total_phases: 6
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
-  percent: 33
+  completed_phases: 3
+  total_plans: 3
+  completed_plans: 3
+  percent: 50
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-18)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** v2.2 Adaptive Task Control Plane. **Phase 18 + 19 COMPLETE.** P18 (merged `e8cc23e`): task packet contracts + `.workflow/tasks/` + validator. P19 (merged `19c8afc`): deterministic risk router (`harness/risk-policy.toml` + `tools/risk_router`), escalate-only overlay slot, `/intake` command (both runtimes). TCP-01..06 validated. Execution: build = codex terra (medium, fast off) headless; review alternates fable↔sol; Claude verifies + merges. Next: Phase 20 (Atomic State Manager + Context/Transition Gate).
+**Current focus:** v2.2 Adaptive Task Control Plane. **Phase 18 + 19 + 20 COMPLETE.** P18 (merged `e8cc23e`): task packet contracts + `.workflow/tasks/` + validator. P19 (merged `19c8afc`): deterministic risk router (`harness/risk-policy.toml` + `tools/risk_router`), escalate-only overlay slot, `/intake` command (both runtimes). P20 (merged `27cd67f`): atomic state manager (`tools/task_control` — flock+revision CAS, interrupted-write recovery), phase-oriented required-artifact gate, fail-closed `/phase-gate` + `context-attestation.json` (ratified `attestation.schema.json`). TCP-01..10 validated. Execution: build = codex terra (medium, fast off) headless; review alternates fable↔sol; Claude verifies + merges. Next: Phase 21 (Evidence Bundle Adapters) — reviewer = sol.
 
 ## Current Position
 
-Phase: 20 — Atomic State Manager + Context/Transition Gate (ready to plan)
-Plan: P19 done (risk_router 42, tools 810 green, contract-drift clean, emit clean)
-Status: Phase 19 merged; ready for Phase 20
-Last activity: 2026-07-18 — Phase 19 shipped (terra build → sol review: 4 major fixed → Claude verify/merge)
+Phase: 21 — Evidence Bundle Adapters (ready to plan)
+Plan: P20 done (task_control 16, tools 830 green non-sandbox, contract-drift clean, emit clean)
+Status: Phase 20 merged; ready for Phase 21 (reviewer = sol per alternation)
+Last activity: 2026-07-19 — Phase 20 shipped (terra build → fable review: 5 major → fix → fable re-review: RV-1 major → fix → Claude verify/merge)
 
 ## Performance Metrics
 
