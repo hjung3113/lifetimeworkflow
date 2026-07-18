@@ -7,10 +7,10 @@ last_updated: "2026-07-18T11:21:05.862Z"
 last_activity: 2026-07-18
 progress:
   total_phases: 6
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
+  percent: 17
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-18)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** v2.2 Adaptive Task Control Plane — roadmap created (6 phases, 18–23; TCP-01..18). Design by codex sol (sol-vs-fable debate), human-approved. Next: `/gsd:discuss-phase 18` or `/gsd:plan-phase 18`.
+**Current focus:** v2.2 Adaptive Task Control Plane. **Phase 18 COMPLETE** (merged `e8cc23e`) — task packet contracts (4 schemas + transitions.json), `.workflow/tasks/` convention, `tools/task_packet` validator/transition checker, contract-drift baseline. TCP-01/02 validated. Built by codex sol, adversarially reviewed by claude fable (2 major fixed), Claude verified + merged. Next: Phase 19 (Deterministic Risk Router).
 
 ## Current Position
 
-Phase: 18 — Task Packet Contract Ratification (ready to plan)
-Plan: —
-Status: Roadmap approved; ready to plan Phase 18
-Last activity: 2026-07-18 — Milestone v2.2 roadmap created (phases 18–23)
+Phase: 19 — Deterministic Risk Router (ready to plan)
+Plan: Phase 18 done (94 task_packet tests green, 763 tools tests green, contract-drift clean)
+Status: Phase 18 merged; ready for Phase 19
+Last activity: 2026-07-18 — Phase 18 shipped (sol build → fable review → Claude verify/merge)
 
 ## Performance Metrics
 

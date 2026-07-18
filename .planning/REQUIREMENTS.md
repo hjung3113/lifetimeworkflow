@@ -9,8 +9,8 @@
 
 ### Task Packet Contract (Phase 18)
 
-- [ ] **TCP-01**: 작업 상태 shape가 사람 승인 JSON Schema Draft 2020-12 4종(`task`/`state`/`evidence`/`handoff`)으로 코드보다 먼저 고정되고 contract-drift 해시 게이트에 등록된다 (schema 변경 시 paired golden + 사람 승인 요구).
-- [ ] **TCP-02**: 한 작업 인스턴스가 `.workflow/tasks/<task-id>/`에 phase·lane·baseline-ref 상태로 존재하며, `.memory/state/`와 상호 독립이다(한쪽 삭제가 다른 쪽 검증 결과를 바꾸지 않음).
+- [x] **TCP-01**: 작업 상태 shape가 사람 승인 JSON Schema Draft 2020-12 4종(`task`/`state`/`evidence`/`handoff`)으로 코드보다 먼저 고정되고 contract-drift 해시 게이트에 등록된다 (schema 변경 시 paired golden + 사람 승인 요구).
+- [x] **TCP-02**: 한 작업 인스턴스가 `.workflow/tasks/<task-id>/`에 phase·lane·baseline-ref 상태로 존재하며, `.memory/state/`와 상호 독립이다(한쪽 삭제가 다른 쪽 검증 결과를 바꾸지 않음).
 
 ### Deterministic Risk Router (Phase 19)
 
@@ -77,8 +77,8 @@ Deferred to a later milestone (설계가이드 §14 우선순위 3·6·7 + 후�
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TCP-01 | Phase 18 | Pending |
-| TCP-02 | Phase 18 | Pending |
+| TCP-01 | Phase 18 | Complete |
+| TCP-02 | Phase 18 | Complete |
 | TCP-03 | Phase 19 | Pending |
 | TCP-04 | Phase 19 | Pending |
 | TCP-05 | Phase 19 | Pending |
