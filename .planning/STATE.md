@@ -18,10 +18,10 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-07-14)
+See: .planning/PROJECT.md (updated 2026-07-18)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 16 — local-memory-web-ui-v2-1-e
+**Current focus:** Planning next milestone — v2.1 (MEM2 — Process Memory & Provenance Reframe) shipped + archived 2026-07-18 (`.planning/milestones/v2.1-*`). Phase 17 (infra) remains live. Next: `/gsd:new-milestone`.
 
 ## Current Position
 

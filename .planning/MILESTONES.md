@@ -1,5 +1,19 @@
 # Milestones
 
+## v2.1 MEM2 — Process Memory & Provenance Reframe (Shipped: 2026-07-18)
+
+**Phases completed:** 5 phases, 19 plans, 42 tasks
+
+**Key accomplishments:**
+
+- Scaffolded the committed, human-authored `.memory/agreements/` PROCESS tier (per-guideline `<slug>.md`: title + one-line rule + `status` + provenance stamp), reworded the distrust framing to *data authority* across all five echo surfaces (`.memory/README.md`, both state files, `two-plane-memory` SKILL, `AGENTS.md`), and ratified the memory-model change as ADR-0006 via the human-gated constitution path — an agent Write to `docs/adr/` is correctly denied; CODEOWNERS ratifies (Phase 12).
+- Reframed the SessionStart injector into two distinct blocks — a never-dropped **priority-0** full-body working-agreements directive (capped, overflow→pointer) plus a **data-scoped** provenance banner ("which artifact wins a data conflict", not "distrust your own work") — and surfaced a **verbatim** `/checkpoint`-written `updated:` freshness stamp, all with `assemble()` determinism (delete+regen byte-identical, ≤4000 chars, no wall-clock) preserved (Phase 13).
+- Added the sanctioned `/agree` write path — a zero-dep `tools/agree/` refusal-first writer that appends/retires an agreement **only on explicit user feedback** — backed by a `tools/harness_lint` provenance/anti-invent guard that fails any entry lacking a well-formed origin stamp, so agents cannot self-invent unsolicited entries (Phase 14).
+- Round-tripped the full surface delta (`/agree` + updated skills + the `AGENTS.md` managed block) through the Phase-7 emitter to **both** runtimes (84 artifacts, zero emitter code change), settling the carried Phase-12/13 re-emit debt — emit-drift clean, **no model id**, GEN-04 core→example green, full suite passing (Phase 15).
+- Shipped a **local, no-network, no-auth** memory web UI (127.0.0.1-only stdlib server, single inlined zero-asset page) over a machine-built **DERIVED pointer-index**, with **surface-and-confirm** referential integrity that reconciles pointers on edit/retire; browser round-trip verified live 5/5 (Phase 16).
+
+---
+
 ## v2.0 Long-Horizon (Shipped: 2026-07-14)
 
 **Phases completed:** 3 phases, 11 plans, 16 tasks
