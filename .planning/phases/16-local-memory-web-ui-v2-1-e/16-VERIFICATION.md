@@ -1,8 +1,9 @@
 ---
 phase: 16-local-memory-web-ui-v2-1-e
 verified: 2026-07-18T02:31:09Z
-status: human_needed
-score: 3/3 must-haves verified (automated); 1 checkpoint task unperformed
+status: passed
+score: 3/3 must-haves verified (automated) + 5/5 browser round-trip items verified (agent via Orca browser, user-authorized)
+human_verification_resolved: 2026-07-18 — all 5 items exercised live in the Orca embedded browser at the user's explicit request; evidence in 16-HUMAN-UAT.md and 16-06-SUMMARY.md
 overrides_applied: 0
 human_verification:
   - test: "Run `uv run python -m tools.memory_ui`, open the printed 127.0.0.1 URL, confirm the two-column layout renders (Progress state group + Agreements group with empty-state copy)."
