@@ -106,6 +106,8 @@ def _base_packet(lane: str = "STRICT", phase: str = "REVIEW", revision: int = 6,
                 "id": "F-01",
                 "summary": "Contract is internally consistent.",
                 "constraint_ids": ["C-01"],
+                "severity": "minor",
+                "disposition": "open",
             }
         ],
     }

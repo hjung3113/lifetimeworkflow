@@ -218,7 +218,9 @@ def orphan_artifacts(task_dir: str | Path) -> list[str]:
     artifacts = root / "artifacts"
     if not artifacts.exists():
         return []
-    found = sorted(path.relative_to(root).as_posix() for path in artifacts.rglob("*") if path.is_file())
+    # Only adapter-owned output.log files can become canonical run artifacts.
+    # Auxiliary files are not evidence and must not make a valid capture orphaned.
+    found = sorted(path.relative_to(root).as_posix() for path in artifacts.rglob("output.log") if path.is_file())
     return [path for path in found if path not in referenced]
 
 
@@ -264,7 +266,7 @@ def _constitution_diff_requires_approval(task_dir: str | Path) -> bool:
     root = Path(task_dir).resolve()
     repository = next((parent for parent in root.parents if (parent / ".git").exists()), None)
     if repository is None:
-        return False
+        raise TaskControlError("cannot locate repository for constitution-plane diff")
     try:
         changed = subprocess.run(
             ["git", "-C", str(repository), "diff", "--name-only", state["baseline"]["commit"], state["current_ref"]],
@@ -272,11 +274,25 @@ def _constitution_diff_requires_approval(task_dir: str | Path) -> bool:
         ).stdout.splitlines()
     except subprocess.CalledProcessError as exc:
         raise TaskControlError("cannot inspect constitution-plane diff") from exc
-    constitution = any(path == "golden" or path.startswith(("contracts/", "golden/", "docs/adr/")) for path in changed)
+    constitution_paths = sorted(path for path in changed if path == "golden" or path.startswith(("contracts/", "golden/", "docs/adr/", "glossary/")))
+    constitution = bool(constitution_paths)
     if not constitution:
         return False
     evidence = _json(root / "evidence.json")
-    return not any(isinstance(run.get("human_approval_ref"), str) for run in evidence.get("gate_runs", []))
+    for run in evidence.get("gate_runs", []):
+        reference = run.get("human_approval_ref")
+        if not isinstance(reference, str) or not reference.startswith("approvals/") or ".." in Path(reference).parts:
+            continue
+        document = repository / reference
+        if not document.is_file():
+            continue
+        try:
+            approval = json.loads(document.read_bytes().removeprefix(b"\xef\xbb\xbf"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if isinstance(approval, dict) and set(approval) == {"approved_paths"} and isinstance(approval["approved_paths"], list) and all(isinstance(path, str) for path in approval["approved_paths"]) and sorted(set(approval["approved_paths"])) == constitution_paths:
+            return False
+    return True
 
 
 def transition(task_dir: str | Path, target: str, expected_revision: int, *, next_action: str | None = None, current_ref: str | None = None) -> dict[str, Any]:

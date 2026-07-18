@@ -12,6 +12,7 @@ Current revision and repository context for a task packet.
 | blockers | array | yes |  |  |
 | completed_items | array | yes |  |  |
 | current_ref | ref | yes |  |  |
+| evidence_integrity | object | no |  |  |
 | next_action | string | yes |  |  |
 | phase | ref | yes |  |  |
 | revision | integer | yes |  |  |

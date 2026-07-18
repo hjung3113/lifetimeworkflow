@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from tools.risk_router.intake import create_packet
+from tools.evidence.capture import add_finding, capture
 from tools.risk_router.router import decide, load_policy
 from tools.task_control.manager import TaskControlError, attest, block, create, missing_artifacts, orphan_artifacts, refresh_ref, resume, show, transition, validate
 from tools.task_control.phase_gate import phase_gate
@@ -69,11 +70,11 @@ def make_task(tmp_path: Path, lane: str = "STANDARD") -> tuple[Path, Path]:
 
 
 def cover_constraints(task_dir: Path, artifact: Path | None = None, *, artifacts: list[Path] | None = None) -> None:
-    referenced = artifacts or [artifact or add_artifact(task_dir, "brief_spec")]
-    runs = []
-    for index, item in enumerate(referenced, start=1):
-        runs.append({"id": f"E-{index:02}", "gate": "test", "status": "PASSED", "criterion_ids": ["AC-01"], "finding_ids": ["F-01"] if index == 1 else [], "argv": ["fixture"], "exit_code": 0, "gate_version": "fixture", "started_at": "2026-07-19T00:00:00Z", "ended_at": "2026-07-19T00:00:00Z", "source": "local", "artifact": {"path": item.relative_to(task_dir).as_posix(), "summary": "ok", "sha256": digest(item)}})
-    dump(task_dir / "evidence.json", {"task_id": show(task_dir)["task_id"], "findings": [{"id": "F-01", "summary": "covered", "constraint_ids": ["C-01"], "severity": "minor", "disposition": "resolved", "evidence_ref": "E-01"}], "gate_runs": runs, "redaction_report": {"status": "CLEAR", "refused_fields": []}})
+    # A real child capture replaces the former hand-written PASSED record.
+    if json.loads((task_dir / "evidence.json").read_text())["findings"]:
+        return
+    record = capture(task_dir, "tests", ["uv", "run", "pytest", "--version"], criterion_ids=["AC-01"], finding_ids=["F-01"])
+    add_finding(task_dir, {"id": "F-01", "summary": "covered", "constraint_ids": ["C-01"], "severity": "minor", "disposition": "resolved", "evidence_ref": record["id"]})
 
 
 def satisfy_target(task_dir: Path, lane: str, target: str) -> None:
@@ -203,7 +204,8 @@ def test_orphans_are_diagnostic_before_verify_and_block_verify(tmp_path: Path) -
     root, task_dir = make_task(tmp_path)
     artifact = add_artifact(task_dir, "brief_spec")
     cover_constraints(task_dir, artifact)
-    orphan = add_artifact(task_dir, "spec")
+    orphan = task_dir / "artifacts" / "tests" / "unreferenced" / "output.log"
+    orphan.parent.mkdir(parents=True, exist_ok=True); orphan.write_text("orphan\n", encoding="utf-8")
     assert orphan_artifacts(task_dir)
     assert phase_gate(task_dir, 0, repo_root=root) == [f"orphan artifact: {orphan.relative_to(task_dir).as_posix()}"]
     state = show(task_dir); state.update({"phase": "VERIFY", "revision": 1, "transition": {"from": "EXECUTE", "to": "VERIFY"}}); dump(task_dir / "state.json", state)
@@ -261,7 +263,7 @@ def test_verify_requires_passing_evidence_for_every_required_criterion(tmp_path:
     evidence = json.loads((task_dir / "evidence.json").read_text())
     evidence["gate_runs"][0]["criterion_ids"] = []
     dump(task_dir / "evidence.json", evidence)
-    with pytest.raises(TaskControlError, match="criterion"):
+    with pytest.raises(TaskControlError, match="integrity anchor mismatch"):
         transition(task_dir, "VERIFY", state["revision"])
 
 
@@ -274,7 +276,7 @@ def test_complete_rejects_unresolved_major_finding(tmp_path: Path) -> None:
     evidence = json.loads((task_dir / "evidence.json").read_text())
     evidence["findings"][0].update({"severity": "major", "disposition": "open"})
     dump(task_dir / "evidence.json", evidence)
-    with pytest.raises(TaskControlError, match="unresolved"):
+    with pytest.raises(TaskControlError, match="integrity anchor mismatch"):
         transition(task_dir, "COMPLETE", state["revision"])
 
 
@@ -289,7 +291,6 @@ def test_complete_requires_approval_reference_for_constitution_diff(tmp_path: Pa
     state = refresh_ref(task_dir, state["revision"], git(root, "rev-parse", "HEAD"))
     with pytest.raises(TaskControlError, match="approval"):
         transition(task_dir, "COMPLETE", state["revision"])
-    evidence = json.loads((task_dir / "evidence.json").read_text())
-    evidence["gate_runs"][0]["human_approval_ref"] = "approvals/fixture"
-    dump(task_dir / "evidence.json", evidence)
-    assert transition(task_dir, "COMPLETE", state["revision"])["phase"] == "COMPLETE"
+    (root / "approvals").mkdir(); (root / "approvals" / "fixture.json").write_text(json.dumps({"approved_paths": ["contracts/changed.json"]}), encoding="utf-8")
+    capture(task_dir, "tests", ["uv", "run", "pytest", "--version"], human_approval_ref="approvals/fixture.json")
+    assert transition(task_dir, "COMPLETE", show(task_dir)["revision"])["phase"] == "COMPLETE"

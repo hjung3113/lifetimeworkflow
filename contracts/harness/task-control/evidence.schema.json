@@ -47,7 +47,7 @@
           "source": { "enum": ["local", "ci"] },
           "human_approval_ref": {
             "type": "string",
-            "pattern": "^(?:docs/adr/ADR-[^/]+\\.md|approvals/[A-Za-z0-9._-]+)$"
+            "pattern": "^approvals/[A-Za-z0-9_-]+\\.json$"
           },
           "artifact": { "$ref": "#/$defs/artifact" }
         }
@@ -58,7 +58,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "summary", "constraint_ids"],
+        "required": ["id", "summary", "constraint_ids", "severity", "disposition"],
         "properties": {
           "id": { "$ref": "#/$defs/findingId" },
           "summary": { "type": "string", "minLength": 1 },
@@ -70,7 +70,21 @@
           "severity": { "enum": ["blocker", "major", "minor", "nit"] },
           "disposition": { "enum": ["open", "resolved", "accepted"] },
           "evidence_ref": { "$ref": "#/$defs/evidenceId" }
-        }
+          ,"human_approval_ref": {
+            "type": "string",
+            "pattern": "^approvals/[A-Za-z0-9_-]+\\.json$"
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "disposition": { "enum": ["resolved", "accepted"] } }, "required": ["disposition"] },
+            "then": { "required": ["evidence_ref"] }
+          },
+          {
+            "if": { "properties": { "severity": { "const": "blocker" }, "disposition": { "const": "accepted" } }, "required": ["severity", "disposition"] },
+            "then": { "required": ["human_approval_ref"] }
+          }
+        ]
       }
     },
     "redaction_report": {

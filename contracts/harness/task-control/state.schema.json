@@ -66,6 +66,18 @@
           }
         }
       ]
+    },
+    "evidence_integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_sha256", "run_hashes"],
+      "properties": {
+        "evidence_sha256": { "$ref": "#/$defs/sha256" },
+        "run_hashes": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/sha256" }
+        }
+      }
     }
   },
   "allOf": [
@@ -77,7 +89,7 @@
           "transition": { "type": "null" }
         }
       },
-      "else": { "properties": { "transition": { "type": "object" } } }
+      "else": {}
     }
   ],
   "$defs": {
@@ -96,6 +108,7 @@
       ]
     },
     "criterionId": { "type": "string", "pattern": "^AC-[0-9]{2,}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "constraintId": { "type": "string", "pattern": "^C-[0-9]{2,}$" },
     "gitCommit": {
       "type": "string",
