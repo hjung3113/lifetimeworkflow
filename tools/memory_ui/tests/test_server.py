@@ -16,7 +16,7 @@ import json
 import threading
 import urllib.error
 import urllib.request
-from contextlib import closing, contextmanager
+from contextlib import contextmanager
 from pathlib import Path
 
 
@@ -51,7 +51,7 @@ def test_make_server_binds_loopback_only() -> None:
     """The server binds 127.0.0.1 — the loopback bind IS the access-control boundary (T-16-05)."""
     from tools.memory_ui import server
 
-    with closing(server.make_server(0)) as httpd:
+    with server.make_server(0) as httpd:
         assert httpd.server_address[0] == "127.0.0.1"  # never 0.0.0.0 / "" / a routable address
 
 
@@ -59,7 +59,7 @@ def test_get_root_serves_inlined_page(tmp_path: Path) -> None:
     """GET / returns 200 and the self-contained inlined page (no external assets)."""
     from tools.memory_ui import page, server
 
-    with closing(server.make_server(0)) as httpd, _running(httpd) as base:
+    with server.make_server(0) as httpd, _running(httpd) as base:
         with urllib.request.urlopen(base + "/") as resp:
             assert resp.status == 200
             body = resp.read().decode("utf-8")
@@ -74,7 +74,7 @@ def test_get_items_dispatches_to_routes(tmp_path, tmp_agreements_tree, monkeypat
     monkeypatch.setattr(server, "STATE_DIR", _state_dir(tmp_path))
     monkeypatch.setattr(server, "AGREEMENTS_DIR", tmp_agreements_tree)
 
-    with closing(server.make_server(0)) as httpd, _running(httpd) as base:
+    with server.make_server(0) as httpd, _running(httpd) as base:
         with urllib.request.urlopen(base + "/api/items") as resp:
             assert resp.status == 200
             data = json.loads(resp.read().decode("utf-8"))
@@ -90,15 +90,14 @@ def test_post_body_is_size_bounded(tmp_path, tmp_agreements_tree, monkeypatch) -
     monkeypatch.setattr(server, "AGREEMENTS_DIR", tmp_agreements_tree)
     monkeypatch.setattr(server, "DERIVED_DIR", tmp_path / "derived")
     oversized = b"x" * (server.MAX_BODY_BYTES + 1)
-    req = urllib.request.Request(
-        "PLACEHOLDER",
-        data=oversized,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
 
-    with closing(server.make_server(0)) as httpd, _running(httpd) as base:
-        req.full_url = base + "/api/agreement/add"
+    with server.make_server(0) as httpd, _running(httpd) as base:
+        req = urllib.request.Request(
+            base + "/api/agreement/add",
+            data=oversized,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
         try:
             with urllib.request.urlopen(req) as resp:
                 status = resp.status
