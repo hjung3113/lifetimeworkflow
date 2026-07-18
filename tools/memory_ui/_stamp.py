@@ -4,9 +4,9 @@ The single write-path helper that refreshes the ``updated:`` frontmatter stamp o
 state file (``.memory/state/*.md``) when the UI saves an edit. It is composed from the shared
 :func:`tools.harness_lint.parse_frontmatter` splitter plus a quoted-scalar YAML dump that mirrors
 :func:`tools.agree.write._dump_frontmatter`, but quotes only the ``updated`` **value** (via
-``DoubleQuotedScalarString``) — matching ``harness/commands/checkpoint.md``'s ``updated: "YYYY-MM-DD"``
-form (unquoted key, quoted value) rather than the agreements' all-scalar-quoted style. The date
-round-trips as a *string*, never a YAML date object.
+``DoubleQuotedScalarString``) — matching ``harness/commands/checkpoint.md``'s
+``updated: "YYYY-MM-DD"`` form (unquoted key, quoted value) rather than the agreements'
+all-scalar-quoted style. The date round-trips as a *string*, never a YAML date object.
 
 Tier / determinism contract (T-16-12): the date is a **WRITE-path** value supplied by the caller
 as ``today=``. This module NEVER reads a wall-clock at import time and is deliberately kept OUT of
