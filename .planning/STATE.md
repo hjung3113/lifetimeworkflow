@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Adaptive Task Control Plane
 status: planning
-last_updated: "2026-07-19T00:00:00.000Z"
+last_updated: "2026-07-19T12:00:00.000Z"
 last_activity: 2026-07-19
 progress:
   total_phases: 6
-  completed_phases: 3
-  total_plans: 3
-  completed_plans: 3
-  percent: 50
+  completed_phases: 4
+  total_plans: 4
+  completed_plans: 4
+  percent: 67
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-18)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** v2.2 Adaptive Task Control Plane. **Phase 18 + 19 + 20 COMPLETE.** P18 (merged `e8cc23e`): task packet contracts + `.workflow/tasks/` + validator. P19 (merged `19c8afc`): deterministic risk router (`harness/risk-policy.toml` + `tools/risk_router`), escalate-only overlay slot, `/intake` command (both runtimes). P20 (merged `27cd67f`): atomic state manager (`tools/task_control` — flock+revision CAS, interrupted-write recovery), phase-oriented required-artifact gate, fail-closed `/phase-gate` + `context-attestation.json` (ratified `attestation.schema.json`). TCP-01..10 validated. Execution: build = codex terra (medium, fast off) headless; review alternates fable↔sol; Claude verifies + merges. Next: Phase 21 (Evidence Bundle Adapters) — reviewer = sol.
+**Current focus:** v2.2 Adaptive Task Control Plane. **Phase 18 + 19 + 20 + 21 COMPLETE.** P18 (merged `e8cc23e`): task packet contracts + `.workflow/tasks/` + validator. P19 (merged `19c8afc`): deterministic risk router (`harness/risk-policy.toml` + `tools/risk_router`), escalate-only overlay slot, `/intake` command (both runtimes). P20 (merged `27cd67f`): atomic state manager (`tools/task_control` — flock+revision CAS, interrupted-write recovery), phase-oriented required-artifact gate, fail-closed `/phase-gate` + `context-attestation.json` (ratified `attestation.schema.json`). P21 (merged `1b4a611`): forgery-detecting evidence adapters (`tools/evidence` — wraps existing gates, records argv/exit/hash/status, gate-registry.json exact-argv binding, secret/PII refusal, HEAD-committed evidence+approval trust root at COMPLETE via the no-agent-commit invariant). TCP-01..13 validated. Execution: build = codex terra (medium, fast off) headless; review alternates fable↔sol; Claude verifies + merges. **Note:** codex/sol final output is content-filtered on secret/forgery-shaped reviews (OpenAI cyber filter) — P21 review ran on fable instead (justified deviation; see [[design-and-gsd-via-codex-sol]] item 8). Signed external evidence attestation deferred to Phase 23 (P21 D-10). Next: Phase 22 (Handoff + Fresh-Session Resume) — reviewer = sol (or fable if secret/PII-heavy).
 
 ## Current Position
 
-Phase: 21 — Evidence Bundle Adapters (ready to plan)
-Plan: P20 done (task_control 16, tools 830 green non-sandbox, contract-drift clean, emit clean)
-Status: Phase 20 merged; ready for Phase 21 (reviewer = sol per alternation)
-Last activity: 2026-07-19 — Phase 20 shipped (terra build → fable review: 5 major → fix → fable re-review: RV-1 major → fix → Claude verify/merge)
+Phase: 22 — Handoff + Fresh-Session Resume (ready to plan)
+Plan: P21 done (evidence+task_control 57, tools 854 green non-sandbox, contract-drift clean, emit clean)
+Status: Phase 21 merged; ready for Phase 22 (reviewer = sol per alternation, or fable if secret/PII-heavy)
+Last activity: 2026-07-19 — Phase 21 shipped (terra build → fable review: 6 major → fix → 2 fable re-reviews: 4 then 2 residual majors → fixes → Claude verify/merge; sol content-filtered off this phase)
 
 ## Performance Metrics
 
