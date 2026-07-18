@@ -25,6 +25,7 @@
 /contracts/        @hjung3113
 /docs/adr/         @hjung3113
 /golden/           @hjung3113
+/approvals/        @hjung3113
 
 # ── Example-instance equivalents (constitution plane inside an instance) ─────────────────────
 /examples/*/contracts/   @hjung3113

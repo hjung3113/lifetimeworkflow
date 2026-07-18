@@ -96,11 +96,27 @@ def _sensitive_pattern() -> re.Pattern[str]:
         raise EvidenceError("invalid secret pattern registry")
     # Email and SSN are intentionally not blanket blockers: ordinary test output often
     # contains them. Credentials remain fail-closed, while PII needs an explicit policy.
-    return re.compile("(?:" + "|".join(patterns) + ")", re.IGNORECASE)
+    return re.compile("(?:" + "|".join(patterns) + ")" if patterns else r"(?!)", re.IGNORECASE)
+
+
+def _looks_like_high_entropy_token(value: str) -> bool:
+    """Reject base64-like 40-byte tokens, but not ordinary 40-hex Git IDs."""
+    for candidate in re.findall(r"\b[A-Za-z0-9/+=]{40}\b", value):
+        if re.fullmatch(r"[0-9a-fA-F]{40}", candidate):
+            continue
+        # Plain long identifiers and filesystem segments are not credentials.
+        # This heuristic is deliberately scoped to the base64-only characters.
+        if not any(char in "/+=" for char in candidate):
+            continue
+        frequencies = {char: candidate.count(char) / len(candidate) for char in set(candidate)}
+        entropy = -sum(probability * __import__("math").log2(probability) for probability in frequencies.values())
+        if entropy >= 4.3:
+            return True
+    return False
 
 
 def _refuse_if_sensitive(values: dict[str, str], root: Path | None = None) -> None:
-    refused = sorted(name for name, value in values.items() if _sensitive_pattern().search(value))
+    refused = sorted(name for name, value in values.items() if _sensitive_pattern().search(value) or _looks_like_high_entropy_token(value))
     if refused:
         if root is not None and (root / "evidence.json").is_file():
             with _lock(root):
@@ -131,8 +147,8 @@ def _validate_gate(gate: str, argv: list[str], criterion_ids: list[str], gate_ve
         raise EvidenceError("unregistered gate")
     if gate_version != registry["version"]:
         raise EvidenceError("gate version does not match registry")
-    prefix = definition.get("argv_prefix")
-    if not isinstance(prefix, list) or argv[:len(prefix)] != prefix:
+    canonical = definition.get("argv")
+    if not isinstance(canonical, list) or argv != canonical:
         raise EvidenceError("argv is not allowed for gate")
     pattern = definition.get("criterion_pattern")
     if not isinstance(pattern, str) or any(re.fullmatch(pattern, item) is None for item in criterion_ids):
@@ -140,7 +156,8 @@ def _validate_gate(gate: str, argv: list[str], criterion_ids: list[str], gate_ve
 
 
 def _lock(root: Path):
-    lock_path = root / ".evidence.lock"
+    # Evidence publication and lifecycle transitions share one state CAS lock.
+    lock_path = root / ".state.json.lock"
     lock_path.parent.mkdir(parents=True, exist_ok=True)
     handle = lock_path.open("a+b")
     fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
@@ -154,11 +171,24 @@ def _anchor(root: Path, evidence: dict[str, Any]) -> None:
         raise EvidenceError("capture requires state.json integrity anchor")
     state = _load(state_path)
     anchors = {run["id"]: _digest(run) for run in evidence["gate_runs"]}
-    state["evidence_integrity"] = {"evidence_sha256": _digest(evidence), "run_hashes": anchors}
-    # The lifecycle revision is owned by task_control.transition; this locked,
-    # atomic update preserves it while anchoring capture-time evidence.
-    _schema_validate(state, STATE_SCHEMA)
-    _atomic_write(state_path, state)
+    next_state = dict(state)
+    next_state["revision"] = state["revision"] + 1
+    if next_state.get("transition") is None:
+        # A capture is a provenance mutation, not a lifecycle move; its first CAS
+        # records an explicit self-transition so revision>0 keeps provenance shape.
+        next_state["transition"] = {"from": state["phase"], "to": state["phase"]}
+    next_state["evidence_integrity"] = {
+        "evidence_sha256": _digest(evidence),
+        "run_hashes": anchors,
+        "state_revision": next_state["revision"],
+    }
+    _schema_validate(next_state, STATE_SCHEMA)
+    # Local import avoids the module-level capture <-> manager import cycle.
+    from tools.task_control.manager import TaskControlError, _cas_write
+    try:
+        _cas_write(root, state["revision"], next_state, lock_held=True)
+    except TaskControlError as exc:
+        raise EvidenceError(f"cannot CAS evidence integrity anchor: {exc}") from exc
 
 
 def _mutate_evidence(root: Path, mutate: Any) -> dict[str, Any]:
@@ -184,10 +214,12 @@ def capture(task_dir: str | Path, gate: str, argv: list[str], *, criterion_ids: 
     started = datetime.now(UTC); child = subprocess.run(command, cwd=cwd, text=True, capture_output=True, check=False); ended = datetime.now(UTC)
     _refuse_if_sensitive({"stdout": child.stdout, "stderr": child.stderr}, root)
     combined = child.stdout.encode() + b"\n--- STDERR ---\n" + child.stderr.encode()
+    created_run_roots: list[Path] = []
 
     def append(evidence: dict[str, Any]) -> dict[str, Any]:
         run_id = _next_id(evidence.setdefault("gate_runs", [])); run_root = root / "artifacts" / gate / run_id
         run_root.mkdir(parents=True, exist_ok=False)
+        created_run_roots.append(run_root)
         artifact = run_root / "output.log"; artifact.write_bytes(combined)
         record = {"id": run_id, "gate": gate, "status": _status(child.returncode, child.stdout, child.stderr),
                   "criterion_ids": criteria, "finding_ids": findings, "argv": command, "exit_code": child.returncode,
@@ -200,7 +232,10 @@ def capture(task_dir: str | Path, gate: str, argv: list[str], *, criterion_ids: 
         return _mutate_evidence(root, append)
     except Exception:
         # A failed schema/state publication cannot make an unreferenced artifact canonical.
-        # Leave it for the task-control orphan diagnostic rather than deleting evidence.
+        # Remove this run's directory so retrying the same E-ID cannot wedge capture.
+        if created_run_roots:
+            import shutil
+            shutil.rmtree(created_run_roots[-1], ignore_errors=True)
         raise
 
 
@@ -222,7 +257,7 @@ def validate_evidence(task_dir: str | Path) -> dict[str, Any]:
     root = Path(task_dir); evidence = _load(root / "evidence.json"); _schema_validate(evidence)
     state = _load(root / "state.json")
     integrity = state.get("evidence_integrity")
-    if not isinstance(integrity, dict) or integrity.get("evidence_sha256") != _digest(evidence):
+    if not isinstance(integrity, dict) or integrity.get("evidence_sha256") != _digest(evidence) or integrity.get("state_revision") != state.get("revision"):
         raise EvidenceError("evidence integrity anchor mismatch")
     identifiers: set[str] = set(); finding_ids = {item["id"] for item in evidence["findings"]}
     task = _load(root / "task.json"); criteria = {item["id"] for item in task.get("acceptance_criteria", [])}; constraints = {item["id"] for item in task.get("constraints", [])}
@@ -240,9 +275,21 @@ def validate_evidence(task_dir: str | Path) -> dict[str, Any]:
         _refuse_if_sensitive({"finding": finding["summary"]})
         if not set(finding["constraint_ids"]) <= constraints: raise EvidenceError("dangling constraint reference")
         if finding.get("evidence_ref") not in {None, *identifiers}: raise EvidenceError("dangling finding evidence reference")
-        if finding["severity"] == "blocker" and finding["disposition"] == "accepted" and not isinstance(finding.get("human_approval_ref"), str):
+        if finding["severity"] == "blocker" and finding["disposition"] == "accepted" and not _committed_approval(root, finding.get("human_approval_ref")):
             raise EvidenceError("accepted blocker finding requires human approval reference")
     return evidence
+
+
+def _committed_approval(root: Path, reference: object) -> bool:
+    if not isinstance(reference, str) or not re.fullmatch(r"approvals/[A-Za-z0-9_-]+\.json", reference):
+        return False
+    repository = next((parent for parent in root.resolve().parents if (parent / ".git").exists()), None)
+    if repository is None:
+        return False
+    try:
+        return subprocess.run(["git", "-C", str(repository), "cat-file", "-e", f"HEAD:{reference}"], capture_output=True, check=False).returncode == 0
+    except OSError:
+        return False
 
 
 def main(argv: list[str] | None = None) -> int:

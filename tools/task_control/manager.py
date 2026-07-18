@@ -10,9 +10,11 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import tempfile
 import fcntl
 import subprocess
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Any
 
@@ -101,17 +103,27 @@ def _atomic_replace(path: Path, value: dict[str, Any]) -> None:
         raise
 
 
-def _cas_write(task_dir: str | Path, expected_revision: int, next_state: dict[str, Any]) -> dict[str, Any]:
+def _cas_write(task_dir: str | Path, expected_revision: int, next_state: dict[str, Any], *, lock_held: bool = False) -> dict[str, Any]:
     """Compare current on-disk revision immediately before one atomic replace."""
     if type(expected_revision) is not int or expected_revision < 0:
         raise TaskControlError("expected revision must be a non-negative integer")
     path = _state_path(task_dir)
+    # Every legitimate state mutation advances an existing evidence anchor with
+    # the same CAS revision. A hand-edited anchor that leaves revision unchanged
+    # therefore fails validation.
+    if isinstance(next_state.get("evidence_integrity"), dict):
+        next_state = dict(next_state)
+        integrity = dict(next_state["evidence_integrity"])
+        integrity["state_revision"] = expected_revision + 1
+        next_state["evidence_integrity"] = integrity
     # This is a local advisory lock, not a daemon or distributed transaction.  The
     # kernel releases it on process death, including SIGKILL, so no stale reservation wedges a task.
     lock_path = path.with_name(f".{path.name}.lock")
     lock_path.parent.mkdir(parents=True, exist_ok=True)
-    with lock_path.open("a+b") as lock:
-        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+    lock_context = nullcontext() if lock_held else lock_path.open("a+b")
+    with lock_context as lock:
+        if not lock_held:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
         current = _read_state(task_dir)
         if current["revision"] != expected_revision:
             raise TaskControlError(f"stale writer: expected revision {expected_revision}, found {current['revision']}")
@@ -281,10 +293,12 @@ def _constitution_diff_requires_approval(task_dir: str | Path) -> bool:
     evidence = _json(root / "evidence.json")
     for run in evidence.get("gate_runs", []):
         reference = run.get("human_approval_ref")
-        if not isinstance(reference, str) or not reference.startswith("approvals/") or ".." in Path(reference).parts:
+        if not isinstance(reference, str) or not re.fullmatch(r"approvals/[A-Za-z0-9_-]+\.json", reference):
             continue
         document = repository / reference
-        if not document.is_file():
+        # The approval is a human trust root only when it is already tracked by
+        # HEAD. A working-tree file is agent-writable and therefore not approval.
+        if subprocess.run(["git", "-C", str(repository), "cat-file", "-e", f"HEAD:{reference}"], capture_output=True, check=False).returncode != 0:
             continue
         try:
             approval = json.loads(document.read_bytes().removeprefix(b"\xef\xbb\xbf"))
@@ -293,6 +307,20 @@ def _constitution_diff_requires_approval(task_dir: str | Path) -> bool:
         if isinstance(approval, dict) and set(approval) == {"approved_paths"} and isinstance(approval["approved_paths"], list) and all(isinstance(path, str) for path in approval["approved_paths"]) and sorted(set(approval["approved_paths"])) == constitution_paths:
             return False
     return True
+
+
+def _evidence_matches_head(task_dir: str | Path) -> bool:
+    """COMPLETE consumes evidence that is tracked and byte-identical to HEAD."""
+    root = Path(task_dir).resolve()
+    repository = next((parent for parent in root.parents if (parent / ".git").exists()), None)
+    if repository is None:
+        return False
+    try:
+        relative = root.relative_to(repository).as_posix() + "/evidence.json"
+        head = subprocess.run(["git", "-C", str(repository), "show", f"HEAD:{relative}"], capture_output=True, check=False)
+    except (OSError, ValueError):
+        return False
+    return head.returncode == 0 and head.stdout == (root / "evidence.json").read_bytes()
 
 
 def transition(task_dir: str | Path, target: str, expected_revision: int, *, next_action: str | None = None, current_ref: str | None = None) -> dict[str, Any]:
@@ -321,6 +349,8 @@ def transition(task_dir: str | Path, target: str, expected_revision: int, *, nex
             raise TaskControlError("required evidence does not cover every constraint and criterion")
     if target == "COMPLETE" and _has_unresolved_major_finding(task_dir):
         raise TaskControlError("unresolved blocker or major finding prevents COMPLETE")
+    if target == "COMPLETE" and not _evidence_matches_head(task_dir):
+        raise TaskControlError("COMPLETE requires evidence.json committed at HEAD")
     if target == "COMPLETE" and _constitution_diff_requires_approval(task_dir):
         raise TaskControlError("constitution-plane diff requires human approval reference")
     next_state = dict(state)

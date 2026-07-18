@@ -70,13 +70,14 @@
     "evidence_integrity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["evidence_sha256", "run_hashes"],
+      "required": ["evidence_sha256", "run_hashes", "state_revision"],
       "properties": {
         "evidence_sha256": { "$ref": "#/$defs/sha256" },
         "run_hashes": {
           "type": "object",
           "additionalProperties": { "$ref": "#/$defs/sha256" }
-        }
+        },
+        "state_revision": { "type": "integer", "minimum": 1 }
       }
     }
   },
@@ -89,7 +90,11 @@
           "transition": { "type": "null" }
         }
       },
-      "else": {}
+      "else": {
+        "properties": {
+          "transition": { "type": "object" }
+        }
+      }
     }
   ],
   "$defs": {

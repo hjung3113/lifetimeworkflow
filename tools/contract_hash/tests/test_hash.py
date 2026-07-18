@@ -90,12 +90,15 @@ def test_build_manifest_ignores_non_schema_files(tmp_path: Path) -> None:
     assert list(build_manifest(contracts)) == ["contracts/a.schema.json"]
 
 
-def test_build_manifest_includes_ratified_transition_data_contract(tmp_path: Path) -> None:
+def test_build_manifest_includes_ratified_data_contracts_and_detects_registry_mutation(tmp_path: Path) -> None:
     contracts = tmp_path / "contracts"
-    path = contracts / "harness" / "task-control" / "transitions.json"
-    path.parent.mkdir(parents=True)
-    path.write_text('{"version": 1, "phases": [], "lanes": {}}\n', encoding="utf-8")
-    assert list(build_manifest(contracts)) == ["contracts/harness/task-control/transitions.json"]
+    directory = contracts / "harness" / "task-control"; directory.mkdir(parents=True)
+    (directory / "transitions.json").write_text('{"version": 1, "phases": [], "lanes": {}}\n', encoding="utf-8")
+    registry = directory / "gate-registry.json"; registry.write_text('{"version": "v1", "gates": {}}\n', encoding="utf-8")
+    before = build_manifest(contracts)
+    assert set(before) == {"contracts/harness/task-control/transitions.json", "contracts/harness/task-control/gate-registry.json"}
+    registry.write_text('{"version": "v1", "gates": {"trivial": {}}}\n', encoding="utf-8")
+    assert build_manifest(contracts) != before
 
 
 def test_build_manifest_drops_symlink_escaping_subtree(tmp_path: Path) -> None:

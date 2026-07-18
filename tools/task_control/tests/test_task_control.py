@@ -6,11 +6,13 @@ import os
 import subprocess
 import sys
 import threading
+import types
 from pathlib import Path
 
 import pytest
 
 from tools.risk_router.intake import create_packet
+import tools.evidence.capture as capture_module
 from tools.evidence.capture import add_finding, capture
 from tools.risk_router.router import decide, load_policy
 from tools.task_control.manager import TaskControlError, attest, block, create, missing_artifacts, orphan_artifacts, refresh_ref, resume, show, transition, validate
@@ -21,6 +23,14 @@ from tools.task_packet.transitions import ALLOWED_TRANSITIONS, PHASES, required_
 def dump(path: Path, value: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value), encoding="utf-8")
+
+
+@pytest.fixture(autouse=True)
+def canonical_gate_child(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep lifecycle fixtures fast while still exercising capture publication."""
+    monkeypatch.setattr(capture_module, "subprocess", types.SimpleNamespace(
+        run=lambda *args, **kwargs: subprocess.CompletedProcess(args[0], 0, "PASS\n", ""),
+    ))
 
 
 def digest(path: Path) -> str:
@@ -73,7 +83,7 @@ def cover_constraints(task_dir: Path, artifact: Path | None = None, *, artifacts
     # A real child capture replaces the former hand-written PASSED record.
     if json.loads((task_dir / "evidence.json").read_text())["findings"]:
         return
-    record = capture(task_dir, "tests", ["uv", "run", "pytest", "--version"], criterion_ids=["AC-01"], finding_ids=["F-01"])
+    record = capture(task_dir, "tests", ["uv", "run", "pytest"], criterion_ids=["AC-01"], finding_ids=["F-01"])
     add_finding(task_dir, {"id": "F-01", "summary": "covered", "constraint_ids": ["C-01"], "severity": "minor", "disposition": "resolved", "evidence_ref": record["id"]})
 
 
@@ -83,6 +93,11 @@ def satisfy_target(task_dir: Path, lane: str, target: str) -> None:
             add_artifact(task_dir, name)
     if target in {"VERIFY", "COMPLETE"}:
         cover_constraints(task_dir)
+    if target == "COMPLETE":
+        root = next(parent for parent in task_dir.parents if (parent / ".git").exists())
+        subprocess.run(["git", "-C", str(root), "add", task_dir.relative_to(root) / "evidence.json"], check=True)
+        subprocess.run(["git", "-C", str(root), "commit", "-qm", "evidence"], check=True)
+        refresh_ref(task_dir, show(task_dir)["revision"], git(root, "rev-parse", "HEAD"))
 
 
 @pytest.mark.parametrize("lane", sorted(ALLOWED_TRANSITIONS))
@@ -94,9 +109,9 @@ def test_every_transition_edge_succeeds_and_every_non_edge_fails(tmp_path: Path,
         dump(task_dir / "state.json", state)
         satisfy_target(task_dir, lane, target)
         if target == "BLOCKED":
-            assert block(task_dir, 1, {"id": "B-01", "summary": "wait", "constraint_ids": ["C-01"]})["phase"] == target
+            assert block(task_dir, show(task_dir)["revision"], {"id": "B-01", "summary": "wait", "constraint_ids": ["C-01"]})["phase"] == target
         else:
-            assert transition(task_dir, target, 1)["phase"] == target
+            assert transition(task_dir, target, show(task_dir)["revision"])["phase"] == target
     for index, (source, target) in enumerate(sorted((pair for source in PHASES for target in PHASES if (pair := (source, target)) not in ALLOWED_TRANSITIONS[lane]))):
         root, task_dir = make_task(tmp_path / f"{lane}-nonedge-{index}", lane)
         state = show(task_dir); state.update({"phase": source, "revision": 1, "transition": {"from": "INTAKE", "to": source}}); dump(task_dir / "state.json", state)
@@ -116,6 +131,7 @@ def test_phase_oriented_artifacts_allow_strict_and_controlled_lifecycle(tmp_path
             satisfy_target(task_dir, lane, target)
             if target in {"VERIFY", "COMPLETE"}:
                 cover_constraints(task_dir, artifacts=sorted((task_dir / "artifacts").rglob("result.txt")))
+            revision = show(task_dir)["revision"]
             # The documented gate runs before every transition, not only after lifecycle completion.
             phase_gate(task_dir, revision, repo_root=root)
             state = transition(task_dir, target, revision)
@@ -191,7 +207,7 @@ def test_two_process_creates_have_exactly_one_winner(tmp_path: Path) -> None:
 def test_attest_refresh_ref_and_phase_gate(tmp_path: Path) -> None:
     root, task_dir = make_task(tmp_path, "STANDARD")
     artifact = add_artifact(task_dir, "brief_spec"); cover_constraints(task_dir, artifact)
-    state = transition(task_dir, "EXECUTE", 0)
+    state = transition(task_dir, "EXECUTE", show(task_dir)["revision"])
     phase_gate(task_dir, state["revision"], repo_root=root)
     (root / "change.txt").write_text("change\n"); subprocess.run(["git", "-C", str(root), "add", "."], check=True); subprocess.run(["git", "-C", str(root), "commit", "-qm", "change"], check=True)
     with pytest.raises(TaskControlError, match="current ref"):
@@ -207,7 +223,7 @@ def test_orphans_are_diagnostic_before_verify_and_block_verify(tmp_path: Path) -
     orphan = task_dir / "artifacts" / "tests" / "unreferenced" / "output.log"
     orphan.parent.mkdir(parents=True, exist_ok=True); orphan.write_text("orphan\n", encoding="utf-8")
     assert orphan_artifacts(task_dir)
-    assert phase_gate(task_dir, 0, repo_root=root) == [f"orphan artifact: {orphan.relative_to(task_dir).as_posix()}"]
+    assert phase_gate(task_dir, show(task_dir)["revision"], repo_root=root) == [f"orphan artifact: {orphan.relative_to(task_dir).as_posix()}"]
     state = show(task_dir); state.update({"phase": "VERIFY", "revision": 1, "transition": {"from": "EXECUTE", "to": "VERIFY"}}); dump(task_dir / "state.json", state)
     with pytest.raises(TaskControlError, match="orphan artifact"):
         phase_gate(task_dir, 1, repo_root=root)
@@ -222,6 +238,7 @@ def test_phase_gate_accepts_every_strict_and_controlled_phase(tmp_path: Path) ->
             satisfy_target(task_dir, lane, target)
             if target in {"VERIFY", "COMPLETE"}:
                 cover_constraints(task_dir, artifacts=sorted((task_dir / "artifacts").rglob("result.txt")))
+            revision = show(task_dir)["revision"]
             state = transition(task_dir, target, revision)
             revision = state["revision"]
             phase_gate(task_dir, revision, repo_root=root)
@@ -264,7 +281,7 @@ def test_verify_requires_passing_evidence_for_every_required_criterion(tmp_path:
     evidence["gate_runs"][0]["criterion_ids"] = []
     dump(task_dir / "evidence.json", evidence)
     with pytest.raises(TaskControlError, match="integrity anchor mismatch"):
-        transition(task_dir, "VERIFY", state["revision"])
+        transition(task_dir, "VERIFY", show(task_dir)["revision"])
 
 
 def test_complete_rejects_unresolved_major_finding(tmp_path: Path) -> None:
@@ -272,7 +289,7 @@ def test_complete_rejects_unresolved_major_finding(tmp_path: Path) -> None:
     state = transition(task_dir, "EXECUTE", 0)
     artifact = add_artifact(task_dir, "brief_spec")
     cover_constraints(task_dir, artifact)
-    state = transition(task_dir, "VERIFY", state["revision"])
+    state = transition(task_dir, "VERIFY", show(task_dir)["revision"])
     evidence = json.loads((task_dir / "evidence.json").read_text())
     evidence["findings"][0].update({"severity": "major", "disposition": "open"})
     dump(task_dir / "evidence.json", evidence)
@@ -285,12 +302,16 @@ def test_complete_requires_approval_reference_for_constitution_diff(tmp_path: Pa
     state = transition(task_dir, "EXECUTE", 0)
     artifact = add_artifact(task_dir, "brief_spec")
     cover_constraints(task_dir, artifact)
-    state = transition(task_dir, "VERIFY", state["revision"])
+    state = transition(task_dir, "VERIFY", show(task_dir)["revision"])
     (root / "contracts").mkdir(); (root / "contracts" / "changed.json").write_text("{}\n", encoding="utf-8")
     subprocess.run(["git", "-C", str(root), "add", "."], check=True); subprocess.run(["git", "-C", str(root), "commit", "-qm", "constitution"], check=True)
     state = refresh_ref(task_dir, state["revision"], git(root, "rev-parse", "HEAD"))
     with pytest.raises(TaskControlError, match="approval"):
         transition(task_dir, "COMPLETE", state["revision"])
     (root / "approvals").mkdir(); (root / "approvals" / "fixture.json").write_text(json.dumps({"approved_paths": ["contracts/changed.json"]}), encoding="utf-8")
-    capture(task_dir, "tests", ["uv", "run", "pytest", "--version"], human_approval_ref="approvals/fixture.json")
+    capture(task_dir, "tests", ["uv", "run", "pytest"], human_approval_ref="approvals/fixture.json")
+    with pytest.raises(TaskControlError, match="committed at HEAD"):
+        transition(task_dir, "COMPLETE", show(task_dir)["revision"])
+    subprocess.run(["git", "-C", str(root), "add", "approvals/fixture.json", task_dir.relative_to(root) / "evidence.json"], check=True)
+    subprocess.run(["git", "-C", str(root), "commit", "-qm", "approval-and-evidence"], check=True)
     assert transition(task_dir, "COMPLETE", show(task_dir)["revision"])["phase"] == "COMPLETE"

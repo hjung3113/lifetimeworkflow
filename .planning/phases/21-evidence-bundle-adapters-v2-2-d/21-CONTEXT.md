@@ -29,6 +29,7 @@
 ### 헌법·게이트 보존
 - **D-07:** 기존 `/verify-work` 5-gate 의미·실행 순서 유지, FAST 비용 절감 이유로 내부 gate 제거 금지. 기존 5-gate regression test 그대로 통과. constitution-plane diff는 도구 pass와 별개 human approval evidence 요구(없으면 완료 거부) — 기계 판정 가능 범위만(approval reference 존재·shape), "승인했다" 주장 금지.
 - **D-08:** tools는 domain-neutral Python core. evidence는 `.workflow/tasks/` 인스턴스에 write, `.memory/derived` 아님. adapter가 명령 배선하는 커맨드 소스(`/review`·`/verify-work`)는 harness/ 에서 emit(직접편집 금지). 모델 식별자 없음. byte hygiene(LF·no-BOM, 입력경계 BOM strip).
+- **D-10 (Phase 21 reverify):** evidence anchor writes use the state CAS revision/lock and COMPLETE additionally requires `evidence.json` byte-identical to its tracked `HEAD` blob. This closes in-session task-directory forgery under the no-agent-commit trust root. A signed external attestation/token remains deferred to Phase 23 lifecycle evaluation; Phase 21 does not claim to provide it.
 
 ### 실행 위임
 - **D-09:** 구현 **codex terra medium (fast off, headless)**. 리뷰 **교대 → sol**(P20=fable). Claude 검증/머지. 표준 러너 `scratchpad/run_agent.sh`. 참조 [[design-and-gsd-via-codex-sol]].

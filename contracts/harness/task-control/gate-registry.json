@@ -1,11 +1,11 @@
 {
   "version": "v1",
   "gates": {
-    "lint": { "argv_prefix": ["ruff", "check", "."], "criterion_pattern": "^AC-[0-9]{2,}$" },
-    "tests": { "argv_prefix": ["uv", "run", "pytest"], "criterion_pattern": "^AC-[0-9]{2,}$" },
-    "contract-drift": { "argv_prefix": ["uv", "run", "python", "-m", "tools.contract_drift.drift"], "criterion_pattern": "^AC-[0-9]{2,}$" },
-    "golden": { "argv_prefix": ["python", "-m", "tools.golden_runner.runner"], "criterion_pattern": "^AC-[0-9]{2,}$" },
-    "derived-freshness": { "argv_prefix": ["uv", "run", "python", "-m", "tools.docs_sync"], "criterion_pattern": "^AC-[0-9]{2,}$" }
+    "lint": { "argv": ["ruff", "check", "."], "criterion_pattern": "^AC-[0-9]{2,}$" },
+    "tests": { "argv": ["uv", "run", "pytest"], "criterion_pattern": "^AC-[0-9]{2,}$" },
+    "contract-drift": { "argv": ["uv", "run", "python", "-m", "tools.contract_drift.drift"], "criterion_pattern": "^AC-[0-9]{2,}$" },
+    "golden": { "argv": ["python", "-m", "tools.golden_runner.runner"], "criterion_pattern": "^AC-[0-9]{2,}$" },
+    "derived-freshness": { "argv": ["uv", "run", "python", "-m", "tools.docs_sync"], "criterion_pattern": "^AC-[0-9]{2,}$" }
   },
   "secret_patterns": [
     "AKIA[0-9A-Z]{16}",
@@ -15,7 +15,6 @@
     "xox[bp]-[A-Za-z0-9-]+",
     "-----BEGIN [A-Z ]*PRIVATE KEY-----",
     "eyJ[A-Za-z0-9_-]{10,}\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+",
-    "Authorization:\\s*Bearer\\s+[^\\s]+",
-    "\\b[A-Za-z0-9/+=]{40}\\b"
+    "Authorization:\\s*Bearer\\s+[^\\s]+"
   ]
 }

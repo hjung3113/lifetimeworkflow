@@ -1,13 +1,14 @@
 # DERIVED — do not hand-edit (tools/memory_regen/contracts_index.py)
 
-Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reuses tools.contract_hash + tools.contract_drift). 8 contract(s).
+Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reuses tools.contract_hash + tools.contract_drift). 9 contract(s).
 
 | contract | kind | owner | hash | drift |
 | --- | --- | --- | --- | --- |
 | contracts/harness/task-control/attestation.schema.json | other | TBD | 2a708cb2a408 | clean |
 | contracts/harness/task-control/evidence.schema.json | other | TBD | 495768997888 | clean |
+| contracts/harness/task-control/gate-registry.json | other | TBD | 04a9d3bf8962 | clean |
 | contracts/harness/task-control/handoff.schema.json | other | TBD | b9f33c2a761c | clean |
-| contracts/harness/task-control/state.schema.json | other | TBD | b65b4dda0052 | clean |
+| contracts/harness/task-control/state.schema.json | other | TBD | c2a64cab55f3 | clean |
 | contracts/harness/task-control/task.schema.json | other | TBD | 0ed9c1f6f2a7 | clean |
 | contracts/harness/task-control/transitions.json | other | TBD | 5d27bb16571d | clean |
 | contracts/normalization/format-conventions.schema.json | normalization | TBD | 1af8935bf997 | clean |
