@@ -291,6 +291,9 @@ dialog .dlg-actions { display: flex; justify-content: flex-end; gap: var(--space
     <ul class="rows" id="state-list"></ul>
     <div class="group-label">Agreements</div>
     <ul class="rows" id="agreement-list"></ul>
+    <div class="actions">
+      <button class="secondary" id="new-agreement" type="button">New agreement</button>
+    </div>
     <label class="toggle">
       <input type="checkbox" id="show-retired"> Show retired
     </label>
@@ -504,6 +507,66 @@ function editState(id, bodyText) {
   detail.append(actions, status);
 }
 
+// ---- add an agreement (Because is REQUIRED — the tool never fabricates one) -------------------
+function showAddForm() {
+  if (dirty && !confirmDiscard()) return;
+  dirty = false;
+  selected = null;
+  loadList();
+  const detail = $("detail");
+  detail.replaceChildren();
+  detail.append(el("h2", { class: "item-title", text: "New agreement" }));
+
+  const mk = (name, label, required, mono) => {
+    const wrap = el("label", { class: "field" });
+    wrap.append(el("span", { text: label + (required ? " (required)" : "") }));
+    const input = name === "rule" || name === "because"
+      ? el("textarea", { rows: "3" })
+      : el("input", { type: "text" });
+    input.id = "add-" + name;
+    if (required) input.required = true;
+    if (mono) input.style.fontFamily = "var(--font-mono)";
+    wrap.append(input);
+    detail.append(wrap);
+  };
+  mk("slug", "Slug", true, true);
+  mk("title", "Title", true, false);
+  mk("rule", "Rule", true, false);
+  mk("because", "Because", true, false);   // anti-invent: user's own reason, never fabricated
+  mk("related", "Related", false, true);
+
+  const status = el("p", { class: "meta" });
+  const actions = el("div", { class: "actions" });
+  actions.append(button("Add agreement", "primary", async () => {
+    const because = $("add-because").value.trim();
+    if (!because) {   // client-side guard; the server refuses too (never invents a reason)
+      status.className = "error";
+      status.textContent = COPY.becauseRequired;
+      return;
+    }
+    const payload = {
+      slug: $("add-slug").value.trim(),
+      title: $("add-title").value,
+      rule: $("add-rule").value,
+      because: because,
+      related: $("add-related").value.trim() || null,
+    };
+    const res = await api("/api/agreement/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      await select(payload.slug, "agreement", "active");
+    } else {
+      status.className = "error";
+      status.textContent = "Refused. " + (await res.text());
+    }
+  }));
+  actions.append(button("Cancel", "secondary", () => renderDetail()));
+  detail.append(actions, status);
+}
+
 // ---- retire flow (referential-integrity confirm, D-16-03) -------------------------------------
 async function startRetire(slug) {
   const referrers = await fetchReferrers(slug);
@@ -573,6 +636,7 @@ async function doRetire(slug) {
 
 // ---- boot -------------------------------------------------------------------------------------
 $("show-retired").addEventListener("change", loadList);
+$("new-agreement").addEventListener("click", showAddForm);
 loadList();
 </script>
 </body>
