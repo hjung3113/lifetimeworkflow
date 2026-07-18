@@ -1,8 +1,8 @@
 ---
 phase: 16
 slug: local-memory-web-ui-v2-1-e
-status: draft
-nyquist_compliant: false
+status: approved
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-07-18
 ---
@@ -41,9 +41,18 @@ created: 2026-07-18
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 16-XX-XX | XX | 0/1 | MEM2-07 | — | localhost-only bind (never 0.0.0.0) | unit | `uv run pytest tools/memory_ui -q` | ❌ W0 | ⬜ pending |
-| 16-XX-XX | XX | 1 | MEM2-07 | — | pointer-index deterministic (write→hash→delete→regenerate) | unit | `uv run pytest tools/memory_regen/tests/test_pointer_index.py -q` | ❌ W0 | ⬜ pending |
-| 16-XX-XX | XX | 1 | MEM2-07 | — | edit/retire orphaning surfaced + confirm-gated | unit | `uv run pytest tools/memory_ui -q` | ❌ W0 | ⬜ pending |
+| 16-01-01 | 01 | 0 | MEM2-07 | — | uv member `tools/memory_ui` enrolled; lockfile green | unit | `uv sync --locked` | ❌ W0 | ⬜ pending |
+| 16-01-02 | 01 | 0 | MEM2-07 | T-16-01 | RED tests pin generator/route APIs (tmp-injected, no socket, no real agreement writes) | unit | `uv run pytest tools/memory_regen/tests/test_pointer_index.py -q` | ❌ W0 | ⬜ pending |
+| 16-01-03 | 01 | 0 | MEM2-07 | T-16-03 | RED tests pin orphan/route logic on tmp fixtures | unit | `uv run pytest tools/memory_ui -q` | ❌ W0 | ⬜ pending |
+| 16-02-01 | 02 | 1 | MEM2-07 | — | pointer-index DERIVED-marked, keyed item→[{file,line,kind}] | unit | `uv run pytest tools/memory_regen/tests/test_pointer_index.py -q` | ❌ W0 | ⬜ pending |
+| 16-02-02 | 02 | 1 | MEM2-07 (SC2) | — | deterministic: write→hash→delete→regenerate byte-identical; no wall-clock | unit | `uv run pytest tools/memory_regen/tests/test_pointer_index.py -q` | ❌ W0 | ⬜ pending |
+| 16-03-01 | 03 | 2 | MEM2-07 (SC1) | T-16-02 | agreements add/retire via `tools.agree.write` only; anti-invent `--because`; stamp writer clock-free | unit | `uv run pytest tools/memory_ui -q` | ❌ W0 | ⬜ pending |
+| 16-03-02 | 03 | 2 | MEM2-07 (SC3) | T-16-03 | orphan surfaced + confirm-gated; never auto-rewrites external docs | unit | `uv run pytest tools/memory_ui -q` | ❌ W0 | ⬜ pending |
+| 16-04-01 | 04 | 2 | MEM2-07 (SC2) | T-16-04 | generator wired into SessionStart/`/orient`/`/refresh-memory`; no constitution mutation | unit | `uv run pytest tools/memory_regen -q` | ❌ W0 | ⬜ pending |
+| 16-04-02 | 04 | 2 | MEM2-07 | T-16-08 | emit round-trip to both runtimes; no model id; emit-drift clean | unit | `uv run pytest tools/harness_emit -q` | ❌ W0 | ⬜ pending |
+| 16-05-01 | 05 | 3 | MEM2-07 (SC1) | T-16-05 | HTTP shell binds 127.0.0.1 ONLY (never 0.0.0.0) | unit | `uv run pytest tools/memory_ui -q` | ❌ W0 | ⬜ pending |
+| 16-05-02 | 05 | 3 | MEM2-07 | T-16-06 | single inlined page, no external fetch | unit | `uv run pytest tools/memory_ui -q` | ❌ W0 | ⬜ pending |
+| 16-06-01 | 06 | 4 | MEM2-07 (SC1/SC3) | — | browser round-trip: view/edit/retire + orphan-confirm dialog | manual | see Manual-Only Verifications | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -69,11 +78,12 @@ created: 2026-07-18
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 60s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (16-01 establishes the test infra)
+- [x] No watch-mode flags
+- [x] Feedback latency < 60s
+- [x] `nyquist_compliant: true` set in frontmatter
+- [ ] `wave_0_complete` flips true at execution time when Wave-0 (16-01) tests are in place
 
-**Approval:** pending
+**Approval:** approved 2026-07-18 (plan-checker confirmed every auto/tdd task carries a fast, non-watch-mode automated command with no sampling gaps)

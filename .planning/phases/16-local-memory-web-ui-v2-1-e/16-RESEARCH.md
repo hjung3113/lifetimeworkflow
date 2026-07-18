@@ -308,21 +308,22 @@ def serve(port: int = 8765) -> None:
 | A3 | Word-boundaried slug matching (not bare substring) is the right false-positive guard; `kind:"path"` hits outrank `kind:"slug"` hits. | Pattern 2 | Over-strict matching could miss a legitimate prose reference; the `kind` tag lets the UI show both tiers, so risk is low. |
 | A4 | Wiring the generator into SessionStart is in-scope (per CONTEXT "Integration Points") and therefore an emit round-trip is required. | Pitfall 3 | If the phase scopes wiring out, the emit round-trip is unnecessary; confirm during planning whether SC2 requires SessionStart wiring or just a runnable generator. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Where does the progress-stamp writer live?**
+   - `RESOLVED:` Plan 16-03 Task 1 — the stamp writer lives in `tools/memory_ui/_stamp.py` (tool-local UI write action), round-trips frontmatter via `parse_frontmatter` and writes a quoted-date scalar; kept out of `inject.py`/`assemble()` so the read path stays clock-free.
    - What we know: `/checkpoint` writes `updated: "YYYY-MM-DD"` quoted; no Python callable does this today.
-   - What's unclear: whether to add the helper in `tools/memory_ui` (tool-local) or a shared location.
-   - Recommendation: put it in `tools/memory_ui` (it is a UI write action), round-trip frontmatter via `parse_frontmatter` and write a quoted-date scalar; keep it out of `inject.py`/`assemble()` (read path stays clock-free).
+   - Recommendation (adopted): put it in `tools/memory_ui`; keep it out of the `assemble()` read path.
 
 2. **Inline-regenerate vs. read-cached pointer-index on the orphan check?**
+   - `RESOLVED:` Plan 16-03 (routes.py, Pattern 3) — the orphan check **inline-regenerates** the pointer-index before evaluating referrers, for correctness (avoids stale-index false negatives per Pitfall 4).
    - What we know: the scan is cheap (text grep over a bounded root set).
-   - What's unclear: whether SessionStart-regen freshness is sufficient.
-   - Recommendation: regenerate inline before the orphan check for correctness (Pitfall 4); it is fast and avoids stale-index false negatives.
+   - Recommendation (adopted): regenerate inline before the orphan check.
 
 3. **Does SC2 require SessionStart wiring, or just a runnable generator?**
+   - `RESOLVED:` Plan 16-04 — SessionStart/`/orient`/`/refresh-memory` wiring is **included**, and the Phase-7 emit round-trip to both runtimes is broken out as its own deliberate task (model-id-free / GEN-04 in view), so the emit is intentional rather than accidental drift.
    - What we know: CONTEXT "Integration Points" says wire it into the regen set; ROADMAP SC2 only says "generated, not hand-maintained".
-   - Recommendation: wire it (matches curator/`/refresh-memory` posture), and budget for the emit round-trip; if the planner wants to minimize blast radius, a runnable `python -m tools.memory_regen.pointer_index` + `/refresh-memory` mention may satisfy SC2 without touching `session-inject.ts`.
+   - Recommendation (adopted): wire it and budget for the emit round-trip as a separate task.
 
 ## Environment Availability
 
