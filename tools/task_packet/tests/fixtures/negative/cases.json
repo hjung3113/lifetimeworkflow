@@ -1,0 +1,46 @@
+[
+  {
+    "name": "invalid-task-timestamp",
+    "document": "task",
+    "path": ["task_id"],
+    "value": "T-20261340000000-invalid-date"
+  },
+  { "name": "unknown-phase", "document": "state", "path": ["phase"], "value": "DEPLOY" },
+  { "name": "unknown-lane", "document": "task", "path": ["lane"], "value": "EXPRESS" },
+  {
+    "name": "illegal-transition",
+    "document": "state",
+    "path": ["transition"],
+    "value": { "from": "EXECUTE", "to": "COMPLETE" }
+  },
+  {
+    "name": "dangling-criterion",
+    "document": "evidence",
+    "path": ["gate_runs", 0, "criterion_ids"],
+    "value": ["AC-99"]
+  },
+  {
+    "name": "dangling-constraint",
+    "document": "evidence",
+    "path": ["findings", 0, "constraint_ids"],
+    "value": ["C-99"]
+  },
+  {
+    "name": "dangling-evidence",
+    "document": "handoff",
+    "path": ["evidence_ids"],
+    "value": ["E-99"]
+  },
+  {
+    "name": "dangling-finding",
+    "document": "handoff",
+    "path": ["finding_ids"],
+    "value": ["F-99"]
+  },
+  { "name": "missing-baseline", "document": "state", "remove": ["baseline"] },
+  {
+    "name": "missing-repo-root",
+    "document": "state",
+    "remove": ["baseline", "repo_root"]
+  }
+]

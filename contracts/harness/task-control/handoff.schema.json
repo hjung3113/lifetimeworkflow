@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harness.local/contracts/harness/task-control/handoff.schema.json",
+  "title": "Task packet handoff contract",
+  "description": "Immutable resume snapshot tied to one state revision.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "state_revision",
+    "goal",
+    "non_goals",
+    "critical_constraint_ids",
+    "phase",
+    "lane",
+    "baseline",
+    "current_ref",
+    "next_action",
+    "evidence_ids",
+    "finding_ids"
+  ],
+  "properties": {
+    "task_id": { "$ref": "#/$defs/taskId" },
+    "state_revision": { "type": "integer", "minimum": 0 },
+    "goal": { "type": "string", "minLength": 1 },
+    "non_goals": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "critical_constraint_ids": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/constraintId" },
+      "uniqueItems": true
+    },
+    "phase": { "$ref": "#/$defs/phase" },
+    "lane": { "$ref": "#/$defs/lane" },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo_root", "commit"],
+      "properties": {
+        "repo_root": { "const": "." },
+        "commit": { "$ref": "#/$defs/gitCommit" }
+      }
+    },
+    "current_ref": { "$ref": "#/$defs/gitCommit" },
+    "next_action": { "type": "string", "minLength": 1 },
+    "evidence_ids": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidenceId" },
+      "uniqueItems": true
+    },
+    "finding_ids": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/findingId" },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "taskId": { "type": "string", "pattern": "^T-[0-9]{14}-[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "constraintId": { "type": "string", "pattern": "^C-[0-9]{2,}$" },
+    "evidenceId": { "type": "string", "pattern": "^E-[0-9]{2,}$" },
+    "findingId": { "type": "string", "pattern": "^F-[0-9]{2,}$" },
+    "lane": { "enum": ["FAST", "STANDARD", "STRICT", "CONTROLLED"] },
+    "phase": {
+      "enum": [
+        "INTAKE",
+        "CLARIFY",
+        "SPEC",
+        "PLAN",
+        "EXECUTE",
+        "REVIEW",
+        "VERIFY",
+        "COMPLETE",
+        "BLOCKED"
+      ]
+    },
+    "gitCommit": {
+      "type": "string",
+      "oneOf": [
+        { "pattern": "^[0-9a-f]{40}$" },
+        { "pattern": "^[0-9a-f]{64}$" }
+      ]
+    }
+  }
+}

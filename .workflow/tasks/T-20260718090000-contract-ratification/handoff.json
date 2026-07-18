@@ -1,0 +1,17 @@
+{
+  "task_id": "T-20260718090000-contract-ratification",
+  "state_revision": 0,
+  "goal": "Ratify a domain-neutral task packet shape before downstream lifecycle tooling.",
+  "non_goals": ["Implement routing or atomic state mutation."],
+  "critical_constraint_ids": [],
+  "phase": "INTAKE",
+  "lane": "STANDARD",
+  "baseline": {
+    "repo_root": ".",
+    "commit": "71456f772b26430a1fdeb02819f9f1822a01f2b7"
+  },
+  "current_ref": "71456f772b26430a1fdeb02819f9f1822a01f2b7",
+  "next_action": "Validate the ratification fixtures.",
+  "evidence_ids": [],
+  "finding_ids": []
+}

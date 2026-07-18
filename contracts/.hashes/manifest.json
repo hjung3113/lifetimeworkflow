@@ -1,4 +1,8 @@
 {
+  "contracts/harness/task-control/evidence.schema.json": "064f5fba5710b1fbf325e73e849ca76cf8be9a3aad708049cbcd1b7106acea8f",
+  "contracts/harness/task-control/handoff.schema.json": "b9f33c2a761c81c2998d302a126ad8913a1353c9841529c6aa17e577cdb6759e",
+  "contracts/harness/task-control/state.schema.json": "8cabe6c29c2a649c8c3afecb5f879b3f9ba36d0789ef584fd6eadf76bfcd0ce9",
+  "contracts/harness/task-control/task.schema.json": "9c47d6e7addb0b02cf9805079302c53b1cb02103869f489c0bf588757e2c026c",
   "contracts/normalization/format-conventions.schema.json": "1af8935bf997faf80939db7228366c311c17f14729a0b9eee914799854d85ffc",
   "contracts/sample/greeting.schema.json": "35f71ca2dbeb6b84e093fb4a8dbacde2628974d706aac416d98e595e6c3b55df"
 }

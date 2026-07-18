@@ -6,8 +6,8 @@ Pins the guarantees the derived reference quadrant depends on:
       syrupy snapshot (the canonical determinism reference).
   (b) confinement — every write() target stays under docs/reference/; a traversal-shaped path is
       refused (T-03-21, mirrors golden_runner._confine).
-  (c) structure — every page starts with the DERIVED "do not hand-edit" marker; the five seed
-      schemas map 1:1 to five reference pages; format-conventions carries the §4.3–4.6 block.
+  (c) structure — every page starts with the DERIVED "do not hand-edit" marker; the core schemas
+      map 1:1 to reference pages; format-conventions carries the §4.3–4.6 block.
 """
 
 from __future__ import annotations
@@ -22,11 +22,15 @@ from tools.docs_sync import generate as docs_sync
 # The seed schemas map 1:1 to reference pages (DOCS-03). After the 05-03 domain move (GEN-01) the
 # relocated domain schemas moved to the log-parser example, so the CORE contracts tree now holds
 # the generic §4.3–4.6 convention page (format-conventions) and the domain-neutral generic default
-# instance (greeting, GEN-02, 05-02).
+# instance (greeting, GEN-02, 05-02), plus the Phase 18 task-control contracts.
 EXPECTED_PAGES = frozenset(
     {
+        "evidence",
         "format-conventions",
         "greeting",
+        "handoff",
+        "state",
+        "task",
     }
 )
 
@@ -91,7 +95,7 @@ def test_confine_refuses_traversal(tmp_path: Path) -> None:
         docs_sync._confine(base / ".." / "escape.md", base)
 
 
-# ---- (c) structure: DERIVED marker, 5 pages, conventions block -------------------------------
+# ---- (c) structure: DERIVED marker, schema pages, conventions block --------------------------
 
 
 def test_every_page_starts_with_derived_marker(tmp_path: Path) -> None:
