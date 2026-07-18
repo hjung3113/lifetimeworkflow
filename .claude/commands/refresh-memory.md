@@ -12,9 +12,11 @@ the CI stale-derived gate and the `/verify-work` freshness step verify, so commi
 ## 1. Session-derived (gitignored — free to rebuild)
 
 The repo-map is session-ephemeral (PageRank churn is noise, D-02) — regenerated for local
-orientation, never committed, never gated.
+orientation, never committed, never gated. The pointer-index (`pointer-index.{json,md}`, the
+"what points to each memory item" reference-scan) is likewise gitignored-derived — rebuilt here,
+never committed, never gated.
 
-!`uv run python -m tools.memory_regen.repo_map`
+!`uv run python -m tools.memory_regen.repo_map && uv run python -m tools.memory_regen.pointer_index`
 
 ## 2. Committed-derived (the gated set — commit after)
 

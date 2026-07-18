@@ -16,7 +16,7 @@ capped, drift-aware, pointer-only payload — never full contract bodies (lazy-l
 
 Delete-and-rebuild reproduces these byte-identically — they are derived, so regenerating is free.
 
-!`uv run python -m tools.memory_regen.repo_map && uv run python -m tools.memory_regen.contracts_index`
+!`uv run python -m tools.memory_regen.repo_map && uv run python -m tools.memory_regen.contracts_index && uv run python -m tools.memory_regen.pointer_index`
 
 ## 2. Print the orientation payload (the injector's own output)
 
