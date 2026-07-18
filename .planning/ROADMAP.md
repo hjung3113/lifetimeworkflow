@@ -266,7 +266,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 13. Injector Reframe + Channel Wiring (v2.1 B) | 0/TBD | Not started | - |
 | 14. Write Path + Anti-Churn Guard (v2.1 C) | 0/TBD | Not started | - |
 | 15. Emit Round-Trip + Gates (v2.1 D) | 2/2 | Complete    | 2026-07-15 |
-| 16. Local Memory Web UI (v2.1 E) | 0/TBD | Not started | - |
+| 16. Local Memory Web UI (v2.1 E) | 1/6 | In Progress|  |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
 
@@ -513,7 +513,7 @@ Plans:
   3. Editing or retiring an item keeps references consistent — an edit/retire that would orphan a pointer is surfaced and reconciled — so a hand-edit can no longer silently break references.
 
 **Plans**: 6 plans
-- [ ] 16-01-PLAN.md — Wave 0: test infra + tools/memory_ui member enrollment + RED tests (generator/routes/orphan)
+- [x] 16-01-PLAN.md — Wave 0: test infra + tools/memory_ui member enrollment + RED tests (generator/routes/orphan)
 - [ ] 16-02-PLAN.md — Wave 1: DERIVED pointer-index generator (tools/memory_regen/pointer_index.py) [SC2]
 - [ ] 16-03-PLAN.md — Wave 2: UI route logic + progress stamp writer; surface-and-confirm orphan guard [SC1/SC3]
 - [ ] 16-04-PLAN.md — Wave 2: wire pointer-index into SessionStart/orient/refresh-memory + emit round-trip [SC2]

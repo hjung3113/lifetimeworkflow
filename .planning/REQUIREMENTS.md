@@ -31,7 +31,7 @@ Requirements for milestone v2.1. Each maps to exactly one roadmap phase (phases 
 
 ### Memory Management Tooling
 
-- [ ] **MEM2-07**: A lightweight **local** web tool lets a user view/edit/retire memory items (progress + per-guideline agreements) with **pointer-aware** UX: it surfaces "what points to this item" (docs/skills/`inject.py` pointers that reference memory files) and keeps references consistent on edit/retire, so memory hygiene is systematized, not manual. Scope: local only (no external network, no auth surface); operates on the committed memory files + a machine-built **derived pointer-index** (treated like other derived artifacts — generated, not hand-maintained).
+- [x] **MEM2-07**: A lightweight **local** web tool lets a user view/edit/retire memory items (progress + per-guideline agreements) with **pointer-aware** UX: it surfaces "what points to this item" (docs/skills/`inject.py` pointers that reference memory files) and keeps references consistent on edit/retire, so memory hygiene is systematized, not manual. Scope: local only (no external network, no auth surface); operates on the committed memory files + a machine-built **derived pointer-index** (treated like other derived artifacts — generated, not hand-maintained).
 
 ## v2 Requirements
 
@@ -65,7 +65,7 @@ Which phases cover which requirements. **Filled by the roadmapper during roadmap
 | MEM2-04 | Phase 14 | Pending |
 | MEM2-05 | Phase 13 | Pending |
 | MEM2-06 | Phase 15 | Complete |
-| MEM2-07 | Phase 16 | Pending |
+| MEM2-07 | Phase 16 | Complete |
 
 > **Note on MEM2-06:** its scope spans two phases. Traceability owner is **Phase 15** (the emit round-trip + gates). The **ADR-0006 authoring** portion is delivered in **Phase 12** (human-ratified constitution path), consistent with proposal §5's Phase-A/Phase-D split — but MEM2-06 is counted once (Phase 15) for coverage.
 
