@@ -266,7 +266,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 13. Injector Reframe + Channel Wiring (v2.1 B) | 0/TBD | Not started | - |
 | 14. Write Path + Anti-Churn Guard (v2.1 C) | 0/TBD | Not started | - |
 | 15. Emit Round-Trip + Gates (v2.1 D) | 2/2 | Complete    | 2026-07-15 |
-| 16. Local Memory Web UI (v2.1 E) | 3/6 | In Progress|  |
+| 16. Local Memory Web UI (v2.1 E) | 5/6 | In Progress|  |
 
 ### Phase 8: Pipeline-Topology Conductor + Per-Component Agents
 
@@ -517,6 +517,6 @@ Plans:
 - [x] 16-02-PLAN.md — Wave 1: DERIVED pointer-index generator (tools/memory_regen/pointer_index.py) [SC2]
 - [x] 16-03-PLAN.md — Wave 2: UI route logic + progress stamp writer; surface-and-confirm orphan guard [SC1/SC3]
 - [x] 16-04-PLAN.md — Wave 2: wire pointer-index into SessionStart/orient/refresh-memory + emit round-trip [SC2]
-- [ ] 16-05-PLAN.md — Wave 3: localhost-only HTTP shell + inlined page + entrypoint [SC1]
+- [x] 16-05-PLAN.md — Wave 3: localhost-only HTTP shell + inlined page + entrypoint [SC1]
 - [ ] 16-06-PLAN.md — Wave 4: human browser round-trip verification [SC1/SC3]
 **UI hint**: yes
