@@ -106,6 +106,31 @@ def test_post_body_is_size_bounded(tmp_path, tmp_agreements_tree, monkeypatch) -
     assert status == 413  # Payload Too Large — refused before JSON parse
 
 
+def test_pointers_uses_monkeypatched_base_and_roots(tmp_path, monkeypatch) -> None:
+    """/api/pointers reads the injectable base/scan-root globals, so it is testable (WR-01)."""
+    from tools.memory_ui import server
+
+    # A synthetic corpus: a scan root that references progress.md by its .memory path.
+    base = tmp_path
+    (base / ".memory" / "state").mkdir(parents=True)
+    (base / ".memory" / "state" / "activeContext.md").write_text("x\n", encoding="utf-8")
+    (base / ".memory" / "state" / "progress.md").write_text("x\n", encoding="utf-8")
+    (base / ".memory" / "agreements").mkdir(parents=True)
+    scan = base / "docs"
+    scan.mkdir()
+    (scan / "note.md").write_text("see .memory/state/progress.md for status\n", encoding="utf-8")
+
+    monkeypatch.setattr(server, "POINTER_BASE_DIR", base)
+    monkeypatch.setattr(server, "POINTER_SCAN_ROOTS", [scan])
+
+    with server.make_server(0) as httpd, _running(httpd) as baseurl:
+        with urllib.request.urlopen(baseurl + "/api/pointers?item=progress.md") as resp:
+            assert resp.status == 200
+            data = json.loads(resp.read().decode("utf-8"))
+    files = {r["file"] for r in data["referrers"]}
+    assert "docs/note.md" in files, "endpoint must scan the injected roots, not the real repo"
+
+
 def test_serve_module_has_no_wildcard_or_host_flag() -> None:
     """Static guard: the shell source never binds 0.0.0.0/"" and exposes no --host flag."""
     from tools.memory_ui import server

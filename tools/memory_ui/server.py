@@ -37,6 +37,13 @@ STATE_DIR = _REPO_ROOT / ".memory" / "state"
 AGREEMENTS_DIR = _REPO_ROOT / ".memory" / "agreements"
 DERIVED_DIR = _REPO_ROOT / ".memory" / "derived"
 
+# The base dir + scan roots for the inline pointer-index rebuild behind ``/api/pointers``. Exposed
+# as monkeypatchable module globals (mirroring STATE_DIR/AGREEMENTS_DIR) so the endpoint is testable
+# against a synthetic corpus like every other route (WR-01). ``POINTER_SCAN_ROOTS = None`` defers to
+# ``pointer_index``'s production ``_default_scan_roots()``; production base dir == repo root.
+POINTER_BASE_DIR = _REPO_ROOT
+POINTER_SCAN_ROOTS: list[Path] | None = None
+
 # The loopback host is hardcoded — see module docstring (T-16-05). Never parameterise this.
 _HOST = "127.0.0.1"
 _DEFAULT_PORT = 8765
@@ -119,10 +126,15 @@ class MemoryUIHandler(BaseHTTPRequestHandler):
 
         if path == "/api/pointers":
             item = query.get("item", [""])[0]
+            scan_roots = (
+                POINTER_SCAN_ROOTS
+                if POINTER_SCAN_ROOTS is not None
+                else pointer_index._default_scan_roots()
+            )
             referrers = routes.pointer_lookup(
                 _item_key(item),
-                base_dir=_REPO_ROOT,
-                scan_roots=pointer_index._default_scan_roots(),
+                base_dir=POINTER_BASE_DIR,
+                scan_roots=scan_roots,
             )
             self._json(200, {"item": item, "referrers": referrers})
             return
