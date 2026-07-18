@@ -516,7 +516,7 @@ Plans:
 - [x] 16-01-PLAN.md — Wave 0: test infra + tools/memory_ui member enrollment + RED tests (generator/routes/orphan)
 - [x] 16-02-PLAN.md — Wave 1: DERIVED pointer-index generator (tools/memory_regen/pointer_index.py) [SC2]
 - [x] 16-03-PLAN.md — Wave 2: UI route logic + progress stamp writer; surface-and-confirm orphan guard [SC1/SC3]
-- [ ] 16-04-PLAN.md — Wave 2: wire pointer-index into SessionStart/orient/refresh-memory + emit round-trip [SC2]
+- [x] 16-04-PLAN.md — Wave 2: wire pointer-index into SessionStart/orient/refresh-memory + emit round-trip [SC2]
 - [ ] 16-05-PLAN.md — Wave 3: localhost-only HTTP shell + inlined page + entrypoint [SC1]
 - [ ] 16-06-PLAN.md — Wave 4: human browser round-trip verification [SC1/SC3]
 **UI hint**: yes
