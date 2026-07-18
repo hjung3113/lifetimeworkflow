@@ -15,7 +15,7 @@ from pathlib import Path
 from tools.contract_drift.drift import run_gate
 from tools.harness_lint import parse_frontmatter
 from tools.harness_lint.agreements import iter_agreement_files, load_agreement
-from tools.handoff.handoff import HandoffError, validate as validate_handoff
+from tools.handoff.handoff import HandoffError, packet_root_from_handoff, validate as validate_handoff
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 DERIVED_DIR = _REPO_ROOT / ".memory" / "derived"
@@ -134,8 +134,10 @@ def _active_task_pointer(state_dir: Path = STATE_DIR) -> str:
         value = json.loads((Path(state_dir) / "active-task.json").read_bytes().removeprefix(b"\xef\xbb\xbf"))
         if not isinstance(value, dict) or set(value) != {"task_id", "handoff_path", "state_revision"}:
             raise ValueError
-        handoff_path = _REPO_ROOT / str(value["handoff_path"])
-        handoff = validate_handoff(handoff_path.parent, handoff_path)
+        root = Path(state_dir).resolve().parents[1]
+        handoff_path = root / str(value["handoff_path"])
+        packet = packet_root_from_handoff(handoff_path)
+        handoff = validate_handoff(packet, handoff_path)
         if handoff["task_id"] != value["task_id"] or handoff["state_revision"] != value["state_revision"]:
             raise ValueError
         return (
@@ -144,7 +146,9 @@ def _active_task_pointer(state_dir: Path = STATE_DIR) -> str:
             f"Read and validate {value['handoff_path']}, then run /phase-gate before EXECUTE, REVIEW, or VERIFY."
         )
     except (OSError, ValueError, KeyError, HandoffError):
-        return ""
+        # An active pointer is a safety boundary, not optional context.  Never hide a stale
+        # pointer: the fresh session must stop and repair it before protected work proceeds.
+        return f"{TASK_HEADER}\nACTIVE HANDOFF INVALID — resume is blocked; repair or remove the active pointer."
 
 
 def assemble(
@@ -157,13 +161,15 @@ def assemble(
 
     No clock is computed, so delete-and-regenerate remains byte-identical.
     """
+    task = _active_task_pointer(state_dir)
     sections = [
         ("agreements", _agreements_block(agreements_dir)),
         ("banner", BANNER),
         ("drift", _drift_summary()),
+        # D-05/TCP-15: this reserved slot is deliberately before all droppable summaries.
+        ("task", task),
         ("contracts", _contracts_summary(derived_dir)),
         ("repomap", _repo_map_topN(derived_dir)),
-        ("task", _active_task_pointer(state_dir)),
         ("active", _active_context_pointer(state_dir)),
     ]
     out: list[str] = []
@@ -172,7 +178,7 @@ def assemble(
         if not text:
             continue
         addition = len(text) + (1 if out else 0)
-        if name not in ("agreements", "banner", "drift") and used + addition > budget_chars:
+        if name not in ("agreements", "banner", "drift", "task") and used + addition > budget_chars:
             continue
         out.append(text)
         used += addition

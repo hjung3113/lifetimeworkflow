@@ -1,6 +1,7 @@
 {
   "task_id": "T-20260718090000-contract-ratification",
   "goal": "Ratify a domain-neutral task packet shape before downstream lifecycle tooling.",
+  "stop_condition": "Stop after contract validation and before any downstream lifecycle write.",
   "non_goals": ["Implement routing or atomic state mutation."],
   "risk_inputs": {
     "ambiguity": 1,

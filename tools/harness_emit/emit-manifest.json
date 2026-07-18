@@ -73,6 +73,7 @@
     ".opencode/plugin/contract-guard.ts",
     ".opencode/plugin/format-on-write.ts",
     ".opencode/plugin/polyglot-lint.ts",
+    ".opencode/plugin/resume-gate.ts",
     ".opencode/plugin/secret-scan.ts",
     ".opencode/plugin/session-inject.ts",
     ".opencode/skill/context-budget/SKILL.md",

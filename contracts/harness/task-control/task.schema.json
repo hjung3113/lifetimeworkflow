@@ -131,6 +131,11 @@
         }
       },
       "uniqueItems": true
+    },
+    "stop_condition": {
+      "description": "Human-ratified task-specific boundary that a fresh session must restore exactly.",
+      "type": "string",
+      "minLength": 1
     }
   },
   "$defs": {

@@ -57,7 +57,7 @@
   | required_read_paths | array | yes |  |  |
   | state_ref | ref | yes |  |  |
   | state_revision | integer | yes |  |  |
-  | stop_condition | string | yes |  |  |
+  | stop_condition | string\|null | yes |  | Exact task-specific boundary when ratified; null means the task supplied none. |
   | task_id | ref | yes |  |  |
   | unresolved_items | array | yes |  |  |
   
@@ -102,6 +102,7 @@
   | non_goals | array | yes |  |  |
   | risk_decision | object | yes |  | Canonical router output captured at deterministic intake. |
   | risk_inputs | object | yes |  |  |
+  | stop_condition | string | no |  | Human-ratified task-specific boundary that a fresh session must restore exactly. |
   | task_id | ref | yes |  |  |
   
   ===== format-conventions =====

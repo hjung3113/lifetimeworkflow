@@ -41,7 +41,16 @@ def core() -> dict:
 
 @pytest.mark.parametrize(
     ("total", "lane"),
-    [(0, "FAST"), (4, "FAST"), (5, "STANDARD"), (9, "STANDARD"), (10, "STRICT"), (14, "STRICT"), (15, "CONTROLLED"), (21, "CONTROLLED")],
+    [
+        (0, "FAST"),
+        (4, "FAST"),
+        (5, "STANDARD"),
+        (9, "STANDARD"),
+        (10, "STRICT"),
+        (14, "STRICT"),
+        (15, "CONTROLLED"),
+        (21, "CONTROLLED"),
+    ],
 )
 def test_cut_boundaries(core: dict, total: int, lane: str):
     decision = decide(core, _payload(total))
@@ -51,12 +60,22 @@ def test_cut_boundaries(core: dict, total: int, lane: str):
 
 def test_same_input_and_policy_is_byte_identical(core: dict):
     payload = _payload(7, auth_authorization=True)
-    assert canonical_decision_json(decide(core, payload)) == canonical_decision_json(decide(core, payload))
+    assert canonical_decision_json(decide(core, payload)) == canonical_decision_json(
+        decide(core, payload)
+    )
 
 
 def test_decision_contains_required_audit_fields_and_is_capability_neutral(core: dict):
     decision = decide(core, _payload(5))
-    assert {"scores", "total", "lane", "promotion_reasons", "human_override_audit", "required_artifacts", "policy_hashes"} <= set(decision)
+    assert {
+        "scores",
+        "total",
+        "lane",
+        "promotion_reasons",
+        "human_override_audit",
+        "required_artifacts",
+        "policy_hashes",
+    } <= set(decision)
     rendered = canonical_decision_json(decision)
     assert "model" not in rendered.lower()
     assert "provider" not in rendered.lower()
@@ -102,7 +121,10 @@ def test_human_override_is_always_preserved_as_audit_record(core: dict, lane: st
             decide(core, payload)
     else:
         decision = decide(core, payload)
-        assert decision["human_override_audit"] == {"lane": lane, "reason": "record this human decision"}
+        assert decision["human_override_audit"] == {
+            "lane": lane,
+            "reason": "record this human decision",
+        }
 
 
 @pytest.mark.parametrize(
@@ -128,7 +150,9 @@ def test_cli_invalid_input_exits_nonzero(tmp_path: Path, capsys):
 @pytest.mark.parametrize("newline", ("\n", "\r\n"))
 def test_cli_strips_bom_and_accepts_lf_or_crlf(tmp_path: Path, capsys, newline: str):
     path = tmp_path / "bom.json"
-    path.write_bytes(("\ufeff" + json.dumps(_payload(0), indent=2).replace("\n", newline)).encode("utf-8"))
+    path.write_bytes(
+        ("\ufeff" + json.dumps(_payload(0), indent=2).replace("\n", newline)).encode("utf-8")
+    )
     assert main(["--input", str(path)]) == 0
     assert json.loads(capsys.readouterr().out)["lane"] == "FAST"
 
@@ -156,9 +180,13 @@ def test_overlay_only_escalates_and_effective_is_never_weaker(core: dict, tmp_pa
         payload = _payload(total, auth_authorization=total % 2 == 0)
         core_decision = decide(core, payload)
         effective_decision = decide(core, payload, overlay)
-        ordering = {lane: index for index, lane in enumerate(("FAST", "STANDARD", "STRICT", "CONTROLLED"))}
+        ordering = {
+            lane: index for index, lane in enumerate(("FAST", "STANDARD", "STRICT", "CONTROLLED"))
+        }
         assert ordering[effective_decision["lane"]] >= ordering[core_decision["lane"]]
-        assert set(effective_decision["required_artifacts"]) >= set(core_decision["required_artifacts"])
+        assert set(effective_decision["required_artifacts"]) >= set(
+            core_decision["required_artifacts"]
+        )
         assert set(effective_decision["required_gates"]) >= set(core_decision["required_gates"])
     for lower_total in range(22):
         for higher_total in range(lower_total, 22):
@@ -179,9 +207,12 @@ def test_every_lane_promotion_keeps_lower_lane_requirements(core: dict):
 
 def test_decide_does_not_read_overlay_schema_after_loading(core: dict, tmp_path: Path, monkeypatch):
     overlay_path = tmp_path / "overlay.toml"
-    overlay_path.write_text('[lanes.FAST]\nrequired_gates_add = ["local_audit"]\n', encoding="utf-8")
+    overlay_path.write_text(
+        '[lanes.FAST]\nrequired_gates_add = ["local_audit"]\n', encoding="utf-8"
+    )
     overlay = load_overlay(overlay_path, core)
     import tools.risk_router.router as router
+
     monkeypatch.setattr(router, "OVERLAY_SCHEMA", tmp_path / "missing.schema.json")
     assert decide(core, _payload(0), overlay)["required_gates"] == ["lint", "local_audit", "test"]
 
@@ -195,6 +226,7 @@ def test_intake_creates_a_valid_phase18_packet(core: dict, tmp_path: Path):
             "acceptance_criteria": [{"id": "AC-01", "description": "Packet validates."}],
             "constraints": [],
             "decision_refs": [],
+            "stop_condition": "stop after packet intake",
         },
         "routing": _payload(0, golden_or_contract_mutation=True),
         "baseline": {"commit": "a" * 40},
@@ -203,9 +235,30 @@ def test_intake_creates_a_valid_phase18_packet(core: dict, tmp_path: Path):
     decision = create_packet(request, packet)
     assert decision["lane"] == "CONTROLLED"
     from tools.task_packet.validate import validate_packet
+
     documents = validate_packet(packet)
     assert documents["task"]["risk_decision"]["policy_hashes"] == decision["policy_hashes"]
     assert documents["task"]["risk_decision"]["promotion_reasons"] == decision["promotion_reasons"]
+
+
+def test_intake_accepts_a_task_without_optional_stop_condition(core: dict, tmp_path: Path):
+    request = {
+        "task": {
+            "task_id": "T-20260718210001-optional-stop",
+            "goal": "Prove optional task stop condition.",
+            "non_goals": [],
+            "acceptance_criteria": [{"id": "AC-01", "description": "Packet validates."}],
+            "constraints": [],
+            "decision_refs": [],
+        },
+        "routing": _payload(0),
+        "baseline": {"commit": "a" * 40},
+    }
+    packet = tmp_path / "packet"
+    create_packet(request, packet)
+    from tools.task_packet.validate import validate_packet
+
+    assert "stop_condition" not in validate_packet(packet)["task"]
 
 
 def test_project_slot_loads_only_an_explicit_overlay(core: dict, tmp_path: Path):
@@ -229,7 +282,9 @@ def test_project_slot_loads_only_an_explicit_overlay(core: dict, tmp_path: Path)
         {"additional_promotions": {"payment": "CONTROLLED"}},
     ],
 )
-def test_overlay_relaxations_and_core_replacements_are_rejected(core: dict, overlay: dict, tmp_path: Path):
+def test_overlay_relaxations_and_core_replacements_are_rejected(
+    core: dict, overlay: dict, tmp_path: Path
+):
     path = tmp_path / "overlay.toml"
     lines = []
     for key, value in overlay.items():

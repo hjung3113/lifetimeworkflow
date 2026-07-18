@@ -20,7 +20,7 @@ If `.memory/state/active-task.json` exists, it is a pointer only. Validate its H
 existing Phase 20 gate before any EXECUTE, REVIEW, or VERIFY action. A stale pointer, state
 revision, ref, or artifact must fail and be regenerated via `/handoff`; do not auto-correct it.
 
-!`uv run python -m tools.handoff resume --state-dir .memory/state --repo-root .`
+!`test ! -f .memory/state/active-task.json || uv run python -m tools.handoff resume --state-dir .memory/state --repo-root .`
 
 ## 2. Regenerate the derived memory plane (never hand-edited)
 

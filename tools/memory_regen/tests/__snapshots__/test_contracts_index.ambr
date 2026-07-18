@@ -10,9 +10,9 @@
   | contracts/harness/task-control/attestation.schema.json | other | TBD | 2a708cb2a408 | clean |
   | contracts/harness/task-control/evidence.schema.json | other | TBD | 2c34f666caa8 | clean |
   | contracts/harness/task-control/gate-registry.json | other | TBD | 04a9d3bf8962 | clean |
-  | contracts/harness/task-control/handoff.schema.json | other | TBD | 6ecb89ed7247 | clean |
+  | contracts/harness/task-control/handoff.schema.json | other | TBD | d47edd6c1eb6 | clean |
   | contracts/harness/task-control/state.schema.json | other | TBD | c2a64cab55f3 | clean |
-  | contracts/harness/task-control/task.schema.json | other | TBD | 0ed9c1f6f2a7 | clean |
+  | contracts/harness/task-control/task.schema.json | other | TBD | 1c5a0f5b683e | clean |
   | contracts/harness/task-control/transitions.json | other | TBD | 5d27bb16571d | clean |
   | contracts/normalization/format-conventions.schema.json | normalization | TBD | 1af8935bf997 | clean |
   | contracts/sample/greeting.schema.json | other | TBD | 35f71ca2dbeb | clean |

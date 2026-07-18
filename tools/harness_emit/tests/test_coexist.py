@@ -170,6 +170,16 @@ _SEED_SETTINGS = {
                     }
                 ],
             },
+            {
+                "matcher": "Write|Edit|Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "uv run python -m tools.hooks.resume_gate",
+                        "timeout": 15,
+                    }
+                ],
+            },
         ],
     }
 }

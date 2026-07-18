@@ -71,7 +71,7 @@ def make_task(tmp_path: Path, lane: str = "STANDARD") -> tuple[Path, Path]:
     policy = load_policy()
     decision = decide(policy, {"scores": {key: 0 for key in ("ambiguity", "change_scope", "data_security", "reversibility", "impact", "coordination", "context_pressure")}, "human_override": {"lane": lane, "reason": "fixture"}})
     decision.pop("scores")
-    task = {"task_id": "T-20260718000000-fixture", "goal": "fixture", "non_goals": [], "risk_inputs": {key: 0 for key in ("ambiguity", "change_scope", "data_security", "reversibility", "impact", "coordination", "context_pressure")}, "lane": lane, "risk_decision": decision, "acceptance_criteria": [{"id": "AC-01", "description": "works"}], "constraints": [{"id": "C-01", "description": "keep gate", "source_path": "constraints.md", "source_sha256": digest(source)}], "decision_refs": []}
+    task = {"task_id": "T-20260718000000-fixture", "goal": "fixture", "non_goals": [], "risk_inputs": {key: 0 for key in ("ambiguity", "change_scope", "data_security", "reversibility", "impact", "coordination", "context_pressure")}, "lane": lane, "risk_decision": decision, "acceptance_criteria": [{"id": "AC-01", "description": "works"}], "constraints": [{"id": "C-01", "description": "keep gate", "source_path": "constraints.md", "source_sha256": digest(source)}], "decision_refs": [], "stop_condition": "stop after fixture gate"}
     evidence = {"task_id": task["task_id"], "gate_runs": [], "findings": [], "redaction_report": {"status": "CLEAR", "refused_fields": []}}
     state = {"task_id": task["task_id"], "phase": "INTAKE", "revision": 0, "baseline": {"repo_root": ".", "commit": commit}, "current_ref": commit, "completed_items": [], "next_action": "start", "blockers": [], "transition": None}
     dump(task_dir / "task.json", task); dump(task_dir / "evidence.json", evidence); create(task_dir, state)
@@ -249,7 +249,7 @@ def test_overlay_packet_transitions_and_tampering_is_rejected(tmp_path: Path) ->
     task_dir = root / ".workflow/tasks/T-20260718000000-overlay"
     overlay = tmp_path / "overlay.toml"
     overlay.write_text('[lanes.FAST]\nrequired_gates_add = ["local_audit"]\n', encoding="utf-8")
-    request = {"task": {"task_id": "T-20260718000000-overlay", "goal": "overlay", "non_goals": [], "acceptance_criteria": [{"id": "AC-01", "description": "works"}], "constraints": [], "decision_refs": []}, "routing": {"scores": {key: 0 for key in ("ambiguity", "change_scope", "data_security", "reversibility", "impact", "coordination", "context_pressure")}}, "baseline": {"commit": commit}}
+    request = {"task": {"task_id": "T-20260718000000-overlay", "goal": "overlay", "non_goals": [], "acceptance_criteria": [{"id": "AC-01", "description": "works"}], "constraints": [], "decision_refs": [], "stop_condition": "stop after overlay"}, "routing": {"scores": {key: 0 for key in ("ambiguity", "change_scope", "data_security", "reversibility", "impact", "coordination", "context_pressure")}}, "baseline": {"commit": commit}}
     create_packet(request, task_dir, overlay_path=overlay)
     assert (task_dir / "risk-overlay.toml").read_bytes() == overlay.read_bytes()
     assert transition(task_dir, "EXECUTE", 0)["phase"] == "EXECUTE"

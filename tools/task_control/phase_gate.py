@@ -30,7 +30,7 @@ def _is_ancestor(root: Path, base: str, head: str) -> bool:
     raise TaskControlError(f"git merge-base failed: {detail or 'unknown git error'}")
 
 
-def phase_gate(task_dir: str | Path, expected_revision: int, *, repo_root: str | Path | None = None, baseline: str | None = None, prohibited_actions: list[str] | None = None) -> list[str]:
+def phase_gate(task_dir: str | Path, expected_revision: int, *, repo_root: str | Path | None = None, baseline: str | None = None, prohibited_actions: list[str] | None = None, publication_parent: str | None = None) -> list[str]:
     """Return non-blocking diagnostics, raising a deterministic error for refresh needs."""
     packet = Path(task_dir).resolve()
     root = Path(repo_root).resolve() if repo_root else Path(_git(packet, "rev-parse", "--show-toplevel")).resolve()
@@ -45,7 +45,9 @@ def phase_gate(task_dir: str | Path, expected_revision: int, *, repo_root: str |
     if packet != expected_packet:
         refresh.append("worktree task path")
     head = _git(root, "rev-parse", "HEAD")
-    if state["current_ref"] != head:
+    # A HANDOFF publication checkpoint is metadata-only: its parent is the task/code ref.
+    # Only the committed-handoff resume barrier may opt into this one-boundary exception.
+    if state["current_ref"] != head and not (publication_parent == state["current_ref"] and _git(root, "rev-parse", "HEAD^") == state["current_ref"]):
         refresh.append("current ref")
     if baseline is not None and state["baseline"]["commit"] != baseline:
         refresh.append("baseline commit")

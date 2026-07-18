@@ -71,6 +71,7 @@ def _base_packet(lane: str = "STRICT", phase: str = "REVIEW", revision: int = 6,
             }
         ],
         "decision_refs": [{"path": "docs/adr/ADR-0001-task-control.md", "sha256": SHA256}],
+        "stop_condition": "Stop after validation.",
     }
     state = {
         "task_id": task_id,

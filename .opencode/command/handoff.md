@@ -18,5 +18,9 @@ agent: orchestrator
 
    !`uv run python -m tools.handoff fresh-session .workflow/tasks/<task-id>/handoffs/revision-<n>.json`
 
-3. Before EXECUTE, REVIEW, or VERIFY, run `/phase-gate` for the handoff revision. Validation and
-   phase-gate are both required resume barriers.
+   `fresh-session` performs the same committed-HEAD validation as `validate`; it is not an
+   unverified extractor.
+
+3. Before EXECUTE, REVIEW, or VERIFY, run `/orient`: successful HANDOFF validation and
+   `/phase-gate` create the revision-bound resume attestation. The emitted PreToolUse gate blocks
+   mechanically identifiable mutations while that attestation is absent or stale.
