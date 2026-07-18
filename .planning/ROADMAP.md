@@ -41,6 +41,15 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 16: Local Memory Web UI** *(v2.1 E)* - A local, no-network, no-auth tool to view/edit/retire memory items with pointer-aware referential integrity over a machine-built derived pointer-index. (completed 2026-07-18)
 - [x] **Phase 17: Constitution-Gate Dev/Enforce Decoupling** *(infra — independent of v2.1 MEM2)* - A secure-default `HARNESS_DEV_BYPASS` env opt-out so the product's constitution gates stop governing the Claude dev session (default enforce; blank = no bypass; distinct from `GOLDEN_APPROVE_HUMAN`; byte-hygiene never waived), honored by `contract_guard`/`commit_gate`; ADR-0007 records it; CODEOWNERS stays the real gate. (completed 2026-07-15)
 
+**Milestone v2.2 — Adaptive Task Control Plane** *(phases 18–23 — numbering continues after v2.1 = phases 12–17; reuses existing machinery — orchestrator, GSD, two-plane memory, `/review`·`/verify-work`·`/checkpoint`, contract-drift/golden/CI, Phase-7 emitter — no rebuild. Design: `docs/explanation/next-milestone-task-control-plane.md`, codex sol via sol-vs-fable debate. Locked: A=`.workflow/tasks/`, B=6 phases. Contract-first vertical slice — each phase depends on the prior.)*
+
+- [ ] **Phase 18: Task Packet Contract Ratification** *(v2.2 A)* - Fix the shape and ownership of task state before any code: human-ratified JSON Schema for TASK/STATE/EVIDENCE/HANDOFF, a `.workflow/tasks/<id>/` instance slot independent of `.memory/state/`, phase/lane enums + allowed-transition table, contract-drift baseline + paired golden. (TCP-01, TCP-02)
+- [ ] **Phase 19: Deterministic Risk Router** *(v2.2 B)* - A pure-function 7-axis scorer → FAST/STANDARD/STRICT/CONTROLLED lane with byte-identical output, auto-promotion reason codes, per-lane required-artifact matrix, escalate-only instance overlay slot, and the `/intake` entry point that keeps FAST ceremony-free. (TCP-03, TCP-04, TCP-05, TCP-06)
+- [ ] **Phase 20: Atomic State Manager + Context/Transition Gate** *(v2.2 C)* - Concurrency-safe atomic state transitions (temp-write+rename, revision CAS, interrupted-write recovery) plus a fail-closed phase-start gate (git ref / baseline / worktree / constraint attestation) surfaced as `/phase-gate`. (TCP-07, TCP-08, TCP-09, TCP-10)
+- [ ] **Phase 21: Evidence Bundle Adapters** *(v2.2 D)* - Collect (never reimplement) existing gate results into tamper-evident, criterion-traced evidence with command·exit·SHA-256, strict skip≠pass, secret refusal, wired to `/review` and `/verify-work`. (TCP-11, TCP-12, TCP-13)
+- [ ] **Phase 22: Handoff + Fresh-Session Resume** *(v2.2 E)* - An immutable HANDOFF snapshot a fresh session reconstructs 100% from, with `/checkpoint`·`/orient`·`/handoff` revisions and a pointer-only SessionStart injection preserving the ~1k cap. (TCP-14, TCP-15)
+- [ ] **Phase 23: Lifecycle Evaluation + Docs + CI** *(v2.2 F)* - 20 ratified domain-neutral lifecycle fixtures (5/lane) + stress/negative cases, a ceremony cap on FAST, a how-to doc, a human-ratified structural ADR, and CI fan-in keeping every existing gate green. (TCP-16, TCP-17, TCP-18)
+
 ## Phase Details
 
 ### Phase 1: Constitution + Golden Core
@@ -385,3 +394,77 @@ Plans:
 Plans:
 - [x] 17-01-PLAN.md — HARNESS_DEV_BYPASS: shared dev_bypassed() + thread into contract_guard/commit_gate + tests (SC1–SC6)
 - [x] 17-02-PLAN.md — ADR-0007 recording the posture (draft-to-scratch + human-gated landing)
+
+### Phase 18: Task Packet Contract Ratification *(v2.2 A)*
+
+**Goal:** 작업 상태·증거·인계의 shape와 소유권을 코드보다 먼저 사람 승인 계약으로 고정한다 — 이후 모든 phase가 prose 해석이 아니라 ratified schema를 소비한다.
+**Mode:** standard
+**Depends on:** Nothing new (reuses `contracts/`, contract-drift, golden machinery)
+**Requirements:** TCP-01, TCP-02
+**Success criteria** (observable):
+1. `task`/`state`/`evidence`/`handoff` JSON Schema(Draft 2020-12) 4종이 `contracts/harness/task-control/`에 존재하고 contract-drift 베이스라인에 등록된다 — schema hash 이동은 paired golden + 사람 승인을 요구한다.
+2. positive fixture ≥5개가 4 schema를 통과하고, 필수 필드별 negative fixture와 미정의 phase/lane/transition이 각각 거부된다.
+3. `.workflow/tasks/<id>/` 인스턴스가 `.memory/state/`와 상호 독립이다 — 한쪽 삭제가 다른 쪽 검증/재생성을 바꾸지 않는다(deletion-independence 테스트).
+4. dangling criterion/constraint/evidence ID와 baseline-commit 부재가 결정론적으로 거부된다.
+
+### Phase 19: Deterministic Risk Router *(v2.2 B)*
+
+**Goal:** 작업 규모가 아니라 위험·맥락 압력에 비례해 절차를 강화하되, 레인 판정과 필수 산출물은 전부 재현 가능한 순수 함수로 계산한다.
+**Mode:** standard
+**Depends on:** Phase 18 (task packet에 lane·risk input 필드)
+**Requirements:** TCP-03, TCP-04, TCP-05, TCP-06
+**Success criteria** (observable):
+1. 동일 intake 입력 + policy hash가 실행 순서·호스트와 무관하게 byte-identical decision JSON을 낸다.
+2. `0..4/5..9/10..14/15..21` 경계 fixture가 각각 FAST/STANDARD/STRICT/CONTROLLED를 낸다.
+3. 자동 승격 fixture(auth·payment·secret·destructive·헌법 접촉…)가 점수 레인보다 낮지 않은 결과를 내고, overlay가 레인/게이트를 낮추려 하면 validation이 실패한다.
+4. `/intake`가 packet을 생성하고 FAST fixture가 상세 SPEC/PLAN/worktree/이중 review를 자동 요구하지 않는다.
+5. policy·output·fixture에 실제 모델 ID/provider 문자열이 없다.
+
+### Phase 20: Atomic State Manager + Context/Transition Gate *(v2.2 C)*
+
+**Goal:** 오케스트레이터의 prose 진행을 원자적·동시성 안전한 상태 전이로 바꾸고, phase 시작 전 ref·제약을 fail-closed 검증한다.
+**Mode:** standard
+**Depends on:** Phase 18 (state schema), Phase 19 (lane별 필수 산출물)
+**Requirements:** TCP-07, TCP-08, TCP-09, TCP-10
+**Success criteria** (observable):
+1. transition matrix의 모든 허용 edge는 성공하고 모든 non-edge/필수-산출물-부재 advance는 canonical 파일을 바꾸지 않고 실패한다.
+2. 강제 종료 후 정확히 하나의 valid state가 canonical하고, 같은 revision을 경쟁하는 두 writer 중 정확히 하나만 성공한다.
+3. stale ref·wrong worktree·baseline mismatch·constraint attestation 누락이 EXECUTE 진입 전 차단된다.
+4. `/phase-gate`가 두 런타임에 emit되고 generated-tree drift가 0이다.
+
+### Phase 21: Evidence Bundle Adapters *(v2.2 D)*
+
+**Goal:** "실행했다"는 서술 대신 기존 게이트의 실제 결과를 위조 탐지 가능하게 작업 계약에 연결한다 — 검증 로직은 재구현하지 않는다.
+**Mode:** standard
+**Depends on:** Phase 20 (transition/gate), Phase 18 (evidence schema)
+**Requirements:** TCP-11, TCP-12, TCP-13
+**Success criteria** (observable):
+1. pass/fail/skip/blocked fixture가 서로 다른 status로 round-trip하고 skip이 pass로 승격되지 않는다.
+2. artifact 1 byte 변조 시 hash 검증이 실패하고, 실행 안 한 게이트를 PASSED로 등록할 수 없다.
+3. 필수 criterion에 passing evidence가 없으면 VERIFY 완료가, unresolved blocker/major finding이 있으면 COMPLETE가 거부된다.
+4. secret/PII fixture가 evidence·HANDOFF에 평문 기록되지 않고 명시적으로 거부되며, 기존 `/verify-work` 5-gate regression이 그대로 통과한다.
+
+### Phase 22: Handoff + Fresh-Session Resume *(v2.2 E)*
+
+**Goal:** 대화 transcript 없이 정확한 task snapshot을 새 세션에 전달하고 안전한 재개를 강제한다.
+**Mode:** standard
+**Depends on:** Phase 20 (state/revision), Phase 21 (evidence refs)
+**Requirements:** TCP-14, TCP-15
+**Success criteria** (observable):
+1. HANDOFF schema + 참조 hash가 검증되고, stale revision/ref/artifact를 가리키는 HANDOFF는 실패한다.
+2. HANDOFF만 읽은 fresh-session checker가 task-id·goal·non-goals·critical constraints·현재 phase·ref·next-action을 100% 복원한다.
+3. create→transition→evidence→handoff→(새 프로세스) orient→phase-gate end-to-end가 green이다.
+4. SessionStart injector가 active task를 pointer-only로 주입하며 기존 ~1k token cap과 lazy-load를 지킨다(task 유무 양쪽 snapshot).
+
+### Phase 23: Lifecycle Evaluation + Docs + CI *(v2.2 F)*
+
+**Goal:** 소작업 ceremony 억제·고위험 fail-closed·fresh-session 재개를 출하 전에 재현 가능하게 증명하고, 구조 결정을 사람이 ratify한다.
+**Mode:** standard
+**Depends on:** Phases 18–22 (전 계층)
+**Requirements:** TCP-16, TCP-17, TCP-18
+**Success criteria** (observable):
+1. 레인별 5개 = 20 ratified lifecycle fixture가 expected lane·결과와 일치하고 false downgrade가 0건이다.
+2. stress/negative 사례(buried constraint·stale handoff·wrong worktree·tampered/missing evidence·concurrent writers·constitution change·illegal downgrade)가 모두 실행/COMPLETE 전에 차단된다.
+3. FAST fixture가 상세 SPEC/PLAN/worktree/이중 review 없이 통과하고 FAST 사용자 의식 단계 상한(intake+verify)이 고정된다.
+4. 구조 결정 ADR이 사람 승인 append-only로 랜딩되고 `docs/how-to/task-lifecycle.md`가 추가된다.
+5. 전체 `uv run pytest` + contract-drift + golden + stale-derived + GEN-04 + harness emit-drift + 모델 식별자 lint가 green이다.

@@ -6,7 +6,7 @@ status: planning
 last_updated: "2026-07-18T11:21:05.862Z"
 last_activity: 2026-07-18
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-18)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Planning next milestone — v2.1 (MEM2 — Process Memory & Provenance Reframe) shipped + archived 2026-07-18 (`.planning/milestones/v2.1-*`). Phase 17 (infra) remains live. Next: `/gsd:new-milestone`.
+**Current focus:** v2.2 Adaptive Task Control Plane — roadmap created (6 phases, 18–23; TCP-01..18). Design by codex sol (sol-vs-fable debate), human-approved. Next: `/gsd:discuss-phase 18` or `/gsd:plan-phase 18`.
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 18 — Task Packet Contract Ratification (ready to plan)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-07-18 — Milestone v2.2 started
+Status: Roadmap approved; ready to plan Phase 18
+Last activity: 2026-07-18 — Milestone v2.2 roadmap created (phases 18–23)
 
 ## Performance Metrics
 
