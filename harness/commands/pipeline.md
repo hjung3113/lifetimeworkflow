@@ -107,10 +107,13 @@ Render rules:
    root, start at the lexicographically-first authority so the render is still deterministic.
 2. **Indent one level per hop.** Print each node, then recurse into its sorted `adjacency` dependents
    one indentation level deeper — authority above, dependents nested beneath it.
-3. **Cycle marker (never recurse twice).** Track the visited set on the current root-to-node path.
-   If a dependent is already on that path, print it as a terminal `(cycle -> <node>)` marker
-   **instead of** recursing into it again — the exact visited-set-before-recurse discipline
-   `tools.contract_graph.query.transitive` uses, so a legal cycle terminates rather than looping.
+3. **Cycle marker (never recurse twice).** Track the visited set on the current root-to-node PATH
+   only (path-local, not a single global set — a global set would collapse legal diamonds/fan-in by
+   printing a shared dependent just once). If a dependent is already on the current path, print it as
+   a terminal `(cycle -> <node>)` marker **instead of** recursing into it again, so a legal cycle
+   terminates rather than looping. (This is the render's own path-local rule; it is stricter than
+   `tools.contract_graph.query.transitive`, which uses a global visited set because it only collects
+   the reachable id set, not a tree.)
 
 This tree view is the human-facing surface for branch/fan-in/cycle topologies; the linear
 stage-list/edge-chain steps 2–3 remain the render whenever the graph is a single chain.

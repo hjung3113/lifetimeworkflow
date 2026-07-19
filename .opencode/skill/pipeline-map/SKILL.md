@@ -82,9 +82,11 @@ those, render the compiled contract graph as an **indented tree** (D-01) instead
 - **Indent one level per hop** — an authority sits above its dependents, each dependent nested one
   level deeper, recursing along the sorted `adjacency` edges.
 - **Terminate a cycle** with an explicit `(cycle -> <node>)` marker: track the visited set on the
-  current root-to-node path and, when a dependent is already on that path, print the marker instead
-  of recursing into it again — the same visited-set-before-recurse discipline
-  `tools.contract_graph.query.transitive` uses so a legal cycle never loops.
+  current root-to-node PATH only (path-local — NOT a single global set, which would collapse legal
+  diamonds/fan-in) and, when a dependent is already on that path, print the marker instead of
+  recursing into it again, so a legal cycle never loops. This path-local rule is stricter than
+  `tools.contract_graph.query.transitive`'s global visited set (that query only collects the
+  reachable id set, not a tree).
 
 `/pipeline` (see **Related**) is the render entry point that prints this tree; use the flat stage
 list/edge chain only when the graph is a single chain.

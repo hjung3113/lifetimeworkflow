@@ -43,6 +43,29 @@ def test_fan_out_compiles_clean() -> None:
     assert result["adjacency"]["a"] == sorted(["b", "c", "d"])
 
 
+def test_same_edge_two_distinct_contracts_dedups_adjacency() -> None:
+    """CR-01 regression: one authority reaching the SAME dependent via two DISTINCT contracts is a
+    legal shape (effective_relationships dedups on the (authority, contract, dependent) triple, so
+    both records survive). Adjacency is contract-agnostic → the dependent MUST appear once, not
+    twice, or direct()/reverse() would return duplicate ids+paths (breaks the D-03 sorted-ids
+    contract)."""
+    cfg = {
+        "components": [
+            {"id": "a", "produces": ["w1", "w2"], "consumes": []},
+            {"id": "b", "produces": [], "consumes": ["w1", "w2"]},
+        ],
+        "contract_graph": {
+            "relationships": [
+                {"id": "r1", "contract": "w1", "authority": "a", "dependents": ["b"]},
+                {"id": "r2", "contract": "w2", "authority": "a", "dependents": ["b"]},
+            ]
+        },
+    }
+    result = compile_graph(cfg)
+    assert result["diagnostics"] == []
+    assert result["adjacency"]["a"] == ["b"]
+
+
 def test_fan_in_compiles_clean() -> None:
     """3 authorities all pointing at one shared dependent (fan-in) → no diagnostics."""
     cfg = {

@@ -118,7 +118,11 @@ def compile_graph(cfg: dict | None = None) -> dict:
 
     return {
         "relationships": relationships,
-        "adjacency": {k: sorted(adjacency[k]) for k in sorted(adjacency)},
+        # De-duplicate: one authority may reach the same dependent via two DISTINCT contracts
+        # (a legal shape effective_relationships() dedups on the (authority, contract, dependent)
+        # triple, so both records survive). Adjacency is contract-agnostic, so collapse to a set —
+        # else direct()/reverse() would return duplicate ids+paths (breaks the D-03 sorted-ids contract).
+        "adjacency": {k: sorted(set(adjacency[k])) for k in sorted(adjacency)},
         "diagnostics": sorted(diagnostics),
     }
 
@@ -153,7 +157,13 @@ def _contract_ownership_diagnostic(
         # A component with no `produces` field → fall through to project-root existence-only.
         contracts_dir = _CONTRACTS_DIR
     else:  # member (cross-repo `repo:stage`, or a bare stage that named a member)
-        member_root = _REPO_ROOT / member_by_id[resolved_id]["root"]
+        member = member_by_id[resolved_id]
+        if "root" not in member:
+            raise ValueError(
+                f"contract_graph: workspace member {resolved_id!r} is missing required 'root' "
+                f"(needed to resolve authority {rel['authority']!r} of relationship {rel['id']})"
+            )
+        member_root = _REPO_ROOT / member["root"]
         contracts_dir = member_root / "contracts"
 
     if contract not in _tracked_schemas(contracts_dir):
