@@ -523,7 +523,7 @@ Plans:
 
 **Wave 3** *(blocked on 25-01, 25-02 — parallel, no file overlap)*
 
-- [ ] 25-03-PLAN.md — TOPO-06: `/pipeline`·`pipeline-map`·`orchestrator.md` indented-tree render (D-01) + linear byte-identity regression + emit round-trip
+- [x] 25-03-PLAN.md — TOPO-06: `/pipeline`·`pipeline-map`·`orchestrator.md` indented-tree render (D-01) + linear byte-identity regression + emit round-trip
 - [ ] 25-04-PLAN.md — TOPO-07: generic non-linear proof fixtures (fan-out, request/response split, event fan-out, legal cycle, cross-repo authority) + WR-01 disposition + GEN-04 regression
 
 **Wave 4** *(blocked on 25-03, 25-04)*
