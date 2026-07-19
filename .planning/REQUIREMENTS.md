@@ -20,9 +20,9 @@
 
 ### Theme B — Brownfield Adoption (Phases 26–27)
 
-- [ ] **ADOPT-01** *(NEW+REUSE, Phase 26)*: read-only local-root inventory가 언어·package/component 경계·기존 schema/spec/doc/ADR/AGENTS/CODEOWNERS/CI 표면·candidate process 경계를 confined·ignore-준수·size-cap된 evidence pointer·hash로 결정론적으로 보고하고, secret·binary·vendor·generated·source dump은 제외한다.
-- [ ] **ADOPT-02** *(NEW+REUSE, Phase 26)*: 제안된 모든 member·component·relationship·contract candidate·test command·문서 destination·AGENTS 경계가 source evidence와 함께 observed/inferred/unknown으로 분류되고, 미해결 ownership은 invented authority가 아니라 question으로 남는다.
-- [ ] **ADOPT-03** *(NEW+REUSE, Phase 26)*: adoption plan이 contracts·golden·ADR·Diátaxis 4분면·두 memory 평면·task/config/workspace topology·root/nested AGENTS·CODEOWNERS 가이드·runtime-neutral source·emitted runtime에 정확히 하나의 `create`/`marker-merge`/`preserve`/`conflict`/`derived-regenerate`/`human-ratification-required` disposition을 부여한다.
+- [x] **ADOPT-01** *(NEW+REUSE, Phase 26)*: read-only local-root inventory가 언어·package/component 경계·기존 schema/spec/doc/ADR/AGENTS/CODEOWNERS/CI 표면·candidate process 경계를 confined·ignore-준수·size-cap된 evidence pointer·hash로 결정론적으로 보고하고, secret·binary·vendor·generated·source dump은 제외한다.
+- [x] **ADOPT-02** *(NEW+REUSE, Phase 26)*: 제안된 모든 member·component·relationship·contract candidate·test command·문서 destination·AGENTS 경계가 source evidence와 함께 observed/inferred/unknown으로 분류되고, 미해결 ownership은 invented authority가 아니라 question으로 남는다.
+- [x] **ADOPT-03** *(NEW+REUSE, Phase 26)*: adoption plan이 contracts·golden·ADR·Diátaxis 4분면·두 memory 평면·task/config/workspace topology·root/nested AGENTS·CODEOWNERS 가이드·runtime-neutral source·emitted runtime에 정확히 하나의 `create`/`marker-merge`/`preserve`/`conflict`/`derived-regenerate`/`human-ratification-required` disposition을 부여한다.
 - [ ] **ADOPT-04** *(NEW+REUSE, Phase 27)*: 각 adoption batch가 `.workflow/tasks/<task-id>/artifacts/adoption/<batch-id>/`에 존재하며 inventory·plan·draft tree·question·conflict·source ref·task revision·artifact hash·approval을 기존 CAS·evidence·HANDOFF·resume lifecycle에 결합한다.
 - [ ] **ADOPT-05** *(NEW+REUSE, Phase 27)*: discovery/draft 모드는 task artifact root 안에서만 쓰고, apply 모드는 review된 비-헌법 파일을 atomically create·marker-merge하되 silent overwrite·동시 target drift를 거부하고 `contracts/`·`docs/adr/`·`golden/` destination을 mutation 전에 거부한다.
 - [ ] **ADOPT-06** *(NEW+REUSE, Phase 27)*: promotion이 제안된 contract·golden·ADR·relationship authority·conflict·unknown을 다루는 사람 결정을 요구하며, 정확한 draft hash·task revision·git ref에 결합되어 입력 변경 시 승인이 무효화된다.
@@ -75,9 +75,9 @@ Deferred to a later milestone:
 | TOPO-05 | Phase 25 | Complete |
 | TOPO-06 | Phase 25 | Complete |
 | TOPO-07 | Phase 25 | Complete |
-| ADOPT-01 | Phase 26 | Pending |
-| ADOPT-02 | Phase 26 | Pending |
-| ADOPT-03 | Phase 26 | Pending |
+| ADOPT-01 | Phase 26 | Complete |
+| ADOPT-02 | Phase 26 | Complete |
+| ADOPT-03 | Phase 26 | Complete |
 | ADOPT-04 | Phase 27 | Pending |
 | ADOPT-05 | Phase 27 | Pending |
 | ADOPT-06 | Phase 27 | Pending |

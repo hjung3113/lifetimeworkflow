@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: Contract Graph, Brownfield Adoption, Living Docs
 status: executing
-stopped_at: Phase 26 Plan 01 paused at Task 3 blocking human-verify checkpoint
-last_updated: "2026-07-19T11:53:40.602Z"
-last_activity: 2026-07-19 -- Phase 26 Plan 01 Tasks 1-2 landed, paused at checkpoint
+stopped_at: Phase 26 Plan 01 complete (checkpoint ratified, derived plane regenerated)
+last_updated: "2026-07-19T12:04:10.478Z"
+last_activity: 2026-07-19 -- Phase 26 Plan 01 complete
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 10
-  completed_plans: 7
-  percent: 70
+  completed_plans: 8
+  percent: 80
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 ## Current Position
 
 Phase: 26 (deterministic-brownfield-inventory-mapping-v2-3-b) — EXECUTING
-Plan: 1 of 3 — PAUSED at Task 3 (blocking human-verify checkpoint)
-Status: Awaiting human ratification of constitution-plane schema landing (contracts/harness/adoption/*.schema.json + rebaselined contracts/.hashes/manifest.json); Tasks 1-2 committed (245a101, 3f84070), Task 3 checkpoint reached, Task 4 (derived-plane regen) not yet run
-Last activity: 2026-07-19 -- Phase 26 Plan 01 Tasks 1-2 landed, paused at checkpoint
+Plan: 2 of 3 — Ready to execute (26-01 complete: schemas ratified, drift green, derived plane fresh)
+Status: Ready to execute
+Last activity: 2026-07-19 -- Phase 26 Plan 01 complete
 
 ## Performance Metrics
 
@@ -209,6 +209,7 @@ Recent decisions affecting current work:
 - [Phase 25]: [25-02] TOPO-05 query layer (tools/contract_graph/query.py): direct/reverse/transitive CONSUME compile_graph()'s adjacency (never re-walk config); D-03 return shape is {ids: sorted, paths: [...]} — ids AND connecting paths, never ids alone. transitive() is the iterative visited-set worklist (Pattern 2, visited-check-before-enqueue) → cycle-safe O(nodes+edges), deterministic (neighbours sorted). D-03 no-task-evidence/no-contract-preload invariant is a STRUCTURAL test (asserts query.py source has no task_packet/evidence/task_control/handoff import and no open(/.read_text() — pure in-memory traversal, zero file I/O). __init__ PEP-562 __getattr__ now routes names to the owning submodule (compile vs query).
 - [Phase ?]: [Phase 25]: [25-03] TOPO-06 conductor generalized IN PLACE — /pipeline + pipeline-map gain a D-01 indented-tree render (cycle -> node marker) as an ADDITIONAL section; linear stage-list/edge-chain stays byte-identical (0 removed lines), proven by a hardcoded literal-string regression test. orchestrator.md 'Trace the topology' now cites direct/reverse/transitive for non-linear routing. No new command (23) / persona (5). Re-emitted both runtimes byte-identically, no model id; trees committed BEFORE snapshot regen (gate-theft ordering). Full suite 952 passed.
 - [Phase ?]: [Phase 25]: [25-04] TOPO-07 proof fixtures — every non-linear shape (shared-contract fan-out, request/response as two SEPARATE records, event fan-out, legal multi-node cycle, cross-repo authority) is fixture-proven against the Plan-01 compiler + Plan-02 queries; cfgs derive components from the records themselves. WR-01 DEFERRED (Phase-24 lowered-id scheme unchanged) and enforced by an automated corpus scan constraining every fixture id/contract/authority/dependent to exclude / and ->. Cross-repo authority reuses split_endpoint + the producer-tree schema-glob idiom (no new checker). Log-parser instance provably untouched, GEN-04 green; full suite 961 passed.
+- [Phase 26]: [26-01] ADOPT-01/02/03 constitution contracts ratified — three self-contained Draft 2020-12 schemas (`contracts/harness/adoption/{inventory,plan,manifest}.schema.json`, D-11: zero cross-file $ref, each duplicates its own evidenceRef/classification $defs) authored per the CONTEXT.md D-01..D-11 spec, mirroring `contracts/harness/task-control/`. `inventory.schema.json`'s `excludedEntry` structurally omits `sha256` (D-10); `plan.schema.json`'s `candidateRecord.record` is a deliberately open object so a candidate can never be mistaken for a ratified relationship (D-05); `manifest.schema.json`'s `dispositionEnum` is exactly the 6 required values (D-03/D-04). Rebaselined `contracts/.hashes/manifest.json` via `tools.contract_hash.hash --write` only (drift green, exactly 3 keys added). Paused at the plan's blocking `checkpoint:human-verify` — the repo owner independently re-verified the diff and responded "approved" before the Task 3 follow-on (derived-plane regen: `docs/reference/{inventory,plan,manifest}.md` + `.memory/derived/contracts-index.md`, `stale-derived` CI mirror clean) ran. `HARNESS_DEV_BYPASS` used for the writes was never conflated with the human ratification. Unblocks Plan 02 (scanner) and Plan 03 (classification + disposition pipeline), which now validate against these fixed shapes.
 
 ### Pending Todos
 
@@ -219,10 +220,6 @@ None yet.
 ### Blockers/Concerns
 
 [Issues that affect future work]
-
-- **[BLOCKING — plan 26-01] Task 3 blocking human-verify checkpoint awaiting ratification.** Tasks 1-2 of `.planning/phases/26-deterministic-brownfield-inventory-mapping-v2-3-b/26-01-PLAN.md` landed (`245a101` schemas, `3f84070` rebaseline; `uv run python -m tools.contract_drift.drift` is green). The plan's own Task 3 is `type="checkpoint:human-verify" gate="blocking"` — the executor correctly did NOT self-ratify and did NOT run the subsequent derived-plane regen (docs_sync + contracts_index) ahead of human confirmation. **Human action:** review the diff under `contracts/harness/adoption/**` and `contracts/.hashes/manifest.json`, then respond "approved" (or describe required changes) to resume plan 26-01 from its Task 3/4.
-
-
 
 - **[BLOCKING — plan 01-01] BOOT-01 .NET 10 install egress-denied:** `tools/bootstrap/install.sh` + `verify.sh` are committed and correct, but the .NET 10 download hosts are blocked by this container's egress policy (`builds.dotnet.microsoft.com`, `dotnetcli.azureedge.net`, `dotnetcli.blob.core.windows.net`, `aka.ms` → 403 CONNECT). The proxy README forbids routing around policy denials. **Human action:** allowlist those hosts in the egress policy (or ship a pre-installed .NET 10), then run `bash tools/bootstrap/install.sh && bash tools/bootstrap/verify.sh` to finish the plan. uv workspace (BOOT-02) and SessionStart wiring (BOOT-03) are DONE and green.
 - Toolchain: .NET 10 SDK is NOT installed in this ephemeral env — Phase 1 (BOOT-01) install script gates all .NET-side execution.
@@ -253,9 +250,9 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T11:53:40.597Z
-Stopped at: Phase 26 Plan 01 paused at Task 3 blocking human-verify checkpoint
-Resume file: .planning/phases/26-deterministic-brownfield-inventory-mapping-v2-3-b/26-01-PLAN.md
+Last session: 2026-07-19T12:04:10.478Z
+Stopped at: Phase 26 Plan 01 complete
+Resume file: .planning/phases/26-deterministic-brownfield-inventory-mapping-v2-3-b/26-02-PLAN.md
 
 ## Operator Next Steps
 

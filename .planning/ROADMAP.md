@@ -547,7 +547,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 26-01-PLAN.md — D-01: author + human-ratify the 3 adoption schemas (inventory/plan/manifest) under contracts/harness/adoption/, rebaseline contract-hash manifest, regenerate committed-derived plane (ADOPT-01, ADOPT-02, ADOPT-03)
+- [x] 26-01-PLAN.md — D-01: author + human-ratify the 3 adoption schemas (inventory/plan/manifest) under contracts/harness/adoption/, rebaseline contract-hash manifest, regenerate committed-derived plane (ADOPT-01, ADOPT-02, ADOPT-03)
 
 **Wave 2** *(blocked on 26-01)*
 
