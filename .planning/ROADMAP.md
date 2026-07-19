@@ -53,7 +53,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Milestone v2.3 — Contract Graph, Brownfield Adoption, Living Docs** *(phases 24–29 — numbering continues after v2.2 = phases 18–23; reuses existing machinery — contract-hash/drift, golden comparator, §4.3–4.6 normalize core, config/workspace loaders, task-control CAS/evidence/HANDOFF, fan-out substrate, `/docs-sync`·`/refresh-memory`, Phase-7 emitter — no rebuild. Design: `.planning/research/v2.3-scoping-FINAL.md`, sol-vs-fable debate → codex sol merged FINAL, human-approved. DAG `24→25→28→29` and `24→26→27→29`.)*
 
 - [x] **Phase 24: Contract-Relationship Vocabulary + Compatibility** *(v2.3 A)* - The ratified graph record (`contracts/harness/topology/`), additive `[[contract_graph.relationships]]` TOML slot with thin-loader passthrough, and deterministic legacy `[pipeline]`→graph lowering that unions additively and leaves current linear fixtures byte-unchanged. (TOPO-01, TOPO-02, TOPO-03) (completed 2026-07-19)
-- [ ] **Phase 25: Graph Compiler, Queries, Conductor, Proof** *(v2.3 A)* - One domain-neutral compiler + `harness_lint` consistency gate, cycle-safe affected-set queries, `/pipeline`·`pipeline-map`·orchestrator generalized (no new command/persona), non-linear generic + cross-repo fixtures, and a human-ratified topology ADR. (TOPO-04, TOPO-05, TOPO-06, TOPO-07)
+- [x] **Phase 25: Graph Compiler, Queries, Conductor, Proof** *(v2.3 A)* - One domain-neutral compiler + `harness_lint` consistency gate, cycle-safe affected-set queries, `/pipeline`·`pipeline-map`·orchestrator generalized (no new command/persona), non-linear generic + cross-repo fixtures, and a human-ratified topology ADR. (TOPO-04, TOPO-05, TOPO-06, TOPO-07) (completed 2026-07-19)
 - [ ] **Phase 26: Deterministic Brownfield Inventory + Mapping** *(v2.3 B)* - A read-only deterministic repo inventory, an evidence-classified (observed/inferred/unknown) mapping plan in the TOPO vocabulary, and a complete destination/disposition manifest — agent-free, fully CI-testable. (ADOPT-01, ADOPT-02, ADOPT-03)
 - [ ] **Phase 27: Task-Local Adoption Workflow + Safe Application** *(v2.3 B)* - Adoption as a `.workflow/tasks/` task (reusing v2.2 CAS/evidence/HANDOFF), structural constitution-write refusal + idempotent collision-safe apply, hash-bound human ratification, and the `/adopt` skill+command with three fixtures (one §4.3–4.6-dirty). (ADOPT-04, ADOPT-05, ADOPT-06, ADOPT-07)
 - [ ] **Phase 28: Human-Docs Registry, Guard, Derived Queue** *(v2.3 C)* - Central `docs/doc-dependencies.toml` + review ledger, deterministic fingerprints, the FRESH/BROKEN/STALE_REQUIRED/STALE_ADVISORY/UNCOVERED gate, ADR-safe dispositions, and a derived staleness queue + conditional SessionStart pointer. (DOCSUP-01, DOCSUP-02, DOCSUP-03, DOCSUP-04, DOCSUP-05)
@@ -528,7 +528,7 @@ Plans:
 
 **Wave 4** *(blocked on 25-03, 25-04)*
 
-- [ ] 25-05-PLAN.md — D-04: ADR-0009 (full model — compiler + queries + conductor contract) authored + human-ratified
+- [x] 25-05-PLAN.md — D-04: ADR-0009 (full model — compiler + queries + conductor contract) authored + human-ratified
 
 ### Phase 26: Deterministic Brownfield Inventory + Mapping *(v2.3 B)*
 
