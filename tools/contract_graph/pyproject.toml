@@ -1,0 +1,15 @@
+[project]
+name = "logparser-contract-graph"
+version = "0.0.0"
+description = "TOPO-04 graph compiler core — a domain-neutral validation/resolution layer that sits ON TOP of tools.harness_config.loader.effective_relationships(). Exposes compile_graph(cfg=None) -> {relationships, adjacency, diagnostics}: resolves endpoint declarations + authority-owned-contract existence, emits stable descriptive diagnostic slugs, and accepts fan-in/fan-out/disconnected/cyclic shapes as legal. Zero external deps; imported by module path `tools.contract_graph`; the consistency gate lives in tools.harness_lint.tests.test_contract_graph_config."
+requires-python = ">=3.11"
+# Stdlib-only. NO external deps — this member must never mutate uv.lock (mirrors
+# tools/harness_config's zero-dep posture). Reuses tools.harness_config + tools.workspace_config
+# by module path from the shared workspace environment.
+dependencies = []
+
+[tool.uv]
+# Virtual member: no build-system, nothing to package. Imported by module path from the shared uv
+# workspace environment. Auto-discovered by the root [tool.uv.workspace] members = ["tools/*"] glob.
+# Mirrors tools/harness_config + tools/harness_lint (package = false).
+package = false
