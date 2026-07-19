@@ -515,7 +515,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 25-01-PLAN.md — TOPO-04: `tools/contract_graph` compiler + `harness_lint` consistency gate (unresolved-authority/dangling-endpoint/unknown-contract slugs) + WR-02 closure
+- [x] 25-01-PLAN.md — TOPO-04: `tools/contract_graph` compiler + `harness_lint` consistency gate (unresolved-authority/dangling-endpoint/unknown-contract slugs) + WR-02 closure
 
 **Wave 2** *(blocked on 25-01)*
 

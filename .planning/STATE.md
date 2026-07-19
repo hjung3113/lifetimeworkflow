@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: Contract Graph, Brownfield Adoption, Living Docs
 status: executing
-stopped_at: Phase 25 context gathered
-last_updated: "2026-07-19T03:43:23.166Z"
-last_activity: 2026-07-19 -- Phase 25 planning complete
+stopped_at: Completed 25-01-PLAN.md
+last_updated: "2026-07-19T06:14:40.974Z"
+last_activity: 2026-07-19
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 7
-  completed_plans: 2
-  percent: 29
+  completed_plans: 3
+  percent: 43
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-18)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 24 — Contract-Relationship Vocabulary + Compatibility
+**Current focus:** Phase 25 — Graph Compiler, Queries, Conductor, Proof
 
 ## Current Position
 
-Phase: 25
-Plan: Not started
+Phase: 25 (Graph Compiler, Queries, Conductor, Proof) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-07-19 -- Phase 25 planning complete
+Last activity: 2026-07-19
 
 ## Performance Metrics
 
@@ -118,6 +118,7 @@ Last activity: 2026-07-19 -- Phase 25 planning complete
 | Phase 16 P05 | 22min | 2 tasks | 4 files |
 | Phase 24 P01 | 18min | 3 tasks | 11 files |
 | Phase 24 P02 | 12min | 3 tasks | 7 files |
+| Phase 25 P01 | 35 | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -199,6 +200,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [16-05] SC1 browsable surface complete: python -m tools.memory_ui serves a 127.0.0.1-only stdlib http.server mounting the 16-03 pure routes behind one zero-asset inlined page; retire path inline-regenerates the derived pointer-index before the routes' orphan gate; POST body bounded (413), no --host flag.
 - [Phase 24]: [24-01] TOPO-01 contract-relationship record schema ratified: per-record shape/cardinality only (authority scalar = exactly-one, dependents minItems1+uniqueItems = one-or-more), no graph resolution/endpoint-existence (D-01/D-02, deferred to Phase 25). Fixtures live in TEST plane (tools/harness_config/tests/fixtures) not contracts/ to keep GEN-04 green; ratified via CODEOWNERS-gated manifest rebaseline (drift green). Adding a core schema fans out to a holistic derived-plane regen (docs/reference + contracts-index + determinism snapshots), which also swept pre-existing handoff/task derived drift.
 - [Phase 24]: TOPO-03: effective_relationships() lowers legacy [pipeline].edges to namespaced authority/dependent records, unions with explicit [[contract_graph.relationships]], raises on dup-id/dup-semantic-edge/contradiction, stable-sorted; opaque endpoints (no split_endpoint) so one cfg-agnostic function serves both project and workspace configs
+- [Phase 25]: Phase 25 Plan 01: contract_graph compiler is a resolution layer ON TOP of effective_relationships() (never re-lowers/re-unions); diagnostics returned as sorted list[str], never raised
 
 ### Pending Todos
 
@@ -239,9 +241,9 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T03:20:15.950Z
-Stopped at: Phase 25 context gathered
-Resume file: .planning/phases/25-graph-compiler-queries-conductor-proof-v2-3-a/25-CONTEXT.md
+Last session: 2026-07-19T06:14:40.969Z
+Stopped at: Completed 25-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
