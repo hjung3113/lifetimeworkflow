@@ -22,7 +22,8 @@ from tools.docs_sync import generate as docs_sync
 # The seed schemas map 1:1 to reference pages (DOCS-03). After the 05-03 domain move (GEN-01) the
 # relocated domain schemas moved to the log-parser example, so the CORE contracts tree now holds
 # the generic §4.3–4.6 convention page (format-conventions) and the domain-neutral generic default
-# instance (greeting, GEN-02, 05-02), plus the Phase 18 task-control contracts.
+# instance (greeting, GEN-02, 05-02), plus the Phase 18 task-control contracts. Phase 26 Plan 01
+# (26-01) added the three ratified brownfield-adoption contracts (ADOPT-01/02/03).
 EXPECTED_PAGES = frozenset(
     {
         "attestation",
@@ -30,6 +31,9 @@ EXPECTED_PAGES = frozenset(
         "format-conventions",
         "greeting",
         "handoff",
+        "inventory",
+        "manifest",
+        "plan",
         "relationship",
         "state",
         "task",
