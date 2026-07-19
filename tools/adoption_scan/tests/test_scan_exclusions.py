@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -98,3 +99,46 @@ def test_no_spurious_exclusions(tmp_minirepo: Path) -> None:
 
     excluded_paths = {entry["path"] for entry in inventory["excluded"]}
     assert included_paths.isdisjoint(excluded_paths)
+
+
+def test_ci_yml_false_positive_closed(repo_root: Path) -> None:
+    """SC-1: this repo's own .github/workflows/ci.yml no longer classifies as secret-content.
+
+    Red-green proof: the OLD generic pattern DOES match the real false-positive line (proving the
+    bug is real, not a fixture artifact), while the LIVE (currently-committed) ``_secret_pattern()``
+    must not classify the file as ``excluded: "secret-content"`` in the inventory. Until the
+    gate-registry.json fix lands, this second half of the assertion is expected to FAIL — that is
+    the intended red state for this task.
+    """
+    ci_yml = repo_root / ".github" / "workflows" / "ci.yml"
+    text = ci_yml.read_text(encoding="utf-8")
+
+    old_pattern = re.compile(
+        r"(?:api[_-]?key|secret|password|token)\s*[:=]\s*[^\s]+", re.IGNORECASE
+    )
+    assert old_pattern.search(text), "red check: old pattern must match (proves this is the bug)"
+
+    inventory = scan.build_inventory(repo_root)
+    secret_excluded_paths = {
+        entry["path"] for entry in inventory["excluded"] if entry["excluded"] == "secret-content"
+    }
+    assert ".github/workflows/ci.yml" not in secret_excluded_paths, (
+        "SC-1: ci.yml must not be excluded as secret-content"
+    )
+
+
+@pytest.mark.parametrize(
+    "fixture_value",
+    [
+        "AKIA" + "ABCDEFGHIJKLMNOP",
+        "ghp_" + "A" * 20,
+        "sk-" + "B" * 20,
+        "xoxb-" + "1" * 10 + "-" + "a" * 10,
+        "-----BEGIN " + "RSA PRIVATE KEY-----",
+        "eyJ" + "C" * 12 + "." + "D" * 8 + "." + "E" * 8,
+        "Authorization: Bearer " + "F" * 20,
+    ],
+)
+def test_secret_shape_still_matches(fixture_value: str) -> None:
+    """SC-2: every one of the 7 unchanged named secret shapes is still matched."""
+    assert scan._secret_pattern().search(fixture_value), fixture_value

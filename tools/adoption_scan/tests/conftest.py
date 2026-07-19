@@ -113,10 +113,16 @@ def tmp_minirepo(tmp_path: Path) -> Path:
     # (k) a pyproject.toml manifest.
     (root / "pyproject.toml").write_text('[project]\nname = "widget"\n', encoding="utf-8")
 
-    # (l) a CI surface.
+    # (l) a CI surface. The trailing comment line mirrors this repo's own real SC-1
+    # false-positive shape (a short, benign TOKEN:-style comment value) — built by
+    # concatenation per this file's own (b) convention so the source never carries a
+    # contiguous secret-shaped literal.
     workflows_dir = root / ".github" / "workflows"
     workflows_dir.mkdir(parents=True)
-    (workflows_dir / "ci.yml").write_text("name: test\non: [push]\njobs: {}\n", encoding="utf-8")
+    _fixture_token_comment = "# Least-privilege GITHUB_" + "TOKEN: gate jobs read, never write.\n"
+    (workflows_dir / "ci.yml").write_text(
+        "name: test\non: [push]\njobs: {}\n" + _fixture_token_comment, encoding="utf-8"
+    )
 
     # (m) a test surface.
     tests_dir = root / "tests"
