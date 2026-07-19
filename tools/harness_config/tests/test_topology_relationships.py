@@ -209,3 +209,40 @@ def test_instance_config_needs_no_explicit_records() -> None:
     # Existing passthroughs read unaffected by the additive accessor.
     assert isinstance(components(cfg), list)
     assert isinstance(pipeline(cfg), dict)
+
+
+# --- WR-02 closure: malformed record raises ValueError, not bare KeyError -------------------------
+
+
+def test_record_missing_key_raises_valueerror_not_keyerror() -> None:
+    """A relationship record missing a required key raises ValueError naming the record (WR-02).
+
+    Before the guard this indexed straight into `rel["authority"]` and escaped as an opaque
+    `KeyError: 'authority'`; the additive guard now surfaces an actionable ValueError. This is a
+    synthetic in-memory cfg dict (no instance path → inherently GEN-04-clean).
+    """
+    cfg = {
+        "pipeline": {"edges": []},
+        "contract_graph": {
+            "relationships": [
+                {"id": "r1", "contract": "widget", "dependents": ["b"]},  # missing "authority"
+            ]
+        },
+    }
+    with pytest.raises(ValueError) as excinfo:
+        effective_relationships(cfg)
+    message = str(excinfo.value)
+    assert "authority" in message  # names the missing key
+    assert "r1" in message  # names the offending record
+    assert not isinstance(excinfo.value, KeyError)  # not a bare KeyError (KeyError ⊄ ValueError)
+
+
+def test_malformed_edge_missing_key_raises_valueerror() -> None:
+    """A raw [pipeline] edge missing a required key raises ValueError before lowering (WR-02)."""
+    cfg = {
+        "pipeline": {"edges": [{"from": "a", "contract": "widget"}]},  # missing "to"
+        "contract_graph": {"relationships": []},
+    }
+    with pytest.raises(ValueError) as excinfo:
+        effective_relationships(cfg)
+    assert "to" in str(excinfo.value)

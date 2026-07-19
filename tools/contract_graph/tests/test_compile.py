@@ -20,7 +20,6 @@ from tools.contract_graph import compile_graph
 from tools.harness_config import load_project
 from tools.workspace_config import load_workspace
 
-
 # --- legal shapes accepted (Task 1) --------------------------------------------------------------
 
 
@@ -132,7 +131,7 @@ def test_unresolved_authority_slug() -> None:
 
 
 def test_dangling_endpoint_slug_keeps_resolved_siblings() -> None:
-    """One unresolved dependent → one `dangling-endpoint: ` slug; resolved siblings stay in adjacency."""
+    """One unresolved dependent → one `dangling-endpoint: ` slug; resolved siblings stay."""
     cfg = {
         "components": [
             {"id": "a", "produces": ["w"], "consumes": []},

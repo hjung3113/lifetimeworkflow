@@ -114,6 +114,27 @@ def effective_relationships(cfg: dict | None = None) -> list[dict]:
     if cfg is None:
         cfg = load_project()
 
+    # (WR-02) Guard malformed local shape BEFORE indexing. The lowering comprehension indexes
+    # edge['contract'/'from'/'to'] and the dedup loops index rel['id'/'contract'/'authority'/
+    # 'dependents']; a raw edge or explicit record missing any required key must surface a
+    # ValueError naming the offending record — never an opaque bare KeyError. This is an additive
+    # guard only: signature and return shape are unchanged (this is NOT endpoint/graph resolution,
+    # which stays deferred to the Phase-25 compiler).
+    raw_edges = cfg.get("pipeline", {}).get("edges", [])
+    for edge in raw_edges:
+        missing = {"from", "to", "contract"} - edge.keys()
+        if missing:
+            raise ValueError(
+                f"effective_relationships: pipeline edge missing key(s) {sorted(missing)}: {edge!r}"
+            )
+    for rel in contract_graph_relationships(cfg):
+        missing = {"id", "contract", "authority", "dependents"} - rel.keys()
+        if missing:
+            raise ValueError(
+                "effective_relationships: relationship record missing key(s) "
+                f"{sorted(missing)}: {rel!r}"
+            )
+
     lowered = [
         {
             "id": f"pipeline/{edge['contract']}/{edge['from']}->{edge['to']}",
@@ -121,7 +142,7 @@ def effective_relationships(cfg: dict | None = None) -> list[dict]:
             "authority": edge["from"],
             "dependents": [edge["to"]],
         }
-        for edge in cfg.get("pipeline", {}).get("edges", [])
+        for edge in raw_edges
     ]
     merged = lowered + contract_graph_relationships(cfg)
 

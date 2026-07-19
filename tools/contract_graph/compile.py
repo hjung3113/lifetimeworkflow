@@ -37,11 +37,11 @@ _CONTRACTS_DIR = _REPO_ROOT / "contracts"
 
 
 def _tracked_schemas(contracts_dir: Path) -> set[str]:
-    """Return the set of tracked contract ids under ``contracts_dir`` (the repo's schema-glob idiom).
+    """Return the set of tracked contract ids under ``contracts_dir`` (repo schema-glob idiom).
 
     Mirrors the ``{p.name.removesuffix(".schema.json") for p in dir.rglob("*.schema.json")}`` check
     used in ``contract_drift.drift`` and both topology gates. A missing directory yields an empty
-    set (``rglob`` on an absent path returns nothing) — the caller then reports ``unknown-contract``.
+    set (``rglob`` on an absent path returns nothing) — the caller then reports unknown-contract.
     """
     return {p.name.removesuffix(".schema.json") for p in contracts_dir.rglob("*.schema.json")}
 
@@ -129,14 +129,14 @@ def _contract_ownership_diagnostic(
     component_by_id: dict[str, dict],
     member_by_id: dict[str, dict],
 ) -> str | None:
-    """Return an ``unknown-contract`` slug if the resolved authority does not own ``rel['contract']``.
+    """Return an ``unknown-contract`` slug if the resolved authority does not own the contract.
 
     A component-backed authority carrying a ``produces`` list → require the contract in ``produces``
-    (mirrors ``test_pipeline_config.py``'s ownership check). Otherwise (an opaque logical authority /
+    (mirrors ``test_pipeline_config.py``'s ownership check). Otherwise (an opaque logical authority,
     a component with no ``produces``, or a cross-repo ``repo:stage`` member) → existence-only: the
     contract must resolve to a tracked ``<root>/contracts/**/<contract>.schema.json`` (mirrors
-    ``test_workspace_config.py``'s producer-tree check). The glob root is the repo ``contracts/`` for
-    a project authority, or the producer member's own ``contracts/`` for a cross-repo authority.
+    ``test_workspace_config.py``'s producer-tree check). The glob root is the repo ``contracts/``
+    for a project authority, or the producer member's own ``contracts/`` for a cross-repo authority.
     """
     kind, resolved_id = resolved_authority
     contract = rel["contract"]
