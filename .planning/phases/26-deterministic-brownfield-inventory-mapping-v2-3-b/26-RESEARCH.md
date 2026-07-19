@@ -729,7 +729,7 @@ def disposition(rel: str, target_root: Path, proposed_sha: str | None) -> str | 
 
 | # | Claim | Section | Risk if wrong |
 |---|---|---|---|
-| A1 | "Source dumps" (ADOPT-01) means over-cap text blobs and `dump`/`snapshot`/`backup`-segment paths | §Exclusion Rules | The phrase is undefined in REQUIREMENTS.md and v2.3 FINAL; a different intent (e.g. "a single-file concatenation of a whole repo, as produced by repomix/gitingest") would change the detection rule. **Recommend confirming with the user or letting discuss-phase resolve.** |
+| A1 **(RESOLVED: D-08 — BROADENED)** | ~~"Source dumps" means over-cap text blobs and `dump`/`snapshot`/`backup`-segment paths~~ → **both readings**: whole-repo single-file concatenations (repomix/gitingest, detected by banner marker in the first 2 KiB) **plus** over-cap text blobs and `dump`/`snapshot`/`backup`-segment paths. Exclusion reason `source-dump`. | §Exclusion Rules | The phrase is undefined in REQUIREMENTS.md and v2.3 FINAL; a different intent (e.g. "a single-file concatenation of a whole repo, as produced by repomix/gitingest") would change the detection rule. **Recommend confirming with the user or letting discuss-phase resolve.** |
 | A2 | Vendored-directory denylist (`node_modules`, `vendor`, `third_party`, `Pods`, `bower_components`, …) | §Exclusion Rules | Under-inclusive on an unusual ecosystem ⇒ noise in the inventory (recoverable; every exclusion is recorded and re-runnable). |
 | A3 | Binary detection via NUL byte in the first 8192 bytes | §Exclusion Rules | A UTF-16 text file is misclassified binary. Low impact — it is recorded as excluded with a reason, not silently dropped. |
 | A4 | Extended secret-path suffixes (`*.pem`, `*.key`, `id_rsa*`, `.npmrc`, `.netrc`, …) beyond the committed `*.env` globs | §Exclusion Rules | Missing one ⇒ a secret-bearing path is inventoried by path (content is still never emitted, and content patterns still apply). |
@@ -740,22 +740,27 @@ def disposition(rel: str, target_root: Path, proposed_sha: str | None) -> str | 
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Does the inventory record excluded files, or omit them?**
+> All four were put to the user after this research landed and are now locked as
+> **D-08..D-11** in `26-CONTEXT.md` § "Research-round resolutions". Assumption **A1**
+> ("source dumps") was resolved in the same round. The recommendations below were
+> accepted except where a `RESOLVED:` marker says otherwise. Do not re-litigate.
+
+1. **RESOLVED: D-10.** (Recommendation accepted.) **Does the inventory record excluded files, or omit them?**
    - What we know: ADOPT-01 says the inventory "excludes" secrets/binaries/vendor/generated; roadmap success criterion 4 requires that "secret exclusion … detection **passes**," which is only testable if exclusions are observable.
    - What's unclear: whether "excludes" means "not in the included set" or "absent entirely."
    - **Recommendation:** record every exclusion as `{path, size, reason}` with **no content hash and no content excerpt**, in a separate `excluded[]` array. This satisfies both readings, makes D-06's per-detection asserts trivial, and keeps secret material out of the artifact.
 
-2. **Is `git ls-files` acceptable given "no arbitrary command execution"?**
+2. **RESOLVED: D-09.** (Recommendation accepted — allowed, fixed argv, `shell=False`, with a complete builtin fallback; the design must not depend on git.) **Is `git ls-files` acceptable given "no arbitrary command execution"?**
    - What we know: §147 forbids *executing discovered scripts*; the repo already shells out to `git` with a fixed argv in a CI-gated test and in `capture._committed_approval` / `drift._git_show`.
    - What's unclear: whether the phase's own stricter invariant ("no arbitrary command execution") was intended to also exclude a fixed `git` argv.
    - **Recommendation:** implement it as a fixed-argv, `shell=False`, failure-tolerant call with a recorded fallback mode, and call the distinction out explicitly in the plan's threat model. If the planner or a reviewer disagrees, the builtin denylist walk is a complete fallback — the design must not *depend* on git.
 
-3. **One schema or three under `contracts/harness/adoption/`?**
+3. **RESOLVED: D-11 (first half).** (Recommendation accepted — three self-contained schemas, duplicated small `$defs`, no cross-file `$ref`.) **One schema or three under `contracts/harness/adoption/`?**
    - D-01 says three (inventory / plan / manifest), mirroring task-control's five files. That is the recommendation. A shared `$defs` (evidence pointer, classification enum, disposition enum) would ideally live in a fourth `common.schema.json` — but note that cross-file `$ref` has never been used in this repo's contracts (all 8 existing schemas are self-contained). **Recommendation: keep each of the three self-contained and duplicate the small `$defs`**, matching existing style, rather than introducing cross-file `$ref` resolution that `check-jsonschema` and `schema_hash` have never been exercised against.
 
-4. **Where does the tool write by default?**
+4. **RESOLVED: D-11 (second half).** (Recommendation accepted — `--out` is required, no default, refused when it resolves inside `--target`.) **Where does the tool write by default?**
    - Not specified anywhere. Phase 27 will place artifacts under `.workflow/tasks/<task-id>/artifacts/adoption/<batch-id>/`, but Phase 26 must not create a task plane (§146).
    - **Recommendation:** `--out` is **required** (no default), and the tool refuses if `--out` resolves inside `--target`. This makes Phase 27's integration a pure argument change with zero behavior change.
 
