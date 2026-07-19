@@ -18,6 +18,31 @@ The marker-capable set (D-03) is a plain 3-item literal here, cited against its 
 ``tools.harness_emit.merge`` (``BEGIN_MARKER``/``END_MARKER`` for root ``AGENTS.md``/``CLAUDE.md``;
 ``merge_settings`` for ``.claude/settings.json``) — this tool never performs a merge itself
 (Phase 27 does), so it only needs to know WHICH 3 paths are marker-capable, not how to merge them.
+
+CR-01 fix (26-REVIEW.md): steps 6/7 of the disposition chain compare the TARGET's existing content
+against ``proposed_sha`` — content the HARNESS TEMPLATE would install at that destination. That
+must never be derived from the scanned target itself (comparing a file to itself makes ``conflict``
+unreachable). :func:`harness_proposed_hash`/:func:`harness_proposed_hashes` hash THIS repo's own
+checkout — the harness template source — at each catalog destination's relative path, independent
+of any scanned target. A catalog row whose destination has no file in this checkout (a placeholder
+row standing in for target-specific content with no universal template, e.g.
+``harness/agents/widget-engineer.md``, or a per-instance file such as
+``.workflow/tasks/T-0001/task.json``) yields ``proposed_sha=None``; step 6 can then never fire for
+it (``None`` never equals a real sha256 hex digest), so an existing target file at that destination
+always resolves to ``conflict`` — never a silently-invented ``preserve``. This is the honest,
+D-03-consistent ("no automatic overwrite, ever") answer for the no-template-source case.
+
+WR-03 fix (26-REVIEW.md): :func:`disposition`'s existing-file hash (step 6/7) no longer
+unconditionally re-reads the target file via :func:`_existing_hash`. :func:`build_manifest` passes
+an ``existing_sha`` hint sourced from the inventory that ``scan.py`` already produced for the same
+target: the already-computed ``sha256`` when the destination was ``included`` (no double I/O, no
+cap/binary-check bypass), or a sentinel that can never match any real sha256 when the destination
+was ``excluded`` (binary/oversized/secret/etc. — never re-read a file the scanner already refused
+to hash, which forces the safe ``conflict`` outcome without opening it). :func:`_existing_hash` is
+only invoked as a fallback when a destination path was not part of the scanned inventory at all —
+which, given a correctly-wired pipeline, should be rare-to-never — and it remains available for
+:func:`harness_proposed_hash`, which reads bounded, self-controlled harness-repo files, not
+arbitrary target content.
 """
 
 from __future__ import annotations
@@ -28,6 +53,15 @@ from pathlib import Path
 from tools.harness_emit.manifest import is_gsd_owned
 from tools.harness_perms import resolve_path
 from tools.hooks.contract_guard import CONSTITUTION_GLOBS  # noqa: F401 (re-exported for callers)
+
+# destinations.py -> adoption_scan -> tools -> repo root (parents[2]) — the harness TEMPLATE's own
+# checkout, i.e. the source of "proposed" content (CR-01). Mirrors cli.py/scan.py's own _REPO_ROOT.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# WR-03: a sentinel that can never equal a real sha256 hex digest (which is always exactly 64
+# lowercase hex chars) — used to force `conflict` for a destination the scanner already classified
+# as `excluded`, without re-reading it.
+_EXCLUDED_SENTINEL = "excluded-by-scan"
 
 # D-03 — exactly these 3 paths; see tools/harness_emit/merge.py BEGIN_MARKER/END_MARKER (root
 # AGENTS.md/CLAUDE.md) and merge_settings (.claude/settings.json). Nested AGENTS.md files are
@@ -257,7 +291,46 @@ def _existing_hash(path: Path) -> str:
     return digest.hexdigest()
 
 
-def disposition(rel: str, target_root: Path, proposed_sha: str | None) -> str | None:
+def harness_proposed_hash(destination: str) -> str | None:
+    """CR-01: the sha256 of THIS harness checkout's own content at ``destination`` — the content
+    the harness template would install there — independent of any scanned target.
+
+    Returns ``None`` when this checkout has no file at that path: either a catalog placeholder row
+    standing in for target-specific content with no single universal template (e.g.
+    ``harness/agents/widget-engineer.md``), or a genuinely per-instance/per-target file (e.g.
+    ``.workflow/tasks/T-0001/task.json``). ``None`` deliberately can never equal a real sha256, so
+    :func:`disposition` step 6 never fires for such a row — an existing target file there resolves
+    to ``conflict`` (human decides), never a silently-invented ``preserve``.
+    """
+    candidate = _REPO_ROOT / destination
+    if not candidate.is_file():
+        return None
+    resolved = candidate.resolve()
+    if resolved != _REPO_ROOT and _REPO_ROOT not in resolved.parents:
+        return None
+    return _existing_hash(resolved)
+
+
+def harness_proposed_hashes() -> dict[str, str]:
+    """CR-01: ``{destination: proposed_sha256}`` over every catalog row that has real content in
+    this harness checkout. Rows with no shippable template content are simply absent — see
+    :func:`harness_proposed_hash`."""
+    hashes: dict[str, str] = {}
+    for row in destination_catalog():
+        destination = row["destination"]
+        proposed = harness_proposed_hash(destination)
+        if proposed is not None:
+            hashes[destination] = proposed
+    return hashes
+
+
+def disposition(
+    rel: str,
+    target_root: Path,
+    proposed_sha: str | None,
+    *,
+    existing_sha: str | None = None,
+) -> str | None:
     """The total, ordered 7-step disposition rule chain (D-03/D-04).
 
     1. ``is_gsd_owned(rel)``                              -> ``None`` (excluded, not a destination)
@@ -268,6 +341,12 @@ def disposition(rel: str, target_root: Path, proposed_sha: str | None) -> str | 
     5. no existing file at ``target_root / rel``           -> ``create``
     6. ``sha256(existing) == proposed_sha``                -> ``preserve``
     7. otherwise                                           -> ``conflict``
+
+    ``existing_sha`` (WR-03) is an optional caller-supplied hash for the existing target file at
+    ``rel``, reused instead of a fresh (cap/binary-check-bypassing) re-read via
+    :func:`_existing_hash`. :func:`build_manifest` supplies this from the scan's already-computed
+    inventory; a bare call (as in most of this module's own unit tests) falls back to
+    :func:`_existing_hash`, preserving prior direct-call behavior.
     """
     if is_gsd_owned(rel):
         return None
@@ -281,7 +360,9 @@ def disposition(rel: str, target_root: Path, proposed_sha: str | None) -> str | 
     existing = Path(target_root) / rel
     if not existing.exists():
         return "create"
-    if _existing_hash(existing) == proposed_sha:
+    if existing_sha is None:
+        existing_sha = _existing_hash(existing)
+    if existing_sha == proposed_sha:
         return "preserve"
     return "conflict"
 
@@ -289,16 +370,36 @@ def disposition(rel: str, target_root: Path, proposed_sha: str | None) -> str | 
 def build_manifest(inventory: dict, target_root: Path, proposed_hashes: dict[str, str]) -> dict:
     """Assemble the ``manifest.schema.json``-conformant document over the 40-row catalog.
 
-    ``proposed_hashes`` maps a catalog destination -> proposed sha256 (typically derived from
-    ``inventory["included"]``); a destination with no entry passes ``proposed_sha=None`` (safe —
-    step 6 never fires when there is no existing file at that destination, per step 5).
+    ``proposed_hashes`` maps a catalog destination -> proposed sha256 — the content the HARNESS
+    TEMPLATE would install there (CR-01: :func:`harness_proposed_hashes`), never derived from the
+    scanned target itself. A destination with no entry passes ``proposed_sha=None`` to
+    :func:`disposition`, which can then never hit ``preserve`` via step 6 (safe).
+
+    WR-03: the existing-file hash used for the step-6/7 comparison is sourced from ``inventory``
+    when available — the already-computed ``sha256`` for an ``included`` destination, or the
+    :data:`_EXCLUDED_SENTINEL` (never a real hash) for an ``excluded`` one — rather than an
+    unconditional re-read of the target file inside :func:`disposition`.
     """
+    included_hashes = {entry["path"]: entry["sha256"] for entry in inventory.get("included", [])}
+    excluded_paths = {entry["path"] for entry in inventory.get("excluded", [])}
+
     dispositions: list[dict] = []
     excluded: list[dict] = []
 
     for row in destination_catalog():
         destination = row["destination"]
-        result = disposition(destination, target_root, proposed_hashes.get(destination))
+        if destination in included_hashes:
+            existing_sha = included_hashes[destination]
+        elif destination in excluded_paths:
+            existing_sha = _EXCLUDED_SENTINEL
+        else:
+            existing_sha = None
+        result = disposition(
+            destination,
+            target_root,
+            proposed_hashes.get(destination),
+            existing_sha=existing_sha,
+        )
         if result is None:
             excluded.append({"destination": destination, "reason": "gsd-owned"})
             continue

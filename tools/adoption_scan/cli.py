@@ -70,7 +70,10 @@ def main(argv: list[str] | None = None) -> int:
 
     inventory = scan.build_inventory(target_resolved, max_bytes=args.max_file_bytes)
     plan_doc = plan.build_plan(inventory)
-    proposed_hashes = {entry["path"]: entry["sha256"] for entry in inventory["included"]}
+    # CR-01: "proposed" content is what the HARNESS TEMPLATE would install at a destination — the
+    # harness's own checkout, never the scanned target's own content (a target file must never be
+    # compared against itself).
+    proposed_hashes = destinations.harness_proposed_hashes()
     manifest_doc = destinations.build_manifest(inventory, target_resolved, proposed_hashes)
 
     documents = {"inventory": inventory, "plan": plan_doc, "manifest": manifest_doc}

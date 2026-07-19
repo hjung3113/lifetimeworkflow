@@ -11,7 +11,8 @@ from tools.adoption_scan import destinations, plan, scan
 def test_artifacts_match_committed_snapshot(tmp_minirepo: Path, snapshot) -> None:
     inventory = scan.build_inventory(tmp_minirepo)
     plan_doc = plan.build_plan(inventory)
-    proposed_hashes = {entry["path"]: entry["sha256"] for entry in inventory["included"]}
+    # CR-01: proposed content comes from the harness's OWN checkout, never the scanned target.
+    proposed_hashes = destinations.harness_proposed_hashes()
     manifest_doc = destinations.build_manifest(inventory, tmp_minirepo, proposed_hashes)
 
     combined = (

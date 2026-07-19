@@ -4,9 +4,10 @@ rule + GSD-owned exclusion."""
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
-from tools.adoption_scan import destinations
+from tools.adoption_scan import cli, destinations
 
 
 def test_total(tmp_path: Path) -> None:
@@ -137,3 +138,70 @@ def test_gsd_lanes_excluded() -> None:
     assert all(entry["reason"] == "gsd-owned" for entry in manifest["excluded"])
     assert len(manifest["dispositions"]) == 39
     assert len(manifest["excluded"]) == 1
+
+
+def test_harness_proposed_hash_independent_of_target() -> None:
+    """CR-01: the proposed content for a destination is THIS harness checkout's own file at that
+    path, never anything derived from a scanned target. A destination that has real content in
+    this checkout (e.g. root ``pyproject.toml``) yields a stable, non-None hash; a catalog
+    placeholder row with no shippable template content (e.g. ``harness/agents/widget-engineer.md``,
+    a fixture stand-in) yields ``None``."""
+    real_hash = destinations.harness_proposed_hash("pyproject.toml")
+    assert real_hash is not None
+    assert len(real_hash) == 64
+
+    assert destinations.harness_proposed_hash("harness/agents/widget-engineer.md") is None
+    assert destinations.harness_proposed_hash(".workflow/tasks/T-0001/task.json") is None
+
+    hashes = destinations.harness_proposed_hashes()
+    assert hashes["pyproject.toml"] == real_hash
+    assert "harness/agents/widget-engineer.md" not in hashes
+
+
+def test_cr01_conflict_reachable_through_real_cli(tmp_minirepo: Path, tmp_path: Path) -> None:
+    """CR-01 non-negotiable: drive the REAL ``cli.main()`` pipeline end-to-end (not a hand-fed
+    ``disposition()`` call) against a target whose ``pyproject.toml`` and
+    ``.github/workflows/ci.yml`` content genuinely differs from this harness's own template
+    content at those same destinations, and assert ``conflict`` actually fires."""
+    out_dir = tmp_path / "out"
+    rc = cli.main(["--target", str(tmp_minirepo), "--out", str(out_dir)])
+    assert rc == 0
+
+    manifest = json.loads((out_dir / "manifest.json").read_text(encoding="utf-8"))
+    by_destination = {
+        entry["destination"]: entry["disposition"] for entry in manifest["dispositions"]
+    }
+
+    # The fixture's pyproject.toml/ci.yml are deliberately unrelated to this harness's own —
+    # both must resolve to conflict now that proposed content is harness-sourced, not
+    # self-compared against the target's own scanned bytes.
+    assert by_destination["pyproject.toml"] == "conflict"
+    assert by_destination[".github/workflows/ci.yml"] == "conflict"
+
+    # A sanity control: `conflict` must be reachable at all (the CR-01 bug made it unreachable
+    # through the real CLI for every already-present, non-excluded destination).
+    assert "conflict" in by_destination.values()
+
+
+def test_cr01_repro_throwaway_junk_target(tmp_path: Path) -> None:
+    """CR-01 exact repro (26-REVIEW.md): a throwaway target whose ``pyproject.toml``/``.gitignore``
+    bear no resemblance to the harness template must NOT be silently reported ``preserve`` through
+    the real CLI."""
+    target = tmp_path / "junk-target"
+    target.mkdir()
+    (target / "pyproject.toml").write_text(
+        '[project]\nname = "totally-unrelated-junk"\nversion = "0.0.0"\n', encoding="utf-8"
+    )
+    (target / ".gitignore").write_text("*.junk\n", encoding="utf-8")
+
+    out_dir = tmp_path / "out"
+    rc = cli.main(["--target", str(target), "--out", str(out_dir)])
+    assert rc == 0
+
+    manifest = json.loads((out_dir / "manifest.json").read_text(encoding="utf-8"))
+    by_destination = {
+        entry["destination"]: entry["disposition"] for entry in manifest["dispositions"]
+    }
+
+    assert by_destination["pyproject.toml"] == "conflict"
+    assert by_destination[".gitignore"] == "conflict"

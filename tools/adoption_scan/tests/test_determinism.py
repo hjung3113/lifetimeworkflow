@@ -28,7 +28,8 @@ def test_double_run_byte_identical(tmp_minirepo: Path, tmp_path: Path) -> None:
 def _pipeline_bytes(target: Path, *, _paths: list[Path] | None = None) -> dict[str, bytes]:
     inventory = scan.build_inventory(target, _paths=_paths)
     plan_doc = plan.build_plan(inventory)
-    proposed_hashes = {entry["path"]: entry["sha256"] for entry in inventory["included"]}
+    # CR-01: proposed content comes from the harness's OWN checkout, never the scanned target.
+    proposed_hashes = destinations.harness_proposed_hashes()
     manifest_doc = destinations.build_manifest(inventory, target, proposed_hashes)
     return {
         "inventory": scan._dump(inventory),
