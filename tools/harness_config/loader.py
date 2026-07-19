@@ -74,6 +74,108 @@ def pipeline(cfg: dict | None = None) -> dict:
     return dict(cfg.get("pipeline", {}))
 
 
+def contract_graph_relationships(cfg: dict | None = None) -> list[dict]:
+    """Return the ``[[contract_graph.relationships]]`` tables (loads the default config if omitted).
+
+    Raw passthrough (mirrors ``components()`` / ``pipeline()``): the TOPO-02 contract-relationship
+    DATA slot flows through UNCHANGED — NO validation, traversal, discovery, or policy (D-03). The
+    two-level ``.get`` mirrors ``workspace_config.edges``: ``[[contract_graph.relationships]]``
+    parses to ``cfg["contract_graph"]["relationships"]``. Graph resolution is Phase-25 compiler work.
+    """
+    if cfg is None:
+        cfg = load_project()
+    return list(cfg.get("contract_graph", {}).get("relationships", []))
+
+
+def effective_relationships(cfg: dict | None = None) -> list[dict]:
+    """Lower every legacy ``[pipeline].edges`` entry to an authority/dependent relationship and union
+    it with the explicit ``[[contract_graph.relationships]]`` records (TOPO-03).
+
+    Lowering (D-04): each edge ``{from, to, contract}`` becomes
+    ``{"id": "pipeline/<contract>/<from>-><to>", "contract": contract, "authority": from,
+    "dependents": [to]}`` — the namespaced id can never collide with a human-authored explicit id.
+    ``from`` / ``to`` are treated as OPAQUE strings and passed through verbatim: this function never
+    calls ``split_endpoint`` or interprets a ``repo:`` half (that resolution is Phase 25). Because it
+    reads only ``cfg["pipeline"]["edges"]`` + ``cfg["contract_graph"]["relationships"]`` — both plain
+    dict/list shapes present in BOTH ``load_project()`` and ``load_workspace()`` output — the same
+    function serves project and workspace configs.
+
+    The merged list is stable-sorted by ``id`` for deterministic output (no ``set`` iteration order
+    or wall-clock in the output path). Raises ``ValueError`` with a deterministic, stable-sorted
+    diagnostic on any of the three failure modes (D-05):
+
+    * (a) **duplicate id** — the same ``id`` appears on two records;
+    * (b) **duplicate semantic edge** — the same ``(authority, contract, dependent)`` triple appears
+      twice (every record's ``dependents`` list is expanded into one triple per dependent first);
+    * (c) **contradiction** — one ``contract`` is claimed by two different ``authority`` values.
+
+    Pure: no I/O beyond the passed/loaded ``cfg`` dict.
+    """
+    if cfg is None:
+        cfg = load_project()
+
+    lowered = [
+        {
+            "id": f"pipeline/{edge['contract']}/{edge['from']}->{edge['to']}",
+            "contract": edge["contract"],
+            "authority": edge["from"],
+            "dependents": [edge["to"]],
+        }
+        for edge in cfg.get("pipeline", {}).get("edges", [])
+    ]
+    merged = lowered + contract_graph_relationships(cfg)
+
+    # (a) duplicate id — deterministic (sorted) diagnostic.
+    id_seen: set[str] = set()
+    dup_ids: set[str] = set()
+    for rel in merged:
+        rid = rel["id"]
+        if rid in id_seen:
+            dup_ids.add(rid)
+        id_seen.add(rid)
+    if dup_ids:
+        raise ValueError(
+            "effective_relationships: duplicate relationship id(s): " + ", ".join(sorted(dup_ids))
+        )
+
+    # (b) duplicate semantic edge — expand each record to (authority, contract, dependent) triples.
+    triple_seen: set[tuple[str, str, str]] = set()
+    dup_triples: set[tuple[str, str, str]] = set()
+    # (c) contradiction — one contract mapped to more than one distinct authority.
+    contract_authorities: dict[str, set[str]] = {}
+    for rel in merged:
+        authority = rel["authority"]
+        contract = rel["contract"]
+        contract_authorities.setdefault(contract, set()).add(authority)
+        for dependent in rel["dependents"]:
+            triple = (authority, contract, dependent)
+            if triple in triple_seen:
+                dup_triples.add(triple)
+            triple_seen.add(triple)
+    if dup_triples:
+        raise ValueError(
+            "effective_relationships: duplicate semantic edge(s) (authority, contract, dependent): "
+            + ", ".join(str(t) for t in sorted(dup_triples))
+        )
+
+    contradictions = {
+        contract: authorities
+        for contract, authorities in contract_authorities.items()
+        if len(authorities) > 1
+    }
+    if contradictions:
+        detail = ", ".join(
+            f"{contract} claimed by {sorted(authorities)}"
+            for contract, authorities in sorted(contradictions.items())
+        )
+        raise ValueError(
+            "effective_relationships: contradiction — contract claimed by multiple authorities: "
+            + detail
+        )
+
+    return sorted(merged, key=lambda rel: rel["id"])
+
+
 def language_bash_scopes(cfg: dict | None = None) -> set[str]:
     """Return the derived set of bash allow-scopes: union of ``languages[*].bash_scope`` + implicit
     ``"pytest *"``. This is the set the permission-matrix language allow-scopes must equal."""

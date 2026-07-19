@@ -64,6 +64,19 @@ def edges(cfg: dict | None = None) -> list[dict]:
     return list(cfg.get("pipeline", {}).get("edges", []))
 
 
+def contract_graph_relationships(cfg: dict | None = None) -> list[dict]:
+    """Return the ``[[contract_graph.relationships]]`` tables (loads the default manifest if omitted).
+
+    Raw passthrough (mirrors ``edges()`` / ``harness_config.contract_graph_relationships``): the
+    TOPO-02 contract-relationship DATA slot flows through UNCHANGED — NO validation/traversal/policy.
+    The two-level ``.get`` mirrors ``edges()``: ``[[contract_graph.relationships]]`` parses to
+    ``cfg["contract_graph"]["relationships"]``. Graph resolution is Phase-25 compiler work.
+    """
+    if cfg is None:
+        cfg = load_workspace()
+    return list(cfg.get("contract_graph", {}).get("relationships", []))
+
+
 def split_endpoint(endpoint: str) -> tuple[str | None, str]:
     """Parse a pipeline edge endpoint into ``(repo, stage)``.
 

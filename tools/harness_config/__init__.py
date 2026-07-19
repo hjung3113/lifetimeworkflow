@@ -13,7 +13,15 @@ without that ordering hazard (mirrors tools/harness_perms + tools/harness_lint).
 
 from __future__ import annotations
 
-__all__ = ["components", "language_bash_scopes", "languages", "load_project", "pipeline"]
+__all__ = [
+    "components",
+    "contract_graph_relationships",
+    "effective_relationships",
+    "language_bash_scopes",
+    "languages",
+    "load_project",
+    "pipeline",
+]
 
 
 def __getattr__(name: str):  # PEP 562 — lazy re-export from the loader submodule.
