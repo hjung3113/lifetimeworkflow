@@ -36,13 +36,24 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 _CONTRACTS_DIR = _REPO_ROOT / "contracts"
 
 
+def _tracked_schemas(contracts_dir: Path) -> set[str]:
+    """Return the set of tracked contract ids under ``contracts_dir`` (the repo's schema-glob idiom).
+
+    Mirrors the ``{p.name.removesuffix(".schema.json") for p in dir.rglob("*.schema.json")}`` check
+    used in ``contract_drift.drift`` and both topology gates. A missing directory yields an empty
+    set (``rglob`` on an absent path returns nothing) — the caller then reports ``unknown-contract``.
+    """
+    return {p.name.removesuffix(".schema.json") for p in contracts_dir.rglob("*.schema.json")}
+
+
 def compile_graph(cfg: dict | None = None) -> dict:
     """Compile the effective relationship list into resolved graph data + diagnostics.
 
     Returns ``{"relationships": [...], "adjacency": {authority: sorted[dependents]},
     "diagnostics": sorted[str]}``. ``relationships`` is ``effective_relationships(cfg)`` verbatim;
-    ``adjacency`` maps each RESOLVED authority to its sorted resolved dependents; ``diagnostics`` is
-    the stable-sorted list of descriptive slugs (populated in the diagnostic layer).
+    ``adjacency`` maps each RESOLVED authority to its sorted resolved dependents (unresolved
+    endpoints are excluded from adjacency and recorded as diagnostics); ``diagnostics`` is the
+    stable-sorted list of descriptive slugs.
     """
     if cfg is None:
         from tools.harness_config import load_project
@@ -51,7 +62,8 @@ def compile_graph(cfg: dict | None = None) -> dict:
 
     relationships = effective_relationships(cfg)
 
-    component_ids = {c["id"] for c in components(cfg)}
+    component_by_id = {c["id"]: c for c in components(cfg)}
+    component_ids = set(component_by_id)
     member_by_id = {m["id"]: m for m in members(cfg)}
 
     def _resolve(endpoint: str) -> tuple[str, str] | None:
@@ -69,15 +81,37 @@ def compile_graph(cfg: dict | None = None) -> dict:
             return ("member", stage)
         return None
 
+    diagnostics: list[str] = []
     adjacency: dict[str, list[str]] = {}
 
     for rel in relationships:
         authority = rel["authority"]
-        if _resolve(authority) is None:
-            # Unresolved authority contributes no adjacency row (diagnostic emission is layered on).
+        resolved_authority = _resolve(authority)
+
+        if resolved_authority is None:
+            diagnostics.append(
+                f"unresolved-authority: relationship {rel['id']} authority {authority!r} "
+                f"is not a declared component or member"
+            )
+            # Unresolved authority contributes no adjacency row and no contract check.
             continue
 
-        resolved_dependents = [dep for dep in rel["dependents"] if _resolve(dep) is not None]
+        contract_diag = _contract_ownership_diagnostic(
+            rel, resolved_authority, component_by_id, member_by_id
+        )
+        if contract_diag is not None:
+            diagnostics.append(contract_diag)
+
+        resolved_dependents: list[str] = []
+        for dep in rel["dependents"]:
+            if _resolve(dep) is None:
+                diagnostics.append(
+                    f"dangling-endpoint: relationship {rel['id']} dependent {dep!r} "
+                    f"is not a declared component or member"
+                )
+                continue
+            resolved_dependents.append(dep)
+
         if resolved_dependents:
             adjacency.setdefault(authority, [])
             adjacency[authority].extend(resolved_dependents)
@@ -85,5 +119,46 @@ def compile_graph(cfg: dict | None = None) -> dict:
     return {
         "relationships": relationships,
         "adjacency": {k: sorted(adjacency[k]) for k in sorted(adjacency)},
-        "diagnostics": [],
+        "diagnostics": sorted(diagnostics),
     }
+
+
+def _contract_ownership_diagnostic(
+    rel: dict,
+    resolved_authority: tuple[str, str],
+    component_by_id: dict[str, dict],
+    member_by_id: dict[str, dict],
+) -> str | None:
+    """Return an ``unknown-contract`` slug if the resolved authority does not own ``rel['contract']``.
+
+    A component-backed authority carrying a ``produces`` list → require the contract in ``produces``
+    (mirrors ``test_pipeline_config.py``'s ownership check). Otherwise (an opaque logical authority /
+    a component with no ``produces``, or a cross-repo ``repo:stage`` member) → existence-only: the
+    contract must resolve to a tracked ``<root>/contracts/**/<contract>.schema.json`` (mirrors
+    ``test_workspace_config.py``'s producer-tree check). The glob root is the repo ``contracts/`` for
+    a project authority, or the producer member's own ``contracts/`` for a cross-repo authority.
+    """
+    kind, resolved_id = resolved_authority
+    contract = rel["contract"]
+
+    if kind == "component":
+        declaration = component_by_id.get(resolved_id, {})
+        if "produces" in declaration:
+            if contract not in declaration["produces"]:
+                return (
+                    f"unknown-contract: relationship {rel['id']} contract {contract!r} "
+                    f"not owned by authority {rel['authority']!r}"
+                )
+            return None
+        # A component with no `produces` field → fall through to project-root existence-only.
+        contracts_dir = _CONTRACTS_DIR
+    else:  # member (cross-repo `repo:stage`, or a bare stage that named a member)
+        member_root = _REPO_ROOT / member_by_id[resolved_id]["root"]
+        contracts_dir = member_root / "contracts"
+
+    if contract not in _tracked_schemas(contracts_dir):
+        return (
+            f"unknown-contract: relationship {rel['id']} contract {contract!r} "
+            f"has no tracked schema"
+        )
+    return None
