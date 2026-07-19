@@ -2058,10 +2058,13 @@
      root, start at the lexicographically-first authority so the render is still deterministic.
   2. **Indent one level per hop.** Print each node, then recurse into its sorted `adjacency` dependents
      one indentation level deeper — authority above, dependents nested beneath it.
-  3. **Cycle marker (never recurse twice).** Track the visited set on the current root-to-node path.
-     If a dependent is already on that path, print it as a terminal `(cycle -> <node>)` marker
-     **instead of** recursing into it again — the exact visited-set-before-recurse discipline
-     `tools.contract_graph.query.transitive` uses, so a legal cycle terminates rather than looping.
+  3. **Cycle marker (never recurse twice).** Track the visited set on the current root-to-node PATH
+     only (path-local, not a single global set — a global set would collapse legal diamonds/fan-in by
+     printing a shared dependent just once). If a dependent is already on the current path, print it as
+     a terminal `(cycle -> <node>)` marker **instead of** recursing into it again, so a legal cycle
+     terminates rather than looping. (This is the render's own path-local rule; it is stricter than
+     `tools.contract_graph.query.transitive`, which uses a global visited set because it only collects
+     the reachable id set, not a tree.)
   
   This tree view is the human-facing surface for branch/fan-in/cycle topologies; the linear
   stage-list/edge-chain steps 2–3 remain the render whenever the graph is a single chain.
@@ -2179,10 +2182,13 @@
      root, start at the lexicographically-first authority so the render is still deterministic.
   2. **Indent one level per hop.** Print each node, then recurse into its sorted `adjacency` dependents
      one indentation level deeper — authority above, dependents nested beneath it.
-  3. **Cycle marker (never recurse twice).** Track the visited set on the current root-to-node path.
-     If a dependent is already on that path, print it as a terminal `(cycle -> <node>)` marker
-     **instead of** recursing into it again — the exact visited-set-before-recurse discipline
-     `tools.contract_graph.query.transitive` uses, so a legal cycle terminates rather than looping.
+  3. **Cycle marker (never recurse twice).** Track the visited set on the current root-to-node PATH
+     only (path-local, not a single global set — a global set would collapse legal diamonds/fan-in by
+     printing a shared dependent just once). If a dependent is already on the current path, print it as
+     a terminal `(cycle -> <node>)` marker **instead of** recursing into it again, so a legal cycle
+     terminates rather than looping. (This is the render's own path-local rule; it is stricter than
+     `tools.contract_graph.query.transitive`, which uses a global visited set because it only collects
+     the reachable id set, not a tree.)
   
   This tree view is the human-facing surface for branch/fan-in/cycle topologies; the linear
   stage-list/edge-chain steps 2–3 remain the render whenever the graph is a single chain.
@@ -3118,9 +3124,11 @@
   - **Indent one level per hop** — an authority sits above its dependents, each dependent nested one
     level deeper, recursing along the sorted `adjacency` edges.
   - **Terminate a cycle** with an explicit `(cycle -> <node>)` marker: track the visited set on the
-    current root-to-node path and, when a dependent is already on that path, print the marker instead
-    of recursing into it again — the same visited-set-before-recurse discipline
-    `tools.contract_graph.query.transitive` uses so a legal cycle never loops.
+    current root-to-node PATH only (path-local — NOT a single global set, which would collapse legal
+    diamonds/fan-in) and, when a dependent is already on that path, print the marker instead of
+    recursing into it again, so a legal cycle never loops. This path-local rule is stricter than
+    `tools.contract_graph.query.transitive`'s global visited set (that query only collects the
+    reachable id set, not a tree).
   
   `/pipeline` (see **Related**) is the render entry point that prints this tree; use the flat stage
   list/edge chain only when the graph is a single chain.
