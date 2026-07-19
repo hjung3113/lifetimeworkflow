@@ -78,7 +78,17 @@ _GENERATED_SEGMENTS = {
 # Deliberately NARROW: does not include the harness's own "do not hand-edit" marker text — that
 # text lives inside root AGENTS.md/CLAUDE.md's BEGIN/END HARNESS-MANAGED comment, a marker-capable
 # surface that must stay INCLUDED (never misclassified as "generated") for Plan 03 to consume.
-_GENERATED_MARKERS = ("@generated", "auto-generated", "derived —")
+#
+# WR-02 (26-REVIEW.md): "derived —" alone (just the common word "derived" followed by an em-dash)
+# is NOT anchored to this repo's own generator convention and false-positives on ordinary prose
+# that happens to use the same phrasing (e.g. this repo's own
+# ".opencode/skill/two-plane-memory/SKILL.md" reads "Gitignored-derived — `.memory/derived/...`").
+# Every actual committed-derived generator in this repo emits the SAME literal continuation —
+# `DERIVED_HEADER = "DERIVED — do not hand-edit ..."` (tools/docs_sync/generate.py,
+# tools/memory_regen/{pointer_index,repo_map,contracts_index}.py) — so the marker is anchored to
+# that continuation instead of the bare word, closing the false-positive without weakening
+# detection of any real generated file in this repo's own convention.
+_GENERATED_MARKERS = ("@generated", "auto-generated", "derived — do not")
 
 # Repomix/gitingest/LLM-input concatenation-dump banner markers (D-08 reading (a)).
 _SOURCE_DUMP_BANNER_MARKERS = (
