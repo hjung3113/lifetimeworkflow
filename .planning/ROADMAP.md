@@ -551,7 +551,7 @@ Plans:
 
 **Wave 2** *(blocked on 26-01)*
 
-- [ ] 26-02-PLAN.md — tools/adoption_scan scan.py + detect.py: confined read-only enumeration, exclusion classification, language/manifest/surface detection, the one synthetic mini-repo fixture (ADOPT-01)
+- [x] 26-02-PLAN.md — tools/adoption_scan scan.py + detect.py: confined read-only enumeration, exclusion classification, language/manifest/surface detection, the one synthetic mini-repo fixture (ADOPT-01)
 
 **Wave 3** *(blocked on 26-02)*
 

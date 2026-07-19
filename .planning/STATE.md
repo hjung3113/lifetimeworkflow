@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: Contract Graph, Brownfield Adoption, Living Docs
 status: executing
-stopped_at: Phase 26 Plan 01 complete (checkpoint ratified, derived plane regenerated)
-last_updated: "2026-07-19T12:04:10.478Z"
-last_activity: 2026-07-19 -- Phase 26 Plan 01 complete
+stopped_at: Phase 26 Plan 01 complete
+last_updated: "2026-07-19T12:28:09.471Z"
+last_activity: 2026-07-19
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 10
-  completed_plans: 8
-  percent: 80
+  completed_plans: 9
+  percent: 90
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 ## Current Position
 
 Phase: 26 (deterministic-brownfield-inventory-mapping-v2-3-b) — EXECUTING
-Plan: 2 of 3 — Ready to execute (26-01 complete: schemas ratified, drift green, derived plane fresh)
+Plan: 3 of 3 — Ready to execute (26-01 complete: schemas ratified, drift green, derived plane fresh)
 Status: Ready to execute
-Last activity: 2026-07-19 -- Phase 26 Plan 01 complete
+Last activity: 2026-07-19
 
 ## Performance Metrics
 
@@ -124,6 +124,7 @@ Last activity: 2026-07-19 -- Phase 26 Plan 01 complete
 | Phase 25 P03 | 15min | 3 tasks | 10 files |
 | Phase 25 P04 | 10min | - tasks | - files |
 | Phase 25 P04 | 10min | 2 tasks | 3 files |
+| Phase 26 P02 | 50min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -210,6 +211,8 @@ Recent decisions affecting current work:
 - [Phase ?]: [Phase 25]: [25-03] TOPO-06 conductor generalized IN PLACE — /pipeline + pipeline-map gain a D-01 indented-tree render (cycle -> node marker) as an ADDITIONAL section; linear stage-list/edge-chain stays byte-identical (0 removed lines), proven by a hardcoded literal-string regression test. orchestrator.md 'Trace the topology' now cites direct/reverse/transitive for non-linear routing. No new command (23) / persona (5). Re-emitted both runtimes byte-identically, no model id; trees committed BEFORE snapshot regen (gate-theft ordering). Full suite 952 passed.
 - [Phase ?]: [Phase 25]: [25-04] TOPO-07 proof fixtures — every non-linear shape (shared-contract fan-out, request/response as two SEPARATE records, event fan-out, legal multi-node cycle, cross-repo authority) is fixture-proven against the Plan-01 compiler + Plan-02 queries; cfgs derive components from the records themselves. WR-01 DEFERRED (Phase-24 lowered-id scheme unchanged) and enforced by an automated corpus scan constraining every fixture id/contract/authority/dependent to exclude / and ->. Cross-repo authority reuses split_endpoint + the producer-tree schema-glob idiom (no new checker). Log-parser instance provably untouched, GEN-04 green; full suite 961 passed.
 - [Phase 26]: [26-01] ADOPT-01/02/03 constitution contracts ratified — three self-contained Draft 2020-12 schemas (`contracts/harness/adoption/{inventory,plan,manifest}.schema.json`, D-11: zero cross-file $ref, each duplicates its own evidenceRef/classification $defs) authored per the CONTEXT.md D-01..D-11 spec, mirroring `contracts/harness/task-control/`. `inventory.schema.json`'s `excludedEntry` structurally omits `sha256` (D-10); `plan.schema.json`'s `candidateRecord.record` is a deliberately open object so a candidate can never be mistaken for a ratified relationship (D-05); `manifest.schema.json`'s `dispositionEnum` is exactly the 6 required values (D-03/D-04). Rebaselined `contracts/.hashes/manifest.json` via `tools.contract_hash.hash --write` only (drift green, exactly 3 keys added). Paused at the plan's blocking `checkpoint:human-verify` — the repo owner independently re-verified the diff and responded "approved" before the Task 3 follow-on (derived-plane regen: `docs/reference/{inventory,plan,manifest}.md` + `.memory/derived/contracts-index.md`, `stale-derived` CI mirror clean) ran. `HARNESS_DEV_BYPASS` used for the writes was never conflated with the human ratification. Unblocks Plan 02 (scanner) and Plan 03 (classification + disposition pipeline), which now validate against these fixed shapes.
+- [Phase 26]: Reuse-at-function-level (D-07): adoption_scan assembled from 4 existing primitives, never built on tools/evidence/capture.py
+- [Phase 26]: Dynamic tmp_path mini-repo fixture (D-06) over a static committed fixtures tree, matching the repo's existing dynamic-fixture convention
 
 ### Pending Todos
 
@@ -250,9 +253,9 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T12:04:10.478Z
+Last session: 2026-07-19T12:28:03.297Z
 Stopped at: Phase 26 Plan 01 complete
-Resume file: .planning/phases/26-deterministic-brownfield-inventory-mapping-v2-3-b/26-02-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
