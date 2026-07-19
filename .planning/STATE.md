@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: Contract Graph, Brownfield Adoption, Living Docs
 status: executing
-stopped_at: Phase 24 context gathered
-last_updated: "2026-07-19T02:32:34.830Z"
-last_activity: 2026-07-19 -- Phase 24 planning complete
+stopped_at: Completed 24-01-PLAN.md
+last_updated: "2026-07-19T02:44:14.276Z"
+last_activity: 2026-07-19
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 2
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 50
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-18)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** v2.3 Contract Graph, Brownfield Adoption, Living Docs (phases 24–29, 21 reqs TOPO/ADOPT/DOCSUP). Scoped via sol-vs-fable debate → codex sol merged FINAL, human-approved (`.planning/research/v2.3-scoping-FINAL.md`). All 3 themes in one milestone. DAG `24→25→28→29` and `24→26→27→29`. **Nothing planned/executed yet** — next is `/gsd:discuss-phase 24` (or `/gsd:plan-phase 24`). **Execution policy (updated 2026-07-19):** initial-design/scoping + final phase review = sol+fable; mid-implementation reviews = terra or opus; implementation = complex→terra / simple→luna; fast OFF always; reasoning effort by complexity, up to high, mostly medium (see [[design-and-gsd-via-codex-sol]], [[execute-via-codex-orca]]). v2.2 (Adaptive Task Control Plane, phases 18–23) shipped + pushed + recorded in MILESTONES.md; formal `/gsd:complete-milestone` archive of phase dirs 18–23 deferred (non-blocking; 24+ numbering avoids collision).
+**Current focus:** Phase 24 — Contract-Relationship Vocabulary + Compatibility
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
+Phase: 24 (Contract-Relationship Vocabulary + Compatibility) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-07-19 -- Phase 24 planning complete
+Last activity: 2026-07-19
 
 ## Performance Metrics
 
@@ -115,6 +115,7 @@ Last activity: 2026-07-19 -- Phase 24 planning complete
 | Phase 16 P03 | 12min | 2 tasks | 2 files |
 | Phase 16 P04 | 9min | 2 tasks | 10 files |
 | Phase 16 P05 | 22min | 2 tasks | 4 files |
+| Phase 24 P01 | 18min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -194,6 +195,7 @@ Recent decisions affecting current work:
 - [Phase 11]: [11-04] MREPO-02 prose-wired the Phase-10 fan-out substrate: orchestrator routes workspace-wide analysis by fanning out one read-only worker per member repo; fan-out-synthesize documents member-repo-as-unit + no-sibling-read guarantee (T-11-10). NO new surface (EXPECTED_SKILLS=11/EXPECTED_PERSONAS=5), round-tripped byte-identical to both runtimes (no model id). Phase closeout: 563 passed, emit-drift clean, GEN-04 twins green. Phase 11 COMPLETE (4/4).
 - [Phase ?]: [15-01] MEM2-06 emit round-trip: ran the Phase-7 emitter and committed exactly its output (84 artifacts, ZERO emitter code change — glob discovery already covered /agree). Both runtime trees now carry /agree + the Phase-13/14 body edits; AGENTS.md managed fence lists agree (1-line splice at 104, nothing outside moved); manifest owns both agree.md paths. Measured delta matched research EXACTLY (A2 re-measured, not trusted). opencode.json + .claude/settings.json confirmed byte-identical no-ops (absent from the diff); no agent path moved; uv.lock empty. GATE-THEFT AVOIDED BY ORDERING: emit committed (0f39e6d) BEFORE the .ambr regen (2da29e9) — verified test_projected_tree_matches_committed_snapshot STILL FAILED after the emit commit, positive proof the snapshot was not touched early. Proof is the CI replica (re-emit && git diff --exit-code = exit 0), NOT the green suite: no local test reads the committed trees, so --snapshot-update alone would green 659 over stale trees. Suite 0 failed / 659 passed; GEN-04 18 passed post-regen. EXPECTED_COMMANDS NOT created (0 source hits, D-11 held a 3rd time). Two plan acceptance criteria are mis-specified and always pass/fail regardless of correctness (AGENTS.md grep '^[+-][^+-]' can never return 2 on a markdown list line; 'tools/**/__snapshots__' pathspec matches nothing since git * does not cross /) — verified the substance via numstat + explicit ls-files instead; recorded for Plan 02. Unblocks PR #3 (both red jobs were this one debt) -> ADR-0004/0005/0006/0007 ratification.
 - [Phase ?]: [16-05] SC1 browsable surface complete: python -m tools.memory_ui serves a 127.0.0.1-only stdlib http.server mounting the 16-03 pure routes behind one zero-asset inlined page; retire path inline-regenerates the derived pointer-index before the routes' orphan gate; POST body bounded (413), no --host flag.
+- [Phase 24]: [24-01] TOPO-01 contract-relationship record schema ratified: per-record shape/cardinality only (authority scalar = exactly-one, dependents minItems1+uniqueItems = one-or-more), no graph resolution/endpoint-existence (D-01/D-02, deferred to Phase 25). Fixtures live in TEST plane (tools/harness_config/tests/fixtures) not contracts/ to keep GEN-04 green; ratified via CODEOWNERS-gated manifest rebaseline (drift green). Adding a core schema fans out to a holistic derived-plane regen (docs/reference + contracts-index + determinism snapshots), which also swept pre-existing handoff/task derived drift.
 
 ### Pending Todos
 
@@ -234,9 +236,9 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T02:06:45.250Z
-Stopped at: Phase 24 context gathered
-Resume file: .planning/phases/24-contract-relationship-vocabulary-compatibility-v2-3-a/24-CONTEXT.md
+Last session: 2026-07-19T02:44:14.271Z
+Stopped at: Completed 24-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 

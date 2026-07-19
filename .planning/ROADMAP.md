@@ -495,7 +495,7 @@ Plans:
 Plans:
 **Wave 1** *(parallel — no file overlap)*
 
-- [ ] 24-01-PLAN.md — TOPO-01: ratified relationship record schema + positive/negative fixtures + contract-hash rebaseline
+- [x] 24-01-PLAN.md — TOPO-01: ratified relationship record schema + positive/negative fixtures + contract-hash rebaseline
 - [ ] 24-02-PLAN.md — TOPO-02/TOPO-03: additive `[contract_graph]` TOML slot + raw-passthrough accessors + deterministic `effective_relationships()` lowering/union
 
 ### Phase 25: Graph Compiler, Queries, Conductor, Proof *(v2.3 A)*
