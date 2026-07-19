@@ -46,6 +46,40 @@ Interactive discussion (`--chain`). Six decisions locked; several deliberately d
 - **D-05: Question-record shape → researcher/planner.** The `question` entries in the plan schema MUST carry at minimum a **stable id**, the **target** (harness destination / topic), and an **evidence pointer** (path + hash). Whether they additionally carry a proposed candidate, and how they are grouped/ordered, is designed by the researcher after inspecting how Phase 27's human-ratification step will consume them. Ordering must be deterministic whatever shape is chosen.
 - **D-07: Exclusion + size-cap mechanism → researcher.** Whether the secret/binary/vendor/generated exclusion, confinement, and size-cap ride the existing `tools/evidence` machinery (v2.2) or a purpose-built adoption scanner is the researcher's call — **reuse-first; if not reused, the plan must state why**. Secret-detection posture should follow D-02's safest-bias (exclude on suspicion) unless research shows a concretely better rule.
 
+### Research-round resolutions (locked after 26-RESEARCH.md)
+
+These close the open questions and the A1 assumption raised by the researcher. They are locked the
+same as D-01..D-07 — do not re-litigate.
+
+- **D-08: "source dump" (ADOPT-01) means BOTH readings.** (a) whole-repo single-file concatenations
+  (repomix / gitingest / LLM-input dumps), detected by their banner/structure marker within the
+  first 2 KiB; and (b) over-cap text blobs plus paths carrying a `dump` / `snapshot` / `backup`
+  segment. Rationale: the size cap already catches the large concatenations, so the marginal cost of
+  (a) is one cheap marker check for under-cap concat artifacts — and an inventory that ingests a
+  repo-concat file double-counts every file in it, the exact pollution ADOPT-01 exists to prevent.
+  Exclusion reason recorded as `source-dump`. (Resolves assumption A1, which was undefined in
+  REQUIREMENTS.md and v2.3 FINAL.)
+- **D-09: `git ls-files` is allowed — fixed argv, `shell=False`, failure-tolerant — with a complete
+  builtin fallback.** The phase invariant "no arbitrary command execution" forbids executing
+  *discovered* scripts (v2.3 FINAL §147), not a fixed, non-shell `git` argv; the repo already does
+  this in `contract_drift.drift._git_show` and `evidence.capture._committed_approval`. The design
+  MUST NOT depend on git: when git is absent or fails, the builtin denylist walk produces a complete
+  result, and the enumeration mode is recorded in the artifact so a run is self-describing. The
+  plan's threat model must call this distinction out explicitly.
+- **D-10: exclusions are recorded, not omitted.** Every excluded file appears in a separate
+  `excluded[]` array as `{path, size, reason}` — **no content hash, no content excerpt**. Rationale:
+  roadmap success criterion 4 requires secret/size-cap/vendor/generated detection to *pass*, which is
+  only testable if exclusions are observable; and withholding hash+content keeps secret material out
+  of the artifact entirely.
+- **D-11: three self-contained schemas; `--out` is required.** Each of the three schemas under
+  `contracts/harness/adoption/` duplicates its small shared `$defs` (evidence pointer, classification
+  enum, disposition enum) rather than introducing cross-file `$ref` — all 8 existing contracts in
+  this repo are self-contained, and neither `check-jsonschema` nor `tools.contract_hash` has ever been
+  exercised against cross-file `$ref`. The tool has **no default output location**: `--out` is
+  mandatory and the tool refuses when `--out` resolves inside `--target`. This keeps Phase 27's
+  task-plane integration a pure argument change with zero behavior change, and honors §146 (Phase 26
+  creates no task plane).
+
 ### Claude's Discretion
 - Module location and naming (`tools/brownfield_inventory/` vs extending an existing tool package), internal data structures, exact canonical sort keys, schema property spellings, CLI/module entry point (`python -m tools.<x>`), and test file layout — planner decides, provided outputs are deterministic, repo-confined, and read-only with respect to the target.
 - Inventory detection breadth (which languages / package managers / "candidate process boundary" heuristics, and whether to reuse the repo-map tree-sitter machinery) — researcher/planner scope; the user explicitly declined to constrain it.
