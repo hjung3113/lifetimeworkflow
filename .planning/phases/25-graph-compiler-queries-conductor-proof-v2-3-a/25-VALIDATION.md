@@ -1,8 +1,8 @@
 ---
 phase: 25
 slug: graph-compiler-queries-conductor-proof-v2-3-a
-status: draft
-nyquist_compliant: false
+status: validated
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-07-19
 ---
@@ -36,11 +36,15 @@ created: 2026-07-19
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| {N}-01-01 | 01 | 1 | TOPO-04 | — | N/A | unit | `uv run pytest tools/contract_graph -q` | ❌ W0 | ⬜ pending |
+| Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
+|------|------|-------------|-----------|-------------------|-------------|--------|
+| 25-01 (compiler + gate + WR-02 close) | 1 | TOPO-04 | unit | `uv run pytest tools/contract_graph tools/harness_lint -q` | ❌ W0 | ⬜ pending |
+| 25-02 (affected-set queries) | 2 | TOPO-05 | unit | `uv run pytest tools/contract_graph -q` | ❌ W0 | ⬜ pending |
+| 25-03 (indented-tree render + linear byte-identity + emit round-trip) | 3 | TOPO-06 | regression | `python -m tools.harness_emit && git diff --exit-code -- .opencode .claude` | ✅ | ⬜ pending |
+| 25-04 (non-linear proof fixtures + WR-01 corpus scan) | 3 | TOPO-07 | fixture | `uv run pytest tools/contract_graph -q` | ❌ W0 | ⬜ pending |
+| 25-05 (ADR-0009) | 4 | TOPO-07 | manual-gate | human ratification (see Manual-Only) | ✅ | ⬜ pending |
 
-*Filled by planner/executor. Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky. Per-task detail in each PLAN.md `<verify><automated>`.*
 
 ---
 
@@ -58,10 +62,9 @@ created: 2026-07-19
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| ADR-0009 human ratification | TOPO-07 | Constitution-plane decision record requires human sign-off (machines gate, humans ratify) | Review ADR-0009 (record/graph model + query semantics + conductor contract), mark accepted |
-| harness-emit byte-identical round-trip | TOPO-06 | Conductor surface edits must project to `.opencode/`+`.claude/` with no model ids | Re-run emit; `git diff` on emitted trees confirms byte-identity |
+| ADR-0009 human ratification | TOPO-07 | Constitution-plane decision record requires human sign-off (machines gate, humans ratify) | Review ADR-0009 (record/graph model + query semantics + conductor contract), mark accepted (25-05 checkpoint task) |
 
-*Other phase behaviors have automated verification.*
+*The harness-emit byte-identical round-trip is AUTOMATED in 25-03 Task 3 (`python -m tools.harness_emit && git diff --exit-code -- .opencode .claude`), not manual. Only the ADR ratification is a genuine human gate.*
 
 ---
 

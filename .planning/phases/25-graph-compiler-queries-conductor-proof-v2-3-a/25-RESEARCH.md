@@ -326,9 +326,12 @@ source -> sink (greeting)
 
 **If this table is empty:** N/A — see above.
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> All three resolved during planning; each plan implements the recommendation. Markers added post-plan-check.
 
 1. **Does the compiler need a CLI entrypoint (like `python -m tools.contract_drift.drift`) or is it Python-API-only?**
+   - **RESOLVED:** API-only for Phase 25 — no CLI added (25-01). A DOCSUP CLI is deferred to Phase 28 if needed.
    - What we know: `contract_drift` has a `main()`/argparse CLI because it's invoked from CI shell scripts (`check.sh`). The graph gate, by contrast, is a pytest suite (like `test_pipeline_config.py`), which needs no separate CLI.
    - What's unclear: Whether Phase 28/29 (Living Docs, DOCSUP) will want a CLI-invokable "print affected set for path X" tool outside pytest.
    - Recommendation: Skip a CLI for Phase 25 (queries are a Python API consumed by conductor prose + gate tests); let Phase 28 add one if/when DOCSUP's graph-impact reports need shell invocation — don't speculatively build it now.
@@ -337,11 +340,13 @@ source -> sink (greeting)
    - What we know: D-02 names exactly these three as examples ("e.g.").
    - What's unclear: Whether "contradiction" (one contract, two authorities — already an `effective_relationships()` `ValueError`, not a gate diagnostic) needs its own slug at the gate layer, or whether that failure mode stays an exception (crashes the gate test outright, as it does for `test_topology_relationships.py` today) rather than becoming a collected diagnostic.
    - Recommendation: Let `effective_relationships()`'s three `ValueError` modes stay hard crashes (unchanged, TOPO-03 territory); the NEW gate's diagnostic slugs are exactly the THREE new TOPO-04 concerns (endpoint declared-against-components/members, authority owns the contract, contract exists) — do not conflate the two layers.
+   - **RESOLVED:** Only the three named D-02 slugs (`unresolved-authority`, `dangling-endpoint`, `unknown-contract`) implemented at the gate layer (25-01); the three `effective_relationships()` `ValueError` modes stay hard crashes (unchanged).
 
 3. **Where does "authority owns the contract" resolve for a component-level authority vs. a bare id?**
    - What we know: `test_pipeline_config.py::test_pipeline_edges_are_well_formed` checks `contract in by_id[src].get("produces", [])` for the LEGACY edge case — i.e. "ownership" there means "the from-component declares this contract in `produces`". For an EXPLICIT `[[contract_graph.relationships]]` record, there is no `produces`/`consumes` concept (Phase 24 explicitly deferred that) — an authority is just an opaque endpoint string.
    - What's unclear: For an explicit record whose `authority` is, say, a bare component id, does "authority-owned contract resolution" mean (a) the authority's `produces` list contains the contract (same rule as legacy edges), or (b) merely that the contract has a tracked schema SOMEWHERE (existence only, no ownership-by-produces check)?
    - Recommendation: Implement (a) when the authority resolves to a declared `[[components]]`/`[[members]]` id with a `produces` field, falling back to (b) existence-only when the authority endpoint doesn't map to a `produces`-bearing declaration (e.g. an opaque logical id with no component backing) — document this fallback explicitly in the ADR-0009 model, since it's a genuine design decision D-04 says the ADR must record.
+   - **RESOLVED:** produces-check-with-existence-fallback (a→b) implemented in 25-01 Task 2 and recorded in ADR-0009 (25-05).
 
 ## Environment Availability
 
