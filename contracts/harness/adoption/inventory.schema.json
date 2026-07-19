@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://harness.local/contracts/harness/adoption/inventory.schema.json",
   "title": "Brownfield adoption inventory",
-  "description": "ADOPT-01 deterministic, read-only, size-capped inventory of a scanned brownfield target: enumerated included/excluded files, language/manifest/documentation/CI/test surface detection, and candidate process boundaries, each evidence-classified observed/inferred/unknown with evidence pointers into already-hashed included files. Self-contained Draft 2020-12 (D-11) — no cross-file $ref; duplicates evidenceRef/classification also carried by plan.schema.json and manifest.schema.json. Excluded entries structurally carry no content hash or excerpt (D-10).",
+  "description": "ADOPT-01 deterministic, read-only, size-capped inventory of a scanned brownfield target: enumerated included/excluded files, language/manifest/documentation/CI/test/schema/CODEOWNERS surface detection, and candidate process boundaries, each evidence-classified observed/inferred/unknown with evidence pointers into already-hashed included files. Self-contained Draft 2020-12 (D-11) — no cross-file $ref; duplicates evidenceRef/classification also carried by plan.schema.json and manifest.schema.json. Excluded entries structurally carry no content hash or excerpt (D-10). `schema_surfaces` and `codeowners_surfaces` are staged OPTIONAL as of this revision (absent from top-level `required`) pending Plan 26-05's detect.py wiring, which promotes both to required in the same task that first populates them.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -63,6 +63,14 @@
       "items": { "$ref": "#/$defs/surfaceRecord" }
     },
     "candidate_process_boundaries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/surfaceRecord" }
+    },
+    "schema_surfaces": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/surfaceRecord" }
+    },
+    "codeowners_surfaces": {
       "type": "array",
       "items": { "$ref": "#/$defs/surfaceRecord" }
     }
