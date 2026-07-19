@@ -358,13 +358,26 @@ def disposition(
     return "conflict"
 
 
-def build_manifest(inventory: dict, target_root: Path, proposed_hashes: dict[str, str]) -> dict:
-    """Assemble the ``manifest.schema.json``-conformant document over the 40-row catalog.
+def build_manifest(
+    inventory: dict,
+    target_root: Path,
+    proposed_hashes: dict[str, str],
+    *,
+    catalog: list[dict] | None = None,
+) -> dict:
+    """Assemble the ``manifest.schema.json``-conformant document over the destination catalog.
 
     ``proposed_hashes`` maps a catalog destination -> proposed sha256 — the content the HARNESS
     TEMPLATE would install there (CR-01: :func:`harness_proposed_hashes`), never derived from the
     scanned target itself. A destination with no entry passes ``proposed_sha=None`` to
     :func:`disposition`, which can then never hit ``preserve`` via step 6 (safe).
+
+    ``catalog`` (CR-02, 26-VERIFICATION.md gap 1): when ``None`` (every existing caller —
+    ``cli.py``, this module's own live-catalog tests), the live :func:`destination_catalog` is used,
+    unchanged. When provided (a ``list[dict]`` of ``{"destination": str}`` rows, the same shape
+    :func:`destination_catalog` returns), that fixed list is iterated instead — decoupling a
+    committed manifest snapshot from the live repo's file count, so an unrelated harness file
+    add/remove never reds a snapshot test built over an explicit fixed catalog.
 
     WR-03: the existing-file hash used for the step-6/7 comparison is sourced from ``inventory``
     when available — the already-computed ``sha256`` for an ``included`` destination, or the
@@ -377,7 +390,7 @@ def build_manifest(inventory: dict, target_root: Path, proposed_hashes: dict[str
     dispositions: list[dict] = []
     excluded: list[dict] = []
 
-    for row in destination_catalog():
+    for row in catalog if catalog is not None else destination_catalog():
         destination = row["destination"]
         if destination in included_hashes:
             existing_sha = included_hashes[destination]
