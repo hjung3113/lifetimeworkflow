@@ -1,5 +1,22 @@
 # Milestones
 
+## v2.2 Adaptive Task Control Plane (Shipped: 2026-07-19)
+
+**Phases completed:** 6 phases (18–23), 21 plans
+
+**Key accomplishments:**
+
+- Ratified the task-packet contract set (TASK/STATE/EVIDENCE/HANDOFF JSON Schema Draft 2020-12) and the `.workflow/tasks/<task-id>/` instance slot, independent of `.memory/state/`, registered in the contract-drift hash gate (Phase 18).
+- Deterministic 7-axis risk router (`harness/risk-policy.toml` + `tools/risk_router`) mapping to FAST/STANDARD/STRICT/CONTROLLED lanes with escalate-only instance overlay and auto-promotion reason codes, plus `/intake` (Phase 19).
+- Atomic state manager (`tools/task_control` — flock + revision CAS, interrupted-write recovery), phase-oriented required-artifact gate, and fail-closed `/phase-gate` + `context-attestation.json` (Phase 20).
+- Forgery-detecting evidence adapters (`tools/evidence`) that wrap the existing gates (record argv/exit/hash/status, never turn SKIPPED into PASSED), with secret/PII refusal and a HEAD-committed evidence+approval trust root at COMPLETE (Phase 21).
+- Immutable HANDOFF snapshot + gated fresh-session resume (`tools/handoff`) with a revision-bound `resume_gate` PreToolUse hook (advance-only re-stamp on sanctioned transitions) (Phase 22).
+- Human-ratified domain-neutral lifecycle fixtures (20, five per lane) + stress/negative suite, CI fan-in, `docs/how-to/task-lifecycle.md`, and structural ADR-0008 (Accepted) — 904 tests green, pushed to origin (Phase 23).
+
+**Scoping:** sol-vs-fable debate panel, codex sol authored the merged design; locked human decisions A=`.workflow/tasks/`, B=6 phases. Deferred: signed external evidence attestation (P21 D-10), TCP-F01..F05, STRICT-rollback policy.
+
+---
+
 ## v2.1 MEM2 — Process Memory & Provenance Reframe (Shipped: 2026-07-18)
 
 **Phases completed:** 5 phases, 19 plans, 42 tasks

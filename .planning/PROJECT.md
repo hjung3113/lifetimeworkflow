@@ -18,21 +18,18 @@
 
 **v2.1 MEM2 shipped 2026-07-18** — the harness now carries a durable, authoritative PROCESS-memory channel (`.memory/agreements/`) with a data-scoped provenance reframe, a sanctioned `/agree` write path backed by a provenance/anti-invent guard, and a local, no-network pointer-aware memory web UI. v1.0 (phases 1–8) + v2.0 (phases 9–11) + v2.1 (phases 12–16) archived under `.planning/milestones/`. Phase 17 (Constitution-Gate Dev/Enforce Decoupling — infra, independent of the v2.1 MEM2 chain) remains live in the roadmap.
 
-## Current Milestone: v2.2 Adaptive Task Control Plane
+## Current Milestone: v2.3 Contract Graph, Brownfield Adoption, Living Docs
 
-**Goal:** 기존 orchestrator·GSD·two-plane memory·`/review`·`/verify-work`·`/checkpoint`·contract/golden/CI 게이트를 재사용하면서, 작업을 기계 판독 가능한 **task packet**, 결정론적 **위험 레인**(FAST/STANDARD/STRICT/CONTROLLED), 원자적 **phase 전이**, **evidence bundle**, 재개 가능한 **HANDOFF**로 연결한다 — 설계가이드 §14 우선순위 1·2·4·5를 닫는 하나의 수직 슬라이스.
+**Goal:** 선형 파이프라인 슬롯을 임의의 프로젝트 간 계약 관계를 담는 결정론적 **권위-중심 contract-relationship graph**로 일반화하고, 그 그래프를 (B) 기존 레포에 하네스를 **도입(brownfield adoption)**하고 (C) 사람이 작성한 문서의 **drift를 탐지·갱신**하는 두 워크플로의 어휘로 사용한다 — 데이터 형상·결정론적 분석기·얇은 워크플로만 추가하고 두 번째 프레임워크/엔진/권위 평면은 만들지 않는다.
 
-**Target features (6 phases, 계속 번호 18–23):**
-- **Task Packet Contract Ratification** — TASK/STATE/EVIDENCE/HANDOFF JSON Schema 4종 + `.workflow/tasks/<id>/` 인스턴스 슬롯 + phase/lane enum + 전이표. (사람 승인 헌법 평면 진입, contract-drift 등록)
-- **Deterministic Risk Router** — 7축 점수 → 레인 순수 함수 계산기 + 자동 승격 reason code + 레인별 필수 산출물 matrix + escalate-only instance overlay 슬롯 + `/intake`.
-- **Atomic State Manager + Context/Transition Gate** — atomic replace + revision CAS 동시성 안전 상태 도구 + phase-start fail-closed 게이트(ref·baseline·constraint attestation) + `/phase-gate`.
-- **Evidence Bundle Adapters** — 기존 게이트 결과를 수집(재구현 X)해 command·exit·hash·criterion trace로 기록 + secret refusal + `/verify-work` 연결.
-- **Handoff + Fresh-Session Resume** — HANDOFF 생성/검증 + `/checkpoint`·`/orient`·SessionStart injector 개정(pointer-only, ~1k cap 보존) + `/handoff`.
-- **Lifecycle Evaluation + Docs + CI** — 레인별 5개 = 20 ratified fixture + stress/negative 사례 + CI fan-in + how-to + 구조 결정 ADR.
+**Target features (6 phases, 계속 번호 24–29):**
+- **A. Contract-Relationship Graph** *(TOPO-01..07, phases 24–25)* — `contracts/harness/topology/` 아래 사람 승인 관계 record 스키마 + 추가형 `[[contract_graph.relationships]]` TOML 슬롯 + 레거시 `[pipeline]` **lowering**(추가형 union, 마이그레이션 아님) + 도메인 중립 컴파일러·consistency 게이트 + affected-set 질의 + `/pipeline`·`pipeline-map`·orchestrator 일반화.
+- **B. Brownfield Adoption** *(ADOPT-01..07, phases 26–27)* — 결정론적 read-only inventory → evidence 분류(observed/inferred/unknown) 매핑 → destination/disposition manifest → adoption을 `.workflow/tasks/` 작업으로(v2.2 CAS/evidence/HANDOFF 재사용, 새 `.workflow/adoption/` 평면 없음) + 구조적 헌법-쓰기 거부 + 해시 결합 사람 ratification + `/adopt` skill·command + 3개 fixture.
+- **C. Living Docs** *(DOCSUP-01..07, phases 28–29)* — 중앙 `docs/doc-dependencies.toml` + review ledger + FRESH/BROKEN/STALE_REQUIRED/STALE_ADVISORY/UNCOVERED 게이트 + 파생 staleness 큐·SessionStart pointer + `/docs-update` drive loop(ADR/reference/derived 제외).
 
-**Key context (locked human decisions):** (A) task packet 저장 위치 = `.workflow/tasks/`(세션 memory와 이름으로 분리) — fable의 `.memory/tasks/` 대안 기각. (B) phase 수 = 6(evidence·handoff·eval 분리) — fable의 5 기각. 설계는 codex sol이 sol-vs-fable 토론으로 authored (`docs/explanation/next-milestone-task-control-plane.md`). 헌법 제약 전면 준수: contract-first / two-plane / harness/-emit / 모델 식별자 미포함 / 헌법 평면 사람 승인.
+**Key context (ratified design):** 설계는 sol-vs-fable 토론 패널로 scoping — 독립 제안 → 교차 반박 → codex sol이 병합 FINAL authored, 사람 승인. 원본: `.planning/research/v2.3-scoping-FINAL.md`. 확정 결정: `TOPO-*`(GEN-04 가드와의 충돌 회피, `GEN-*` 아님) · 추가형 lowering(identical-or-fail 마이그레이션 아님) · task-plane adoption(sibling 평면 아님) · 중앙 registry(per-doc frontmatter 아님) · required/advisory staleness 심각도. DAG `24→25→28→29` + `24→26→27→29`. 3개 open-Q 기본값 채택: 슬롯명 `[[contract_graph.relationships]]`; required-staleness 바인딩 = 루트 README·AGENTS·task-lifecycle how-to·template-and-instances explanation·adoption runbook(나머지 advisory); ADR 번호는 구현 시 할당(topology 모델에 ADR-0009 예약). 헌법 제약 전면 준수: contract-first / machines-gate-humans-ratify / GEN-04 / 모델 식별자 미포함 / harness-emit 왕복 / two-plane / 단일 orchestrator / reuse-not-reimplement.
 
-_이전 Next-Milestone 초안(harness hardening 캐리 후속)은 이 마일스톤에 흡수하지 않고 별도 백로그로 남긴다._
+**OUT of scope:** version/semver 호환 엔진, impact-driven task-evidence 정책(별도 ADR로 연기), topology runtime/broker, 두 번째 orchestrator, autonomous contract 추출, accepted-ADR 편집, TCP-F01..F05·signed external attestation·STRICT rollback.
 
 ## Requirements
 
@@ -50,6 +47,8 @@ _이전 Next-Milestone 초안(harness hardening 캐리 후속)은 이 마일스�
 - ✓ **`/agree` write path + anti-churn 가드 (v2.1 MEM2-04)** — 명시적 사용자 피드백 전용 append/retire + `tools/harness_lint` provenance/anti-invent 가드. *(v2.1, Phase 14)*
 - ✓ **Progress staleness 가드 (v2.1 MEM2-05)** — `/checkpoint` `updated:` stamp + agent-side freshness(verbatim, `assemble()` 내 wall-clock 없음). *(v2.1, Phase 13)*
 - ✓ **로컬 메모리 웹 UI (v2.1 MEM2-07)** — 127.0.0.1-only 무-네트워크 툴 + DERIVED pointer-index + surface-and-confirm 참조 무결성, 브라우저 왕복 검증 5/5. *(v2.1, Phase 16)*
+
+- ✓ **Adaptive Task Control Plane (v2.2, TCP-01..18)** — 기계 판독 task packet(`.workflow/tasks/`) + 결정론적 7축 위험 라우터(FAST/STANDARD/STRICT/CONTROLLED) + 원자적 상태 관리자(flock+revision CAS) + fail-closed `/phase-gate` + forgery-detecting evidence adapters + immutable HANDOFF·gated fresh-session resume + 사람 승인 lifecycle fixtures + ADR-0008. 904 tests green, origin 푸시. *(v2.2, phases 18–23)*
 
 ### Active
 
@@ -123,4 +122,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-18 — milestone v2.2 (Adaptive Task Control Plane) started via `/gsd:new-milestone`. Design authored by codex sol via a sol-vs-fable debate (Orca), human-approved (`docs/explanation/next-milestone-task-control-plane.md`); locked decisions A=`.workflow/tasks/`, B=6 phases. Requirements + roadmap (phases 18–23) derived directly from the approved design; research skipped (design complete). Prior milestone v2.1 (MEM2, phases 12–16) shipped + archived under `.planning/milestones/v2.1-*`; Phase 17 (infra) remains live.*
+*Last updated: 2026-07-19 — milestone v2.3 (Contract Graph, Brownfield Adoption, Living Docs) started via `/gsd:new-milestone`. Design scoped by a sol-vs-fable debate panel (independent proposals → cross-rebuttal → codex sol merged FINAL), human-approved (`.planning/research/v2.3-scoping-FINAL.md`); all 3 themes in one milestone, 21 requirements (TOPO/ADOPT/DOCSUP), phases 24–29. Requirements + roadmap derived directly from the approved design; research skipped (design complete). Prior milestone v2.2 (Adaptive Task Control Plane, phases 18–23) shipped + pushed (recorded in MILESTONES.md this session; formal `/gsd:complete-milestone` archive of phase dirs deferred — new numbering 24+ avoids collision).*

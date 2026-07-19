@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.2
-milestone_name: Adaptive Task Control Plane
+milestone: v2.3
+milestone_name: Contract Graph, Brownfield Adoption, Living Docs
 status: planning
-last_updated: "2026-07-19T23:00:00.000Z"
+last_updated: "2026-07-19T01:48:08.696Z"
 last_activity: 2026-07-19
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -24,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 
 ## Current Position
 
-Phase: ALL 6 PHASES IMPLEMENTED + MERGED — v2.2 code-complete (100%)
-Plan: P23 done (lifecycle+fixture+hook 136, tools 882 green non-sandbox, contract-drift/GEN-04/emit clean)
-Status: **v2.2 COMPLETE.** All 6 phases merged; TCP-01..18 done. Human ratification received 2026-07-19: ADR-0008 Accepted; 20 lifecycle fixtures ratified. Milestone closed. Deferred to future milestones: signed external evidence attestation (P21 D-10), TCP-F01..F05, STRICT-rollback policy (would need a new breaking ADR).
-Last activity: 2026-07-19 — Phase 23 shipped (terra build → fable review: 4 major [runner not E2E, self-referential ceremony check, STRICT-rollback contract discrepancy, negative fixtures unbound] → fix: runner now executes real lifecycle per fixture → Claude direct-verify [fable quota-blocked, sol filter-risk] + merge)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-07-19 — Milestone v2.3 started
 
 ## Performance Metrics
 
