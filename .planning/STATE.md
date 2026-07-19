@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: A)*
-status: completed
+status: planning
 stopped_at: Completed 26-09-PLAN.md
-last_updated: "2026-07-19T18:01:39.864Z"
+last_updated: "2026-07-19T18:14:23.072Z"
 last_activity: 2026-07-19 -- Phase 26 marked complete
 progress:
-  total_phases: 24
-  completed_phases: 12
-  total_plans: 67
-  completed_plans: 61
-  percent: 50
+  total_phases: 7
+  completed_phases: 3
+  total_plans: 16
+  completed_plans: 16
+  percent: 100
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-18)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 26 — deterministic-brownfield-inventory-mapping-v2-3-b
+**Current focus:** Phase 26.1 — secret-pattern-precision-sc-4-false-positive-closure
 
 ## Current Position
 
-Phase: 26 — COMPLETE
-Plan: 9 of 9
-Status: Phase 26 complete
+Phase: 26.1 — INSERTED (not planned)
+Plan: 0 of 0
+Status: Ready to plan Phase 26.1
 Last activity: 2026-07-19 -- Phase 26 marked complete
 
 ## Performance Metrics
@@ -140,6 +140,7 @@ Last activity: 2026-07-19 -- Phase 26 marked complete
 - **Milestone v2.1 roadmap created (2026-07-14): phases 12–16 appended, numbering continued after v2.0 (phases 9–11).** MEM2 — Process Memory & Provenance Reframe. Phase 12 (A) Model + ADR + Doc Reframe (MEM2-01, MEM2-03, + ADR-0006 authoring portion of MEM2-06); Phase 13 (B) Injector Reframe + Channel Wiring (MEM2-02, MEM2-05); Phase 14 (C) Write Path + Anti-Churn Guard (MEM2-04); Phase 15 (D) Emit Round-Trip + Gates (MEM2-06, emit portion — traceability owner); Phase 16 (E) Local Memory Web UI (MEM2-07, UI hint). Sequencing locked 12→13→14→15→16 (model+ADR ground the injector; injector consumes the channel the write-path fills; emit round-trips the surface; UI operates on the finished committed channel). All 7 v2.1 requirements mapped 1:1; coverage 7/7. MEM2-06 spans Phase 12 (ADR authoring) + Phase 15 (emit) but is counted once (Phase 15). Every phase REUSES existing machinery (`tools/memory_regen`/`inject.py`, `/checkpoint`, `tools/harness_lint`, Phase-7 emitter `tools/harness_emit`, `adr`+CODEOWNERS) — no new machinery. Non-negotiables reasserted: ADR-0006 via human-ratified path (agent Write to `docs/adr/` correctly denied by contract-guard); agreements written ONLY on explicit user feedback (machines gate, humans ratify); the new `.memory/agreements/` channel is a committed human-authored tier like `state/`, NOT derived — never regenerated; every surface change round-trips the emitter to both runtimes with NO model id; GEN-04 core→example independence green; determinism (`inject.py:20-22` byte-identical) + ~4000-char budget (`inject.py:105`) preserved; NO wall-clock in `assemble()`/hook-wrapper (agent-side freshness); progress stays tiny (git is the done-log, §7a); project decisions linked, never restated in PROCESS channel (§7c). Design source `.planning/MEMORY-UPGRADE-PROPOSAL.md` §7 authoritative. Kickoff Q1–Q6 recorded in PROJECT.md/REQUIREMENTS.md.
 - Milestone v2.0 roadmap created (2026-07-12): **phases 9/10/11** appended, numbering continued after v1.0 (phases 1–8). Phase 9 (α) Self-Maintaining Derived Artifacts + Curator (MAINT-01..04); Phase 10 (β) Context-Economy Fan-out/Synthesize (ECON-01..03); Phase 11 (γ) Multi-Repo Workspace (MREPO-01..04). Sequencing locked 9→10→11 (β is the reusable fan-out substrate γ builds on). All 11 v2.0 requirements mapped 1:1; coverage 11/11. Two plan-time KEY DECISIONS carried, unresolved: (α) which derived artifacts flip gitignored-derived → committed-derived for PR refresh; (γ) workspace model a/b/c (lean b: workspace manifest). Cross-cutting non-negotiables reasserted: derived-never-hand-edited (machine-write + CI-verify OK), machines-gate/humans-ratify on the constitution plane, GEN-04 core→example/workspace-member no-dependency, every new agent/skill/hook round-trips the Phase-7 emitter to both runtimes, PR/CI enforcement preferred over heavy per-commit hooks.
 - Phase 8 added (2026-07-10): **Pipeline-Topology Conductor + Per-Component Agents** (PIPE-01..06). Post-Phase-6 user request — evolve the agent model from per-language to pipeline-aware. Independent of Phase 7 (emitter). Locked with user: build BOTH neutral core mechanism AND concrete `examples/log-parser/` demo; EVOLVE the existing primary `orchestrator` (no second primary/tier); formal GSD phase.
+- Phase 26.1 inserted after Phase 26: Secret-Pattern Precision — SC-4 false-positive closure (URGENT)
 
 ### Decisions
 

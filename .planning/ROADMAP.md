@@ -557,6 +557,24 @@ Plans:
 
 - [x] 26-03-PLAN.md — plan.py + destinations.py + cli.py: evidence ladder, question records, relationship candidates, the total disposition rule chain, full pipeline wiring + determinism proof (ADOPT-02, ADOPT-03)
 
+### Phase 26.1: Secret-Pattern Precision — SC-4 false-positive closure (INSERTED)
+
+**Goal:** The `gate-registry.json` `secret_patterns` registry stops excluding non-secret prose and config. The `(?:api[_-]?key|secret|password|token)\s*[:=]\s*[^\s]+` value pattern is tightened to require a secret-shaped value (minimum length plus mixed-charset/entropy constraint) instead of any non-space run, closing the SC-4 false positive carried forward from Phase 26 — where this repo's own `.github/workflows/ci.yml` is excluded as `secret-content` because it contains the literal `TOKEN: gate`. Proven in both directions by data-based cases: every real secret shape currently caught stays caught, and known-benign prose/config stops being flagged. Contract-first — the `contracts/harness/task-control/gate-registry.json` change is paired with a hash rebaseline, derived-plane regeneration, and human ratification in one atomic commit.
+**Requirements**: ADOPT-01
+**Depends on:** Phase 26
+**Plans:** 0 plans
+
+**Why urgent:** Phase 27 broadens secret classification to arbitrary brownfield targets. Shipping 27 on top of an over-matching pattern means silent, unreviewable over-exclusion on real user repos — the failure is conservative (no secret leak) but it drops real files out of the inventory with no signal.
+
+**Success criteria:**
+- SC-1: `scan._secret_pattern()` does not match this repo's own `.github/workflows/ci.yml`; the file appears in the inventory rather than as `excluded: "secret-content"`.
+- SC-2: Every secret shape in the current registry (AWS key id, GitHub PAT prefixes, `sk-` keys, Slack tokens, PEM private key header, JWT, `Authorization: Bearer`) is still matched — proven by a data-based positive case per pattern, not by inspection.
+- SC-3: The `gate-registry.json` edit, `contracts/.hashes/manifest.json` rebaseline, `tools.docs_sync` + `tools.memory_regen.contracts_index` regeneration, and any affected snapshots land in one commit; `tools.contract_drift.drift` is clean at that commit.
+- SC-4: The constitution-plane change is human-ratified, not agent-self-approved.
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 26.1 to break down)
+
 ### Phase 27: Task-Local Adoption Workflow + Safe Application *(v2.3 B)*
 
 **Goal:** 결정론적 plan을 출하된 task control plane 위에서 재개 가능·사람 ratified·비파괴 adoption 워크플로로 전환한다.
