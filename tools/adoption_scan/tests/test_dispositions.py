@@ -1,6 +1,6 @@
-"""Task 1: destinations.py — totality over the 40-row catalog + each-of-6-dispositions-reachable
-+ marker-capable-set-is-exactly-3 + constitution-always-wins + hash-equal/hash-differ collision
-rule + GSD-owned exclusion."""
+"""Task 1: destinations.py — totality over the rule-derived, real-file catalog +
+each-of-6-dispositions-reachable + marker-capable-set-is-exactly-3 + constitution-always-wins +
+hash-equal/hash-differ collision rule + GSD-owned exclusion."""
 
 from __future__ import annotations
 
@@ -8,26 +8,33 @@ import json
 from pathlib import Path
 
 from tools.adoption_scan import cli, destinations
+from tools.harness_emit.manifest import is_gsd_owned
+
+_PLACEHOLDER_DESTINATIONS = (
+    "harness/agents/widget-engineer.md",
+    "harness/commands/widget-check.md",
+    "harness/skills/widget-conventions/SKILL.md",
+    ".opencode/agent/widget-engineer.md",
+    ".claude/agents/widget-engineer.md",
+    "golden/widget/verified/case.txt",
+    "docs/adr/0001-decision.md",
+    ".memory/agreements/0001-widget.md",
+    ".workflow/tasks/T-0001/task.json",
+    "tools/widget_tool/pyproject.toml",
+)
 
 
 def test_total(tmp_path: Path) -> None:
-    """Every non-excluded row resolves to a non-None value from the 6-value enum; row 40
-    (GSD-owned) resolves to None (excluded) — 39 dispositioned + 1 excluded."""
+    """Every non-excluded row resolves to a non-None value from the 6-value enum — totality over
+    whatever the real, rule-derived catalog currently contains (no hardcoded length)."""
     catalog = destinations.destination_catalog()
-    assert len(catalog) == 40
+    assert len(catalog) > 100
 
-    dispositioned = 0
-    excluded = 0
     for row in catalog:
         result = destinations.disposition(row["destination"], tmp_path, proposed_sha=None)
         if result is None:
-            excluded += 1
             continue
         assert result in destinations.DISPOSITION_ENUM
-        dispositioned += 1
-
-    assert dispositioned == 39
-    assert excluded == 1
 
 
 def test_each_disposition_reachable(tmp_path: Path) -> None:
@@ -123,9 +130,9 @@ def test_marker_capable_set(tmp_path: Path) -> None:
 
 
 def test_gsd_lanes_excluded() -> None:
-    """The GSD-owned row is present in excluded[], never in dispositions[]."""
+    """A GSD-owned row is present in excluded[], never in dispositions[]."""
     catalog = destinations.destination_catalog()
-    gsd_row = next(row for row in catalog if row["num"] == 40)
+    gsd_row = next(row for row in catalog if is_gsd_owned(row["destination"]))
     assert destinations.disposition(gsd_row["destination"], Path("/nonexistent"), None) is None
 
     inventory = {"target_ref": "unknown"}
@@ -136,26 +143,79 @@ def test_gsd_lanes_excluded() -> None:
     assert gsd_row["destination"] in excluded_destinations
     assert gsd_row["destination"] not in dispositioned_destinations
     assert all(entry["reason"] == "gsd-owned" for entry in manifest["excluded"])
-    assert len(manifest["dispositions"]) == 39
-    assert len(manifest["excluded"]) == 1
+    assert len(manifest["dispositions"]) + len(manifest["excluded"]) == len(catalog)
 
 
 def test_harness_proposed_hash_independent_of_target() -> None:
     """CR-01: the proposed content for a destination is THIS harness checkout's own file at that
     path, never anything derived from a scanned target. A destination that has real content in
-    this checkout (e.g. root ``pyproject.toml``) yields a stable, non-None hash; a catalog
-    placeholder row with no shippable template content (e.g. ``harness/agents/widget-engineer.md``,
-    a fixture stand-in) yields ``None``."""
+    this checkout (e.g. root ``pyproject.toml``) yields a stable, non-None hash; a definitely-absent
+    path yields ``None`` (the None-when-absent behavior no longer depends on a removed placeholder
+    catalog row)."""
     real_hash = destinations.harness_proposed_hash("pyproject.toml")
     assert real_hash is not None
     assert len(real_hash) == 64
 
-    assert destinations.harness_proposed_hash("harness/agents/widget-engineer.md") is None
-    assert destinations.harness_proposed_hash(".workflow/tasks/T-0001/task.json") is None
+    assert (
+        destinations.harness_proposed_hash("harness/agents/definitely-not-a-real-agent.md") is None
+    )
 
     hashes = destinations.harness_proposed_hashes()
     assert hashes["pyproject.toml"] == real_hash
-    assert "harness/agents/widget-engineer.md" not in hashes
+    assert "harness/agents/definitely-not-a-real-agent.md" not in hashes
+
+
+def test_catalog_covers_real_contract_schemas(repo_root: Path) -> None:
+    """Live structural check: the catalog's contract-schema rows equal the real, current count of
+    ``contracts/**/*.schema.json`` files — never a hardcoded literal, so it never goes stale."""
+    live_count = len([p for p in sorted((repo_root / "contracts").rglob("*.schema.json"))])
+    catalog = destinations.destination_catalog()
+    catalog_count = sum(
+        1
+        for row in catalog
+        if row["destination"].startswith("contracts/")
+        and row["destination"].endswith(".schema.json")
+    )
+    assert catalog_count == live_count
+    assert live_count > 0
+
+
+def test_catalog_covers_real_nested_agents_md(repo_root: Path) -> None:
+    """Live structural check: every nested (non-root) AGENTS.md in the checkout has a catalog row,
+    and the root AGENTS.md appears exactly once (not double-counted by the nested glob)."""
+    live_nested = {
+        p.resolve().relative_to(repo_root.resolve()).as_posix()
+        for p in sorted(repo_root.rglob("AGENTS.md"))
+        if p.is_file() and p.resolve() != (repo_root / "AGENTS.md").resolve()
+    }
+    catalog_destinations = {row["destination"] for row in destinations.destination_catalog()}
+
+    assert live_nested.issubset(catalog_destinations)
+    assert live_nested  # sanity: this repo has at least one nested AGENTS.md
+    assert sum(1 for d in catalog_destinations if d == "AGENTS.md") == 1
+
+
+def test_no_fictional_placeholder_destinations() -> None:
+    """None of the 10 confirmed-nonexistent placeholder paths from 26-VERIFICATION.md gap 2 appear
+    in the rule-derived catalog."""
+    catalog_destinations = {row["destination"] for row in destinations.destination_catalog()}
+    for placeholder in _PLACEHOLDER_DESTINATIONS:
+        assert placeholder not in catalog_destinations
+
+
+def test_workflow_tasks_excluded() -> None:
+    """No catalog row's destination starts with '.workflow/tasks/' (26-CONTEXT.md-cited scoping
+    exclusion — Phase 27's concern, not this plan's)."""
+    for row in destinations.destination_catalog():
+        assert not row["destination"].startswith(".workflow/tasks/")
+
+
+def test_catalog_deterministic_across_calls() -> None:
+    """destination_catalog() called twice in the same process returns identical output — sorted,
+    no nondeterministic glob ordering."""
+    first = destinations.destination_catalog()
+    second = destinations.destination_catalog()
+    assert first == second
 
 
 def test_cr01_conflict_reachable_through_real_cli(tmp_minirepo: Path, tmp_path: Path) -> None:

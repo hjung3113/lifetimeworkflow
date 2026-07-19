@@ -1,12 +1,29 @@
-"""destinations.py — the static 40-row Authoritative Harness Destination Catalog + the total,
+"""destinations.py — the RULE-DERIVED Authoritative Harness Destination Catalog + the total,
 7-step disposition resolution chain (ADOPT-03, D-03/D-04).
+
+``destination_catalog()`` is NOT a fixed-size hand-picked sample. It enumerates every REAL file in
+THIS harness checkout (``_REPO_ROOT``) matching one of the named destination categories in
+``_CATEGORY_GLOBS``, sorted and deduplicated — so the catalog grows and shrinks with the harness's
+actual file tree instead of a curated 40-row guess (26-VERIFICATION.md gap 2). Running it against
+this repo yields a catalog row for every real contract schema, ADR, harness command/skill/agent
+file, emitted `.opencode`/`.claude` artifact, and nested `AGENTS.md` — never a fixed representative
+sample per category, and never one of the confirmed-nonexistent placeholder paths a prior static
+sample contained (e.g. ``harness/agents/widget-engineer.md``).
 
 Every non-GSD-owned catalog row resolves to EXACTLY ONE of the 6 `dispositionEnum` values
 (``create``/``preserve``/``conflict``/``marker-merge``/``derived-regenerate``/
 ``human-ratification-required``) — totality, proven by
-``tools/adoption_scan/tests/test_dispositions.py::test_total``. Row 40 (GSD-owned lanes) is
-present in the catalog for documentation purposes only; it is EXCLUDED from disposition
-resolution, never assigned a disposition (recorded in ``manifest["excluded"]`` instead).
+``tools/adoption_scan/tests/test_dispositions.py::test_total``. A GSD-owned row (``is_gsd_owned``)
+is EXCLUDED from disposition resolution, never assigned a disposition (recorded in
+``manifest["excluded"]`` instead).
+
+Deliberately excluded from the enumeration: ``.workflow/tasks/**``. 26-CONTEXT.md's own locked
+`<domain>` "NOT this phase" line is the authoritative source for this exclusion (quoted verbatim
+above ``_CATEGORY_GLOBS`` below) — task-local batches under ``.workflow/tasks/`` are Phase 27's
+concern (ADOPT-04..07), not this plan's to enumerate. As corroborating (not authoritative) detail:
+task-plane content is session-local, per-run data with no static template, so enumerating it would
+make the destination set drift with every GSD session and break the committed snapshot's
+reproducibility.
 
 This module NEVER retypes ``CONSTITUTION_GLOBS`` or ``is_gsd_owned`` — both are imported from
 their authoritative sources (26-RESEARCH.md "Don't Hand-Roll"):
@@ -91,196 +108,102 @@ DISPOSITION_ENUM: tuple[str, ...] = (
     "human-ratification-required",
 )
 
-# The Authoritative Harness Destination Catalog (26-RESEARCH.md "Authoritative Harness
-# Destination Catalog", all 40 rows verbatim). Row 40's destination is a representative GSD-owned
-# path (rather than the research table's prose label) so disposition() can exercise it directly
-# via is_gsd_owned() like every other row.
-_CATALOG: tuple[dict, ...] = (
-    {
-        "num": 1,
-        "destination": "contracts/harness/adoption/inventory.schema.json",
-        "plane": "constitution",
-        "marker_capable": False,
-    },
-    {
-        "num": 2,
-        "destination": "contracts/.hashes/manifest.json",
-        "plane": "constitution",
-        "marker_capable": False,
-    },
-    {
-        "num": 3,
-        "destination": "contracts/README.md",
-        "plane": "constitution",
-        "marker_capable": False,
-    },
-    {
-        "num": 4,
-        "destination": "golden/widget/verified/case.txt",
-        "plane": "constitution",
-        "marker_capable": False,
-    },
-    {
-        "num": 5,
-        "destination": "docs/adr/0001-decision.md",
-        "plane": "constitution",
-        "marker_capable": False,
-    },
-    {
-        "num": 6,
-        "destination": "docs/tutorials/getting-started.md",
-        "plane": "docs",
-        "marker_capable": False,
-    },
-    {
-        "num": 7,
-        "destination": "docs/how-to/add-a-contract.md",
-        "plane": "docs",
-        "marker_capable": False,
-    },
-    {
-        "num": 8,
-        "destination": "docs/reference/inventory.md",
-        "plane": "derived",
-        "marker_capable": False,
-    },
-    {
-        "num": 9,
-        "destination": "docs/explanation/architecture.md",
-        "plane": "docs",
-        "marker_capable": False,
-    },
-    {"num": 10, "destination": "docs/glossary.md", "plane": "docs", "marker_capable": False},
-    {
-        "num": 11,
-        "destination": ".memory/state/activeContext.md",
-        "plane": "derived",
-        "marker_capable": False,
-    },
-    {
-        "num": 12,
-        "destination": ".memory/derived/contracts-index.md",
-        "plane": "derived",
-        "marker_capable": False,
-    },
-    {
-        "num": 13,
-        "destination": ".memory/derived/repo-map.md",
-        "plane": "derived",
-        "marker_capable": False,
-    },
-    {
-        "num": 14,
-        "destination": ".memory/agreements/0001-widget.md",
-        "plane": "memory",
-        "marker_capable": False,
-    },
-    {"num": 15, "destination": ".memory/README.md", "plane": "memory", "marker_capable": False},
-    {"num": 16, "destination": "harness/project.toml", "plane": "config", "marker_capable": False},
-    {"num": 17, "destination": "workspace.toml", "plane": "config", "marker_capable": False},
-    {
-        "num": 18,
-        "destination": "harness/permission-matrix.json",
-        "plane": "config",
-        "marker_capable": False,
-    },
-    {
-        "num": 19,
-        "destination": "harness/risk-policy.toml",
-        "plane": "config",
-        "marker_capable": False,
-    },
-    {"num": 20, "destination": "harness/opencode.json", "plane": "config", "marker_capable": False},
-    {
-        "num": 21,
-        "destination": "harness/agents/widget-engineer.md",
-        "plane": "source",
-        "marker_capable": False,
-    },
-    {
-        "num": 22,
-        "destination": "harness/commands/widget-check.md",
-        "plane": "source",
-        "marker_capable": False,
-    },
-    {
-        "num": 23,
-        "destination": "harness/skills/widget-conventions/SKILL.md",
-        "plane": "source",
-        "marker_capable": False,
-    },
-    {
-        "num": 24,
-        "destination": "harness/plugins/format-on-write.ts",
-        "plane": "source",
-        "marker_capable": False,
-    },
-    {
-        "num": 25,
-        "destination": "harness/git-hooks/pre-commit",
-        "plane": "source",
-        "marker_capable": False,
-    },
-    {
-        "num": 26,
-        "destination": ".opencode/agent/widget-engineer.md",
-        "plane": "emitted",
-        "marker_capable": False,
-    },
-    {
-        "num": 27,
-        "destination": ".claude/agents/widget-engineer.md",
-        "plane": "emitted",
-        "marker_capable": False,
-    },
-    {"num": 28, "destination": "opencode.json", "plane": "emitted", "marker_capable": False},
-    {"num": 29, "destination": ".claude/settings.json", "plane": "shared", "marker_capable": True},
-    {"num": 30, "destination": "AGENTS.md", "plane": "shared", "marker_capable": True},
-    {"num": 31, "destination": "CLAUDE.md", "plane": "shared", "marker_capable": True},
-    {"num": 32, "destination": "libs/python/AGENTS.md", "plane": "docs", "marker_capable": False},
-    {"num": 33, "destination": ".github/CODEOWNERS", "plane": "config", "marker_capable": False},
-    {
-        "num": 34,
-        "destination": ".github/workflows/ci.yml",
-        "plane": "config",
-        "marker_capable": False,
-    },
-    {
-        "num": 35,
-        "destination": ".workflow/tasks/T-0001/task.json",
-        "plane": "task",
-        "marker_capable": False,
-    },
-    {"num": 36, "destination": "pyproject.toml", "plane": "config", "marker_capable": False},
-    {
-        "num": 37,
-        "destination": "tools/widget_tool/pyproject.toml",
-        "plane": "config",
-        "marker_capable": False,
-    },
-    {
-        "num": 38,
-        "destination": "libs/normalize-spec.md",
-        "plane": "constitution-adjacent",
-        "marker_capable": False,
-    },
-    {"num": 39, "destination": ".gitignore", "plane": "config", "marker_capable": False},
-    {
-        "num": 40,
-        "destination": ".claude/get-shit-done/README.md",
-        "plane": "excluded",
-        "marker_capable": False,
-    },
+# Rule-derived category globs (26-RESEARCH.md "Authoritative Harness Destination Catalog" — same
+# categories, glob patterns instead of literal per-category sample rows), relative to _REPO_ROOT,
+# passed to Path.glob(). Order matters for dedup (first-match-wins, see destination_catalog()):
+# literal single-file patterns (e.g. "AGENTS.md") are listed BEFORE any nested glob that could
+# also match them (e.g. "**/AGENTS.md") so the root file's row is produced by the intended entry.
+#
+# NOT this phase: the /adopt command, the brownfield-adoption skill, task-local batches under
+# .workflow/tasks/, apply/marker-merge execution, human ratification checkpoint, the three
+# application fixtures — all Phase 27 (ADOPT-04..07). [26-CONTEXT.md <domain> "NOT this phase"
+# line, quoted verbatim.] `.workflow/tasks/**` is therefore deliberately OMITTED from
+# _CATEGORY_GLOBS below — that scope boundary, not an invented rationale, is why. (Corroborating,
+# non-authoritative detail: task-plane content is session-local per-run data with no static
+# template, so enumerating it would make the catalog drift with every GSD session and break the
+# committed snapshot's reproducibility.) `destination_catalog()` also applies a belt-and-suspenders
+# structural skip of any path starting with (".workflow", "tasks") so a future glob addition can
+# never silently reintroduce it.
+_CATEGORY_GLOBS: tuple[str, ...] = (
+    "contracts/**/*",
+    "golden/**/*",
+    "docs/adr/**/*",
+    "docs/tutorials/**/*",
+    "docs/how-to/**/*",
+    "docs/explanation/**/*",
+    "docs/glossary.md",
+    "docs/reference/**/*",
+    ".memory/state/**/*",
+    ".memory/derived/**/*",
+    ".memory/agreements/**/*",
+    ".memory/README.md",
+    "harness/project.toml",
+    "workspace.toml",
+    "harness/permission-matrix.json",
+    "harness/risk-policy.toml",
+    "harness/opencode.json",
+    "harness/opencode.config.schema.json",
+    "harness/agents/**/*",
+    "harness/commands/**/*",
+    "harness/skills/**/*",
+    "harness/plugins/**/*",
+    "harness/git-hooks/**/*",
+    ".opencode/**/*",
+    ".claude/agents/**/*",
+    ".claude/commands/**/*",
+    ".claude/skills/**/*",
+    "opencode.json",
+    ".claude/settings.json",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "**/AGENTS.md",
+    ".github/CODEOWNERS",
+    ".github/workflows/**/*",
+    "pyproject.toml",
+    "**/pyproject.toml",
+    "libs/normalize-spec.md",
+    "libs/normalize-fixtures/**/*",
+    ".gitignore",
 )
+
+# The path-segment prefix a future glob must never be allowed to reintroduce (26-CONTEXT.md-cited
+# exclusion, enforced structurally, independent of _CATEGORY_GLOBS' contents).
+_EXCLUDED_PREFIX: tuple[str, str] = (".workflow", "tasks")
 
 
 def destination_catalog() -> list[dict]:
-    """Return all 40 catalog rows (``{"num", "destination", "plane", "marker_capable"}``),
-    verbatim from 26-RESEARCH.md's Authoritative Harness Destination Catalog. Row 40 is present
-    for documentation purposes but is EXCLUDED from disposition resolution (see
-    :func:`disposition`).
+    """Rule-derived enumeration of every real file in this checkout matching a named ADOPT-03
+    destination category, sorted and deduplicated by destination.
+
+    For each pattern in :data:`_CATEGORY_GLOBS`, resolves ``sorted(_REPO_ROOT.glob(pattern))``,
+    keeps only real files, applies the repo's confined-walk idiom (defense in depth even though the
+    source is this checkout, not an external target), converts to a repo-relative POSIX string, and
+    skips any path whose parts start with :data:`_EXCLUDED_PREFIX`. Deduplicates across overlapping
+    glob patterns keyed by the destination string in ``_CATEGORY_GLOBS`` iteration order (first
+    match wins). Each row is ``{"destination": <repo-relative POSIX str>}`` — the old
+    ``num``/``plane``/``marker_capable`` keys are gone; they were never consumed by
+    :func:`disposition`/:func:`build_manifest` (``MARKER_CAPABLE``/``DERIVED_GLOBS``/
+    ``CONSTITUTION_GLOBS`` already carry the equivalent classification at call time). Returns the
+    deduplicated rows sorted by destination.
     """
-    return [dict(row) for row in _CATALOG]
+    root_resolved = _REPO_ROOT.resolve()
+    rows: dict[str, dict] = {}
+
+    for pattern in _CATEGORY_GLOBS:
+        for candidate in sorted(_REPO_ROOT.glob(pattern)):
+            if not candidate.is_file():
+                continue
+            resolved = candidate.resolve()
+            if root_resolved != resolved and root_resolved not in resolved.parents:
+                continue
+            destination = resolved.relative_to(root_resolved).as_posix()
+            parts = destination.split("/")
+            if tuple(parts[: len(_EXCLUDED_PREFIX)]) == _EXCLUDED_PREFIX:
+                continue
+            if destination not in rows:
+                rows[destination] = {"destination": destination}
+
+    return [rows[key] for key in sorted(rows)]
 
 
 def _existing_hash(path: Path) -> str:
