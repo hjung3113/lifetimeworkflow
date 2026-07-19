@@ -110,3 +110,12 @@ Task 3's own subsequent task (derived-plane regeneration via `tools.docs_sync` +
 ---
 *Phase: 26-deterministic-brownfield-inventory-mapping-v2-3-b*
 *Status: PAUSED at Task 3 (blocking human-verify checkpoint) — 2026-07-19*
+
+## Self-Check: PASSED
+
+- FOUND: contracts/harness/adoption/inventory.schema.json
+- FOUND: contracts/harness/adoption/plan.schema.json
+- FOUND: contracts/harness/adoption/manifest.schema.json
+- FOUND: commit 245a101 (Task 1)
+- FOUND: commit 3f84070 (Task 2)
+- FOUND: commit 22b543a (this SUMMARY)
