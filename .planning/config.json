@@ -66,5 +66,8 @@
   "agent_skills": {},
   "features": {},
   "mode": "yolo",
-  "granularity": "standard"
+  "granularity": "standard",
+  "model_overrides": {
+    "gsd-planner": "sonnet"
+  }
 }
