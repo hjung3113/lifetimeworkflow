@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harness.local/contracts/harness/topology/relationship.schema.json",
+  "title": "Contract relationship record",
+  "description": "Human-ratified Draft 2020-12 shape for ONE contract-relationship record: an authority endpoint and one-or-more dependent endpoints for a tracked contract. Validates a single record's shape and cardinality ONLY (exactly one authority, at least one dependent) — endpoints are bare stable-id strings; no graph-wide resolution, no cross-record uniqueness, no endpoint-existence checks (those belong to the Phase 25 compiler).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "contract", "authority", "dependents"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable record id for this relationship."
+    },
+    "contract": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable reference to the tracked contract this relationship is about."
+    },
+    "authority": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exactly ONE authority endpoint (a bare stable-id string, not an array)."
+    },
+    "dependents": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "One-or-more dependent endpoints (bare stable-id strings)."
+    },
+    "kind": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional explanatory relationship kind."
+    },
+    "labels": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Optional explanatory labels."
+    }
+  }
+}
