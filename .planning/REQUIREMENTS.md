@@ -16,7 +16,7 @@
 - [x] **TOPO-04** *(NEW+REUSE, Phase 25)*: 도메인 중립 컴파일러와 `harness_lint` 게이트가 안정 정렬·repo-confined 그래프 데이터와 안정 진단 코드를 내고, endpoint·authority-owned contract 해소를 검증하며, fan-in/fan-out/disconnected component/canonical cycle을 허용한다.
 - [x] **TOPO-05** *(NEW+REUSE, Phase 25)*: direct·reverse·transitive 관계-impact 질의가 cycle에서 종료하고 결정론적 정렬된 id·path만 반환하며(conductor routing·문서 리포트용), 새 task-evidence 요구를 만들거나 contract body를 preload하지 않는다.
 - [x] **TOPO-06** *(NEW+REUSE, Phase 25)*: 기존 orchestrator·`/pipeline`·`pipeline-map` skill이 canonical 그래프를 소비하고, locked 선형 렌더링을 보존하며, branch/cycle을 안전 렌더하고, `harness/`에서 두 런타임으로 byte-identical 왕복하며 새 graph command·persona를 만들지 않는다.
-- [ ] **TOPO-07** *(NEW+REUSE, Phase 25)*: generic project/workspace fixture가 shared-contract fan-out·request와 response를 별도 record로·event fan-out·legal cycle·cross-repo authority 해소를 증명하고, log-parser instance는 불변, GEN-04 twin green, 사람 승인 ADR이 모델을 기록한다.
+- [x] **TOPO-07** *(NEW+REUSE, Phase 25)*: generic project/workspace fixture가 shared-contract fan-out·request와 response를 별도 record로·event fan-out·legal cycle·cross-repo authority 해소를 증명하고, log-parser instance는 불변, GEN-04 twin green, 사람 승인 ADR이 모델을 기록한다.
 
 ### Theme B — Brownfield Adoption (Phases 26–27)
 
@@ -74,7 +74,7 @@ Deferred to a later milestone:
 | TOPO-04 | Phase 25 | Complete |
 | TOPO-05 | Phase 25 | Complete |
 | TOPO-06 | Phase 25 | Complete |
-| TOPO-07 | Phase 25 | Pending |
+| TOPO-07 | Phase 25 | Complete |
 | ADOPT-01 | Phase 26 | Pending |
 | ADOPT-02 | Phase 26 | Pending |
 | ADOPT-03 | Phase 26 | Pending |

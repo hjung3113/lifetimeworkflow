@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: Contract Graph, Brownfield Adoption, Living Docs
-status: executing
+status: verifying
 stopped_at: Completed 25-02-PLAN.md
-last_updated: "2026-07-19T06:28:32.233Z"
+last_updated: "2026-07-19T06:36:00.700Z"
 last_activity: 2026-07-19
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
-  percent: 71
+  completed_plans: 6
+  percent: 86
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 
 Phase: 25 (Graph Compiler, Queries, Conductor, Proof) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-19
 
 ## Performance Metrics
@@ -121,6 +121,8 @@ Last activity: 2026-07-19
 | Phase 25 P01 | 35 | 3 tasks | 9 files |
 | Phase 25 P02 | 20min | 2 tasks | 3 files |
 | Phase 25 P03 | 15min | 3 tasks | 10 files |
+| Phase 25 P04 | 10min | - tasks | - files |
+| Phase 25 P04 | 10min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -205,6 +207,7 @@ Recent decisions affecting current work:
 - [Phase 25]: Phase 25 Plan 01: contract_graph compiler is a resolution layer ON TOP of effective_relationships() (never re-lowers/re-unions); diagnostics returned as sorted list[str], never raised
 - [Phase 25]: [25-02] TOPO-05 query layer (tools/contract_graph/query.py): direct/reverse/transitive CONSUME compile_graph()'s adjacency (never re-walk config); D-03 return shape is {ids: sorted, paths: [...]} — ids AND connecting paths, never ids alone. transitive() is the iterative visited-set worklist (Pattern 2, visited-check-before-enqueue) → cycle-safe O(nodes+edges), deterministic (neighbours sorted). D-03 no-task-evidence/no-contract-preload invariant is a STRUCTURAL test (asserts query.py source has no task_packet/evidence/task_control/handoff import and no open(/.read_text() — pure in-memory traversal, zero file I/O). __init__ PEP-562 __getattr__ now routes names to the owning submodule (compile vs query).
 - [Phase ?]: [Phase 25]: [25-03] TOPO-06 conductor generalized IN PLACE — /pipeline + pipeline-map gain a D-01 indented-tree render (cycle -> node marker) as an ADDITIONAL section; linear stage-list/edge-chain stays byte-identical (0 removed lines), proven by a hardcoded literal-string regression test. orchestrator.md 'Trace the topology' now cites direct/reverse/transitive for non-linear routing. No new command (23) / persona (5). Re-emitted both runtimes byte-identically, no model id; trees committed BEFORE snapshot regen (gate-theft ordering). Full suite 952 passed.
+- [Phase ?]: [Phase 25]: [25-04] TOPO-07 proof fixtures — every non-linear shape (shared-contract fan-out, request/response as two SEPARATE records, event fan-out, legal multi-node cycle, cross-repo authority) is fixture-proven against the Plan-01 compiler + Plan-02 queries; cfgs derive components from the records themselves. WR-01 DEFERRED (Phase-24 lowered-id scheme unchanged) and enforced by an automated corpus scan constraining every fixture id/contract/authority/dependent to exclude / and ->. Cross-repo authority reuses split_endpoint + the producer-tree schema-glob idiom (no new checker). Log-parser instance provably untouched, GEN-04 green; full suite 961 passed.
 
 ### Pending Todos
 
@@ -245,7 +248,7 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T06:28:08.905Z
+Last session: 2026-07-19T06:35:20.810Z
 Stopped at: Completed 25-02-PLAN.md
 Resume file: None
 
