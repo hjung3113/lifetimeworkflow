@@ -145,6 +145,46 @@ def test_relationship_candidates_validate() -> None:
         assert candidate["id"].startswith("adoption/")
 
 
+def test_nested_agents_md_gets_its_own_agents_boundary_proposal() -> None:
+    """WR-01 (26-REVIEW.md): plan.classify() resolves ``agents-boundary`` by AGENTS.md FILENAME
+    (not exact-string-equal-to-the-literal-"AGENTS.md"), so a nested surfaceRecord (target =
+    "libs/python/AGENTS.md", as detect.py now emits per-path) still classifies as
+    agents-boundary — not docs-destination — and gets its own question, distinct from root."""
+    inventory = {
+        "target_ref": "unknown",
+        "manifests": [],
+        "candidate_process_boundaries": [],
+        "documentation_surfaces": [
+            {
+                "target": "AGENTS.md",
+                "classification": "observed",
+                "evidence": [_evidence_ref("AGENTS.md")],
+            },
+            {
+                "target": "libs/python/AGENTS.md",
+                "classification": "observed",
+                "evidence": [_evidence_ref("libs/python/AGENTS.md")],
+            },
+        ],
+        "ci_surfaces": [],
+        "test_surfaces": [],
+        "languages": [],
+    }
+
+    built = plan.build_plan(inventory)
+    agents_proposals = {
+        p["target"]: p for p in built["proposals"] if p["kind"] == "agents-boundary"
+    }
+    assert set(agents_proposals) == {"AGENTS.md", "libs/python/AGENTS.md"}
+
+    agents_questions = {
+        q["target"]: q for q in built["questions"] if q["kind"] == "agents-boundary"
+    }
+    assert set(agents_questions) == {"AGENTS.md", "libs/python/AGENTS.md"}
+    # Distinct, content-derived ids — never collapsed into one question for both files.
+    assert agents_questions["AGENTS.md"]["id"] != agents_questions["libs/python/AGENTS.md"]["id"]
+
+
 def test_classify_over_fixture_validates_shape(tmp_minirepo: Path) -> None:
     """build_plan() over the real D-06 fixture never invents a relationship (no relationship
     signal exists in the inventory), and every proposal carries a valid classification."""

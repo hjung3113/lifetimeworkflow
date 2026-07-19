@@ -119,6 +119,14 @@ def detect_documentation_surfaces(included: list[dict]) -> list[dict]:
     """``surfaceRecord``s for recognized documentation surfaces (ADR / README / AGENTS.md).
 
     ``classification: "observed"`` when the recognized path exists (D-02).
+
+    WR-01 (26-REVIEW.md): every distinct ``AGENTS.md`` path (root AND every nested one) gets its
+    OWN ``surfaceRecord`` with ``target`` set to that file's actual path — never lumped into one
+    fixed-literal-target record. Nearest-wins ``AGENTS.md`` semantics are inherently per-directory
+    (a root ``AGENTS.md`` and e.g. ``libs/python/AGENTS.md`` are different boundaries with
+    potentially different answers), so each needs its own proposal/question downstream in
+    ``plan.py``. README stays coarse-grained (one record for all README/README.md files) — an
+    intentional, narrower design choice noted in the review as acceptable.
     """
     records: list[dict] = []
 
@@ -137,8 +145,8 @@ def detect_documentation_surfaces(included: list[dict]) -> list[dict]:
     agents_entries = [
         entry for entry in included if PurePosixPath(entry["path"]).name == "AGENTS.md"
     ]
-    if agents_entries:
-        records.append(_surface("AGENTS.md", agents_entries, "observed"))
+    for entry in sorted(agents_entries, key=lambda item: item["path"]):
+        records.append(_surface(entry["path"], [entry], "observed"))
 
     return sorted(records, key=lambda record: record["target"])
 

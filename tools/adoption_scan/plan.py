@@ -29,6 +29,7 @@ invented authority" even when the upstream signal source changes.
 from __future__ import annotations
 
 import hashlib
+from pathlib import PurePosixPath
 
 # proposalRecord.kind -> questionRecord.kind (ADOPT-02 category list -> D-05 kind enum).
 _QUESTION_KIND_BY_PROPOSAL_KIND: dict[str, str] = {
@@ -136,7 +137,15 @@ def classify(inventory: dict) -> list[dict]:
         proposals.append(record)
 
     for entry in inventory.get("documentation_surfaces", []):
-        kind = "agents-boundary" if entry["target"] == "AGENTS.md" else "docs-destination"
+        # WR-01: detect.py now emits one surfaceRecord per distinct AGENTS.md PATH (root AND every
+        # nested one), so `target` is a real path like "libs/python/AGENTS.md", not the fixed
+        # literal "AGENTS.md" — match by filename, not exact-string-equality, so every nested
+        # AGENTS.md still gets its own per-file agents-boundary proposal/question.
+        kind = (
+            "agents-boundary"
+            if PurePosixPath(entry["target"]).name == "AGENTS.md"
+            else "docs-destination"
+        )
         proposals.append(
             {
                 "id": f"{kind}/{entry['target']}",
