@@ -4,7 +4,7 @@ Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reu
 
 | contract | kind | owner | hash | drift |
 | --- | --- | --- | --- | --- |
-| contracts/harness/adoption/inventory.schema.json | other | TBD | 1fafc89580c9 | clean |
+| contracts/harness/adoption/inventory.schema.json | other | TBD | 34a31944180f | clean |
 | contracts/harness/adoption/manifest.schema.json | other | TBD | d84c1f62653a | clean |
 | contracts/harness/adoption/plan.schema.json | other | TBD | 5c4f2db58648 | clean |
 | contracts/harness/task-control/attestation.schema.json | other | TBD | 2a708cb2a408 | clean |

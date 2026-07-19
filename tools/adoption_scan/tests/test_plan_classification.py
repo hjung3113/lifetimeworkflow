@@ -15,6 +15,16 @@ _RELATIONSHIP_SCHEMA = json.loads(
         encoding="utf-8"
     )
 )
+_INVENTORY_SCHEMA = json.loads(
+    (_REPO_ROOT / "contracts" / "harness" / "adoption" / "inventory.schema.json").read_text(
+        encoding="utf-8"
+    )
+)
+_PLAN_SCHEMA = json.loads(
+    (_REPO_ROOT / "contracts" / "harness" / "adoption" / "plan.schema.json").read_text(
+        encoding="utf-8"
+    )
+)
 
 
 def _evidence_ref(path: str = "widget_a.py") -> dict:
@@ -208,6 +218,67 @@ def test_codeowners_ownership_question_fires() -> None:
 
     codeowners_questions = [q for q in built["questions"] if q["kind"] == "codeowners-ownership"]
     assert len(codeowners_questions) == 1
+
+
+def _minimal_surface_record(target: str) -> dict:
+    return {
+        "target": target,
+        "classification": "observed",
+        "evidence": [_evidence_ref(target)],
+    }
+
+
+def test_build_plan_validates_for_every_inventory_surface_shape() -> None:
+    """CR-03 forward-direction proof: a maximally-populated, schema-valid inventory (every
+    surface-array shape inventory.schema.json permits, each carrying non-empty evidence — the
+    ONLY schema-valid shape now that surfaceRecord.evidence requires minItems:1) always produces a
+    build_plan() output that itself validates against plan.schema.json."""
+    inventory = {
+        "target_ref": "unknown",
+        "enumeration_mode": "builtin",
+        "max_file_bytes": 1_000_000,
+        "included": [],
+        "excluded": [],
+        "languages": [],
+        "manifests": [],
+        "documentation_surfaces": [_minimal_surface_record("README")],
+        "ci_surfaces": [_minimal_surface_record(".github/workflows")],
+        "test_surfaces": [_minimal_surface_record("tests")],
+        "candidate_process_boundaries": [_minimal_surface_record("services/worker")],
+        "schema_surfaces": [_minimal_surface_record("contracts/**/*.schema.json")],
+        "codeowners_surfaces": [_minimal_surface_record(".github/CODEOWNERS")],
+    }
+
+    inventory_validator = Draft202012Validator(_INVENTORY_SCHEMA)
+    inventory_errors = list(inventory_validator.iter_errors(inventory))
+    assert inventory_errors == [], (
+        f"the fixture itself must be schema-conformant under minItems:1: {inventory_errors!r}"
+    )
+
+    built = plan.build_plan(inventory)
+    plan_validator = Draft202012Validator(_PLAN_SCHEMA)
+    plan_errors = list(plan_validator.iter_errors(built))
+    assert plan_errors == [], (
+        f"build_plan() output must validate against plan.schema.json: {plan_errors!r}"
+    )
+
+
+def test_empty_evidence_surface_record_now_fails_at_inventory_schema_gate() -> None:
+    """CR-03 negative control: an inventory carrying evidence:[] on a surfaceRecord-shaped field
+    is now schema-INVALID against inventory.schema.json itself — one gate earlier than the
+    previous build_plan()-time failure."""
+    inventory = {
+        "target_ref": "x",
+        "codeowners_surfaces": [
+            {"target": ".github/CODEOWNERS", "classification": "observed", "evidence": []}
+        ],
+    }
+
+    validator = Draft202012Validator(_INVENTORY_SCHEMA)
+    errors = list(validator.iter_errors(inventory))
+    assert any(
+        "non-empty" in error.message or "minItems" in str(error.validator) for error in errors
+    )
 
 
 def test_classify_over_fixture_validates_shape(tmp_minirepo: Path) -> None:

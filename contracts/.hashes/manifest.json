@@ -1,5 +1,5 @@
 {
-  "contracts/harness/adoption/inventory.schema.json": "1fafc89580c91fc1cab70a218977ad215478fdb43b8d87d85920072d84d3ef12",
+  "contracts/harness/adoption/inventory.schema.json": "34a31944180f766e993ca46940c7352a37458027ffc89818c1e8267cbea54531",
   "contracts/harness/adoption/manifest.schema.json": "d84c1f62653ac0306f18f843da6b425111199293f05511a64bd5be0b1426234d",
   "contracts/harness/adoption/plan.schema.json": "5c4f2db58648ed4e5482d46359bad30b08c3729f69b8edc419e48adc3fa107f6",
   "contracts/harness/task-control/attestation.schema.json": "2a708cb2a40895d965f4a8407d3824af3386cbf496f5946e51a8390d09b3784c",

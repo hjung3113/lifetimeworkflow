@@ -184,9 +184,9 @@
         "classification": { "$ref": "#/$defs/classification" },
         "evidence": {
           "type": "array",
-          "minItems": 0,
+          "minItems": 1,
           "items": { "$ref": "#/$defs/evidenceRef" },
-          "description": "May be empty for an unknown/absent surface."
+          "description": "A surface with no evidence is never emitted by any detector; evidence is always non-empty."
         },
         "rationale": {
           "type": "string",
