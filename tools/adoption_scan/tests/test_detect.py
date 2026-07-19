@@ -62,7 +62,7 @@ def test_root_and_nested_agents_md_get_per_file_surface_records() -> None:
     included = [
         {"path": "AGENTS.md", "sha256": "a" * 64, "size": 1},
         {"path": "libs/python/AGENTS.md", "sha256": "b" * 64, "size": 2},
-        {"path": "examples/log-parser/AGENTS.md", "sha256": "c" * 64, "size": 3},
+        {"path": "packages/widget/AGENTS.md", "sha256": "c" * 64, "size": 3},
     ]
     surfaces = detect.detect_documentation_surfaces(included)
     agents_surfaces = [s for s in surfaces if s["target"].endswith("AGENTS.md")]
@@ -71,7 +71,7 @@ def test_root_and_nested_agents_md_get_per_file_surface_records() -> None:
     assert targets == {
         "AGENTS.md",
         "libs/python/AGENTS.md",
-        "examples/log-parser/AGENTS.md",
+        "packages/widget/AGENTS.md",
     }, "every distinct AGENTS.md path must get its own surfaceRecord, not one lumped record"
 
     for surface in agents_surfaces:
