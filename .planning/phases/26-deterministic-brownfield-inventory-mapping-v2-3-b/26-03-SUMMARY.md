@@ -135,3 +135,21 @@ None beyond the design-discretion points already documented in Decisions Made. A
 ---
 *Phase: 26-deterministic-brownfield-inventory-mapping-v2-3-b*
 *Completed: 2026-07-19*
+
+## Self-Check: PASSED
+
+- FOUND: tools/adoption_scan/destinations.py
+- FOUND: tools/adoption_scan/plan.py
+- FOUND: tools/adoption_scan/cli.py
+- FOUND: tools/adoption_scan/__main__.py
+- FOUND: tools/adoption_scan/tests/test_dispositions.py
+- FOUND: tools/adoption_scan/tests/test_plan_classification.py
+- FOUND: tools/adoption_scan/tests/test_schema_conformance.py
+- FOUND: tools/adoption_scan/tests/test_determinism.py
+- FOUND: tools/adoption_scan/tests/test_snapshots.py
+- FOUND: tools/adoption_scan/tests/__snapshots__/test_snapshots.ambr
+- FOUND: commit 6e5c247 (Task 1)
+- FOUND: commit dd8a2f3 (Task 2)
+- FOUND: commit 51ce7f8 (Task 3)
+- CONFIRMED: `uv run pytest -q` -> 1003 passed, 0 failed (full suite)
+- CONFIRMED: `uv run python -m tools.contract_drift.drift` -> OK
