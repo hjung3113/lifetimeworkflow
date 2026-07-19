@@ -220,6 +220,73 @@ def test_codeowners_ownership_question_fires() -> None:
     assert len(codeowners_questions) == 1
 
 
+def test_contract_candidate_question_fires() -> None:
+    """WR-05 (26-REVIEW.md): the contract-candidate proposal/question kind — structurally wired
+    since Plan 26-01/03 but permanently unreachable until classify() walked schema_surfaces —
+    actually fires on a schema_surfaces entry, and is non-blocking (unlike codeowners-ownership)."""
+    inventory = {
+        "target_ref": "unknown",
+        "schema_surfaces": [
+            {
+                "target": "contracts/**/*.schema.json",
+                "classification": "observed",
+                "evidence": [_evidence_ref("contracts/widget.schema.json")],
+            }
+        ],
+    }
+
+    built = plan.build_plan(inventory)
+
+    contract_proposals = [p for p in built["proposals"] if p["kind"] == "contract-candidate"]
+    assert len(contract_proposals) == 1
+    assert contract_proposals[0]["classification"] == "unknown"
+    assert contract_proposals[0]["target"] == "contracts/widget.schema.json"
+
+    contract_questions = [q for q in built["questions"] if q["kind"] == "contract-candidate"]
+    assert len(contract_questions) == 1
+    assert contract_questions[0]["blocking"] is False
+
+
+def test_contract_candidate_proposal_per_schema_file() -> None:
+    """WR-05: one contract-candidate proposal PER evidence pointer (per schema file), never one
+    lumped proposal for the whole schema_surfaces entry."""
+    inventory = {
+        "target_ref": "unknown",
+        "schema_surfaces": [
+            {
+                "target": "contracts/**/*.schema.json",
+                "classification": "observed",
+                "evidence": [
+                    _evidence_ref("contracts/widget.schema.json"),
+                    _evidence_ref("contracts/gadget.schema.json"),
+                ],
+            }
+        ],
+    }
+
+    built = plan.build_plan(inventory)
+    contract_proposals = [p for p in built["proposals"] if p["kind"] == "contract-candidate"]
+    assert len(contract_proposals) == 2
+    assert {p["target"] for p in contract_proposals} == {
+        "contracts/widget.schema.json",
+        "contracts/gadget.schema.json",
+    }
+
+
+def test_contract_candidate_matches_real_repo_schema_count(repo_root: Path) -> None:
+    """Live structural check: a real scan of this harness's own contracts/ tree produces exactly
+    one contract-candidate proposal per real contracts/**/*.schema.json file — never a hardcoded
+    literal, mirroring test_dispositions.py's test_catalog_covers_real_contract_schemas."""
+    inventory = scan.build_inventory(repo_root)
+    built = plan.build_plan(inventory)
+    live_count = len(sorted((repo_root / "contracts").rglob("*.schema.json")))
+    contract_proposal_count = len(
+        [p for p in built["proposals"] if p["kind"] == "contract-candidate"]
+    )
+    assert contract_proposal_count == live_count
+    assert live_count > 0
+
+
 def _minimal_surface_record(target: str) -> dict:
     return {
         "target": target,

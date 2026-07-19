@@ -77,6 +77,27 @@ def test_codeowners_surface_observed(tmp_minirepo: Path) -> None:
     assert ".github/CODEOWNERS" in all_paths
 
 
+def test_codeowners_surface_root_location() -> None:
+    """WR-06 (26-REVIEW.md): a root CODEOWNERS file (no .github/ prefix) is recognized as its own
+    surfaceRecord — one of the two GitHub-honored locations the previous single-path matcher
+    missed."""
+    included = [{"path": "CODEOWNERS", "sha256": "d" * 64, "size": 6}]
+    surfaces = detect.detect_codeowners_surfaces(included)
+    assert len(surfaces) == 1
+    assert surfaces[0]["target"] == "CODEOWNERS"
+    assert surfaces[0]["classification"] == "observed"
+
+
+def test_codeowners_surface_docs_location() -> None:
+    """WR-06: a docs/CODEOWNERS file is recognized as its own surfaceRecord — the second
+    previously-missed GitHub-honored location."""
+    included = [{"path": "docs/CODEOWNERS", "sha256": "e" * 64, "size": 6}]
+    surfaces = detect.detect_codeowners_surfaces(included)
+    assert len(surfaces) == 1
+    assert surfaces[0]["target"] == "docs/CODEOWNERS"
+    assert surfaces[0]["classification"] == "observed"
+
+
 def test_inventory_validates_against_schema(tmp_minirepo: Path, repo_root: Path) -> None:
     schema_path = repo_root / "contracts" / "harness" / "adoption" / "inventory.schema.json"
     schema = json.loads(schema_path.read_text(encoding="utf-8"))

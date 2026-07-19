@@ -192,6 +192,24 @@ def classify(inventory: dict) -> list[dict]:
             }
         )
 
+    for entry in inventory.get("schema_surfaces", []):
+        # WR-05: detect_schema_surfaces() returns AT MOST ONE surfaceRecord per repo (target =
+        # the fixed "contracts/**/*.schema.json" literal), whose evidence list has one entry per
+        # matching schema file — so we walk entry["evidence"] (not the outer list) to emit ONE
+        # contract-candidate proposal PER SCHEMA FILE.
+        for ref in entry["evidence"]:
+            proposals.append(
+                {
+                    "id": f"contract-candidate/{ref['path']}",
+                    "kind": "contract-candidate",
+                    # ALWAYS unknown — whether a schema is a tracked, ratified contract is a
+                    # human/CODEOWNERS-gated decision, never inferred from file existence alone.
+                    "classification": "unknown",
+                    "target": ref["path"],
+                    "evidence": [ref],
+                }
+            )
+
     proposals.sort(key=lambda item: item["id"])
     return proposals
 

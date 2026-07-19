@@ -306,6 +306,19 @@
         "classification": "unknown",
         "evidence": [
           {
+            "path": "contracts/widget.schema.json",
+            "sha256": "eb217225d785a7a56210d52aec0c958b124561339aca20fd2f20b4a67267d671",
+            "size": 19
+          }
+        ],
+        "id": "contract-candidate/contracts/widget.schema.json",
+        "kind": "contract-candidate",
+        "target": "contracts/widget.schema.json"
+      },
+      {
+        "classification": "unknown",
+        "evidence": [
+          {
             "path": "README",
             "sha256": "07c81bfa548178fd3d34d4b3867420c9bc9d91ea316ce3d66bd1c4a0131c97cb",
             "size": 12
@@ -465,6 +478,22 @@
         "kind": "test-command",
         "question": "Which command is the canonical test entrypoint for 'tests'?",
         "target": "tests"
+      },
+      {
+        "blocking": false,
+        "classification": "unknown",
+        "evidence": [
+          {
+            "path": "contracts/widget.schema.json",
+            "sha256": "eb217225d785a7a56210d52aec0c958b124561339aca20fd2f20b4a67267d671",
+            "size": 19
+          }
+        ],
+        "group": "topology",
+        "id": "Q-fdadd483a68e",
+        "kind": "contract-candidate",
+        "question": "Should 'contracts/widget.schema.json' be tracked as a contract?",
+        "target": "contracts/widget.schema.json"
       }
     ],
     "relationships": [],

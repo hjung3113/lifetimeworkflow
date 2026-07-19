@@ -46,6 +46,12 @@ _MANIFEST_KIND_BY_NAME: dict[str, str] = {
     "Cargo.toml": "Cargo.toml",
 }
 
+# WR-06 (26-REVIEW.md): all three GitHub-honored CODEOWNERS locations — a repo may place the
+# file at the root, under .github/, or under docs/, and GitHub resolves whichever is present.
+_CODEOWNERS_PATHS: frozenset[str] = frozenset(
+    {"CODEOWNERS", ".github/CODEOWNERS", "docs/CODEOWNERS"}
+)
+
 
 def _evidence(entries: list[dict]) -> list[dict]:
     """Build a sorted evidenceRef list from already-hashed ``included`` entries."""
@@ -203,19 +209,23 @@ def detect_schema_surfaces(included: list[dict]) -> list[dict]:
 
 
 def detect_codeowners_surfaces(included: list[dict]) -> list[dict]:
-    """``surfaceRecord``s for a ``.github/CODEOWNERS`` surface.
+    """``surfaceRecord``s for a CODEOWNERS surface, recognizing all three GitHub-honored
+    locations: ``CODEOWNERS`` (root), ``.github/CODEOWNERS``, and ``docs/CODEOWNERS``.
 
-    ``classification: "observed"`` when the literal path exists (D-02) — only the file's
-    EXISTENCE and path are recorded, never its ownership-mapping content interpreted as authority.
+    ``classification: "observed"`` when a literal path exists (D-02) — only the file's
+    EXISTENCE and path are recorded, never its ownership-mapping content interpreted as
+    authority, at any of the three locations. One ``surfaceRecord`` PER distinct CODEOWNERS
+    path found (mirrors :func:`detect_documentation_surfaces`'s per-nested-AGENTS.md
+    precedent) — never lumped into a single fixed-literal-target record.
     """
-    codeowners_entries = [
-        entry
-        for entry in included
-        if PurePosixPath(entry["path"]) == PurePosixPath(".github/CODEOWNERS")
-    ]
-    if not codeowners_entries:
-        return []
-    return [_surface(".github/CODEOWNERS", codeowners_entries, "observed")]
+    matches: dict[str, dict] = {}
+    for entry in included:
+        path = entry["path"]
+        if path in _CODEOWNERS_PATHS:
+            matches[path] = entry
+
+    records = [_surface(path, [entry], "observed") for path, entry in matches.items()]
+    return sorted(records, key=lambda record: record["target"])
 
 
 def detect_candidate_process_boundaries(included: list[dict]) -> list[dict]:
