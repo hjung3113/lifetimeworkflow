@@ -8,15 +8,16 @@ A reusable, **contract-first** harness that lets coding **agents** build, mainta
 responsibility-split **polyglot** monorepo — where "how we develop here" lives as executable
 **skills, commands, and hooks**, not tribal knowledge.
 
-[![CI](https://img.shields.io/badge/CI-10--job%20fan--in%20gate-2ea44f)](.github/workflows/ci.yml)
-[![tests](https://img.shields.io/badge/tests-568%20passing-2ea44f)](#-quickstart)
+[![CI](https://img.shields.io/badge/CI-fan--in%20gate-2ea44f)](.github/workflows/ci.yml)
+[![tests](https://img.shields.io/badge/tests-904%20passing-2ea44f)](#-quickstart)
 [![runtimes](https://img.shields.io/badge/runtimes-opencode%20%2B%20Claude%20Code-blue)](#-single-source--dual-runtime)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](harness/project.toml)
 [![Python](https://img.shields.io/badge/Python-3.11%2B%20(uv)-3776AB)](pyproject.toml)
-[![milestones](https://img.shields.io/badge/milestones-v1.0%20%2B%20v2.0%20shipped-purple)](.planning/MILESTONES.md)
+[![milestones](https://img.shields.io/badge/milestones-v1.0–v2.2%20shipped-purple)](.planning/MILESTONES.md)
+[![한글](https://img.shields.io/badge/설명서-한글-red)](README.ko.md)
 [![license](https://img.shields.io/badge/license-TBD-lightgrey)](#-license)
 
-[What it is](#-what-it-is) · [Why](#-why) · [Features](#-features) · [Architecture](#-architecture) · [Quickstart](#-quickstart) · [Layout](#-repository-layout) · [Concepts](#-core-concepts) · [Roadmap](#-roadmap)
+[What it is](#-what-it-is) · [Why](#-why) · [Features](#-features) · [Architecture](#-architecture) · [Quickstart](#-quickstart) · [Layout](#-repository-layout) · [Concepts](#-core-concepts) · [Roadmap](#-roadmap) · [한글 설명서](README.ko.md)
 
 </div>
 
@@ -56,7 +57,8 @@ truth** and turns every guardrail into something executable:
 | 🌐 | **Polyglot boundary** | Language boundary = process/file/DB only (never in-process object passing); a boundary linter enforces the §4.3–4.6 canonicalization invariants on wire files. |
 | 🪝 | **Runtime hooks** | `contract-guard`, `polyglot-lint`, `format-on-write`, `secret-scan`, `commit-gate` — prose advice made enforceable. |
 | 🧩 | **Multi-repo workspace** | `workspace.toml` declares member repos + cross-repo edges; drift/golden gates and pipeline topology extend across repo boundaries. |
-| 🚦 | **CI fan-in** | A 10-job matrix (`setup, lang-tests, contract-check, drift, golden, core-suite, emit-drift, stale-derived, workspace, gate`) all green before merge. |
+| 🚦 | **Adaptive Task Control Plane** *(v2.2)* | Deterministic **risk router** (7-axis score → FAST/STANDARD/STRICT/CONTROLLED lanes, escalate-only overlays), **atomic state manager** (flock + revision CAS), fail-closed **`/phase-gate`**, **forgery-detecting evidence** (HEAD-committed trust root), and immutable **HANDOFF** + gated fresh-session resume. Low ceremony for small work, fail-closed for high risk. |
+| 🚦 | **CI fan-in** | A multi-job matrix (`setup, lang-tests, contract-check, drift, golden, core-suite, emit-drift, stale-derived, workspace, lifecycle-eval, gate`) all green before merge. |
 
 ## 🏗 Architecture
 
@@ -103,7 +105,7 @@ secondary **Claude Code**.
 # 1. Sync the uv workspace (root pyproject.toml + all tools/ + libs/python members)
 uv sync --all-packages
 
-# 2. Run the full harness test suite  (568 passing)
+# 2. Run the full harness test suite  (904 passing)
 uv run pytest -q
 
 # 3. Re-emit the runtime surfaces from harness/ source, then prove it's byte-identical
@@ -120,7 +122,14 @@ uv run python -m tools.golden_runner.runner
 
 Common developer flows are packaged as **commands/skills** (emitted to both runtimes): `/orient`,
 `/verify-work`, `/golden`, `/golden-approve`, `/contract-check`, `/refresh-memory`,
-`/fan-out-synthesize`, `/pipeline`, … (19 commands · 11 skills).
+`/fan-out-synthesize`, `/pipeline`, and the v2.2 task-control surface `/intake`, `/phase-gate`,
+`/handoff`, `/checkpoint`, `/review`.
+
+```bash
+# Task Control Plane (v2.2): route a task to a risk lane, then prove the lifecycle
+uv run python -m tools.risk_router            # 7-axis score → FAST/STANDARD/STRICT/CONTROLLED
+uv run python -m tools.lifecycle_eval.runner  # run all 20 ratified lane fixtures through the real E2E path
+```
 
 ## 📁 Repository layout
 
@@ -185,8 +194,34 @@ emitter · pipeline-topology conductor + per-component agents.
   drift/golden gates + `repo:stage` pipeline edges + core→workspace-member GEN-04 guard.
 </details>
 
+<details open>
+<summary><b>✅ v2.1 — Process Memory & Provenance Reframe (Phases 12–16)</b></summary>
+
+Per-guideline PROCESS memory tier (`.memory/agreements/`, human-authored, not derived) · injector
+reframe (priority-0 working-agreements directive + data-scoped provenance banner) · `/agree` write
+path with an anti-invent provenance guard · emit round-trip gates · local memory web UI.
+</details>
+
+<details open>
+<summary><b>✅ v2.2 — Adaptive Task Control Plane (Phases 18–23)</b></summary>
+
+- **A · Task Packet Contract** — `.workflow/tasks/` packets + `task/state/evidence/handoff` schemas
+  + validator + transition matrix.
+- **B · Deterministic Risk Router** — `risk-policy.toml` 7-axis scoring, FAST/STANDARD/STRICT/
+  CONTROLLED cuts, escalate-only overlays, reason-code promotions, `/intake`.
+- **C · Atomic State Manager** — flock + revision CAS, interrupted-write recovery, phase-oriented
+  required-artifact gate, fail-closed `/phase-gate` + `context-attestation`.
+- **D · Evidence Bundle Adapters** — wrap (never reimplement) existing gates into forgery-detecting
+  evidence: gate-argv registry, HEAD-committed trust root, secret/PII refusal, criterion trace.
+- **E · Handoff + Fresh-Session Resume** — immutable HANDOFF snapshot + `resume_gate` PreToolUse
+  hook (revision-bound attestation) + pointer-only SessionStart injection.
+- **F · Lifecycle Evaluation** — 20 human-ratified lane fixtures + 12 negative/stress fixtures, an
+  execution-proving E2E runner, CI `lifecycle-eval` leaf, `docs/how-to/task-lifecycle.md`, and the
+  ratified **ADR-0008** (namespace · authority · lifecycle · overlay).
+</details>
+
 Development is driven by the **GSD** workflow (`.planning/` + `/gsd:*` commands). Start a new
-milestone with `/gsd:new-milestone`.
+milestone with `/gsd:new-milestone`. See the Korean guide: **[README.ko.md](README.ko.md)**.
 
 ## 🤝 Contributing
 
