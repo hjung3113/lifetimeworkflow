@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: Contract Graph, Brownfield Adoption, Living Docs
 status: executing
-stopped_at: Completed 26-04-PLAN.md
-last_updated: "2026-07-19T17:03:20.286Z"
-last_activity: 2026-07-19 -- Phase 26 planning complete
+stopped_at: Completed 26-07-PLAN.md
+last_updated: "2026-07-19T17:17:36.659Z"
+last_activity: 2026-07-19
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 16
-  completed_plans: 13
-  percent: 81
+  completed_plans: 14
+  percent: 88
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 ## Current Position
 
 Phase: 26 (deterministic-brownfield-inventory-mapping-v2-3-b) — EXECUTING
-Plan: 06 of 6 complete (26-05 still pending in this wave)
+Plan: 2 of 9
 Status: Ready to execute
-Last activity: 2026-07-19 -- Phase 26 planning complete
+Last activity: 2026-07-19
 
 ## Performance Metrics
 
@@ -129,6 +129,7 @@ Last activity: 2026-07-19 -- Phase 26 planning complete
 | Phase 26 P04 | 12min | 2 tasks | 6 files |
 | Phase 26 P06 | 25min | 2 tasks | 3 files |
 | Phase 26 P05 | 42min | 2 tasks | 15 files |
+| Phase 26 P07 | 25min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -223,6 +224,7 @@ Recent decisions affecting current work:
 - [Phase 26]: [26-04] Extended inventory.schema.json with schema_surfaces + codeowners_surfaces as OPTIONAL surfaceRecord arrays (not required); rebaselined contract-hash manifest (single hash changed) and regenerated the committed-derived plane in the same wave, keeping the full 1010-test suite green throughout. — Staged per checker BLOCKER-1 revision fix so Plan 26-05 can promote both properties to required atomically once scan.py/detect.py populate them.
 - [Phase 26-06]: destination_catalog() rewritten to rule-derive its 346 rows from this checkout's real file tree (glob table over _REPO_ROOT), closing 26-VERIFICATION.md gap 2; .workflow/tasks/** and the domain-instance directory are both excluded structurally (path-segment compare), the latter fixing a GEN-04 leak discovered mid-verification.
 - [Phase 26]: 26-05: detect_schema_surfaces scoped strictly to contracts/**/*.schema.json; codeowners proposal always classification=unknown; plan.schema.json kind enum gained codeowners (Rule 1 auto-fix)
+- [Phase 26]: [26-07] destination_catalog() filtered to git-tracked files (CR-01) with failure-tolerant fallback; build_manifest(catalog=) injectable-catalog param decouples the committed manifest snapshot from live repo size (CR-02); WR-02/WR-04/WR-11 folded in. Real git-worktree clean-checkout reproduction test proves catalog invariance to local untracked state.
 
 ### Pending Todos
 
@@ -263,8 +265,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T16:27:54.570Z
-Stopped at: Completed 26-04-PLAN.md
+Last session: 2026-07-19T17:17:36.650Z
+Stopped at: Completed 26-07-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
