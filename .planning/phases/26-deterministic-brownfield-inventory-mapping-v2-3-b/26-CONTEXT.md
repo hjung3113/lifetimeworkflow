@@ -26,32 +26,32 @@ Produce a complete, evidence-grounded **adoption plan** for an existing (brownfi
 Interactive discussion (`--chain`). Six decisions locked; several deliberately delegated to researcher/planner (recorded below so they are not re-asked).
 
 ### Output contract posture
-- **D-01: Contract-first — all three outputs are schema-governed.** Author new JSON-Schema contracts under `contracts/harness/adoption/` for the inventory, the mapping plan, and the disposition manifest. Rationale: mirrors the shipped `contracts/harness/task-control/` precedent exactly (adoption is "an ordinary task" per v2.3 FINAL §146, and task-control already contract-governs state/evidence/handoff/attestation); all three outputs cross the phase boundary into Phase 27 (ADOPT-04 binds inventory·plan·manifest hashes into CAS), so each earns drift-gate protection. The constitution-plane authoring + CODEOWNERS human ratification rides the **established** path — an agent Write into `contracts/` is correctly denied; the schemas land human-ratified (same as ADR-0004/0005/0009 precedent). Phase logic itself stays fully CI-testable.
+- **D-01:** Contract-first — all three outputs are schema-governed. Author new JSON-Schema contracts under `contracts/harness/adoption/` for the inventory, the mapping plan, and the disposition manifest. Rationale: mirrors the shipped `contracts/harness/task-control/` precedent exactly (adoption is "an ordinary task" per v2.3 FINAL §146, and task-control already contract-governs state/evidence/handoff/attestation); all three outputs cross the phase boundary into Phase 27 (ADOPT-04 binds inventory·plan·manifest hashes into CAS), so each earns drift-gate protection. The constitution-plane authoring + CODEOWNERS human ratification rides the **established** path — an agent Write into `contracts/` is correctly denied; the schemas land human-ratified (same as ADR-0004/0005/0009 precedent). Phase logic itself stays fully CI-testable.
 
 ### Evidence classification calibration (ADOPT-02)
-- **D-02: Conservative-unknown bias.** `observed` only on **direct** evidence (file exists, extension present, declared in a manifest file). `inferred` only on **strong structural** signals. **Everything else ambiguous → `unknown` → question.** Rationale: safest posture, fewest silent assumptions, matches the phase's refusal to invent authority. Accepted cost: on large repos the question list is noisy — mitigated by D-05's evidence-bearing question records. Ownership/authority claims (contract authority, component ownership, CODEOWNERS entries) are `unknown` by construction under this rule, satisfying ADOPT-02's "unresolved ownership remains a question rather than invented authority".
+- **D-02:** Conservative-unknown bias. `observed` only on **direct** evidence (file exists, extension present, declared in a manifest file). `inferred` only on **strong structural** signals. **Everything else ambiguous → `unknown` → question.** Rationale: safest posture, fewest silent assumptions, matches the phase's refusal to invent authority. Accepted cost: on large repos the question list is noisy — mitigated by D-05's evidence-bearing question records. Ownership/authority claims (contract authority, component ownership, CODEOWNERS entries) are `unknown` by construction under this rule, satisfying ADOPT-02's "unresolved ownership remains a question rather than invented authority".
 
 ### Disposition decision table (ADOPT-03)
-- **D-03: Collision rule — content-equal → `preserve`, content-different → `conflict`.** Target file exists at a non-constitution destination and its hash matches the proposed content → `preserve` (idempotent no-op). Hash differs → `conflict` (human decides). `marker-merge` is reserved for **marker-capable** files only (e.g. `AGENTS.md`, harness-managed marker blocks). No automatic overwrite, ever.
-- **D-04: Remaining rows are requirement-locked (do not re-derive):**
+- **D-03:** Collision rule — content-equal → `preserve`, content-different → `conflict`. Target file exists at a non-constitution destination and its hash matches the proposed content → `preserve` (idempotent no-op). Hash differs → `conflict` (human decides). `marker-merge` is reserved for **marker-capable** files only (e.g. `AGENTS.md`, harness-managed marker blocks). No automatic overwrite, ever.
+- **D-04:** Remaining rows are requirement-locked (do not re-derive):
   - Constitution destination (`contracts/`, `docs/adr/`, `golden/`) → **always `human-ratification-required`**, regardless of whether the target file exists — any write there is refused before mutation (ADOPT-05/06).
   - Derived-plane destination (`.memory/derived/**`, `docs/reference/**`) → `derived-regenerate`.
   - Non-constitution destination with no existing target file → `create`.
   - Together with D-03 this table is **total**: every harness destination resolves to exactly one disposition (roadmap success criterion 3).
 
 ### Phase-26 proof strategy
-- **D-06: One synthetic mini-repo fixture, with a separate assert per detection.** A single small synthetic target tree that embeds every case — secret, binary, vendored, generated, over-size-cap, collision, and ambiguous-evidence — covered by individual assertions so a failure still names its cause. Determinism proven by running the tool twice over the same fixture and diffing byte-for-byte (plus a shuffled-enumeration-order variant). Rationale: v2.3 FINAL §152 forbids a broad fixture/framework stack; Phase 27 owns the three *application* fixtures, so Phase 26 must not proliferate fixtures. Bonus: this tree seeds Phase 27's fixtures.
+- **D-06:** One synthetic mini-repo fixture, with a separate assert per detection. A single small synthetic target tree that embeds every case — secret, binary, vendored, generated, over-size-cap, collision, and ambiguous-evidence — covered by individual assertions so a failure still names its cause. Determinism proven by running the tool twice over the same fixture and diffing byte-for-byte (plus a shuffled-enumeration-order variant). Rationale: v2.3 FINAL §152 forbids a broad fixture/framework stack; Phase 27 owns the three *application* fixtures, so Phase 26 must not proliferate fixtures. Bonus: this tree seeds Phase 27's fixtures.
 
 ### Deliberately delegated (do NOT re-ask the user)
-- **D-05: Question-record shape → researcher/planner.** The `question` entries in the plan schema MUST carry at minimum a **stable id**, the **target** (harness destination / topic), and an **evidence pointer** (path + hash). Whether they additionally carry a proposed candidate, and how they are grouped/ordered, is designed by the researcher after inspecting how Phase 27's human-ratification step will consume them. Ordering must be deterministic whatever shape is chosen.
-- **D-07: Exclusion + size-cap mechanism → researcher.** Whether the secret/binary/vendor/generated exclusion, confinement, and size-cap ride the existing `tools/evidence` machinery (v2.2) or a purpose-built adoption scanner is the researcher's call — **reuse-first; if not reused, the plan must state why**. Secret-detection posture should follow D-02's safest-bias (exclude on suspicion) unless research shows a concretely better rule.
+- **D-05:** Question-record shape → researcher/planner. The `question` entries in the plan schema MUST carry at minimum a **stable id**, the **target** (harness destination / topic), and an **evidence pointer** (path + hash). Whether they additionally carry a proposed candidate, and how they are grouped/ordered, is designed by the researcher after inspecting how Phase 27's human-ratification step will consume them. Ordering must be deterministic whatever shape is chosen.
+- **D-07:** Exclusion + size-cap mechanism → researcher. Whether the secret/binary/vendor/generated exclusion, confinement, and size-cap ride the existing `tools/evidence` machinery (v2.2) or a purpose-built adoption scanner is the researcher's call — **reuse-first; if not reused, the plan must state why**. Secret-detection posture should follow D-02's safest-bias (exclude on suspicion) unless research shows a concretely better rule.
 
 ### Research-round resolutions (locked after 26-RESEARCH.md)
 
 These close the open questions and the A1 assumption raised by the researcher. They are locked the
 same as D-01..D-07 — do not re-litigate.
 
-- **D-08: "source dump" (ADOPT-01) means BOTH readings.** (a) whole-repo single-file concatenations
+- **D-08:** "source dump" (ADOPT-01) means BOTH readings. (a) whole-repo single-file concatenations
   (repomix / gitingest / LLM-input dumps), detected by their banner/structure marker within the
   first 2 KiB; and (b) over-cap text blobs plus paths carrying a `dump` / `snapshot` / `backup`
   segment. Rationale: the size cap already catches the large concatenations, so the marginal cost of
@@ -59,19 +59,19 @@ same as D-01..D-07 — do not re-litigate.
   repo-concat file double-counts every file in it, the exact pollution ADOPT-01 exists to prevent.
   Exclusion reason recorded as `source-dump`. (Resolves assumption A1, which was undefined in
   REQUIREMENTS.md and v2.3 FINAL.)
-- **D-09: `git ls-files` is allowed — fixed argv, `shell=False`, failure-tolerant — with a complete
-  builtin fallback.** The phase invariant "no arbitrary command execution" forbids executing
+- **D-09:** `git ls-files` is allowed — fixed argv, `shell=False`, failure-tolerant — with a complete
+  builtin fallback. The phase invariant "no arbitrary command execution" forbids executing
   *discovered* scripts (v2.3 FINAL §147), not a fixed, non-shell `git` argv; the repo already does
   this in `contract_drift.drift._git_show` and `evidence.capture._committed_approval`. The design
   MUST NOT depend on git: when git is absent or fails, the builtin denylist walk produces a complete
   result, and the enumeration mode is recorded in the artifact so a run is self-describing. The
   plan's threat model must call this distinction out explicitly.
-- **D-10: exclusions are recorded, not omitted.** Every excluded file appears in a separate
+- **D-10:** exclusions are recorded, not omitted. Every excluded file appears in a separate
   `excluded[]` array as `{path, size, reason}` — **no content hash, no content excerpt**. Rationale:
   roadmap success criterion 4 requires secret/size-cap/vendor/generated detection to *pass*, which is
   only testable if exclusions are observable; and withholding hash+content keeps secret material out
   of the artifact entirely.
-- **D-11: three self-contained schemas; `--out` is required.** Each of the three schemas under
+- **D-11:** three self-contained schemas; `--out` is required. Each of the three schemas under
   `contracts/harness/adoption/` duplicates its small shared `$defs` (evidence pointer, classification
   enum, disposition enum) rather than introducing cross-file `$ref` — all 8 existing contracts in
   this repo are self-contained, and neither `check-jsonschema` nor `tools.contract_hash` has ever been
