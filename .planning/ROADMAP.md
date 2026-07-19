@@ -562,7 +562,7 @@ Plans:
 **Goal:** The `gate-registry.json` `secret_patterns` registry stops excluding non-secret prose and config. The `(?:api[_-]?key|secret|password|token)\s*[:=]\s*[^\s]+` value pattern is tightened to require a secret-shaped value (minimum length plus mixed-charset/entropy constraint) instead of any non-space run, closing the SC-4 false positive carried forward from Phase 26 — where this repo's own `.github/workflows/ci.yml` is excluded as `secret-content` because it contains the literal `TOKEN: gate`. Proven in both directions by data-based cases: every real secret shape currently caught stays caught, and known-benign prose/config stops being flagged. Contract-first — the `contracts/harness/task-control/gate-registry.json` change is paired with a hash rebaseline, derived-plane regeneration, and human ratification in one atomic commit.
 **Requirements**: ADOPT-01
 **Depends on:** Phase 26
-**Plans:** 0 plans
+**Plans:** 1 plan (1 wave)
 
 **Why urgent:** Phase 27 broadens secret classification to arbitrary brownfield targets. Shipping 27 on top of an over-matching pattern means silent, unreviewable over-exclusion on real user repos — the failure is conservative (no secret leak) but it drops real files out of the inventory with no signal.
 
@@ -573,7 +573,7 @@ Plans:
 - SC-4: The constitution-plane change is human-ratified, not agent-self-approved.
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 26.1 to break down)
+- [ ] 26.1-01-PLAN.md — tighten secret_patterns[1] (SC-1/SC-2 red-green + 7-shape regression tests), rebaseline contract hash + derived plane, blocking human-ratification checkpoint (SC-3/SC-4)
 
 ### Phase 27: Task-Local Adoption Workflow + Safe Application *(v2.3 B)*
 
