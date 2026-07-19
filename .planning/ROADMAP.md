@@ -50,6 +50,15 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 22: Handoff + Fresh-Session Resume** *(v2.2 E)* - An immutable HANDOFF snapshot a fresh session reconstructs 100% from, with `/checkpoint`·`/orient`·`/handoff` revisions and a pointer-only SessionStart injection preserving the ~1k cap. (TCP-14, TCP-15)
 - [x] **Phase 23: Lifecycle Evaluation + Docs + CI** *(v2.2 F)* - 20 ratified domain-neutral lifecycle fixtures (5/lane) + stress/negative cases, a ceremony cap on FAST, a how-to doc, a human-ratified structural ADR, and CI fan-in keeping every existing gate green. (TCP-16, TCP-17, TCP-18)
 
+**Milestone v2.3 — Contract Graph, Brownfield Adoption, Living Docs** *(phases 24–29 — numbering continues after v2.2 = phases 18–23; reuses existing machinery — contract-hash/drift, golden comparator, §4.3–4.6 normalize core, config/workspace loaders, task-control CAS/evidence/HANDOFF, fan-out substrate, `/docs-sync`·`/refresh-memory`, Phase-7 emitter — no rebuild. Design: `.planning/research/v2.3-scoping-FINAL.md`, sol-vs-fable debate → codex sol merged FINAL, human-approved. DAG `24→25→28→29` and `24→26→27→29`.)*
+
+- [ ] **Phase 24: Contract-Relationship Vocabulary + Compatibility** *(v2.3 A)* - The ratified graph record (`contracts/harness/topology/`), additive `[[contract_graph.relationships]]` TOML slot with thin-loader passthrough, and deterministic legacy `[pipeline]`→graph lowering that unions additively and leaves current linear fixtures byte-unchanged. (TOPO-01, TOPO-02, TOPO-03)
+- [ ] **Phase 25: Graph Compiler, Queries, Conductor, Proof** *(v2.3 A)* - One domain-neutral compiler + `harness_lint` consistency gate, cycle-safe affected-set queries, `/pipeline`·`pipeline-map`·orchestrator generalized (no new command/persona), non-linear generic + cross-repo fixtures, and a human-ratified topology ADR. (TOPO-04, TOPO-05, TOPO-06, TOPO-07)
+- [ ] **Phase 26: Deterministic Brownfield Inventory + Mapping** *(v2.3 B)* - A read-only deterministic repo inventory, an evidence-classified (observed/inferred/unknown) mapping plan in the TOPO vocabulary, and a complete destination/disposition manifest — agent-free, fully CI-testable. (ADOPT-01, ADOPT-02, ADOPT-03)
+- [ ] **Phase 27: Task-Local Adoption Workflow + Safe Application** *(v2.3 B)* - Adoption as a `.workflow/tasks/` task (reusing v2.2 CAS/evidence/HANDOFF), structural constitution-write refusal + idempotent collision-safe apply, hash-bound human ratification, and the `/adopt` skill+command with three fixtures (one §4.3–4.6-dirty). (ADOPT-04, ADOPT-05, ADOPT-06, ADOPT-07)
+- [ ] **Phase 28: Human-Docs Registry, Guard, Derived Queue** *(v2.3 C)* - Central `docs/doc-dependencies.toml` + review ledger, deterministic fingerprints, the FRESH/BROKEN/STALE_REQUIRED/STALE_ADVISORY/UNCOVERED gate, ADR-safe dispositions, and a derived staleness queue + conditional SessionStart pointer. (DOCSUP-01, DOCSUP-02, DOCSUP-03, DOCSUP-04, DOCSUP-05)
+- [ ] **Phase 29: Docs Drive Loop + Adoption Integration + Closeout** *(v2.3 C)* - The `/docs-update` drive loop (ADR/reference/derived excluded), reviewed seeding of the high-risk corpus + adoption-runbook bindings, and the milestone closeout against the full existing gate fan-in. (DOCSUP-06, DOCSUP-07)
+
 ## Phase Details
 
 ### Phase 1: Constitution + Golden Core
@@ -468,3 +477,75 @@ Plans:
 3. FAST fixture가 상세 SPEC/PLAN/worktree/이중 review 없이 통과하고 FAST 사용자 의식 단계 상한(intake+verify)이 고정된다.
 4. 구조 결정 ADR이 사람 승인 append-only로 랜딩되고 `docs/how-to/task-lifecycle.md`가 추가된다.
 5. 전체 `uv run pytest` + contract-drift + golden + stale-derived + GEN-04 + harness emit-drift + 모델 식별자 lint가 green이다.
+
+### Phase 24: Contract-Relationship Vocabulary + Compatibility *(v2.3 A)*
+
+**Goal:** 마이그레이션을 강제하지 않고 ratified 그래프 record와 추가형 설정 seam을 출하한다 — 다운스트림이 무엇이든 이 어휘를 소비한다.
+**Mode:** standard
+**Depends on:** none (v2.2 완료 위에 시작)
+**Requirements:** TOPO-01, TOPO-02, TOPO-03
+**Success criteria** (observable):
+1. `contracts/harness/topology/` 관계 record 스키마가 사람 승인되고 positive/negative fixture가 contract-hash/drift 경로를 통과한다.
+2. 레거시 `[pipeline]` lowering이 byte-deterministic하고 explicit record와 추가형 union하며, 중복 id·중복 semantic edge·모순 시 fail한다.
+3. 현재 `harness/project.toml`·`workspace.toml`·log-parser instance가 편집 없이 유효하게 유지된다(선형 fixture byte-unchanged).
+4. 전체 contract-drift·GEN-04·기존 topology 테스트가 green이다.
+
+### Phase 25: Graph Compiler, Queries, Conductor, Proof *(v2.3 A)*
+
+**Goal:** 일반 관계 그래프를 하나의 결정론적 구현과 기존 사용자 표면으로 사용 가능하게 만든다.
+**Mode:** standard
+**Depends on:** Phase 24 (ratified record + 슬롯 + lowering)
+**Requirements:** TOPO-04, TOPO-05, TOPO-06, TOPO-07
+**Success criteria** (observable):
+1. 도메인 중립 컴파일러가 안정 정렬·repo-confined 출력·안정 진단 코드를 내고 fan-in/fan-out/disconnected/cycle을 허용한다.
+2. direct/reverse/transitive affected-set 질의가 cycle에서 종료하고 id·path만 결정론적으로 반환하며, 새 task-evidence 요구를 만들지 않는다.
+3. cross-repo authority-member contract 해소가 기존 drift 검사를 재사용하고, generic 비선형 + 불변 선형 regression fixture가 통과한다.
+4. `/pipeline`·`pipeline-map`·orchestrator가 두 런타임에 byte-identical 왕복(모델 id 없음)하고 사람 승인 topology ADR이 랜딩된다.
+
+### Phase 26: Deterministic Brownfield Inventory + Mapping *(v2.3 B)*
+
+**Goal:** target을 변경하거나 에이전트 워크플로를 호출하지 않고 evidence-근거 adoption plan을 만든다.
+**Mode:** standard
+**Depends on:** Phase 24 (record 어휘만 — 컴파일러/질의 불필요; Phase 25와 병렬)
+**Requirements:** ADOPT-01, ADOPT-02, ADOPT-03
+**Success criteria** (observable):
+1. 반복 inventory/plan 출력이 byte-identical하다(파일 열거 순서 무관).
+2. 제안된 모든 항목이 observed/inferred/unknown으로 분류되고 미해결 ownership은 question으로 남는다.
+3. 모든 하네스 destination이 정확히 하나의 disposition을 가진다.
+4. confinement·secret 제외·size cap·ambiguity·collision 탐지가 통과하고 target tree는 불변이다.
+
+### Phase 27: Task-Local Adoption Workflow + Safe Application *(v2.3 B)*
+
+**Goal:** 결정론적 plan을 출하된 task control plane 위에서 재개 가능·사람 ratified·비파괴 adoption 워크플로로 전환한다.
+**Mode:** standard
+**Depends on:** Phase 26 (inventory/manifest spine)
+**Requirements:** ADOPT-04, ADOPT-05, ADOPT-06, ADOPT-07
+**Success criteria** (observable):
+1. `.workflow/tasks/<id>/artifacts/adoption/<batch>/` batch가 안전하게 재개되고, 변경된 draft/ref/revision이 승인을 무효화한다.
+2. `contracts/`·`docs/adr/`·`golden/` destination이 mutation 전에 거부되고, 비-헌법 apply가 atomic·collision-safe·idempotent하다.
+3. 3개 fixture(polyglot 단일·2-레포 client/server·partial/collision, 최소 하나 CRLF/BOM)가 통과한다.
+4. `/adopt` + `brownfield-adoption` skill이 두 런타임에 byte-identical 왕복(새 persona 없음, 모델 id 없음)한다.
+
+### Phase 28: Human-Docs Registry, Guard, Derived Queue *(v2.3 C)*
+
+**Goal:** semantic 정확성을 주장하거나 derived 생성기와 경쟁하지 않고 사람-문서 review 의무를 정확히 탐지·surface한다.
+**Mode:** standard
+**Depends on:** Phase 25 (그래프 impact 질의·최종 표면); Phase 27은 seed 데이터만 공급(슬립해도 machinery 비차단)
+**Requirements:** DOCSUP-01, DOCSUP-02, DOCSUP-03, DOCSUP-04, DOCSUP-05
+**Success criteria** (observable):
+1. registry validation(path escape·중복 id·빈 required·derived/reference target·accepted-ADR 편집 거부)이 통과한다.
+2. source-only 변경이 fail·doc+ledger 변경이 pass·설명 없는 ledger-only bump이 fail·`reviewed-no-change`가 정확한 현재 digest에만 pass한다.
+3. `BROKEN`·`STALE_REQUIRED` fail·`STALE_ADVISORY` warn·uncovered 비-회귀가 강제된다.
+4. 파생 큐가 결정론적으로 재생성되고 injector byte-identity + ~4,000자 예산 테스트가 green이며 `/docs-sync`·`/refresh-memory`·stale-derived 의미가 불변이다.
+
+### Phase 29: Docs Drive Loop + Adoption Integration + Closeout *(v2.3 C)*
+
+**Goal:** bounded 사람 대면 docs 워크플로를 추가하고 adoption seeding을 연결하며 세 테마를 전체 게이트 fan-in으로 닫는다.
+**Mode:** standard
+**Depends on:** Phase 28 (결정론적 guard); Phase 27 (destination manifest·command)
+**Requirements:** DOCSUP-06, DOCSUP-07
+**Success criteria** (observable):
+1. `/docs-update` + `docs-upkeep`가 두 런타임에 byte-identical emit하고 accepted ADR·`docs/reference/**`·`.memory/derived/**`·contracts·golden 제외가 게이트로 테스트된다.
+2. `/adopt`이 binding을 제안하되 스스로 review(green)할 수 없다.
+3. required seed 문서가 fresh이거나 정확히 dispositioned된다.
+4. 전체 `uv run pytest` + contract-drift + golden + workspace drift + stale-derived + lifecycle + GEN-04 twin + docs guard + emit-drift + 모델 식별자 lint + injector budget + `git diff --check`가 green이다.
