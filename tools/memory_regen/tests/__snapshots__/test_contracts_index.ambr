@@ -7,7 +7,7 @@
   
   | contract | kind | owner | hash | drift |
   | --- | --- | --- | --- | --- |
-  | contracts/harness/adoption/inventory.schema.json | other | TBD | 3b638fa060d4 | clean |
+  | contracts/harness/adoption/inventory.schema.json | other | TBD | 8c58dc7af7be | clean |
   | contracts/harness/adoption/manifest.schema.json | other | TBD | d84c1f62653a | clean |
   | contracts/harness/adoption/plan.schema.json | other | TBD | 386e206069b0 | clean |
   | contracts/harness/task-control/attestation.schema.json | other | TBD | 2a708cb2a408 | clean |
