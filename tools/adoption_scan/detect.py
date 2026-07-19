@@ -182,6 +182,42 @@ def detect_test_surfaces(included: list[dict]) -> list[dict]:
     return [_surface("tests", test_entries, "observed")]
 
 
+def detect_schema_surfaces(included: list[dict]) -> list[dict]:
+    """``surfaceRecord``s for schema surfaces (``contracts/**/*.schema.json`` ONLY).
+
+    ``classification: "observed"`` when a matching path exists (D-02). Deliberately scoped to
+    files whose first path segment is ``contracts`` AND whose name ends ``.schema.json`` — NOT
+    every ``*.schema.json`` anywhere in the tree, since this repo alone has schema-named files
+    under ``harness/``, ``tools/``, the domain-instance directory, ``.claude/skills/``, and
+    ``tests/fixtures/`` that must never match.
+    """
+    schema_entries = [
+        entry
+        for entry in included
+        if PurePosixPath(entry["path"]).parts[:1] == ("contracts",)
+        and PurePosixPath(entry["path"]).name.endswith(".schema.json")
+    ]
+    if not schema_entries:
+        return []
+    return [_surface("contracts/**/*.schema.json", schema_entries, "observed")]
+
+
+def detect_codeowners_surfaces(included: list[dict]) -> list[dict]:
+    """``surfaceRecord``s for a ``.github/CODEOWNERS`` surface.
+
+    ``classification: "observed"`` when the literal path exists (D-02) — only the file's
+    EXISTENCE and path are recorded, never its ownership-mapping content interpreted as authority.
+    """
+    codeowners_entries = [
+        entry
+        for entry in included
+        if PurePosixPath(entry["path"]) == PurePosixPath(".github/CODEOWNERS")
+    ]
+    if not codeowners_entries:
+        return []
+    return [_surface(".github/CODEOWNERS", codeowners_entries, "observed")]
+
+
 def detect_candidate_process_boundaries(included: list[dict]) -> list[dict]:
     """``surfaceRecord``s for candidate component/process boundaries.
 

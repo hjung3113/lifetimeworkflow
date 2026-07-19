@@ -336,4 +336,6 @@ def build_inventory(
         "ci_surfaces": detect.detect_ci_surfaces(included),
         "test_surfaces": detect.detect_test_surfaces(included),
         "candidate_process_boundaries": detect.detect_candidate_process_boundaries(included),
+        "schema_surfaces": detect.detect_schema_surfaces(included),
+        "codeowners_surfaces": detect.detect_codeowners_surfaces(included),
     }

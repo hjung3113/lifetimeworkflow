@@ -47,6 +47,36 @@ def test_candidate_process_boundary_inferred_never_observed(tmp_minirepo: Path) 
         assert record.get("rationale")
 
 
+def test_schema_surface_observed(tmp_minirepo: Path) -> None:
+    inventory = scan.build_inventory(tmp_minirepo)
+    assert inventory["schema_surfaces"], "expected at least one schema surface"
+    for record in inventory["schema_surfaces"]:
+        assert record["classification"] == "observed"
+    all_paths = {
+        ref["path"] for record in inventory["schema_surfaces"] for ref in record["evidence"]
+    }
+    assert "contracts/widget.schema.json" in all_paths
+
+
+def test_schema_surface_excludes_files_outside_contracts(tmp_minirepo: Path) -> None:
+    inventory = scan.build_inventory(tmp_minirepo)
+    all_paths = {
+        ref["path"] for record in inventory["schema_surfaces"] for ref in record["evidence"]
+    }
+    assert "tools/widget_tool.schema.json" not in all_paths
+
+
+def test_codeowners_surface_observed(tmp_minirepo: Path) -> None:
+    inventory = scan.build_inventory(tmp_minirepo)
+    assert inventory["codeowners_surfaces"], "expected a codeowners surface"
+    for record in inventory["codeowners_surfaces"]:
+        assert record["classification"] == "observed"
+    all_paths = {
+        ref["path"] for record in inventory["codeowners_surfaces"] for ref in record["evidence"]
+    }
+    assert ".github/CODEOWNERS" in all_paths
+
+
 def test_inventory_validates_against_schema(tmp_minirepo: Path, repo_root: Path) -> None:
     schema_path = repo_root / "contracts" / "harness" / "adoption" / "inventory.schema.json"
     schema = json.loads(schema_path.read_text(encoding="utf-8"))

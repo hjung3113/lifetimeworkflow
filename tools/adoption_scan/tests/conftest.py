@@ -136,4 +136,18 @@ def tmp_minirepo(tmp_path: Path) -> Path:
         encoding="utf-8",
     )
 
+    # (p) a schema surface UNDER contracts/.
+    contracts_dir = root / "contracts"
+    contracts_dir.mkdir()
+    (contracts_dir / "widget.schema.json").write_text('{"type": "object"}\n', encoding="utf-8")
+
+    # (q) a CODEOWNERS surface.
+    (workflows_dir.parent / "CODEOWNERS").write_text("* @nobody\n", encoding="utf-8")
+
+    # (r) a schema-LOOKING file OUTSIDE contracts/ — the WARNING 2 negative-match case, proving
+    # detect_schema_surfaces() does NOT match it.
+    tools_dir = root / "tools"
+    tools_dir.mkdir()
+    (tools_dir / "widget_tool.schema.json").write_text('{"type": "object"}\n', encoding="utf-8")
+
     return root
