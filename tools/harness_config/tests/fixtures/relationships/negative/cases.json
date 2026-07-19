@@ -1,0 +1,54 @@
+[
+  {
+    "name": "missing-id",
+    "record": {
+      "contract": "greeting",
+      "authority": "source",
+      "dependents": ["sink"]
+    }
+  },
+  {
+    "name": "missing-contract",
+    "record": {
+      "id": "topo/greeting/no-contract",
+      "authority": "source",
+      "dependents": ["sink"]
+    }
+  },
+  {
+    "name": "missing-authority",
+    "record": {
+      "id": "topo/greeting/no-authority",
+      "contract": "greeting",
+      "dependents": ["sink"]
+    }
+  },
+  {
+    "name": "empty-dependents",
+    "record": {
+      "id": "topo/greeting/empty-dependents",
+      "contract": "greeting",
+      "authority": "source",
+      "dependents": []
+    }
+  },
+  {
+    "name": "duplicate-dependents",
+    "record": {
+      "id": "topo/greeting/duplicate-dependents",
+      "contract": "greeting",
+      "authority": "source",
+      "dependents": ["sink", "sink"]
+    }
+  },
+  {
+    "name": "additional-property",
+    "record": {
+      "id": "topo/greeting/extra-prop",
+      "contract": "greeting",
+      "authority": "source",
+      "dependents": ["sink"],
+      "unexpected": "value"
+    }
+  }
+]
