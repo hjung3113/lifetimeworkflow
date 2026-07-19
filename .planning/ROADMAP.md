@@ -54,7 +54,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 24: Contract-Relationship Vocabulary + Compatibility** *(v2.3 A)* - The ratified graph record (`contracts/harness/topology/`), additive `[[contract_graph.relationships]]` TOML slot with thin-loader passthrough, and deterministic legacy `[pipeline]`→graph lowering that unions additively and leaves current linear fixtures byte-unchanged. (TOPO-01, TOPO-02, TOPO-03) (completed 2026-07-19)
 - [x] **Phase 25: Graph Compiler, Queries, Conductor, Proof** *(v2.3 A)* - One domain-neutral compiler + `harness_lint` consistency gate, cycle-safe affected-set queries, `/pipeline`·`pipeline-map`·orchestrator generalized (no new command/persona), non-linear generic + cross-repo fixtures, and a human-ratified topology ADR. (TOPO-04, TOPO-05, TOPO-06, TOPO-07) (completed 2026-07-19)
-- [ ] **Phase 26: Deterministic Brownfield Inventory + Mapping** *(v2.3 B)* - A read-only deterministic repo inventory, an evidence-classified (observed/inferred/unknown) mapping plan in the TOPO vocabulary, and a complete destination/disposition manifest — agent-free, fully CI-testable. (ADOPT-01, ADOPT-02, ADOPT-03)
+- [x] **Phase 26: Deterministic Brownfield Inventory + Mapping** *(v2.3 B)* - A read-only deterministic repo inventory, an evidence-classified (observed/inferred/unknown) mapping plan in the TOPO vocabulary, and a complete destination/disposition manifest — agent-free, fully CI-testable. (ADOPT-01, ADOPT-02, ADOPT-03) (completed 2026-07-19)
 - [ ] **Phase 27: Task-Local Adoption Workflow + Safe Application** *(v2.3 B)* - Adoption as a `.workflow/tasks/` task (reusing v2.2 CAS/evidence/HANDOFF), structural constitution-write refusal + idempotent collision-safe apply, hash-bound human ratification, and the `/adopt` skill+command with three fixtures (one §4.3–4.6-dirty). (ADOPT-04, ADOPT-05, ADOPT-06, ADOPT-07)
 - [ ] **Phase 28: Human-Docs Registry, Guard, Derived Queue** *(v2.3 C)* - Central `docs/doc-dependencies.toml` + review ledger, deterministic fingerprints, the FRESH/BROKEN/STALE_REQUIRED/STALE_ADVISORY/UNCOVERED gate, ADR-safe dispositions, and a derived staleness queue + conditional SessionStart pointer. (DOCSUP-01, DOCSUP-02, DOCSUP-03, DOCSUP-04, DOCSUP-05)
 - [ ] **Phase 29: Docs Drive Loop + Adoption Integration + Closeout** *(v2.3 C)* - The `/docs-update` drive loop (ADR/reference/derived excluded), reviewed seeding of the high-risk corpus + adoption-runbook bindings, and the milestone closeout against the full existing gate fan-in. (DOCSUP-06, DOCSUP-07)
@@ -555,7 +555,7 @@ Plans:
 
 **Wave 3** *(blocked on 26-02)*
 
-- [ ] 26-03-PLAN.md — plan.py + destinations.py + cli.py: evidence ladder, question records, relationship candidates, the total disposition rule chain, full pipeline wiring + determinism proof (ADOPT-02, ADOPT-03)
+- [x] 26-03-PLAN.md — plan.py + destinations.py + cli.py: evidence ladder, question records, relationship candidates, the total disposition rule chain, full pipeline wiring + determinism proof (ADOPT-02, ADOPT-03)
 
 ### Phase 27: Task-Local Adoption Workflow + Safe Application *(v2.3 B)*
 
