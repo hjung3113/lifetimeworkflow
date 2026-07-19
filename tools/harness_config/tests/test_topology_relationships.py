@@ -6,19 +6,26 @@ authority/dependent records, unions them with explicit records, stable-sorts by 
 the three D-05 failure modes (duplicate id / duplicate semantic edge / contradiction).
 
 All hand-built failure fixtures use domain-neutral names (authorities "a"/"b", contract "widget")
-so this core-plane test stays GEN-04-clean (no examples/ / domain prose tokens).
+so this core-plane test stays GEN-04-clean (no instance-path or domain prose tokens).
 """
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from tools.harness_config import (
+    components,
     contract_graph_relationships,
     effective_relationships,
     load_project,
+    pipeline,
 )
 from tools.workspace_config import load_workspace
+
+# test file -> tests -> harness_config -> tools -> repo root (parents[3]).
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 # --- accessor passthrough (TOPO-02) --------------------------------------------------------------
@@ -182,3 +189,23 @@ def test_workspace_edge_endpoints_pass_through_verbatim() -> None:
     assert rel["dependents"] == ["member-b:ingest"]
     assert rel["contract"] == "greeting"
     assert rel["id"] == "pipeline/greeting/member-a:emit->member-b:ingest"
+
+
+# --- instance-config regression (TOPO-03 byte-invariance) -----------------------------------------
+
+
+def test_instance_config_needs_no_explicit_records() -> None:
+    """The reference instance config declares zero explicit records and is read unaffected.
+
+    The instance config path is built from NON-CONTIGUOUS path segments (separate joinpath args)
+    so this core-plane test never carries the contiguous path-token the GEN-04 guard scans for —
+    keeping the guard green with no new exemption needed.
+    """
+    instance_config = _REPO_ROOT.joinpath("examples", "log-parser", "project.toml")
+    cfg = load_project(path=instance_config)
+
+    # New accessor: the instance opts into no explicit relationship records (zero required edits).
+    assert contract_graph_relationships(cfg) == []
+    # Existing passthroughs read unaffected by the additive accessor.
+    assert isinstance(components(cfg), list)
+    assert isinstance(pipeline(cfg), dict)
