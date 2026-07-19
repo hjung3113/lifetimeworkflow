@@ -11,6 +11,7 @@ members = [
     "lifecycle-eval",
     "logparser-agree",
     "logparser-contract-drift",
+    "logparser-contract-graph",
     "logparser-contract-hash",
     "logparser-docs-sync",
     "logparser-golden-runner",
@@ -255,6 +256,11 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [{ name = "rfc8785", specifier = "==0.1.4" }]
+
+[[package]]
+name = "logparser-contract-graph"
+version = "0.0.0"
+source = { virtual = "tools/contract_graph" }
 
 [[package]]
 name = "logparser-contract-hash"
