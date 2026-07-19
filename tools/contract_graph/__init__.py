@@ -13,12 +13,21 @@ without that ordering hazard (mirrors tools/harness_config + tools/harness_lint)
 
 from __future__ import annotations
 
-__all__ = ["compile_graph"]
+__all__ = ["compile_graph", "direct", "reverse", "transitive"]
+
+# Which submodule owns each lazily re-exported name (compiler vs. query layer).
+_SOURCE_MODULE = {
+    "compile_graph": "compile",
+    "direct": "query",
+    "reverse": "query",
+    "transitive": "query",
+}
 
 
-def __getattr__(name: str):  # PEP 562 — lazy re-export from the compile submodule.
-    if name in __all__:
-        from tools.contract_graph import compile
+def __getattr__(name: str):  # PEP 562 — lazy re-export from the owning submodule.
+    if name in _SOURCE_MODULE:
+        import importlib
 
-        return getattr(compile, name)
+        module = importlib.import_module(f"tools.contract_graph.{_SOURCE_MODULE[name]}")
+        return getattr(module, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
