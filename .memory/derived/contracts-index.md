@@ -9,7 +9,7 @@ Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reu
 | contracts/harness/adoption/plan.schema.json | other | TBD | 5c4f2db58648 | clean |
 | contracts/harness/task-control/attestation.schema.json | other | TBD | 2a708cb2a408 | clean |
 | contracts/harness/task-control/evidence.schema.json | other | TBD | 2c34f666caa8 | clean |
-| contracts/harness/task-control/gate-registry.json | other | TBD | 04a9d3bf8962 | clean |
+| contracts/harness/task-control/gate-registry.json | other | TBD | 1d212f2f56d8 | clean |
 | contracts/harness/task-control/handoff.schema.json | other | TBD | d47edd6c1eb6 | clean |
 | contracts/harness/task-control/state.schema.json | other | TBD | c2a64cab55f3 | clean |
 | contracts/harness/task-control/task.schema.json | other | TBD | 1c5a0f5b683e | clean |

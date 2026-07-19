@@ -23,8 +23,8 @@
         "evidence": [
           {
             "path": ".github/workflows/ci.yml",
-            "sha256": "6f226f96dc1167e947305b492f21b1f9bb321fc536b5463fbeefc4e2c5f3e2eb",
-            "size": 31
+            "sha256": "f0084048730fdc9c240f6737f0d22d4a053340c152f1bebaa7b0b2961d0bca5b",
+            "size": 92
           }
         ],
         "target": ".github/workflows"
@@ -134,8 +134,8 @@
       },
       {
         "path": ".github/workflows/ci.yml",
-        "sha256": "6f226f96dc1167e947305b492f21b1f9bb321fc536b5463fbeefc4e2c5f3e2eb",
-        "size": 31
+        "sha256": "f0084048730fdc9c240f6737f0d22d4a053340c152f1bebaa7b0b2961d0bca5b",
+        "size": 92
       },
       {
         "path": "AGENTS.md",
@@ -360,8 +360,8 @@
         "evidence": [
           {
             "path": ".github/workflows/ci.yml",
-            "sha256": "6f226f96dc1167e947305b492f21b1f9bb321fc536b5463fbeefc4e2c5f3e2eb",
-            "size": 31
+            "sha256": "f0084048730fdc9c240f6737f0d22d4a053340c152f1bebaa7b0b2961d0bca5b",
+            "size": 92
           }
         ],
         "id": "test-command/.github/workflows",
@@ -453,8 +453,8 @@
         "evidence": [
           {
             "path": ".github/workflows/ci.yml",
-            "sha256": "6f226f96dc1167e947305b492f21b1f9bb321fc536b5463fbeefc4e2c5f3e2eb",
-            "size": 31
+            "sha256": "f0084048730fdc9c240f6737f0d22d4a053340c152f1bebaa7b0b2961d0bca5b",
+            "size": 92
           }
         ],
         "group": "testing",
