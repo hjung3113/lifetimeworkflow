@@ -4,14 +4,14 @@ milestone: v2.3
 milestone_name: Contract Graph, Brownfield Adoption, Living Docs
 status: executing
 stopped_at: Completed 26-04-PLAN.md
-last_updated: "2026-07-19T16:05:35.411Z"
+last_updated: "2026-07-19T16:15:57.256Z"
 last_activity: 2026-07-19
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 13
-  completed_plans: 11
-  percent: 85
+  completed_plans: 12
+  percent: 92
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 ## Current Position
 
 Phase: 26 (deterministic-brownfield-inventory-mapping-v2-3-b) — EXECUTING
-Plan: 2 of 6
+Plan: 06 of 6 complete (26-05 still pending in this wave)
 Status: Ready to execute
 Last activity: 2026-07-19
 
@@ -127,6 +127,7 @@ Last activity: 2026-07-19
 | Phase 26 P02 | 50min | 3 tasks | 11 files |
 | Phase 26 P03 | 90min | 3 tasks | 10 files |
 | Phase 26 P04 | 12min | 2 tasks | 6 files |
+| Phase 26 P06 | 25min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -219,6 +220,7 @@ Recent decisions affecting current work:
 - [Phase 26-03]: excluded-file/collision question kinds left dormant this wave (D-10: no valid sha256 exists for an excluded/secret file)
 - [Phase 26-03]: relationship proposal machinery implemented and unit-tested but dormant on real scans (no relationship/contract signal in ADOPT-01 inventory shape)
 - [Phase 26]: [26-04] Extended inventory.schema.json with schema_surfaces + codeowners_surfaces as OPTIONAL surfaceRecord arrays (not required); rebaselined contract-hash manifest (single hash changed) and regenerated the committed-derived plane in the same wave, keeping the full 1010-test suite green throughout. — Staged per checker BLOCKER-1 revision fix so Plan 26-05 can promote both properties to required atomically once scan.py/detect.py populate them.
+- [Phase 26-06]: destination_catalog() rewritten to rule-derive its 346 rows from this checkout's real file tree (glob table over _REPO_ROOT), closing 26-VERIFICATION.md gap 2; .workflow/tasks/** and the domain-instance directory are both excluded structurally (path-segment compare), the latter fixing a GEN-04 leak discovered mid-verification.
 
 ### Pending Todos
 
@@ -259,7 +261,7 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T16:05:35.406Z
+Last session: 2026-07-19T16:14:48.795Z
 Stopped at: Completed 26-04-PLAN.md
 Resume file: None
 
