@@ -110,3 +110,79 @@ def test_core_and_workspace_defaults_compile_clean() -> None:
     """The unedited core default AND default workspace both compile with zero diagnostics."""
     assert compile_graph(load_project())["diagnostics"] == []
     assert compile_graph(load_workspace())["diagnostics"] == []
+
+
+# --- D-02 diagnostic slugs (Task 2) --------------------------------------------------------------
+
+
+def test_unresolved_authority_slug() -> None:
+    """An authority naming no declared component/member → one `unresolved-authority: ` slug."""
+    cfg = {
+        "components": [{"id": "b", "produces": [], "consumes": ["w"]}],
+        "contract_graph": {
+            "relationships": [
+                {"id": "r1", "contract": "w", "authority": "ghost", "dependents": ["b"]},
+            ]
+        },
+    }
+    diags = compile_graph(cfg)["diagnostics"]
+    unresolved = [d for d in diags if d.startswith("unresolved-authority: ")]
+    assert len(unresolved) == 1, diags
+    assert "r1" in unresolved[0] and "ghost" in unresolved[0]
+
+
+def test_dangling_endpoint_slug_keeps_resolved_siblings() -> None:
+    """One unresolved dependent → one `dangling-endpoint: ` slug; resolved siblings stay in adjacency."""
+    cfg = {
+        "components": [
+            {"id": "a", "produces": ["w"], "consumes": []},
+            {"id": "b", "produces": [], "consumes": ["w"]},
+        ],
+        "contract_graph": {
+            "relationships": [
+                {"id": "r1", "contract": "w", "authority": "a", "dependents": ["b", "ghost"]},
+            ]
+        },
+    }
+    result = compile_graph(cfg)
+    dangling = [d for d in result["diagnostics"] if d.startswith("dangling-endpoint: ")]
+    assert len(dangling) == 1, result["diagnostics"]
+    assert "r1" in dangling[0] and "ghost" in dangling[0]
+    assert result["adjacency"]["a"] == ["b"]  # the resolved sibling survives
+
+
+def test_unknown_contract_slug_component_produces() -> None:
+    """Authority resolves to a component that does NOT list the contract in produces → slug."""
+    cfg = {
+        "components": [
+            {"id": "a", "produces": ["other"], "consumes": []},
+            {"id": "b", "produces": [], "consumes": ["w"]},
+        ],
+        "contract_graph": {
+            "relationships": [
+                {"id": "r1", "contract": "w", "authority": "a", "dependents": ["b"]},
+            ]
+        },
+    }
+    diags = compile_graph(cfg)["diagnostics"]
+    unknown = [d for d in diags if d.startswith("unknown-contract: ")]
+    assert len(unknown) == 1, diags
+    assert "r1" in unknown[0] and "w" in unknown[0]
+
+
+def test_diagnostics_are_stable_sorted() -> None:
+    """Two runs on the same malformed cfg produce byte-identical, sorted diagnostic lists."""
+    cfg = {
+        "components": [{"id": "keep", "produces": [], "consumes": []}],
+        "contract_graph": {
+            "relationships": [
+                {"id": "rZ", "contract": "w", "authority": "ghostZ", "dependents": ["keep"]},
+                {"id": "rA", "contract": "w2", "authority": "ghostA", "dependents": ["keep"]},
+            ]
+        },
+    }
+    first = compile_graph(cfg)["diagnostics"]
+    second = compile_graph(cfg)["diagnostics"]
+    assert first == second
+    assert first == sorted(first)
+    assert len(first) == 2  # one unresolved-authority per malformed relationship
