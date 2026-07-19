@@ -36,7 +36,20 @@ The marker-capable set (D-03) is a plain 3-item literal here, cited against its 
 ``merge_settings`` for ``.claude/settings.json``) — this tool never performs a merge itself
 (Phase 27 does), so it only needs to know WHICH 3 paths are marker-capable, not how to merge them.
 
-CR-01 fix (26-REVIEW.md): steps 6/7 of the disposition chain compare the TARGET's existing content
+CR-01 fix (26-VERIFICATION.md gap 1, this plan — 26-07): ``destination_catalog()``'s enumeration
+loop calls :func:`_tracked_repo_files` ONCE and skips any candidate whose repo-relative destination
+is not git-tracked. Without this filter, a gitignored/untracked file present only on a developer's
+working tree (e.g. a regenerated ``.memory/derived/*`` artifact) silently entered the catalog,
+making it non-reproducible on a clean checkout (`actions/checkout` in CI has no such file) — the
+exact "fully CI-testable" violation 26-VERIFICATION.md gap 1 identified. The filter is
+failure-tolerant (git binary missing or the invocation failing both degrade to unfiltered
+enumeration, per D-09's "MUST NOT depend on git" rule) rather than raising. This is a DIFFERENT
+CR-01 from the one two paragraphs below (that one is about ``harness_proposed_hash``/target-vs-
+template independence, from an earlier review round) — both share the CR-01 label because
+26-REVIEW.md numbers findings per-round, not globally; do not conflate them.
+
+CR-01 fix (26-REVIEW.md, prior round): steps 6/7 of the disposition chain compare the TARGET's
+existing content
 against ``proposed_sha`` — content the HARNESS TEMPLATE would install at that destination. That
 must never be derived from the scanned target itself (comparing a file to itself makes ``conflict``
 unreachable). :func:`harness_proposed_hash`/:func:`harness_proposed_hashes` hash THIS repo's own
@@ -65,8 +78,10 @@ arbitrary target content.
 from __future__ import annotations
 
 import hashlib
+import subprocess
 from pathlib import Path
 
+from tools.adoption_scan import scan
 from tools.harness_emit.manifest import is_gsd_owned
 from tools.harness_perms import resolve_path
 from tools.hooks.contract_guard import CONSTITUTION_GLOBS  # noqa: F401 (re-exported for callers)
@@ -178,23 +193,62 @@ _EXCLUDED_PREFIX: tuple[str, str] = (".workflow", "tasks")
 # substring itself.
 _INSTANCE_DIR_NAME = "examples"
 
+# WR-02 (26-REVIEW.md): belt-and-suspenders reuse of scan.py's own vendor/generated path-segment
+# denylists (never re-derived) — a second layer of defense for the git-unavailable fallback path,
+# where _tracked_repo_files() cannot filter and an untracked vendor/build directory could otherwise
+# slip into the catalog.
+_SKIP_SEGMENTS: frozenset[str] = frozenset(scan._VENDOR_SEGMENTS) | frozenset(
+    scan._GENERATED_SEGMENTS
+)
+
+
+def _tracked_repo_files() -> frozenset[str] | None:
+    """CR-01: the set of repo-relative, POSIX-style paths ``git`` considers tracked at
+    ``_REPO_ROOT``, or ``None`` when git is unavailable/fails (D-09 — this function MUST NOT make
+    the catalog depend on git; ``None`` signals the caller to fall back to unfiltered enumeration).
+
+    Failure-tolerant by design (unlike ``tools/harness_lint/tests/test_core_no_example_dep.py``'s
+    ``_tracked_core_files()``, which this mirrors and is allowed to hard-fail for its own guard
+    purpose): catches ``OSError`` (git binary missing) and inspects ``returncode`` explicitly
+    (``check=False``) rather than raising on a non-zero exit.
+    """
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(_REPO_ROOT), "ls-files"],
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return None
+    if completed.returncode != 0:
+        return None
+    return frozenset(completed.stdout.decode("utf-8", "surrogateescape").splitlines())
+
 
 def destination_catalog() -> list[dict]:
-    """Rule-derived enumeration of every real file in this checkout matching a named ADOPT-03
-    destination category, sorted and deduplicated by destination.
+    """Rule-derived enumeration of every real, git-tracked file in this checkout matching a named
+    ADOPT-03 destination category, sorted and deduplicated by destination.
 
     For each pattern in :data:`_CATEGORY_GLOBS`, resolves ``sorted(_REPO_ROOT.glob(pattern))``,
     keeps only real files, applies the repo's confined-walk idiom (defense in depth even though the
-    source is this checkout, not an external target), converts to a repo-relative POSIX string, and
-    skips any path whose parts start with :data:`_EXCLUDED_PREFIX`. Deduplicates across overlapping
-    glob patterns keyed by the destination string in ``_CATEGORY_GLOBS`` iteration order (first
-    match wins). Each row is ``{"destination": <repo-relative POSIX str>}`` — the old
-    ``num``/``plane``/``marker_capable`` keys are gone; they were never consumed by
-    :func:`disposition`/:func:`build_manifest` (``MARKER_CAPABLE``/``DERIVED_GLOBS``/
-    ``CONSTITUTION_GLOBS`` already carry the equivalent classification at call time). Returns the
-    deduplicated rows sorted by destination.
+    source is this checkout, not an external target), and derives ``destination`` from the
+    ENUMERATED ``candidate`` path (``candidate.relative_to(_REPO_ROOT)``), never from ``resolved``
+    (WR-04 — ``resolved`` is used ONLY for the containment check; deriving identity from it would
+    collapse two distinct symlinks pointing at the same target into one deduplicated row). Skips a
+    candidate whose parts start with :data:`_EXCLUDED_PREFIX`, whose first part is
+    :data:`_INSTANCE_DIR_NAME`, whose parts intersect :data:`_SKIP_SEGMENTS` (WR-02), or — the CR-01
+    fix this plan (26-07) adds — whose destination is not git-tracked (per
+    :func:`_tracked_repo_files`, called ONCE up front and reused across the whole loop for both
+    determinism and performance; when git is unavailable, the filter is a no-op and enumeration
+    falls back to unfiltered, per D-09). Deduplicates across overlapping glob patterns keyed by the
+    destination string in ``_CATEGORY_GLOBS`` iteration order (first match wins). Each row is
+    ``{"destination": <repo-relative POSIX str>}`` — the old ``num``/``plane``/``marker_capable``
+    keys are gone; they were never consumed by :func:`disposition`/:func:`build_manifest`
+    (``MARKER_CAPABLE``/``DERIVED_GLOBS``/``CONSTITUTION_GLOBS`` already carry the equivalent
+    classification at call time). Returns the deduplicated rows sorted by destination.
     """
     root_resolved = _REPO_ROOT.resolve()
+    tracked = _tracked_repo_files()
     rows: dict[str, dict] = {}
 
     for pattern in _CATEGORY_GLOBS:
@@ -204,11 +258,15 @@ def destination_catalog() -> list[dict]:
             resolved = candidate.resolve()
             if root_resolved != resolved and root_resolved not in resolved.parents:
                 continue
-            destination = resolved.relative_to(root_resolved).as_posix()
+            destination = candidate.relative_to(_REPO_ROOT).as_posix()
             parts = destination.split("/")
             if tuple(parts[: len(_EXCLUDED_PREFIX)]) == _EXCLUDED_PREFIX:
                 continue
             if parts[0] == _INSTANCE_DIR_NAME:
+                continue
+            if any(seg in _SKIP_SEGMENTS for seg in parts):
+                continue
+            if tracked is not None and destination not in tracked:
                 continue
             if destination not in rows:
                 rows[destination] = {"destination": destination}

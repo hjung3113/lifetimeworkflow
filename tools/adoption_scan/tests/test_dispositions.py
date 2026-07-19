@@ -5,10 +5,18 @@ hash-equal/hash-differ collision rule + GSD-owned exclusion."""
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
+
+import pytest
 
 from tools.adoption_scan import cli, destinations
 from tools.harness_emit.manifest import is_gsd_owned
+
+# WR-11: a loose sanity floor on the real, git-tracked-filtered catalog size — not an exact count
+# (the catalog legitimately grows/shrinks as the harness's file tree does).
+_MIN_CATALOG_ROWS = 300
 
 _PLACEHOLDER_DESTINATIONS = (
     "harness/agents/widget-engineer.md",
@@ -25,16 +33,106 @@ _PLACEHOLDER_DESTINATIONS = (
 
 
 def test_total(tmp_path: Path) -> None:
-    """Every non-excluded row resolves to a non-None value from the 6-value enum — totality over
-    whatever the real, rule-derived catalog currently contains (no hardcoded length)."""
+    """WR-11: destination_catalog() partitions explicitly into dispositioned vs excluded results,
+    and the two counts sum to the catalog's total — a regression that made every row resolve to
+    None (e.g. a broken is_gsd_owned) turns this test RED, not vacuously green."""
     catalog = destinations.destination_catalog()
-    assert len(catalog) > 100
+    assert len(catalog) >= _MIN_CATALOG_ROWS
 
-    for row in catalog:
-        result = destinations.disposition(row["destination"], tmp_path, proposed_sha=None)
-        if result is None:
-            continue
-        assert result in destinations.DISPOSITION_ENUM
+    results = [
+        destinations.disposition(row["destination"], tmp_path, proposed_sha=None) for row in catalog
+    ]
+    dispositioned = [r for r in results if r is not None]
+    excluded = [r for r in results if r is None]
+
+    assert dispositioned  # non-vacuous: at least one row actually gets a disposition
+    assert len(dispositioned) + len(excluded) == len(catalog)
+    assert set(dispositioned) <= set(destinations.DISPOSITION_ENUM)
+
+
+def test_catalog_invariant_to_untracked_local_state(repo_root: Path, tmp_path: Path) -> None:
+    """CR-01 mandatory clean-checkout reproduction: a fresh `git worktree` checked out at HEAD
+    produces the SAME catalog destination set as the current tree — proving the catalog is
+    invariant to any local untracked/gitignored state, independent of this working tree's
+    particular contents."""
+    worktree_dir = tmp_path / "clean-worktree"
+    added = subprocess.run(
+        ["git", "worktree", "add", "--detach", str(worktree_dir), "HEAD"],
+        cwd=str(repo_root),
+        capture_output=True,
+        text=True,
+    )
+    if added.returncode != 0:
+        pytest.skip(f"git worktree add unavailable in this environment: {added.stderr.strip()}")
+
+    try:
+        one_liner = (
+            "from tools.adoption_scan import destinations; import json; "
+            "print(json.dumps(sorted("
+            "r['destination'] for r in destinations.destination_catalog()"
+            ")))"
+        )
+        completed = subprocess.run(
+            [sys.executable, "-c", one_liner],
+            cwd=str(worktree_dir),
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        worktree_catalog = json.loads(completed.stdout)
+        current_catalog = sorted(row["destination"] for row in destinations.destination_catalog())
+        assert worktree_catalog == current_catalog
+    finally:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", str(worktree_dir)],
+            cwd=str(repo_root),
+            capture_output=True,
+            text=True,
+        )
+
+
+def test_catalog_excludes_untracked_file_in_matched_category(repo_root: Path) -> None:
+    """CR-01 fast companion: a live-created untracked ``.memory/derived/*`` file (real path,
+    genuinely gitignored, matching a _CATEGORY_GLOBS pattern) is excluded from the catalog while it
+    exists."""
+    proof_path = repo_root / ".memory" / "derived" / "__cr01_untracked_proof__.md"
+    proof_path.parent.mkdir(parents=True, exist_ok=True)
+    proof_path.write_text("untracked proof\n", encoding="utf-8")
+    try:
+        catalog_destinations = {row["destination"] for row in destinations.destination_catalog()}
+        assert ".memory/derived/__cr01_untracked_proof__.md" not in catalog_destinations
+    finally:
+        proof_path.unlink(missing_ok=True)
+
+
+def test_catalog_excludes_vendor_and_generated_segments() -> None:
+    """WR-02: no catalog row's destination intersects _SKIP_SEGMENTS (structural predicate — real
+    vendor/generated dirs like .venv/node_modules may or may not exist in this checkout)."""
+    for row in destinations.destination_catalog():
+        parts = row["destination"].split("/")
+        assert not any(seg in destinations._SKIP_SEGMENTS for seg in parts)
+
+
+def test_symlink_identity_uses_enumerated_path_not_resolved_target(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """WR-04: destination identity is the ENUMERATED path, not the resolved symlink target — two
+    distinct symlinks to the same file produce two distinct catalog rows."""
+    monkeypatch.setattr(destinations, "_REPO_ROOT", tmp_path)
+
+    adr_dir = tmp_path / "docs" / "adr"
+    adr_dir.mkdir(parents=True)
+    real_file = adr_dir / "0001-real.md"
+    real_file.write_text("real content\n", encoding="utf-8")
+    link_file = adr_dir / "0002-link.md"
+    try:
+        link_file.symlink_to(real_file)
+    except OSError:
+        pytest.skip("unprivileged symlink creation is not permitted on this filesystem")
+
+    catalog_destinations = {row["destination"] for row in destinations.destination_catalog()}
+    assert "docs/adr/0001-real.md" in catalog_destinations
+    assert "docs/adr/0002-link.md" in catalog_destinations
 
 
 def test_each_disposition_reachable(tmp_path: Path) -> None:
