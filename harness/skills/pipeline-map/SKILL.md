@@ -71,6 +71,27 @@ Follow the flow deterministically, sorting components by `stage`:
 To answer "which stage handles contract X?": scan `produces` for the emitter and `consumes` for the
 receiver — the edge whose `contract == X` names both.
 
+## Rendering non-linear graphs
+
+A single-chain topology (every stage fan-out and fan-in = 1) reads perfectly as the flat stage
+list plus edge chain above. But the declared graph can be **non-linear** — one stage fanning out to
+several dependents, several stages fanning in to one, disconnected sub-graphs, or a legal cycle. For
+those, render the compiled contract graph as an **indented tree** (D-01) instead of a flat chain:
+
+- Compile the graph with `tools.contract_graph.compile_graph` and read its `adjacency` map
+  (authority → sorted dependents).
+- **Root** at each authority with no incoming edge, in sorted order; for a fully cyclic graph with no
+  such root, start at the lexicographically-first authority so the render stays deterministic.
+- **Indent one level per hop** — an authority sits above its dependents, each dependent nested one
+  level deeper, recursing along the sorted `adjacency` edges.
+- **Terminate a cycle** with an explicit `(cycle -> <node>)` marker: track the visited set on the
+  current root-to-node path and, when a dependent is already on that path, print the marker instead
+  of recursing into it again — the same visited-set-before-recurse discipline
+  `tools.contract_graph.query.transitive` uses so a legal cycle never loops.
+
+`/pipeline` (see **Related**) is the render entry point that prints this tree; use the flat stage
+list/edge chain only when the graph is a single chain.
+
 ## Resolving a stage to its owning component agent
 
 Each `[[components]]` stage is implemented by a **component agent** derived from the neutral

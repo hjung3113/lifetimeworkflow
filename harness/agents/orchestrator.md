@@ -60,6 +60,10 @@ non-trivial request:
    (`components()` / `pipeline()`); identify which stage/component the request touches and its
    upstream/downstream edge contracts, so you route to the owning component engineer (or the
    language engineer when the component declares none) and know which contracts a change can break.
+   When the compiled graph is non-linear (branch, fan-in, or cycle), compute the affected set for a
+   change with `tools.contract_graph`'s `direct` / `reverse` / `transitive` queries (each returning
+   ids **and** connecting paths) instead of hand-walking `pipeline()["edges"]`, so routing to the
+   owning component/language engineer accounts for branch and cycle topologies too.
 5. **Decompose** into small, ordered, least-privilege subtasks; note each subtask's gate.
 6. **Delegate** each to its scoped specialist; you do not do the heavy edit.
 7. **Verify** — the engineer runs `/verify-work` (lint + test + contract-check + golden) and
