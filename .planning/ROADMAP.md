@@ -510,6 +510,26 @@ Plans:
 3. cross-repo authority-member contract 해소가 기존 drift 검사를 재사용하고, generic 비선형 + 불변 선형 regression fixture가 통과한다.
 4. `/pipeline`·`pipeline-map`·orchestrator가 두 런타임에 byte-identical 왕복(모델 id 없음)하고 사람 승인 topology ADR이 랜딩된다.
 
+**Plans**: 5 plans (4 waves)
+
+Plans:
+**Wave 1**
+
+- [ ] 25-01-PLAN.md — TOPO-04: `tools/contract_graph` compiler + `harness_lint` consistency gate (unresolved-authority/dangling-endpoint/unknown-contract slugs) + WR-02 closure
+
+**Wave 2** *(blocked on 25-01)*
+
+- [ ] 25-02-PLAN.md — TOPO-05: cycle-safe direct/reverse/transitive affected-set queries ({ids, paths}, no task-evidence/no contract-preload)
+
+**Wave 3** *(blocked on 25-01, 25-02 — parallel, no file overlap)*
+
+- [ ] 25-03-PLAN.md — TOPO-06: `/pipeline`·`pipeline-map`·`orchestrator.md` indented-tree render (D-01) + linear byte-identity regression + emit round-trip
+- [ ] 25-04-PLAN.md — TOPO-07: generic non-linear proof fixtures (fan-out, request/response split, event fan-out, legal cycle, cross-repo authority) + WR-01 disposition + GEN-04 regression
+
+**Wave 4** *(blocked on 25-03, 25-04)*
+
+- [ ] 25-05-PLAN.md — D-04: ADR-0009 (full model — compiler + queries + conductor contract) authored + human-ratified
+
 ### Phase 26: Deterministic Brownfield Inventory + Mapping *(v2.3 B)*
 
 **Goal:** target을 변경하거나 에이전트 워크플로를 호출하지 않고 evidence-근거 adoption plan을 만든다.
