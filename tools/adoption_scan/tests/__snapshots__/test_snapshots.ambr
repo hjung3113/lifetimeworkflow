@@ -404,12 +404,176 @@
   {
     "dispositions": [
       {
-        "destination": ".claude/agents/widget-engineer.md",
+        "destination": ".claude/agents/code-reviewer.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/agents/curator.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/agents/explorer.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/agents/orchestrator.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/agents/python-engineer.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/add-language.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/adr.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/agree.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/build.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/checkpoint.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/component.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/contract-check.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/docs-sync.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/fan-out-synthesize.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/golden-approve.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/golden.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/handoff.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/intake.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/lint.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/new-contract-rule.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/orient.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/phase-gate.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/pipeline.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/refresh-memory.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/review.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/strangler-step.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/test.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/commands/verify-work.md",
         "disposition": "derived-regenerate"
       },
       {
         "destination": ".claude/settings.json",
         "disposition": "marker-merge"
+      },
+      {
+        "destination": ".claude/skills/context-budget/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/skills/data-contracts/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/skills/fan-out-synthesize/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/skills/fan-out-synthesize/references/fan-out-return.schema.json",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/skills/gate-model/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/skills/golden-debug/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/skills/golden-debug/references/canonicalization-axes.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/skills/golden-testing/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/skills/pipeline-map/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/skills/polyglot-boundary/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/skills/polyglot-boundary/references/canonicalization-table.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/skills/python-conventions/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/skills/skill-creator/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/skills/two-plane-memory/SKILL.md",
+        "disposition": "derived-regenerate"
       },
       {
         "destination": ".github/CODEOWNERS",
@@ -428,11 +592,23 @@
         "disposition": "create"
       },
       {
-        "destination": ".memory/agreements/0001-widget.md",
+        "destination": ".memory/agreements/README.md",
+        "disposition": "create"
+      },
+      {
+        "destination": ".memory/agreements/_TEMPLATE.md",
         "disposition": "create"
       },
       {
         "destination": ".memory/derived/contracts-index.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".memory/derived/pointer-index.json",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".memory/derived/pointer-index.md",
         "disposition": "derived-regenerate"
       },
       {
@@ -444,12 +620,200 @@
         "disposition": "derived-regenerate"
       },
       {
-        "destination": ".opencode/agent/widget-engineer.md",
+        "destination": ".memory/state/progress.md",
         "disposition": "derived-regenerate"
       },
       {
-        "destination": ".workflow/tasks/T-0001/task.json",
-        "disposition": "create"
+        "destination": ".opencode/agent/code-reviewer.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/agent/curator.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/agent/explorer.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/agent/orchestrator.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/agent/python-engineer.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/add-language.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/adr.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/agree.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/build.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/checkpoint.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/component.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/contract-check.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/docs-sync.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/fan-out-synthesize.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/golden-approve.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/golden.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/handoff.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/intake.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/lint.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/new-contract-rule.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/orient.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/phase-gate.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/pipeline.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/refresh-memory.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/review.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/strangler-step.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/test.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/command/verify-work.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/plugin/contract-guard.ts",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/plugin/format-on-write.ts",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/plugin/polyglot-lint.ts",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/plugin/resume-gate.ts",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/plugin/secret-scan.ts",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/plugin/session-inject.ts",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/skill/context-budget/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/skill/data-contracts/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/skill/fan-out-synthesize/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/skill/fan-out-synthesize/references/fan-out-return.schema.json",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/skill/gate-model/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/skill/golden-debug/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/skill/golden-debug/references/canonicalization-axes.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/skill/golden-testing/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/skill/pipeline-map/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/skill/polyglot-boundary/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/skill/polyglot-boundary/references/canonicalization-table.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/skill/python-conventions/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/skill/skill-creator/SKILL.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/skill/two-plane-memory/SKILL.md",
+        "disposition": "derived-regenerate"
       },
       {
         "destination": "AGENTS.md",
@@ -472,11 +836,111 @@
         "disposition": "human-ratification-required"
       },
       {
-        "destination": "docs/adr/0001-decision.md",
+        "destination": "contracts/harness/adoption/manifest.schema.json",
         "disposition": "human-ratification-required"
       },
       {
-        "destination": "docs/explanation/architecture.md",
+        "destination": "contracts/harness/adoption/plan.schema.json",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "contracts/harness/task-control/attestation.schema.json",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "contracts/harness/task-control/evidence.schema.json",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "contracts/harness/task-control/gate-registry.json",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "contracts/harness/task-control/handoff.schema.json",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "contracts/harness/task-control/state.schema.json",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "contracts/harness/task-control/task.schema.json",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "contracts/harness/task-control/transitions.json",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "contracts/harness/topology/relationship.schema.json",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "contracts/normalization/format-conventions.schema.json",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "contracts/sample/greeting.schema.json",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "docs/adr/0001-walking-skeleton-golden-core.md",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "docs/adr/0002-general-template-de-specialization.md",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "docs/adr/0003-pipeline-topology-slot-and-instance-overlay.md",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "docs/adr/0004-constitution-hook-fail-open-posture.md",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "docs/adr/0005-golden-comparator-structural-only.md",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "docs/adr/0006-process-memory-channel-and-provenance-reframe.md",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "docs/adr/0007-constitution-gate-dev-enforce-decoupling.md",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "docs/adr/0008-task-control-plane-lifecycle.md",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "docs/adr/0009-contract-relationship-graph-model.md",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "docs/adr/README.md",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "docs/explanation/README.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "docs/explanation/agent-workflow-skillset-design-guide.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "docs/explanation/next-milestone-task-control-plane.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "docs/explanation/task-lifecycle-shadow-metrics.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "docs/explanation/template-and-instances.md",
         "disposition": "create"
       },
       {
@@ -484,31 +948,207 @@
         "disposition": "create"
       },
       {
-        "destination": "docs/how-to/add-a-contract.md",
+        "destination": "docs/how-to/README.md",
         "disposition": "create"
+      },
+      {
+        "destination": "docs/how-to/task-lifecycle.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "docs/reference/README.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": "docs/reference/attestation.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": "docs/reference/evidence.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": "docs/reference/format-conventions.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": "docs/reference/greeting.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": "docs/reference/handoff.md",
+        "disposition": "derived-regenerate"
       },
       {
         "destination": "docs/reference/inventory.md",
         "disposition": "derived-regenerate"
       },
       {
-        "destination": "docs/tutorials/getting-started.md",
+        "destination": "docs/reference/manifest.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": "docs/reference/plan.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": "docs/reference/relationship.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": "docs/reference/state.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": "docs/reference/task.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": "docs/tutorials/README.md",
         "disposition": "create"
       },
       {
-        "destination": "golden/widget/verified/case.txt",
+        "destination": "golden/README.md",
         "disposition": "human-ratification-required"
       },
       {
-        "destination": "harness/agents/widget-engineer.md",
+        "destination": "golden/sample/expected/baseline.verified.tsv",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "golden/sample/input/seed.tsv",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "golden/sample/meta.yaml",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "harness/agents/code-reviewer.md",
         "disposition": "create"
       },
       {
-        "destination": "harness/commands/widget-check.md",
+        "destination": "harness/agents/curator.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/agents/explorer.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/agents/orchestrator.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/agents/python-engineer.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/agents/templates/component-engineer.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/agents/templates/engineer.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/add-language.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/adr.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/agree.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/build.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/checkpoint.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/component.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/contract-check.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/docs-sync.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/fan-out-synthesize.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/golden-approve.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/golden.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/handoff.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/intake.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/lint.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/new-contract-rule.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/orient.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/phase-gate.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/pipeline.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/refresh-memory.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/review.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/strangler-step.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/test.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/verify-work.md",
         "disposition": "create"
       },
       {
         "destination": "harness/git-hooks/pre-commit",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/opencode.config.schema.json",
         "disposition": "create"
       },
       {
@@ -520,7 +1160,27 @@
         "disposition": "create"
       },
       {
+        "destination": "harness/plugins/contract-guard.ts",
+        "disposition": "create"
+      },
+      {
         "destination": "harness/plugins/format-on-write.ts",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/plugins/polyglot-lint.ts",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/plugins/resume-gate.ts",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/plugins/secret-scan.ts",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/plugins/session-inject.ts",
         "disposition": "create"
       },
       {
@@ -532,7 +1192,75 @@
         "disposition": "create"
       },
       {
-        "destination": "harness/skills/widget-conventions/SKILL.md",
+        "destination": "harness/skills/context-budget/SKILL.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/skills/data-contracts/SKILL.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/skills/fan-out-synthesize/SKILL.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/skills/fan-out-synthesize/references/fan-out-return.schema.json",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/skills/gate-model/SKILL.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/skills/golden-debug/SKILL.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/skills/golden-debug/references/canonicalization-axes.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/skills/golden-testing/SKILL.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/skills/pipeline-map/SKILL.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/skills/polyglot-boundary/SKILL.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/skills/polyglot-boundary/references/canonicalization-table.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/skills/python-conventions/SKILL.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/skills/skill-creator/SKILL.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/skills/two-plane-memory/SKILL.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "libs/normalize-fixtures/bom_crlf.json",
+        "disposition": "create"
+      },
+      {
+        "destination": "libs/normalize-fixtures/decimal_locale.json",
+        "disposition": "create"
+      },
+      {
+        "destination": "libs/normalize-fixtures/null_vs_empty.json",
+        "disposition": "create"
+      },
+      {
+        "destination": "libs/normalize-fixtures/tz_iso8601.json",
         "disposition": "create"
       },
       {
@@ -544,6 +1272,10 @@
         "disposition": "create"
       },
       {
+        "destination": "libs/python/pyproject.toml",
+        "disposition": "create"
+      },
+      {
         "destination": "opencode.json",
         "disposition": "derived-regenerate"
       },
@@ -552,7 +1284,95 @@
         "disposition": "conflict"
       },
       {
-        "destination": "tools/widget_tool/pyproject.toml",
+        "destination": "tools/adoption_scan/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/agree/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/contract_drift/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/contract_graph/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/contract_hash/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/docs_sync/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/evidence/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/golden_runner/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/handoff/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/harness_config/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/harness_emit/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/harness_lint/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/harness_perms/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/hooks/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/lifecycle_eval/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/memory_regen/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/memory_ui/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/polyglot_lint/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/risk_router/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/strangler_guard/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/task_control/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/task_packet/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "tools/workspace_config/pyproject.toml",
         "disposition": "create"
       },
       {
@@ -562,7 +1382,403 @@
     ],
     "excluded": [
       {
-        "destination": ".claude/get-shit-done/README.md",
+        "destination": ".claude/agents/gsd-advisor-researcher.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-ai-researcher.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-assumptions-analyzer.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-code-fixer.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-code-reviewer.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-codebase-mapper.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-debug-session-manager.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-debugger.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-doc-classifier.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-doc-synthesizer.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-doc-verifier.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-doc-writer.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-domain-researcher.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-eval-auditor.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-eval-planner.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-executor.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-framework-selector.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-integration-checker.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-intel-updater.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-nyquist-auditor.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-pattern-mapper.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-phase-researcher.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-plan-checker.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-planner.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-project-researcher.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-research-synthesizer.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-roadmapper.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-security-auditor.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-ui-auditor.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-ui-checker.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-ui-researcher.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-user-profiler.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/agents/gsd-verifier.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/add-tests.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/ai-integration-phase.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/audit-fix.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/audit-milestone.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/audit-uat.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/autonomous.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/capture.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/cleanup.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/code-review.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/complete-milestone.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/config.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/debug.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/discuss-phase.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/docs-update.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/eval-review.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/execute-phase.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/explore.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/extract-learnings.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/fast.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/forensics.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/graphify.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/health.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/help.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/import.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/inbox.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/ingest-docs.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/manager.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/map-codebase.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/milestone-summary.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/mvp-phase.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/new-milestone.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/new-project.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/ns-context.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/ns-ideate.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/ns-manage.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/ns-project.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/ns-review.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/ns-workflow.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/pause-work.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/phase.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/plan-phase.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/plan-review-convergence.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/pr-branch.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/profile-user.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/progress.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/quick.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/resume-work.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/review-backlog.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/review.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/secure-phase.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/settings.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/ship.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/sketch.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/spec-phase.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/spike.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/stats.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/surface.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/thread.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/ui-phase.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/ui-review.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/ultraplan-phase.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/undo.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/update.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/validate-phase.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/verify-work.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/workspace.md",
+        "reason": "gsd-owned"
+      },
+      {
+        "destination": ".claude/commands/gsd/workstreams.md",
         "reason": "gsd-owned"
       }
     ],
