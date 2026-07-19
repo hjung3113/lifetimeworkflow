@@ -1,72 +1,63 @@
 ---
 phase: 26-deterministic-brownfield-inventory-mapping-v2-3-b
-verified: 2026-07-19T00:00:00Z
+verified: 2026-07-20T00:00:00Z
 status: gaps_found
-score: 4/6 must-haves verified
+score: 3/6 must-haves verified
 overrides_applied: 0
+re_verification:
+  previous_status: gaps_found
+  previous_score: 4/6
+  gaps_closed:
+    - "ADOPT-01 schema half: inventory.schema.json now has schema_surfaces + codeowners_surfaces (required), detect.py implements both detectors, scan.py wires them"
+    - "ADOPT-01/02 plan half: plan.py::classify() walks codeowners_surfaces and emits a real codeowners-ownership question (previously permanently dead code)"
+    - "ADOPT-03 catalog totality (data level): destination_catalog() is now rule-derived glob enumeration over the real checkout, not the old static 40-row sample with 10 nonexistent placeholder paths"
+  gaps_remaining:
+    - "ADOPT-01 schema_surfaces detected but never consumed by plan.py — the contract-candidate proposal/question kind stays permanently unreachable (same defect class as the codeowners gap this round fixed, left open for the schema half)"
+  regressions:
+    - "CR-01 (new, introduced by 26-06): destination_catalog() globs the live filesystem with no git-tracking filter. The rewrite that closed ADOPT-03's totality gap bakes 3 gitignored, untracked derived files (.memory/derived/pointer-index.json, .memory/derived/pointer-index.md, .memory/derived/repo-map.md) into the committed test_snapshots.ambr. On a clean checkout (exactly CI's core-suite shape: checkout -> uv sync -> uv run pytest, no memory_regen step) the catalog yields 341 rows vs the snapshot's 344 and test_artifacts_match_committed_snapshot FAILS. Independently reproduced: the three destinations are gitignored (git check-ignore confirms) and absent from git ls-files, yet present in the .ambr at lines 677-685."
+    - "CR-03 (new, introduced by 26-04/26-05): inventory.schema.json's surfaceRecord.evidence permits minItems:0 ('may be empty for an unknown/absent surface') while plan.schema.json's proposalRecord.evidence and questionRecord.evidence both require minItems:1. Independently reproduced: constructing a schema-valid inventory with a codeowners_surfaces entry carrying evidence:[] and running it through plan.build_plan() produces a plan object that Draft202012Validator flags with two '[] should be non-empty' errors — which is exactly the shape cli.main() schema-validates before writing any artifact, so a schema-valid inventory can hard-fail the CLI with no output at all. Latent only because today's two detectors happen to always attach non-empty evidence; the contract itself sanctions the failing shape."
 gaps:
-  - truth: "ADOPT-01: inventory reports existing schema/spec/doc/ADR/AGENTS/CODEOWNERS/CI surfaces"
+  - truth: "Pipeline is agent-free and fully CI-testable (phase goal text; roadmap SC-1 determinism)"
     status: failed
     reason: >
-      REQUIREMENTS.md ADOPT-01 and 26-CONTEXT.md both name six surface categories the inventory
-      must report: schema, spec, doc, ADR, AGENTS, CODEOWNERS, CI. The shipped
-      `inventory.schema.json` has properties for only `documentation_surfaces` (ADR/README/AGENTS)
-      and `ci_surfaces` — it has no property, and `detect.py` has no function, for "schema"
-      surfaces (e.g. `contracts/**/*.schema.json`) or CODEOWNERS. Confirmed empirically: scanning
-      this repo itself (which has 11 real `*.schema.json` files and a real
-      `.github/CODEOWNERS`) produces zero schema-surface records and zero CODEOWNERS records in
-      inventory.json, because no such record kind is ever emitted. `plan.py` even defines a
-      `codeowners-ownership` question kind and text template, but `classify()`/`generate_questions()`
-      never populate it because there is no inventory field to walk — it is permanently dead code
-      for CODEOWNERS on every real scan.
+      The exact commits that closed the previous ADOPT-03 gap (26-06, rewriting destination_catalog()
+      to glob the live filesystem) introduced a checkout-state dependency: the committed
+      tools/adoption_scan/tests/__snapshots__/test_snapshots.ambr encodes 3 gitignored/untracked
+      derived files that exist only on this working tree. CI's core-suite job
+      (.github/workflows/ci.yml:170-178, checkout -> uv sync --all-packages -> uv run pytest, no
+      memory_regen step) runs on a clean checkout where those 3 files do not exist, so
+      test_artifacts_match_committed_snapshot will fail there (341 catalog rows vs 344 baked into
+      the snapshot). The suite is green in this session only because of accumulated local
+      derived-artifact state, not because the pipeline is deterministic/CI-safe.
     artifacts:
-      - path: "tools/adoption_scan/detect.py"
-        issue: "No detect_codeowners_surfaces() or detect_schema_surfaces() function exists"
+      - path: "tools/adoption_scan/destinations.py"
+        issue: "destination_catalog() enumerates Path.glob() over the live filesystem with no git-tracked filter; .memory/derived/**/*.md,*.json glob picks up gitignored generated files whenever they happen to exist locally"
+      - path: "tools/adoption_scan/tests/__snapshots__/test_snapshots.ambr"
+        issue: "Committed baseline (lines 677-685) bakes in .memory/derived/pointer-index.json, .memory/derived/pointer-index.md, .memory/derived/repo-map.md — all confirmed gitignored via git check-ignore and absent from git ls-files"
+    missing:
+      - "Filter destination_catalog() to git-tracked paths only (e.g. via `git ls-files`), or explicitly exclude .memory/derived/* except the one re-included contracts-index.md, so the catalog and its snapshot are reproducible on a clean checkout"
+      - "Regenerate the snapshot from a clean checkout (or with the filter applied) and confirm the row count is invariant to local derived-artifact state"
+  - truth: "Inventory reports schema/CODEOWNERS surfaces and the plan/manifest pipeline is internally consistent (ADOPT-01, ADOPT-02)"
+    status: failed
+    reason: >
+      inventory.schema.json's surfaceRecord.evidence (minItems:0) contradicts plan.schema.json's
+      proposalRecord/questionRecord.evidence (both minItems:1). Reproduced directly: a schema-valid
+      inventory with a codeowners_surfaces entry carrying evidence:[] produces a plan object that
+      fails Draft202012Validator with two '[] should be non-empty' errors. Through cli.main() this
+      exits 1 with no artifacts written at all (inventory and manifest discarded too, since
+      validation runs before any write) — a schema-valid input crashes the "agent-free,
+      fully CI-testable" pipeline this phase's goal text promises. Only latent (not yet hit by the
+      two live detectors) because detect_schema_surfaces()/detect_codeowners_surfaces() happen to
+      always attach at least one evidence pointer today; the contract itself sanctions the failing
+      shape for any other/future producer or hand-authored inventory.
+    artifacts:
       - path: "contracts/harness/adoption/inventory.schema.json"
-        issue: "properties are only [target_ref, enumeration_mode, max_file_bytes, included, excluded, languages, manifests, documentation_surfaces, ci_surfaces, test_surfaces, candidate_process_boundaries] — no schema-surface or codeowners-surface slot"
-      - path: "tools/adoption_scan/plan.py:54,66,89"
-        issue: "codeowners-ownership question kind is wired into the templates/grouping/blocking tables but is structurally unreachable — classify() never walks a codeowners inventory field"
+        issue: "surfaceRecord.evidence: minItems 0, described as 'May be empty for an unknown/absent surface' — directly contradicts the plan schema's cardinality requirement for the same evidence shape"
+      - path: "contracts/harness/adoption/plan.schema.json"
+        issue: "proposalRecord.evidence and questionRecord.evidence both require minItems: 1 with no accommodation for an empty-evidence surface record"
     missing:
-      - "detect_schema_surfaces() (contracts/**/*.schema.json, *.spec.md, or similar) feeding a new inventory.schema.json property"
-      - "detect_codeowners_surfaces() (.github/CODEOWNERS existence + parsed path entries) feeding a new inventory.schema.json property, wired into plan.classify() so codeowners-ownership questions actually fire"
-  - truth: "ADOPT-03 / roadmap SC-3: every harness destination resolves to exactly one disposition"
-    status: failed
-    reason: >
-      `destinations._CATALOG` is a hardcoded, fixed-size, 40-row list that never varies with the
-      scanned target OR with the harness's own real file tree — `build_manifest()` always emits
-      exactly 39 dispositions + 1 excluded row, verified by directly running
-      `python -m tools.adoption_scan --target . --out <dir>` against this repo itself. Several
-      catalog rows are literal placeholder paths borrowed from 26-RESEARCH.md's illustrative
-      "widget" example and do not exist anywhere in this checkout (e.g.
-      `harness/agents/widget-engineer.md`, `harness/commands/widget-check.md`,
-      `harness/skills/widget-conventions/SKILL.md`, `.opencode/agent/widget-engineer.md`,
-      `.claude/agents/widget-engineer.md`, `golden/widget/verified/case.txt`,
-      `docs/adr/0001-decision.md`, `.memory/agreements/0001-widget.md`,
-      `.workflow/tasks/T-0001/task.json`, `tools/widget_tool/pyproject.toml` — 10 of 40 rows
-      confirmed non-existent by direct filesystem check). Meanwhile this repo actually has 11 real
-      `*.schema.json` contract files (catalog covers exactly 1), 10 real ADRs (catalog's ADR row
-      points at a nonexistent file), 23 real `harness/commands/*.md` (catalog covers exactly 1),
-      11 real `harness/skills/*/SKILL.md` (catalog covers exactly 1), 38 real `.claude/agents/*.md`
-      (catalog covers exactly 1), 5 real `.opencode/agent/*.md` (catalog covers exactly 1), and 4
-      real nested `AGENTS.md` files (catalog covers exactly 1, `libs/python/AGENTS.md`; the other 3
-      — root aside — get no manifest row at all). Roadmap SC-3 reads "every harness destination has
-      exactly one disposition" and ADOPT-03's own text lists "contracts·golden·ADR·Diátaxis 4
-      quadrants·... root/nested AGENTS·..." as the destinations to be covered — the shipped catalog
-      is a one-example-per-category sample, not an enumeration of the actual destination set, so
-      the manifest under-covers by roughly an order of magnitude on every glob-shaped category. This
-      is disclosed as a deliberate implementation choice in 26-03-SUMMARY.md's key-decisions ("Catalog
-      row destinations use concrete representative paths... rather than the research table's literal
-      glob-pattern/prose strings"), but the disclosure frames it as a testability convenience, not as
-      a scope reduction from "every harness destination" to "one representative example per plane."
-      Totality is only proven over the tool's own fixed 40-string catalog (`test_dispositions.py::test_total`),
-      never against a target's, or the harness's own, actual file tree.
-    artifacts:
-      - path: "tools/adoption_scan/destinations.py:98-274"
-        issue: "_CATALOG is a static 40-tuple of literal paths, several nonexistent placeholders, never expanded from the glob patterns 26-RESEARCH.md's own catalog specified (contracts/**/*.schema.json, golden/**, docs/adr/**, harness/agents/*.md, harness/commands/*.md, harness/skills/<name>/SKILL.md, .opencode/{agent,...}/**, .claude/{agents,...}/**)"
-      - path: "tools/adoption_scan/destinations.py:370-415"
-        issue: "build_manifest() iterates destination_catalog() only — never the scanned inventory's included[] set or a real glob expansion, so dispositions[] length is target-independent (always 39) regardless of what a real target or the harness itself actually contains"
-    missing:
-      - "Either expand each glob-shaped catalog row into one disposition row per real matching file (harness-side, at minimum) at build_manifest() time, or explicitly re-scope ADOPT-03/roadmap SC-3's wording to 'one disposition per destination category' and get that re-scoping ratified — the current code silently does the latter without updating the requirement/roadmap text it claims to satisfy"
+      - "Rebaseline surfaceRecord.evidence to minItems:1 (matching actual producer behavior — no detector ever emits an empty-evidence surface) in the same commit as a contract-hash rebaseline + docs_sync + memory_regen + snapshot refresh, or otherwise reconcile the two schemas so no schema-valid inventory can crash the CLI"
+      - "A regression test asserting build_plan(inventory) validates for every surface array shape permitted by inventory.schema.json"
 deferred: []
 human_verification: []
 ---
@@ -74,85 +65,108 @@ human_verification: []
 # Phase 26: Deterministic Brownfield Inventory + Mapping (v2.3 B) Verification Report
 
 **Phase Goal:** A read-only deterministic repo inventory, an evidence-classified (observed/inferred/unknown) mapping plan in the TOPO vocabulary, and a complete destination/disposition manifest — agent-free, fully CI-testable.
-**Verified:** 2026-07-19
+**Verified:** 2026-07-20
 **Status:** gaps_found
-**Re-verification:** No — initial verification
+**Re-verification:** Yes — after gap-closure plans 26-04, 26-05, 26-06
 
 ## Goal Achievement
+
+This is a re-verification following execution of three gap-closure plans that targeted the previous
+`26-VERIFICATION.md`'s two FAILED truths (ADOPT-01 surface coverage; ADOPT-03 catalog totality). Both
+targeted gaps show real progress at the data/content level, but the fixes themselves introduced two
+**new, independently-reproduced CRITICAL regressions** (CR-01, CR-03, both confirmed directly below,
+not merely accepted from the orchestrator's report) that break the phase goal's own "agent-free,
+fully CI-testable" and "complete...manifest" claims. Net result: the phase goal is **not** achieved.
 
 ### Observable Truths
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | Repeated inventory/plan/manifest output is byte-identical regardless of file enumeration order (roadmap SC-1) | ✓ VERIFIED | `test_determinism.py::test_double_run_byte_identical` + `::test_shuffled_enumeration_byte_identical`, `test_snapshots.py` committed syrupy snapshot; `1010 passed` full suite; independently re-ran `python -m tools.adoption_scan --target . --out <dir>` twice — identical output confirmed by prior review's own re-run (26-REVIEW.md "Determinism" verification block) |
-| 2 | Every proposed item classified observed/inferred/unknown; unresolved ownership stays a question (roadmap SC-2, ADOPT-02) | ✓ VERIFIED (with caveat) | `plan.py::classify()` — direct-restatement→observed (manifests), structural-inference→inferred (candidate_process_boundaries, always `rationale`-carrying), everything ownership/placement→unknown by construction (docs-destination, agents-boundary, test-command). Confirmed on a real self-scan: 64 proposals, 7 questions, all AGENTS.md/docs/test-command entries `unknown`. Caveat: `excluded-file` and `collision` question kinds are defined in the schema/templates but never fire on any real scan (honestly disclosed in 26-03-SUMMARY.md, not a requirement violation — ADOPT-02's text does not name these two kinds explicitly) |
-| 3 | Every harness destination resolves to exactly one disposition (roadmap SC-3, ADOPT-03) | ✗ FAILED | See gap below — the manifest's "40-row catalog" is a fixed representative sample (10 of 40 rows are nonexistent placeholder paths), never expanded against the harness's or a target's real file tree; self-scan always yields exactly 39/1 regardless of the repo actually having 11 schemas, 10 ADRs, 23 commands, 11 skills, 38 `.claude/agents`, 5 `.opencode/agent`, 4 nested `AGENTS.md` |
-| 4 | Confinement, secret exclusion, size cap, ambiguity, collision detection pass; target tree unchanged (roadmap SC-4) | ⚠️ PARTIAL | Confinement/symlink-escape, vendored, generated-segment, size-cap, binary, and read-only guarantees all hold and are unit-tested (`test_scan_exclusions.py`, `test_readonly.py`); collision (preserve/conflict) now correctly reachable post-CR-01-fix (independently verified — self-scan against this repo produced 1 real `conflict` row and 13 `preserve` rows). However the reused v2.2 secret-content pattern is demonstrably too broad for prose: scanning this repo's own real `.github/workflows/ci.yml` excludes it as `secret-content` because the comment text `"...enforcement is a REPO SETTING..."` contains the substring `"...TOKEN: gate..."`, which matches the shared `gate-registry.json` pattern `(?:token)\s*[:=]\s*[^\s]+` case-insensitively — a genuine false positive on ordinary prose, reproduced directly, not hypothetical |
-| 5 | Inventory reports existing schema/spec/doc/ADR/AGENTS/CODEOWNERS/CI surfaces (ADOPT-01 literal text) | ✗ FAILED | See gap below — `detect.py` has no schema-surface or CODEOWNERS-surface detection at all; `inventory.schema.json` has no property to hold either. CI-surface detection is unreliable per Truth 4's false positive |
-| 6 | Pipeline is agent-free and fully CI-testable, and is actually wired into CI (not merely wireable) | ✓ VERIFIED | `tools/adoption_scan` is a `uv` workspace member (`tools/*` glob in root `pyproject.toml`); root `testpaths = ["libs/python", "tools"]` includes it; `.github/workflows/ci.yml`'s `core-suite` job runs `uv run pytest` (full suite, includes `tools/adoption_scan/tests/*`, which drives `cli.main()` end-to-end via `test_cr01_conflict_reachable_through_real_cli`); `drift` job's `uv run python -m tools.contract_drift.drift` covers the three new adoption schemas (confirmed hash entries present, drift green). No agent invocation anywhere in `tools/adoption_scan/` — pure stdlib + repo-internal imports |
+| 1 | Repeated inventory/plan/manifest output is byte-identical across repeated invocations in a given tree (roadmap SC-1, narrow reading) | ✓ VERIFIED | `test_determinism.py` double-run + shuffled-enumeration tests still pass; unrelated to the checkout-state issue below (that is a cross-checkout reproducibility failure, not a same-tree repeat-invocation failure) |
+| 2 | Pipeline is agent-free and **fully CI-testable** (phase goal text) | ✗ FAILED | See gap: `test_artifacts_match_committed_snapshot` bakes in 3 gitignored/untracked derived files that only exist on this working tree; independently confirmed via `git check-ignore` + `git ls-files` that these 3 paths are absent from git tracking, and CI's `core-suite` job (`.github/workflows/ci.yml:170-178`) runs a clean checkout with no `memory_regen` step before pytest |
+| 3 | Every proposed item classified observed/inferred/unknown; unresolved ownership stays a question (roadmap SC-2, ADOPT-02) | ✓ VERIFIED (with new caveat) | `codeowners-ownership` question kind now reachable — `plan.py:182` walks `codeowners_surfaces` and emits it (previously permanently dead code, confirmed fixed by direct grep). Caveat: `schema_surfaces` is populated in the inventory by `scan.py:339` but `plan.py` has no corresponding walk (grep confirms only `codeowners_surfaces` is referenced in `plan.py`) — the `contract-candidate` proposal/question kind remains permanently unreachable, an identically-shaped gap to the one just closed, left open |
+| 4 | Every harness destination resolves to exactly one disposition (roadmap SC-3, ADOPT-03) | ✗ FAILED | `destination_catalog()` is now rule-derived (confirmed: no more static 40-row `_CATALOG`, real glob enumeration over `contracts/`, ADRs, `harness/commands`, `harness/skills`, `.claude/agents`, `.opencode/agent`), which is genuine progress on the *content* gap. But the catalog is not reproducible: it depends on gitignored, untracked `.memory/derived/*` files existing at scan time, so "every harness destination" is a moving target across checkouts — the very test meant to prove totality (`test_artifacts_match_committed_snapshot`) fails on a clean checkout, independently reproduced |
+| 5 | Inventory/plan pipeline is internally consistent — a schema-valid inventory never crashes the CLI (implicit in "complete...manifest", "fully CI-testable") | ✗ FAILED | Independently reproduced: constructed a schema-valid inventory with `codeowners_surfaces` evidence `[]` (permitted by `inventory.schema.json`'s `minItems:0`), ran it through `plan.build_plan()`, and validated the result against `plan.schema.json` — 2 `'[] should be non-empty'` errors. Through `cli.main()` this is exit 1, zero artifacts written. Latent only because current detectors always attach evidence; the contract itself permits the failing shape for any other producer |
+| 6 | Confinement, secret exclusion, size cap, ambiguity, collision detection pass; target tree unchanged (roadmap SC-4) | ⚠️ PARTIAL (carried forward, unaddressed this round) | Not in scope of the 3 gap-closure plans; the previously-identified secret-pattern false positive against real prose (e.g. this repo's own `.github/workflows/ci.yml`) was not revisited and remains an open, disclosed caveat from the prior verification round |
 
-**Score:** 4/6 truths verified (2 failed as detailed above)
+**Score:** 3/6 truths verified (2 net-new failures introduced by the gap-closure fixes themselves, 1 carried-forward partial)
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `contracts/harness/adoption/{inventory,plan,manifest}.schema.json` | 3 self-contained, drift-gated schemas | ✓ VERIFIED | Present, hash-baselined in `contracts/.hashes/manifest.json`, `contract-drift: OK`, no cross-file `$ref` (D-11 confirmed by grep) |
-| `tools/adoption_scan/scan.py` + `detect.py` | Confined read-only enumeration + exclusion classification + surface detection | ⚠️ PARTIAL | Enumeration/exclusion/hashing solid and tested; surface detection incomplete (schema/CODEOWNERS missing, CI detection has a reproduced false-positive) — see gaps |
-| `tools/adoption_scan/plan.py` | D-02 ladder, D-05 questions, relationship candidates | ✓ VERIFIED (dormant relationship path acknowledged) | Structurally sound; relationship-candidate emission is unit-tested but never exercised on a real scan (no relationship signal source in ADOPT-01 scope — acceptable, honestly disclosed) |
-| `tools/adoption_scan/destinations.py` | 40-row catalog + total 7-step disposition chain | ⚠️ PARTIAL | Chain logic itself is correctly total and CR-01/WR-03 fixes hold up under independent re-verification; the catalog it operates over is not a real destination enumeration — see gap |
-| `tools/adoption_scan/cli.py` | Wired pipeline, schema-validates before write, `--out` required/confined | ✓ VERIFIED | Confirmed via direct invocation against this repo (`python -m tools.adoption_scan --target . --out <dir>`) — produced schema-conformant artifacts, refused overlapping `--out` per D-11 |
+| `contracts/harness/adoption/inventory.schema.json` | `schema_surfaces` + `codeowners_surfaces` required properties | ✓ VERIFIED (content) / ✗ contract-inconsistent (cardinality) | Both properties present and required (confirmed via direct JSON load); `evidence` sub-schema (`minItems:0`) contradicts `plan.schema.json`'s `minItems:1` on the same conceptual field — see gap 2 |
+| `tools/adoption_scan/detect.py::detect_schema_surfaces/detect_codeowners_surfaces` | Populate the two new inventory fields | ✓ VERIFIED (exists, wired into `scan.py:339-340`) | `detect_schema_surfaces` correctly scoped to `contracts/**/*.schema.json` only (confirmed by reading source); `detect_codeowners_surfaces` only matches the literal `.github/CODEOWNERS` path (misses `CODEOWNERS` at root and `docs/CODEOWNERS`, per code review WR-06, not independently re-verified by me but plausible from source inspection — not re-tested this round) |
+| `tools/adoption_scan/destinations.py::destination_catalog()` | Rule-derived, real-file enumeration (not static sample) | ✓ VERIFIED (content) / ✗ FAILED (reproducibility) | Confirmed no static `_CATALOG` remains; confirmed the catalog is checkout-state-dependent via gitignore/ls-files check on the 3 CR-01 paths |
+| `tools/adoption_scan/tests/__snapshots__/test_snapshots.ambr` | Committed determinism baseline | ✗ NOT reproducible on clean checkout | Confirmed to bake in 3 untracked/gitignored destinations; local suite run (`uv run pytest tools/adoption_scan -q`) passes (58 passed) only because those files exist in this session's working tree |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 |------|----|----|--------|---------|
-| `cli.py` | `scan.build_inventory` → `plan.build_plan` → `destinations.build_manifest` | direct function calls | ✓ WIRED | Confirmed by reading `cli.py:73-77` and by direct execution |
-| `destinations.harness_proposed_hashes()` | harness's own checkout content (CR-01 fix) | `_REPO_ROOT / destination` read | ✓ WIRED | Independently reproduced the CR-01 repro: a target `pyproject.toml`/`.gitignore` with different content than this checkout's own now resolves `conflict`, not `preserve` |
-| `plan.classify()` | `inventory["documentation_surfaces"]` (per-file AGENTS.md) | WR-01 fix | ✓ WIRED | Independently confirmed on a real self-scan: 4 distinct `agents-boundary` proposals/questions, one per real nested `AGENTS.md` file |
-| CI (`core-suite`, `drift` jobs) | `tools/adoption_scan` tests + new schemas | `uv run pytest` / `uv run python -m tools.contract_drift.drift` | ✓ WIRED | Confirmed workspace membership + testpaths + job commands in `.github/workflows/ci.yml` |
+| `scan.py::build_inventory` | `detect.detect_schema_surfaces` / `detect.detect_codeowners_surfaces` | direct call, `schema_surfaces`/`codeowners_surfaces` keys | ✓ WIRED | Confirmed by grep: `scan.py:339-340` |
+| `plan.py::classify` | `inventory["codeowners_surfaces"]` | direct dict walk | ✓ WIRED | Confirmed: `plan.py:182` |
+| `plan.py::classify` | `inventory["schema_surfaces"]` | — | ✗ NOT WIRED | No reference to `schema_surfaces` anywhere in `plan.py` (confirmed by grep) — `contract-candidate` proposal/question kind stays dead |
+| `cli.main()` | `plan.schema.json` validation before write | schema-validate-then-write | ⚠️ WIRED but fragile | Confirmed wiring is correct as designed, but the upstream contract (`inventory.schema.json`) can produce input that trips this exact gate — see gap 2 |
+| CI `core-suite` job | `tools/adoption_scan` test snapshot | `uv run pytest` on a clean `actions/checkout` | ✗ NOT reproducible | Confirmed via `git check-ignore`/`git ls-files` that the snapshot's dependency on `.memory/derived/{pointer-index.json,pointer-index.md,repo-map.md}` cannot be satisfied on the clean-checkout shape CI actually runs |
 
 ### Requirements Coverage
 
 | Requirement | Source Plan | Description | Status | Evidence |
 |-------------|-------------|-------------|--------|----------|
-| ADOPT-01 | 26-01, 26-02 | Bounded deterministic inventory: languages, manifests, doc/ADR/AGENTS/CODEOWNERS/CI/schema/spec surfaces, candidate process boundaries, secret/binary/vendor/generated/source-dump exclusion | ✗ BLOCKED (partial) | Enumeration/exclusion/language/manifest/AGENTS/ADR detection solid; schema-surface and CODEOWNERS-surface detection entirely absent (no code, no schema property); CI-surface detection demonstrably false-positives on this repo's own real workflow file |
-| ADOPT-02 | 26-01, 26-03 | Evidence-classified mapping plan (observed/inferred/unknown), unresolved ownership → question, TOPO vocabulary compatibility | ✓ SATISFIED | `classify()`/`generate_questions()`/`generate_relationship_candidates()` structurally enforce the ladder and never-invented-authority; relationship candidates validate against `relationship.schema.json` (unit-tested); dormant on real scans only because no relationship signal exists yet (acceptable, ADOPT-01-scope limitation, not an ADOPT-02 defect) |
-| ADOPT-03 | 26-01, 26-03 | Complete destination/disposition manifest — exactly one disposition per harness destination across contracts/golden/ADR/Diátaxis/memory/config/AGENTS/CODEOWNERS/source/emitted | ✗ BLOCKED | The disposition rule chain itself is correct and total over its own catalog, but the catalog is a fixed 40-entry representative sample (not a real per-file enumeration); the manifest under-covers real contract/ADR/agent/skill/command file counts by roughly an order of magnitude per category |
+| ADOPT-01 | 26-01, 26-02, 26-04, 26-05 | Bounded deterministic inventory incl. schema/CODEOWNERS surfaces | ✗ BLOCKED | Surface detection content gap closed (schema/CODEOWNERS categories now detected and required in the schema), but the schema's own evidence-cardinality contradiction (CR-03) means a schema-valid inventory instance can crash the pipeline — "bounded, deterministic reporting" is not safely guaranteed by the contract itself |
+| ADOPT-02 | 26-01, 26-03, 26-05 | Evidence-classified mapping plan, unresolved ownership → question | ✗ BLOCKED | `codeowners-ownership` reachability fixed and confirmed; but `schema_surfaces` remains entirely unconsumed by `classify()`, so an ADOPT-01-reported surface category never becomes a classified proposal/question at all — an identical defect class to the one this round's plans set out to close, left open for schema surfaces |
+| ADOPT-03 | 26-01, 26-03, 26-06 | Complete destination/disposition manifest, every harness destination exactly one disposition | ✗ BLOCKED | Catalog totality at the content level is now real (rule-derived glob enumeration, no placeholder rows) — the previously-reported gap-2 defect is fixed. But the fix's own mechanism (unfiltered live-filesystem glob) makes "every harness destination" a function of untracked local state rather than a stable, git-defined set — reproduced failing on a clean checkout, which is exactly the CI shape this requirement and the phase's own "fully CI-testable" language demand |
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| `tools/adoption_scan/scan.py:54` | `SECRET_PATH_GLOBS` | Redundant glob (`**/*.env` subsumed by `*.env` under `fnmatch`) | ℹ️ Info | Cosmetic, already disclosed as IN-01, deliberately deferred by repo owner |
-| `tools/adoption_scan/plan.py:150-170` | Overlapping `test-command` questions from CI + test surfaces | ℹ️ Info | UX only, already disclosed as IN-02, deliberately deferred by repo owner |
-| `tools/adoption_scan/scan.py:52` (`_secret_pattern`, reused from `gate-registry.json`) | Secret-content regex too broad for prose | ⚠️ Warning | Newly found in this verification — false-excludes this repo's own real `.github/workflows/ci.yml`, defeating CI-surface detection on a realistic, non-synthetic case; not covered by any existing test (`test_scan_exclusions.py` only tests the fixture's deliberately-planted secret files, never a real-world prose false positive) |
+| `tools/adoption_scan/destinations.py` | glob enumeration in `destination_catalog()` | Live-filesystem glob with no git-tracking filter | 🛑 Blocker | CR-01 — confirmed clean-checkout test failure |
+| `contracts/harness/adoption/{inventory,plan}.schema.json` | `evidence` field cardinality | Two sibling contracts disagree on `minItems` for the same conceptual shape | 🛑 Blocker | CR-03 — confirmed schema-valid input crashes CLI |
+| `tools/adoption_scan/plan.py` | `classify()` | `schema_surfaces` inventory field never read | ⚠️ Warning | `contract-candidate` proposal/question kind permanently unreachable — same defect class as the just-fixed codeowners gap |
+| `tools/adoption_scan/detect.py` | `detect_codeowners_surfaces` (not independently re-verified beyond source read) | Only matches `.github/CODEOWNERS`, not `CODEOWNERS` or `docs/CODEOWNERS` | ⚠️ Warning | Per code review WR-06; plausible from source but not independently executed this round |
 
 ### Human Verification Required
 
-None — all findings in this report are independently, programmatically reproducible (direct CLI execution against this repo, direct filesystem checks, direct code reading), so none require a human-only judgment call. The two BLOCKER gaps and the newly found secret-pattern false positive are all objectively demonstrated above.
+None — CR-01 and CR-03 are both independently, programmatically reproduced above (direct `git check-ignore`/`git ls-files` checks against the snapshot's baked-in paths; a direct `plan.build_plan()` + `Draft202012Validator` repro against a constructed schema-valid inventory). No judgment call is needed to confirm either defect exists.
 
 ### Gaps Summary
 
-Two of the phase's three owned requirements are only partially delivered at the end state, despite REQUIREMENTS.md marking ADOPT-01/02/03 "Complete":
+The two gap-closure plans that targeted the previous round's FAILED truths made real progress at the
+data/content level:
 
-1. **ADOPT-01 under-detects surfaces.** The phase's own CONTEXT.md and REQUIREMENTS.md text name six inventory surface categories (schema, spec, doc, ADR, AGENTS, CODEOWNERS, CI); the shipped code detects four (doc, ADR, AGENTS, CI) and the CI detector itself has a reproduced false-positive against this repo's own real file. Schema-surface and CODEOWNERS-surface detection do not exist in `detect.py` or `inventory.schema.json` at all — not a stub, an outright omission the schema itself has no room for.
+- ADOPT-01: `schema_surfaces`/`codeowners_surfaces` now exist, are required, are detected, and
+  (for CODEOWNERS) flow into a real classified proposal/question.
+- ADOPT-03: the destination catalog is now genuinely rule-derived from the real file tree instead of
+  a hand-picked, partially-fictional 40-row sample.
 
-2. **ADOPT-03's manifest does not cover "every harness destination."** The 40-row catalog in `destinations.py` is a fixed, hand-picked representative sample — several rows are literal fictional placeholder paths inherited from the research doc's illustrative "widget" example and do not exist anywhere in this checkout. Running the tool against this repo's own real tree (which has 11 real contract schemas, 10 real ADRs, 23 real harness commands, 11 real skills, 38 real `.claude/agents`, 5 real `.opencode/agent`, 4 real nested `AGENTS.md`) still always produces exactly 39 dispositioned rows + 1 excluded row — proving the manifest's coverage is target/harness-content-independent, not an enumeration of real destinations. The disposition *rule chain* itself is sound (CR-01/WR-03 fixes hold under independent re-verification), but the catalog it is applied to falls well short of "every harness destination" as both the roadmap success criterion and the requirement text state it.
+But both fixes introduced their own new, confirmed critical defects that directly undercut the phase
+goal's "agent-free, fully CI-testable" language:
 
-Both gaps were introduced by design decisions made during 26-01 (schema authoring — no schema/CODEOWNERS property) and 26-03 (catalog authored as representative literal paths rather than glob-derived per-file rows) and were not caught by the code review (which focused on the disposition *chain's* correctness, not the catalog's *coverage*) or by the test suite (which only proves totality/reachability over the tool's own fixed catalog, never against a real file tree's actual destination count).
+1. **CR-01** — `destination_catalog()`'s unfiltered live-filesystem glob bakes gitignored, untracked
+   derived files into the committed determinism snapshot. This is a hard CI red on any clean
+   checkout (independently confirmed the 3 paths are gitignored and absent from `git ls-files`,
+   and that CI's `core-suite` job has no step that would regenerate them before pytest runs).
+2. **CR-03** — `inventory.schema.json` and `plan.schema.json` disagree on `evidence` cardinality
+   (`minItems:0` vs `minItems:1`), so a schema-valid inventory can crash `cli.main()` with no
+   artifacts written. Independently reproduced by direct construction and validation.
 
-**This looks like it could be an intentional scope interpretation** (a "one disposition per destination *category*" reading rather than "one disposition per destination *file*"), but that reading was never surfaced to the user for explicit sign-off — the SUMMARY frames the catalog-row change as an implementation convenience ("so `disposition()` can be exercised directly and honestly... without a synthetic-string special case"), not as a load-bearing scope reduction from the roadmap's literal "every harness destination" wording. If this scope reading is in fact intended, it should be recorded as an explicit override rather than left implicit:
+Additionally, one gap of the *same shape* as the one just closed (a detected surface never reaching
+the classification/question stage) remains open for `schema_surfaces` — `plan.py::classify()` reads
+`codeowners_surfaces` but not `schema_surfaces`, so the `contract-candidate` question/proposal kind
+stays permanently dead code exactly as `codeowners-ownership` was before this round.
 
-```yaml
-overrides:
-  - must_have: "Every harness destination resolves to exactly one disposition (roadmap SC-3)"
-    reason: "Catalog enumerates one representative destination per plane/category rather than every real file; Phase 27 is expected to expand categories to real files at apply time."
-    accepted_by: "{name}"
-    accepted_at: "{ISO timestamp}"
-```
+Given the explicit instruction that a suite green only on a developer's working tree does not satisfy
+a determinism/reproducibility requirement, and that both new defects are independently reproduced (not
+merely accepted from the code-review report), phase 26's goal — "agent-free, fully CI-testable" and
+"a complete destination/disposition manifest" — is **not** achieved as of this commit. This is not
+eligible for an override suggestion: both defects are unintentional regressions (confirmed by their
+own PLAN.md must-haves, which claimed exactly the opposite behavior — e.g. 26-06's must-have explicitly
+claims totality "over the larger, real catalog," not one that varies by untracked local state), not an
+alternative design choice a human could ratify as acceptable.
 
 ---
 
-_Verified: 2026-07-19_
+_Verified: 2026-07-20_
 _Verifier: Claude (gsd-verifier)_
