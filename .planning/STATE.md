@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: Contract Graph, Brownfield Adoption, Living Docs
 status: executing
-stopped_at: Completed 25-01-PLAN.md
-last_updated: "2026-07-19T06:14:40.974Z"
+stopped_at: Completed 25-02-PLAN.md
+last_updated: "2026-07-19T06:19:30.927Z"
 last_activity: 2026-07-19
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 7
-  completed_plans: 3
-  percent: 43
+  completed_plans: 4
+  percent: 57
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 ## Current Position
 
 Phase: 25 (Graph Compiler, Queries, Conductor, Proof) — EXECUTING
-Plan: 2 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-07-19
 
@@ -119,6 +119,7 @@ Last activity: 2026-07-19
 | Phase 24 P01 | 18min | 3 tasks | 11 files |
 | Phase 24 P02 | 12min | 3 tasks | 7 files |
 | Phase 25 P01 | 35 | 3 tasks | 9 files |
+| Phase 25 P02 | 20min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -201,6 +202,7 @@ Recent decisions affecting current work:
 - [Phase 24]: [24-01] TOPO-01 contract-relationship record schema ratified: per-record shape/cardinality only (authority scalar = exactly-one, dependents minItems1+uniqueItems = one-or-more), no graph resolution/endpoint-existence (D-01/D-02, deferred to Phase 25). Fixtures live in TEST plane (tools/harness_config/tests/fixtures) not contracts/ to keep GEN-04 green; ratified via CODEOWNERS-gated manifest rebaseline (drift green). Adding a core schema fans out to a holistic derived-plane regen (docs/reference + contracts-index + determinism snapshots), which also swept pre-existing handoff/task derived drift.
 - [Phase 24]: TOPO-03: effective_relationships() lowers legacy [pipeline].edges to namespaced authority/dependent records, unions with explicit [[contract_graph.relationships]], raises on dup-id/dup-semantic-edge/contradiction, stable-sorted; opaque endpoints (no split_endpoint) so one cfg-agnostic function serves both project and workspace configs
 - [Phase 25]: Phase 25 Plan 01: contract_graph compiler is a resolution layer ON TOP of effective_relationships() (never re-lowers/re-unions); diagnostics returned as sorted list[str], never raised
+- [Phase 25]: [25-02] TOPO-05 query layer (tools/contract_graph/query.py): direct/reverse/transitive CONSUME compile_graph()'s adjacency (never re-walk config); D-03 return shape is {ids: sorted, paths: [...]} — ids AND connecting paths, never ids alone. transitive() is the iterative visited-set worklist (Pattern 2, visited-check-before-enqueue) → cycle-safe O(nodes+edges), deterministic (neighbours sorted). D-03 no-task-evidence/no-contract-preload invariant is a STRUCTURAL test (asserts query.py source has no task_packet/evidence/task_control/handoff import and no open(/.read_text() — pure in-memory traversal, zero file I/O). __init__ PEP-562 __getattr__ now routes names to the owning submodule (compile vs query).
 
 ### Pending Todos
 
@@ -242,7 +244,7 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-07-19T06:14:40.969Z
-Stopped at: Completed 25-01-PLAN.md
+Stopped at: Completed 25-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

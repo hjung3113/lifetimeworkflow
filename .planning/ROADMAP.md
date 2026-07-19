@@ -519,7 +519,7 @@ Plans:
 
 **Wave 2** *(blocked on 25-01)*
 
-- [ ] 25-02-PLAN.md — TOPO-05: cycle-safe direct/reverse/transitive affected-set queries ({ids, paths}, no task-evidence/no contract-preload)
+- [x] 25-02-PLAN.md — TOPO-05: cycle-safe direct/reverse/transitive affected-set queries ({ids, paths}, no task-evidence/no contract-preload)
 
 **Wave 3** *(blocked on 25-01, 25-02 — parallel, no file overlap)*
 
