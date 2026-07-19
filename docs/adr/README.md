@@ -34,5 +34,6 @@ be silently rewritten (DOCS-02).
 | [0005](0005-golden-comparator-structural-only.md) | Golden Comparator Is Structural-Only Pending Column-Aware Canonicalization | accepted |
 | [0006](0006-process-memory-channel-and-provenance-reframe.md) | Memory Model: PROCESS/Agreements Channel + Provenance→Data-Authority Reframe | accepted |
 | [0007](0007-constitution-gate-dev-enforce-decoupling.md) | Constitution-Gate Dev/Enforce Decoupling (Secure-Default HARNESS_DEV_BYPASS) | accepted |
+| [0009](0009-contract-relationship-graph-model.md) | Contract-Relationship Graph Model: Compiler, Affected-Set Queries, and Conductor Rendering Contract | proposed |
 
 *Add a row per ADR. Do not remove rows — mark superseded records in the Status column.*
