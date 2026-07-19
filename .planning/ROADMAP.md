@@ -542,6 +542,21 @@ Plans:
 3. 모든 하네스 destination이 정확히 하나의 disposition을 가진다.
 4. confinement·secret 제외·size cap·ambiguity·collision 탐지가 통과하고 target tree는 불변이다.
 
+**Plans**: 3 plans (3 waves)
+
+Plans:
+**Wave 1**
+
+- [ ] 26-01-PLAN.md — D-01: author + human-ratify the 3 adoption schemas (inventory/plan/manifest) under contracts/harness/adoption/, rebaseline contract-hash manifest, regenerate committed-derived plane (ADOPT-01, ADOPT-02, ADOPT-03)
+
+**Wave 2** *(blocked on 26-01)*
+
+- [ ] 26-02-PLAN.md — tools/adoption_scan scan.py + detect.py: confined read-only enumeration, exclusion classification, language/manifest/surface detection, the one synthetic mini-repo fixture (ADOPT-01)
+
+**Wave 3** *(blocked on 26-02)*
+
+- [ ] 26-03-PLAN.md — plan.py + destinations.py + cli.py: evidence ladder, question records, relationship candidates, the total disposition rule chain, full pipeline wiring + determinism proof (ADOPT-02, ADOPT-03)
+
 ### Phase 27: Task-Local Adoption Workflow + Safe Application *(v2.3 B)*
 
 **Goal:** 결정론적 plan을 출하된 task control plane 위에서 재개 가능·사람 ratified·비파괴 adoption 워크플로로 전환한다.
