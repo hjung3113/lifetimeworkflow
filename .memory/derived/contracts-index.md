@@ -1,6 +1,6 @@
 # DERIVED — do not hand-edit (tools/memory_regen/contracts_index.py)
 
-Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reuses tools.contract_hash + tools.contract_drift). 9 contract(s).
+Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reuses tools.contract_hash + tools.contract_drift). 10 contract(s).
 
 | contract | kind | owner | hash | drift |
 | --- | --- | --- | --- | --- |
@@ -11,5 +11,6 @@ Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reu
 | contracts/harness/task-control/state.schema.json | other | TBD | c2a64cab55f3 | clean |
 | contracts/harness/task-control/task.schema.json | other | TBD | 1c5a0f5b683e | clean |
 | contracts/harness/task-control/transitions.json | other | TBD | 5d27bb16571d | clean |
+| contracts/harness/topology/relationship.schema.json | other | TBD | 27377a886708 | clean |
 | contracts/normalization/format-conventions.schema.json | normalization | TBD | 1af8935bf997 | clean |
 | contracts/sample/greeting.schema.json | other | TBD | 35f71ca2dbeb | clean |

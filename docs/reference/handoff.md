@@ -26,6 +26,6 @@ Immutable resume snapshot tied to one state revision.
 | required_read_paths | array | yes |  |  |
 | state_ref | ref | yes |  |  |
 | state_revision | integer | yes |  |  |
-| stop_condition | string | yes |  |  |
+| stop_condition | string\|null | yes |  | Exact task-specific boundary when ratified; null means the task supplied none. |
 | task_id | ref | yes |  |  |
 | unresolved_items | array | yes |  |  |

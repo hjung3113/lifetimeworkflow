@@ -30,6 +30,7 @@ EXPECTED_PAGES = frozenset(
         "format-conventions",
         "greeting",
         "handoff",
+        "relationship",
         "state",
         "task",
     }

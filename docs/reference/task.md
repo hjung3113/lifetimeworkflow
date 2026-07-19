@@ -16,4 +16,5 @@ Human-ratified shape for immutable task intent and routing inputs.
 | non_goals | array | yes |  |  |
 | risk_decision | object | yes |  | Canonical router output captured at deterministic intake. |
 | risk_inputs | object | yes |  |  |
+| stop_condition | string | no |  | Human-ratified task-specific boundary that a fresh session must restore exactly. |
 | task_id | ref | yes |  |  |
