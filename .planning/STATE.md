@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: Contract Graph, Brownfield Adoption, Living Docs
 status: executing
-stopped_at: Completed 26-03-PLAN.md
-last_updated: "2026-07-19T13:48:48.054Z"
-last_activity: 2026-07-19 -- Phase 26 planning complete
+stopped_at: Completed 26-04-PLAN.md
+last_updated: "2026-07-19T16:05:35.411Z"
+last_activity: 2026-07-19
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 13
-  completed_plans: 10
-  percent: 77
+  completed_plans: 11
+  percent: 85
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 ## Current Position
 
 Phase: 26 (deterministic-brownfield-inventory-mapping-v2-3-b) — EXECUTING
-Plan: 3 of 3 — Ready to execute (26-01 complete: schemas ratified, drift green, derived plane fresh)
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-07-19 -- Phase 26 planning complete
+Last activity: 2026-07-19
 
 ## Performance Metrics
 
@@ -126,6 +126,7 @@ Last activity: 2026-07-19 -- Phase 26 planning complete
 | Phase 25 P04 | 10min | 2 tasks | 3 files |
 | Phase 26 P02 | 50min | 3 tasks | 11 files |
 | Phase 26 P03 | 90min | 3 tasks | 10 files |
+| Phase 26 P04 | 12min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -217,6 +218,7 @@ Recent decisions affecting current work:
 - [Phase 26-03]: languages deliberately not walked into a proposalRecord; ambiguous-language surfaced directly from inventory instead
 - [Phase 26-03]: excluded-file/collision question kinds left dormant this wave (D-10: no valid sha256 exists for an excluded/secret file)
 - [Phase 26-03]: relationship proposal machinery implemented and unit-tested but dormant on real scans (no relationship/contract signal in ADOPT-01 inventory shape)
+- [Phase 26]: [26-04] Extended inventory.schema.json with schema_surfaces + codeowners_surfaces as OPTIONAL surfaceRecord arrays (not required); rebaselined contract-hash manifest (single hash changed) and regenerated the committed-derived plane in the same wave, keeping the full 1010-test suite green throughout. — Staged per checker BLOCKER-1 revision fix so Plan 26-05 can promote both properties to required atomically once scan.py/detect.py populate them.
 
 ### Pending Todos
 
@@ -257,8 +259,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T12:43:01.902Z
-Stopped at: Completed 26-03-PLAN.md
+Last session: 2026-07-19T16:05:35.406Z
+Stopped at: Completed 26-04-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
