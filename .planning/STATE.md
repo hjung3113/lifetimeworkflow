@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: Contract Graph, Brownfield Adoption, Living Docs
-status: executing
+status: verifying
 stopped_at: Completed 24-01-PLAN.md
-last_updated: "2026-07-19T02:44:14.276Z"
+last_updated: "2026-07-19T02:52:51.756Z"
 last_activity: 2026-07-19
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 50
+  completed_plans: 2
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 
 Phase: 24 (Contract-Relationship Vocabulary + Compatibility) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-19
 
 ## Performance Metrics
@@ -116,6 +116,7 @@ Last activity: 2026-07-19
 | Phase 16 P04 | 9min | 2 tasks | 10 files |
 | Phase 16 P05 | 22min | 2 tasks | 4 files |
 | Phase 24 P01 | 18min | 3 tasks | 11 files |
+| Phase 24 P02 | 12min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -196,6 +197,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [15-01] MEM2-06 emit round-trip: ran the Phase-7 emitter and committed exactly its output (84 artifacts, ZERO emitter code change — glob discovery already covered /agree). Both runtime trees now carry /agree + the Phase-13/14 body edits; AGENTS.md managed fence lists agree (1-line splice at 104, nothing outside moved); manifest owns both agree.md paths. Measured delta matched research EXACTLY (A2 re-measured, not trusted). opencode.json + .claude/settings.json confirmed byte-identical no-ops (absent from the diff); no agent path moved; uv.lock empty. GATE-THEFT AVOIDED BY ORDERING: emit committed (0f39e6d) BEFORE the .ambr regen (2da29e9) — verified test_projected_tree_matches_committed_snapshot STILL FAILED after the emit commit, positive proof the snapshot was not touched early. Proof is the CI replica (re-emit && git diff --exit-code = exit 0), NOT the green suite: no local test reads the committed trees, so --snapshot-update alone would green 659 over stale trees. Suite 0 failed / 659 passed; GEN-04 18 passed post-regen. EXPECTED_COMMANDS NOT created (0 source hits, D-11 held a 3rd time). Two plan acceptance criteria are mis-specified and always pass/fail regardless of correctness (AGENTS.md grep '^[+-][^+-]' can never return 2 on a markdown list line; 'tools/**/__snapshots__' pathspec matches nothing since git * does not cross /) — verified the substance via numstat + explicit ls-files instead; recorded for Plan 02. Unblocks PR #3 (both red jobs were this one debt) -> ADR-0004/0005/0006/0007 ratification.
 - [Phase ?]: [16-05] SC1 browsable surface complete: python -m tools.memory_ui serves a 127.0.0.1-only stdlib http.server mounting the 16-03 pure routes behind one zero-asset inlined page; retire path inline-regenerates the derived pointer-index before the routes' orphan gate; POST body bounded (413), no --host flag.
 - [Phase 24]: [24-01] TOPO-01 contract-relationship record schema ratified: per-record shape/cardinality only (authority scalar = exactly-one, dependents minItems1+uniqueItems = one-or-more), no graph resolution/endpoint-existence (D-01/D-02, deferred to Phase 25). Fixtures live in TEST plane (tools/harness_config/tests/fixtures) not contracts/ to keep GEN-04 green; ratified via CODEOWNERS-gated manifest rebaseline (drift green). Adding a core schema fans out to a holistic derived-plane regen (docs/reference + contracts-index + determinism snapshots), which also swept pre-existing handoff/task derived drift.
+- [Phase 24]: TOPO-03: effective_relationships() lowers legacy [pipeline].edges to namespaced authority/dependent records, unions with explicit [[contract_graph.relationships]], raises on dup-id/dup-semantic-edge/contradiction, stable-sorted; opaque endpoints (no split_endpoint) so one cfg-agnostic function serves both project and workspace configs
 
 ### Pending Todos
 
@@ -236,7 +238,7 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-19T02:44:14.271Z
+Last session: 2026-07-19T02:51:32.289Z
 Stopped at: Completed 24-01-PLAN.md
 Resume file: None
 
