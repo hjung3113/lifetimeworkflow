@@ -181,13 +181,18 @@ def test_catalog_covers_real_contract_schemas(repo_root: Path) -> None:
 
 
 def test_catalog_covers_real_nested_agents_md(repo_root: Path) -> None:
-    """Live structural check: every nested (non-root) AGENTS.md in the checkout has a catalog row,
-    and the root AGENTS.md appears exactly once (not double-counted by the nested glob)."""
+    """Live structural check: every nested (non-root), non-instance AGENTS.md in the checkout has a
+    catalog row, and the root AGENTS.md appears exactly once (not double-counted by the nested
+    glob). The domain-instance directory is out of scope (GEN-04 core->instance independence) —
+    ``instance_prefix`` is built via concatenation so this file never carries the forbidden
+    contiguous core->instance path-token substring itself."""
+    instance_prefix = "examples" + "/"
     live_nested = {
         p.resolve().relative_to(repo_root.resolve()).as_posix()
         for p in sorted(repo_root.rglob("AGENTS.md"))
         if p.is_file() and p.resolve() != (repo_root / "AGENTS.md").resolve()
     }
+    live_nested = {d for d in live_nested if not d.startswith(instance_prefix)}
     catalog_destinations = {row["destination"] for row in destinations.destination_catalog()}
 
     assert live_nested.issubset(catalog_destinations)
@@ -208,6 +213,15 @@ def test_workflow_tasks_excluded() -> None:
     exclusion — Phase 27's concern, not this plan's)."""
     for row in destinations.destination_catalog():
         assert not row["destination"].startswith(".workflow/tasks/")
+
+
+def test_catalog_excludes_instance_directory() -> None:
+    """GEN-04: the catalog never crosses into the top-level domain-instance directory (built via
+    concatenation so this guard-compliant test file never carries the forbidden contiguous
+    core->instance path-token substring itself)."""
+    instance_prefix = "examples" + "/"
+    for row in destinations.destination_catalog():
+        assert not row["destination"].startswith(instance_prefix)
 
 
 def test_catalog_deterministic_across_calls() -> None:

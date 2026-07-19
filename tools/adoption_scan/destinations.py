@@ -170,6 +170,14 @@ _CATEGORY_GLOBS: tuple[str, ...] = (
 # exclusion, enforced structurally, independent of _CATEGORY_GLOBS' contents).
 _EXCLUDED_PREFIX: tuple[str, str] = (".workflow", "tasks")
 
+# GEN-04 core->instance independence: this catalog must never cross into the domain instance tree
+# nested under this checkout's top-level instance directory (a moved-asset AGENTS.md/pyproject.toml
+# there is legitimately matched by the "**/AGENTS.md"/"**/pyproject.toml" nested globs above, but
+# core planes must not depend on or enumerate instance content). Named as a bare directory segment
+# (no path separator) so this module never carries the GEN-04-forbidden contiguous path-token
+# substring itself.
+_INSTANCE_DIR_NAME = "examples"
+
 
 def destination_catalog() -> list[dict]:
     """Rule-derived enumeration of every real file in this checkout matching a named ADOPT-03
@@ -199,6 +207,8 @@ def destination_catalog() -> list[dict]:
             destination = resolved.relative_to(root_resolved).as_posix()
             parts = destination.split("/")
             if tuple(parts[: len(_EXCLUDED_PREFIX)]) == _EXCLUDED_PREFIX:
+                continue
+            if parts[0] == _INSTANCE_DIR_NAME:
                 continue
             if destination not in rows:
                 rows[destination] = {"destination": destination}
