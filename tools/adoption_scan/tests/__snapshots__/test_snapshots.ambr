@@ -1,0 +1,573 @@
+# serializer version: 1
+# name: test_artifacts_match_committed_snapshot
+  '''
+  ===== inventory =====
+  {
+    "candidate_process_boundaries": [
+      {
+        "classification": "inferred",
+        "evidence": [
+          {
+            "path": "pyproject.toml",
+            "sha256": "ad21218e4f042c32d18087052b4e840d504a33691e7f21d550ed0a8becf73c3a",
+            "size": 26
+          }
+        ],
+        "rationale": "manifest-directory",
+        "target": "."
+      }
+    ],
+    "ci_surfaces": [
+      {
+        "classification": "observed",
+        "evidence": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "sha256": "6f226f96dc1167e947305b492f21b1f9bb321fc536b5463fbeefc4e2c5f3e2eb",
+            "size": 31
+          }
+        ],
+        "target": ".github/workflows"
+      }
+    ],
+    "documentation_surfaces": [
+      {
+        "classification": "observed",
+        "evidence": [
+          {
+            "path": "AGENTS.md",
+            "sha256": "7ef6d5bf380fb29d077267b7b7e3e9d9a9eb49f8cd3c3b2e33900fbed26b1e01",
+            "size": 115
+          }
+        ],
+        "target": "AGENTS.md"
+      },
+      {
+        "classification": "observed",
+        "evidence": [
+          {
+            "path": "README",
+            "sha256": "07c81bfa548178fd3d34d4b3867420c9bc9d91ea316ce3d66bd1c4a0131c97cb",
+            "size": 12
+          }
+        ],
+        "target": "README"
+      },
+      {
+        "classification": "observed",
+        "evidence": [
+          {
+            "path": "docs/adr/0001-decision.md",
+            "sha256": "2054f311cdbb52242d940bccc583a2d2c2762239b13c93fa3fa90749f29d19b5",
+            "size": 11
+          }
+        ],
+        "target": "docs/adr"
+      }
+    ],
+    "enumeration_mode": "builtin",
+    "excluded": [
+      {
+        "excluded": "secret-path",
+        "path": ".env",
+        "size": 22
+      },
+      {
+        "excluded": "size-capped",
+        "path": "assets/oversized.dat",
+        "size": 307200
+      },
+      {
+        "excluded": "source-dump",
+        "path": "backups/repo-dump.txt",
+        "size": 307200
+      },
+      {
+        "excluded": "binary",
+        "path": "binary.dat",
+        "size": 28
+      },
+      {
+        "excluded": "symlink-escape",
+        "path": "escape",
+        "size": 11
+      },
+      {
+        "excluded": "generated",
+        "path": "generated.py",
+        "size": 44
+      },
+      {
+        "excluded": "vendored",
+        "path": "node_modules/pkg/index.js",
+        "size": 21
+      },
+      {
+        "excluded": "source-dump",
+        "path": "notes/full-context.txt",
+        "size": 159
+      },
+      {
+        "excluded": "secret-content",
+        "path": "sink/secret_config.py",
+        "size": 33
+      }
+    ],
+    "included": [
+      {
+        "path": ".github/workflows/ci.yml",
+        "sha256": "6f226f96dc1167e947305b492f21b1f9bb321fc536b5463fbeefc4e2c5f3e2eb",
+        "size": 31
+      },
+      {
+        "path": "AGENTS.md",
+        "sha256": "7ef6d5bf380fb29d077267b7b7e3e9d9a9eb49f8cd3c3b2e33900fbed26b1e01",
+        "size": 115
+      },
+      {
+        "path": "README",
+        "sha256": "07c81bfa548178fd3d34d4b3867420c9bc9d91ea316ce3d66bd1c4a0131c97cb",
+        "size": 12
+      },
+      {
+        "path": "docs/adr/0001-decision.md",
+        "sha256": "2054f311cdbb52242d940bccc583a2d2c2762239b13c93fa3fa90749f29d19b5",
+        "size": 11
+      },
+      {
+        "path": "pyproject.toml",
+        "sha256": "ad21218e4f042c32d18087052b4e840d504a33691e7f21d550ed0a8becf73c3a",
+        "size": 26
+      },
+      {
+        "path": "tests/test_widget.py",
+        "sha256": "3b335815c47b04fff9a6d2370447e3851c0bfdf979c4cb93a4b0f33edd1aea93",
+        "size": 28
+      },
+      {
+        "path": "widget_a.py",
+        "sha256": "507406675be9499a346166d0544fd9effcfce8050161b7bd70309378416332d7",
+        "size": 34
+      },
+      {
+        "path": "widget_a_modified.py",
+        "sha256": "c68d84f3685528ceba41968802b6b23d585b20f0b2a928469b4f432accc4741d",
+        "size": 32
+      },
+      {
+        "path": "widget_b.py",
+        "sha256": "507406675be9499a346166d0544fd9effcfce8050161b7bd70309378416332d7",
+        "size": 34
+      }
+    ],
+    "languages": [
+      {
+        "classification": "observed",
+        "evidence": [
+          {
+            "path": "tests/test_widget.py",
+            "sha256": "3b335815c47b04fff9a6d2370447e3851c0bfdf979c4cb93a4b0f33edd1aea93",
+            "size": 28
+          },
+          {
+            "path": "widget_a.py",
+            "sha256": "507406675be9499a346166d0544fd9effcfce8050161b7bd70309378416332d7",
+            "size": 34
+          },
+          {
+            "path": "widget_a_modified.py",
+            "sha256": "c68d84f3685528ceba41968802b6b23d585b20f0b2a928469b4f432accc4741d",
+            "size": 32
+          },
+          {
+            "path": "widget_b.py",
+            "sha256": "507406675be9499a346166d0544fd9effcfce8050161b7bd70309378416332d7",
+            "size": 34
+          }
+        ],
+        "name": "python"
+      }
+    ],
+    "manifests": [
+      {
+        "classification": "observed",
+        "evidence": [
+          {
+            "path": "pyproject.toml",
+            "sha256": "ad21218e4f042c32d18087052b4e840d504a33691e7f21d550ed0a8becf73c3a",
+            "size": 26
+          }
+        ],
+        "kind": "pyproject.toml",
+        "path": "pyproject.toml"
+      }
+    ],
+    "max_file_bytes": 262144,
+    "target_ref": "unknown",
+    "test_surfaces": [
+      {
+        "classification": "observed",
+        "evidence": [
+          {
+            "path": "tests/test_widget.py",
+            "sha256": "3b335815c47b04fff9a6d2370447e3851c0bfdf979c4cb93a4b0f33edd1aea93",
+            "size": 28
+          }
+        ],
+        "target": "tests"
+      }
+    ]
+  }
+  ===== plan =====
+  {
+    "proposals": [
+      {
+        "classification": "unknown",
+        "evidence": [
+          {
+            "path": "AGENTS.md",
+            "sha256": "7ef6d5bf380fb29d077267b7b7e3e9d9a9eb49f8cd3c3b2e33900fbed26b1e01",
+            "size": 115
+          }
+        ],
+        "id": "agents-boundary/AGENTS.md",
+        "kind": "agents-boundary",
+        "target": "AGENTS.md"
+      },
+      {
+        "classification": "inferred",
+        "evidence": [
+          {
+            "path": "pyproject.toml",
+            "sha256": "ad21218e4f042c32d18087052b4e840d504a33691e7f21d550ed0a8becf73c3a",
+            "size": 26
+          }
+        ],
+        "id": "component/.",
+        "kind": "component",
+        "rationale": "manifest-directory",
+        "target": "."
+      },
+      {
+        "classification": "unknown",
+        "evidence": [
+          {
+            "path": "README",
+            "sha256": "07c81bfa548178fd3d34d4b3867420c9bc9d91ea316ce3d66bd1c4a0131c97cb",
+            "size": 12
+          }
+        ],
+        "id": "docs-destination/README",
+        "kind": "docs-destination",
+        "target": "README"
+      },
+      {
+        "classification": "unknown",
+        "evidence": [
+          {
+            "path": "docs/adr/0001-decision.md",
+            "sha256": "2054f311cdbb52242d940bccc583a2d2c2762239b13c93fa3fa90749f29d19b5",
+            "size": 11
+          }
+        ],
+        "id": "docs-destination/docs/adr",
+        "kind": "docs-destination",
+        "target": "docs/adr"
+      },
+      {
+        "classification": "observed",
+        "evidence": [
+          {
+            "path": "pyproject.toml",
+            "sha256": "ad21218e4f042c32d18087052b4e840d504a33691e7f21d550ed0a8becf73c3a",
+            "size": 26
+          }
+        ],
+        "id": "member/pyproject.toml",
+        "kind": "member",
+        "rationale": "manifest:pyproject.toml",
+        "target": "pyproject.toml"
+      },
+      {
+        "classification": "unknown",
+        "evidence": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "sha256": "6f226f96dc1167e947305b492f21b1f9bb321fc536b5463fbeefc4e2c5f3e2eb",
+            "size": 31
+          }
+        ],
+        "id": "test-command/.github/workflows",
+        "kind": "test-command",
+        "target": ".github/workflows"
+      },
+      {
+        "classification": "unknown",
+        "evidence": [
+          {
+            "path": "tests/test_widget.py",
+            "sha256": "3b335815c47b04fff9a6d2370447e3851c0bfdf979c4cb93a4b0f33edd1aea93",
+            "size": 28
+          }
+        ],
+        "id": "test-command/tests",
+        "kind": "test-command",
+        "target": "tests"
+      }
+    ],
+    "questions": [
+      {
+        "blocking": false,
+        "classification": "unknown",
+        "evidence": [
+          {
+            "path": "AGENTS.md",
+            "sha256": "7ef6d5bf380fb29d077267b7b7e3e9d9a9eb49f8cd3c3b2e33900fbed26b1e01",
+            "size": 115
+          }
+        ],
+        "group": "docs",
+        "id": "Q-e5176c4604a7",
+        "kind": "agents-boundary",
+        "question": "Is the existing AGENTS.md at 'AGENTS.md' nearest-wins-correct?",
+        "target": "AGENTS.md"
+      },
+      {
+        "blocking": false,
+        "classification": "unknown",
+        "evidence": [
+          {
+            "path": "README",
+            "sha256": "07c81bfa548178fd3d34d4b3867420c9bc9d91ea316ce3d66bd1c4a0131c97cb",
+            "size": 12
+          }
+        ],
+        "group": "docs",
+        "id": "Q-7710b638a8b7",
+        "kind": "docs-destination",
+        "question": "Which Diataxis quadrant does 'README' belong to?",
+        "target": "README"
+      },
+      {
+        "blocking": false,
+        "classification": "unknown",
+        "evidence": [
+          {
+            "path": "docs/adr/0001-decision.md",
+            "sha256": "2054f311cdbb52242d940bccc583a2d2c2762239b13c93fa3fa90749f29d19b5",
+            "size": 11
+          }
+        ],
+        "group": "docs",
+        "id": "Q-ec4b13c388df",
+        "kind": "docs-destination",
+        "question": "Which Diataxis quadrant does 'docs/adr' belong to?",
+        "target": "docs/adr"
+      },
+      {
+        "blocking": false,
+        "classification": "unknown",
+        "evidence": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "sha256": "6f226f96dc1167e947305b492f21b1f9bb321fc536b5463fbeefc4e2c5f3e2eb",
+            "size": 31
+          }
+        ],
+        "group": "testing",
+        "id": "Q-f907c7f681a2",
+        "kind": "test-command",
+        "question": "Which command is the canonical test entrypoint for '.github/workflows'?",
+        "target": ".github/workflows"
+      },
+      {
+        "blocking": false,
+        "classification": "unknown",
+        "evidence": [
+          {
+            "path": "tests/test_widget.py",
+            "sha256": "3b335815c47b04fff9a6d2370447e3851c0bfdf979c4cb93a4b0f33edd1aea93",
+            "size": 28
+          }
+        ],
+        "group": "testing",
+        "id": "Q-9e65ec5e233a",
+        "kind": "test-command",
+        "question": "Which command is the canonical test entrypoint for 'tests'?",
+        "target": "tests"
+      }
+    ],
+    "relationships": [],
+    "target_ref": "unknown"
+  }
+  ===== manifest =====
+  {
+    "dispositions": [
+      {
+        "destination": ".claude/agents/widget-engineer.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".claude/settings.json",
+        "disposition": "marker-merge"
+      },
+      {
+        "destination": ".github/CODEOWNERS",
+        "disposition": "create"
+      },
+      {
+        "destination": ".github/workflows/ci.yml",
+        "disposition": "preserve"
+      },
+      {
+        "destination": ".gitignore",
+        "disposition": "create"
+      },
+      {
+        "destination": ".memory/README.md",
+        "disposition": "create"
+      },
+      {
+        "destination": ".memory/agreements/0001-widget.md",
+        "disposition": "create"
+      },
+      {
+        "destination": ".memory/derived/contracts-index.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".memory/derived/repo-map.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".memory/state/activeContext.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".opencode/agent/widget-engineer.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": ".workflow/tasks/T-0001/task.json",
+        "disposition": "create"
+      },
+      {
+        "destination": "AGENTS.md",
+        "disposition": "marker-merge"
+      },
+      {
+        "destination": "CLAUDE.md",
+        "disposition": "marker-merge"
+      },
+      {
+        "destination": "contracts/.hashes/manifest.json",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "contracts/README.md",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "contracts/harness/adoption/inventory.schema.json",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "docs/adr/0001-decision.md",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "docs/explanation/architecture.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "docs/glossary.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "docs/how-to/add-a-contract.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "docs/reference/inventory.md",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": "docs/tutorials/getting-started.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "golden/widget/verified/case.txt",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "harness/agents/widget-engineer.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/commands/widget-check.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/git-hooks/pre-commit",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/opencode.json",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/permission-matrix.json",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/plugins/format-on-write.ts",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/project.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/risk-policy.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "harness/skills/widget-conventions/SKILL.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "libs/normalize-spec.md",
+        "disposition": "human-ratification-required"
+      },
+      {
+        "destination": "libs/python/AGENTS.md",
+        "disposition": "create"
+      },
+      {
+        "destination": "opencode.json",
+        "disposition": "derived-regenerate"
+      },
+      {
+        "destination": "pyproject.toml",
+        "disposition": "preserve"
+      },
+      {
+        "destination": "tools/widget_tool/pyproject.toml",
+        "disposition": "create"
+      },
+      {
+        "destination": "workspace.toml",
+        "disposition": "create"
+      }
+    ],
+    "excluded": [
+      {
+        "destination": ".claude/get-shit-done/README.md",
+        "reason": "gsd-owned"
+      }
+    ],
+    "target_ref": "unknown"
+  }
+  
+  '''
+# ---

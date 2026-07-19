@@ -243,7 +243,8 @@ _CATALOG: tuple[dict, ...] = (
 def destination_catalog() -> list[dict]:
     """Return all 40 catalog rows (``{"num", "destination", "plane", "marker_capable"}``),
     verbatim from 26-RESEARCH.md's Authoritative Harness Destination Catalog. Row 40 is present
-    for documentation purposes but is EXCLUDED from disposition resolution (see :func:`disposition`).
+    for documentation purposes but is EXCLUDED from disposition resolution (see
+    :func:`disposition`).
     """
     return [dict(row) for row in _CATALOG]
 
