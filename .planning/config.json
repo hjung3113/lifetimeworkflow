@@ -1,5 +1,5 @@
 {
-  "model_profile": "quality",
+  "model_profile": "adaptive",
   "commit_docs": true,
   "parallelization": true,
   "search_gitignored": false,
@@ -68,6 +68,17 @@
   "mode": "yolo",
   "granularity": "standard",
   "model_overrides": {
-    "gsd-planner": "sonnet"
+    "gsd-planner": "sonnet",
+    "gsd-plan-checker": "sonnet"
+  },
+  "dynamic_routing": {
+    "enabled": true,
+    "tier_models": {
+      "light": "haiku",
+      "standard": "sonnet",
+      "heavy": "opus"
+    },
+    "escalate_on_failure": true,
+    "max_escalations": 1
   }
 }
