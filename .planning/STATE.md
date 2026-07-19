@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 
 Phase: ALL 6 PHASES IMPLEMENTED + MERGED — v2.2 code-complete (100%)
 Plan: P23 done (lifecycle+fixture+hook 136, tools 882 green non-sandbox, contract-drift/GEN-04/emit clean)
-Status: **v2.2 implementation complete.** PENDING HUMAN RATIFICATION (constitution gate, cannot self-approve): (1) ADR-0008 Proposed → Accepted; (2) 20 lifecycle-fixture expected lanes. TCP-16/18 close only after user ratifies. Then final: mark REQUIREMENTS TCP-01..18 done, archive milestone.
+Status: **v2.2 COMPLETE.** All 6 phases merged; TCP-01..18 done. Human ratification received 2026-07-19: ADR-0008 Accepted; 20 lifecycle fixtures ratified. Milestone closed. Deferred to future milestones: signed external evidence attestation (P21 D-10), TCP-F01..F05, STRICT-rollback policy (would need a new breaking ADR).
 Last activity: 2026-07-19 — Phase 23 shipped (terra build → fable review: 4 major [runner not E2E, self-referential ceremony check, STRICT-rollback contract discrepancy, negative fixtures unbound] → fix: runner now executes real lifecycle per fixture → Claude direct-verify [fable quota-blocked, sol filter-risk] + merge)
 
 ## Performance Metrics

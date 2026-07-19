@@ -1,5 +1,5 @@
 {
-  "status": "DRAFT — human ratification required before this table is treated as approved",
+  "status": "RATIFIED — expected lanes approved by human/CODEOWNERS (kimhyojung) 2026-07-19",
   "fixtures": [
     {"id":"F-01","risk":{"scores":{"ambiguity":0,"change_scope":0,"data_security":0,"reversibility":0,"impact":0,"coordination":0,"context_pressure":0}},"expected":{"lane":"FAST","result":"PASS","ceremony_max":2}},
     {"id":"F-02","risk":{"scores":{"ambiguity":1,"change_scope":1,"data_security":0,"reversibility":0,"impact":0,"coordination":0,"context_pressure":0}},"expected":{"lane":"FAST","result":"PASS","ceremony_max":2}},

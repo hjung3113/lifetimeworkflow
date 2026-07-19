@@ -2,9 +2,9 @@
 
 *MADR 4.x · plane: constitution (human-owned, immutable, append-only)*
 
-- **Status:** Proposed — awaiting human/CODEOWNERS approval; this draft is not accepted.
+- **Status:** Accepted — ratified by human/CODEOWNERS.
 - **Date:** 2026-07-19
-- **Deciders:** pending human ratification
+- **Deciders:** kimhyojung (CODEOWNERS)
 - **Supersedes:** —
 - **Superseded by:** —
 - **Complements:** [ADR-0003](0003-pipeline-topology-slot-and-instance-overlay.md), [ADR-0006](0006-process-memory-channel-and-provenance-reframe.md), [ADR-0007](0007-constitution-gate-dev-enforce-decoupling.md)
@@ -26,9 +26,9 @@ The harness needs a task-local control plane that joins deterministic risk routi
 2. Use a five-phase lifecycle. *Rejected:* evidence and handoff failure modes need distinct lifecycle boundaries.
 3. Use `.workflow/tasks/<task-id>/` with six operational lifecycle phases. *Proposed.*
 
-## Proposed Decision Outcome
+## Decision Outcome
 
-**This section is proposed only and has no force until human approval.**
+**Ratified by human/CODEOWNERS on 2026-07-19.**
 
 1. The task namespace is `.workflow/tasks/<task-id>/`; it owns only task-local intent, state, evidence, immutable HANDOFF snapshots, and artifact pointers.
 2. `contracts/` and accepted `docs/adr/` remain policy/decision authority; `.memory/state/` may retain only an active-task pointer; `.memory/derived/` remains generator-owned.
@@ -41,9 +41,9 @@ The harness needs a task-local control plane that joins deterministic risk routi
 - **Good:** FAST avoids detailed planning and double review unless facts promote risk.
 - **Bad / accepted:** a task directory adds durable files that must remain pointer-oriented and must not duplicate contracts or transcripts.
 
-## Approval Required
+## Approval
 
-Human/CODEOWNERS approval is required before this ADR can move from **Proposed** to Accepted. This draft neither supplies nor implies that approval.
+Ratified by human/CODEOWNERS (kimhyojung) on 2026-07-19. This decision is now authoritative and append-only.
 
 ## Links
 

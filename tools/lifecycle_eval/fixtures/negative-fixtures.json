@@ -1,5 +1,5 @@
 {
-  "status": "DRAFT — deterministic regression scenarios; expected blocks are not human approvals",
+  "status": "RATIFIED — deterministic regression scenarios approved by human/CODEOWNERS (kimhyojung) 2026-07-19",
   "fixtures": [
     {"id":"N-01","scenario":"buried_constraint_prohibited_action","boundary":"EXECUTE","expected":"BLOCKED","required_evidence":true,"verified_by":"tools.task_control.tests.test_task_control::test_attest_refresh_ref_and_phase_gate"},
     {"id":"N-02","scenario":"stale_handoff","boundary":"COMPLETE","expected":"BLOCKED","verified_by":"tools.handoff.tests.test_handoff::test_stale_snapshot_is_rejected"},

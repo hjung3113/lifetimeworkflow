@@ -21,27 +21,27 @@
 
 ### Atomic State Manager + Context/Transition Gate (Phase 20)
 
-- [ ] **TCP-07**: 상태 전이가 원자적·동시성 안전하다 — 중단된 쓰기 후 정확히 하나의 valid state가 canonical하고, 같은 revision을 경쟁하는 두 writer 중 정확히 하나만 성공한다(revision CAS).
-- [ ] **TCP-08**: 허용된 phase 전이만 성공하고 불법 전이는 어떤 canonical 파일도 바꾸지 않고 실패한다(필수 산출물 부재 advance 포함).
-- [ ] **TCP-09**: phase-start 게이트가 stale git ref·baseline mismatch·wrong worktree·constraint attestation 누락에 대해 EXECUTE 진입 전 fail-closed한다.
-- [ ] **TCP-10**: `/phase-gate`가 각 phase 시작 시 게이트 + constraint 재진술(coverage/staleness 결정론적 검사, 이해 증명 주장 없음)을 실행한다.
+- [x] **TCP-07**: 상태 전이가 원자적·동시성 안전하다 — 중단된 쓰기 후 정확히 하나의 valid state가 canonical하고, 같은 revision을 경쟁하는 두 writer 중 정확히 하나만 성공한다(revision CAS).
+- [x] **TCP-08**: 허용된 phase 전이만 성공하고 불법 전이는 어떤 canonical 파일도 바꾸지 않고 실패한다(필수 산출물 부재 advance 포함).
+- [x] **TCP-09**: phase-start 게이트가 stale git ref·baseline mismatch·wrong worktree·constraint attestation 누락에 대해 EXECUTE 진입 전 fail-closed한다.
+- [x] **TCP-10**: `/phase-gate`가 각 phase 시작 시 게이트 + constraint 재진술(coverage/staleness 결정론적 검사, 이해 증명 주장 없음)을 실행한다.
 
 ### Evidence Bundle Adapters (Phase 21)
 
-- [ ] **TCP-11**: evidence adapter가 기존 게이트(lint·test·contract-drift·golden·freshness·`/verify-work`)를 재구현하지 않고 command·exit code·artifact path·SHA-256·status로 수집하며, `SKIPPED`를 `PASSED`로 바꾸지 않는다.
-- [ ] **TCP-12**: acceptance-criterion ↔ evidence 양방향 trace가 존재하고, 필수 criterion에 passing evidence가 없으면 VERIFY 완료가 거부되며, artifact 1 byte 변조 시 hash 검증이 실패한다.
-- [ ] **TCP-13**: secret/credential/PII 패턴이 evidence·HANDOFF에 평문 기록되지 않고 명시적으로 거부(redaction report)된다.
+- [x] **TCP-11**: evidence adapter가 기존 게이트(lint·test·contract-drift·golden·freshness·`/verify-work`)를 재구현하지 않고 command·exit code·artifact path·SHA-256·status로 수집하며, `SKIPPED`를 `PASSED`로 바꾸지 않는다.
+- [x] **TCP-12**: acceptance-criterion ↔ evidence 양방향 trace가 존재하고, 필수 criterion에 passing evidence가 없으면 VERIFY 완료가 거부되며, artifact 1 byte 변조 시 hash 검증이 실패한다.
+- [x] **TCP-13**: secret/credential/PII 패턴이 evidence·HANDOFF에 평문 기록되지 않고 명시적으로 거부(redaction report)된다.
 
 ### Handoff + Fresh-Session Resume (Phase 22)
 
-- [ ] **TCP-14**: HANDOFF가 특정 state revision의 immutable snapshot이고, HANDOFF만 읽은 새 세션이 task-id·goal·non-goals·critical constraints·현재 phase·ref·next-action을 100% 복원한다(stale ref/artifact 참조 시 실패).
-- [ ] **TCP-15**: `/checkpoint`·`/orient`가 HANDOFF를 생성·surface하도록 개정되고, SessionStart injector가 active task를 pointer-only(task-id·phase·lane·next-action·HANDOFF 경로)로 주입하며 기존 ~1k token cap과 lazy-load를 보존한다.
+- [x] **TCP-14**: HANDOFF가 특정 state revision의 immutable snapshot이고, HANDOFF만 읽은 새 세션이 task-id·goal·non-goals·critical constraints·현재 phase·ref·next-action을 100% 복원한다(stale ref/artifact 참조 시 실패).
+- [x] **TCP-15**: `/checkpoint`·`/orient`가 HANDOFF를 생성·surface하도록 개정되고, SessionStart injector가 active task를 pointer-only(task-id·phase·lane·next-action·HANDOFF 경로)로 주입하며 기존 ~1k token cap과 lazy-load를 보존한다.
 
 ### Lifecycle Evaluation + Docs + CI (Phase 23)
 
-- [ ] **TCP-16**: 사람 ratified domain-neutral lifecycle fixture 20개(레인별 5개) + stress/negative 사례(buried constraint·stale handoff·wrong worktree·tampered/missing evidence·concurrent writers·constitution change·illegal downgrade overlay)가 CI에서 통과한다.
-- [ ] **TCP-17**: FAST fixture가 상세 SPEC/PLAN/worktree/이중 review 없이 통과하고 FAST 사용자 의식 단계 상한(intake+verify 2회)이 fixture로 고정된다(ceremony 역류 방지).
-- [ ] **TCP-18**: 구조 결정 ADR(namespace·authority·lifecycle·overlay)이 사람에 의해 append-only 승인되고, `docs/how-to/task-lifecycle.md`가 추가되며, 기존 전체 게이트(pytest·contract-drift·golden·stale-derived·GEN-04·harness emit-drift·모델 식별자 lint)가 green을 유지한다.
+- [x] **TCP-16**: 사람 ratified domain-neutral lifecycle fixture 20개(레인별 5개) + stress/negative 사례(buried constraint·stale handoff·wrong worktree·tampered/missing evidence·concurrent writers·constitution change·illegal downgrade overlay)가 CI에서 통과한다.
+- [x] **TCP-17**: FAST fixture가 상세 SPEC/PLAN/worktree/이중 review 없이 통과하고 FAST 사용자 의식 단계 상한(intake+verify 2회)이 fixture로 고정된다(ceremony 역류 방지).
+- [x] **TCP-18**: 구조 결정 ADR(namespace·authority·lifecycle·overlay)이 사람에 의해 append-only 승인되고, `docs/how-to/task-lifecycle.md`가 추가되며, 기존 전체 게이트(pytest·contract-drift·golden·stale-derived·GEN-04·harness emit-drift·모델 식별자 lint)가 green을 유지한다.
 
 ## Future Requirements
 
