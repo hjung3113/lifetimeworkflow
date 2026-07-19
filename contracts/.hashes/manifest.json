@@ -6,6 +6,7 @@
   "contracts/harness/task-control/state.schema.json": "c2a64cab55f381e15a5a950ba66b8de058436c2206aced500ca2fe611e6313ec",
   "contracts/harness/task-control/task.schema.json": "1c5a0f5b683e7131673eb1d66484eb64a6302d1e6682ed15306a5d717363ff90",
   "contracts/harness/task-control/transitions.json": "5d27bb16571de624ca55d94f7cb88928970cedaadd04b648bcbe9ccd5cec7afa",
+  "contracts/harness/topology/relationship.schema.json": "27377a8867084ed7121baf3f59a413432824fa58702084a6fd05d41900f9fc38",
   "contracts/normalization/format-conventions.schema.json": "1af8935bf997faf80939db7228366c311c17f14729a0b9eee914799854d85ffc",
   "contracts/sample/greeting.schema.json": "35f71ca2dbeb6b84e093fb4a8dbacde2628974d706aac416d98e595e6c3b55df"
 }
