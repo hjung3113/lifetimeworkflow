@@ -490,6 +490,14 @@ Plans:
 3. 현재 `harness/project.toml`·`workspace.toml`·log-parser instance가 편집 없이 유효하게 유지된다(선형 fixture byte-unchanged).
 4. 전체 contract-drift·GEN-04·기존 topology 테스트가 green이다.
 
+**Plans**: 2 plans (1 wave)
+
+Plans:
+**Wave 1** *(parallel — no file overlap)*
+
+- [ ] 24-01-PLAN.md — TOPO-01: ratified relationship record schema + positive/negative fixtures + contract-hash rebaseline
+- [ ] 24-02-PLAN.md — TOPO-02/TOPO-03: additive `[contract_graph]` TOML slot + raw-passthrough accessors + deterministic `effective_relationships()` lowering/union
+
 ### Phase 25: Graph Compiler, Queries, Conductor, Proof *(v2.3 A)*
 
 **Goal:** 일반 관계 그래프를 하나의 결정론적 구현과 기존 사용자 표면으로 사용 가능하게 만든다.
