@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harness.local/contracts/harness/adoption/plan.schema.json",
+  "title": "Brownfield adoption mapping plan",
+  "description": "ADOPT-02 evidence-separated mapping plan for a brownfield target: proposed members/components/relationships/contract-candidates/test-commands/docs-destinations/agents-boundaries, each classified observed/inferred/unknown with evidence; unresolved ownership stays a question, never invented authority. Relationship candidates duplicate the Phase-24 contracts/harness/topology/relationship.schema.json shape (D-11, not $ref'd). Self-contained Draft 2020-12 — no cross-file $ref.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target_ref", "proposals", "relationships", "questions"],
+  "properties": {
+    "target_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Ties this plan to the same scan as the inventory's target_ref (same shape: a git ref, or the literal \"unknown\")."
+    },
+    "proposals": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/proposalRecord" }
+    },
+    "relationships": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/relationshipCandidate" }
+    },
+    "questions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/questionRecord" }
+    }
+  },
+  "$defs": {
+    "evidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repo-relative POSIX path pointing INTO an already-hashed inventory includedEntry."
+        },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "size": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "classification": {
+      "type": "string",
+      "enum": ["observed", "inferred", "unknown"],
+      "description": "D-02 evidence classification ladder: observed on direct evidence only, inferred on strong structural signals only, everything else unknown."
+    },
+    "proposalRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "classification", "target", "evidence"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "member",
+            "component",
+            "relationship",
+            "contract-candidate",
+            "test-command",
+            "docs-destination",
+            "agents-boundary"
+          ],
+          "description": "ADOPT-02 category list."
+        },
+        "classification": { "$ref": "#/$defs/classification" },
+        "target": { "type": "string", "minLength": 1 },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/evidenceRef" }
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Optional: the structural rule id that produced this proposal's classification."
+        }
+      }
+    },
+    "relationshipCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "contract", "authority", "dependents"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable record id for this relationship candidate, namespaced adoption/<contract>/<authority>-><dependent>."
+        },
+        "contract": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable reference to the tracked contract this relationship is about."
+        },
+        "authority": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Exactly ONE authority endpoint (a bare stable-id string, not an array)."
+        },
+        "dependents": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "One-or-more dependent endpoints (bare stable-id strings)."
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional explanatory relationship kind."
+        },
+        "labels": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Optional explanatory labels."
+        }
+      }
+    },
+    "candidateRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_kind", "record"],
+      "properties": {
+        "record_kind": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What kind of ratified record this candidate resembles, e.g. \"relationship\"."
+        },
+        "record": {
+          "type": "object",
+          "description": "Deliberately open (no required/additionalProperties constraint) so a partial/incomplete candidate — e.g. a relationship missing authority — validates. This is the structural guarantee that a candidate can never be mistaken for a ratified record (D-05)."
+        }
+      }
+    },
+    "questionRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "target", "question", "classification", "evidence"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^Q-[0-9a-f]{12}$",
+          "description": "Content-derived stable id (D-05)."
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "relationship-authority",
+            "contract-candidate",
+            "component-boundary",
+            "member-boundary",
+            "test-command",
+            "docs-destination",
+            "agents-boundary",
+            "codeowners-ownership",
+            "collision",
+            "ambiguous-language",
+            "excluded-file"
+          ]
+        },
+        "group": {
+          "type": "string",
+          "description": "Optional render-time grouping (D-05)."
+        },
+        "target": { "type": "string", "minLength": 1 },
+        "question": { "type": "string", "minLength": 1 },
+        "classification": { "$ref": "#/$defs/classification" },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/evidenceRef" }
+        },
+        "candidate": { "$ref": "#/$defs/candidateRecord" },
+        "blocking": { "type": "boolean" }
+      }
+    }
+  }
+}

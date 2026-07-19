@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harness.local/contracts/harness/adoption/manifest.schema.json",
+  "title": "Brownfield adoption disposition manifest",
+  "description": "ADOPT-03 complete destination/disposition manifest for a brownfield target: exactly one of create/preserve/conflict/marker-merge/derived-regenerate/human-ratification-required assigned to every harness destination (D-03/D-04 total rule chain), plus a separate excluded[] array recording GSD-owned lanes by reason so \"excluded\" is distinguishable from \"missed\". Self-contained Draft 2020-12 — no cross-file $ref (D-11).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target_ref", "dispositions", "excluded"],
+  "properties": {
+    "target_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Ties this manifest to the same scan as the inventory's target_ref (same shape: a git ref, or the literal \"unknown\")."
+    },
+    "dispositions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dispositionRecord" }
+    },
+    "excluded": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/excludedDestinationRecord" }
+    }
+  },
+  "$defs": {
+    "evidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repo-relative POSIX path pointing INTO an already-hashed inventory includedEntry."
+        },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "size": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "dispositionEnum": {
+      "type": "string",
+      "enum": [
+        "create",
+        "preserve",
+        "conflict",
+        "marker-merge",
+        "derived-regenerate",
+        "human-ratification-required"
+      ],
+      "description": "Exactly these 6 values (D-03/D-04's total rule chain), no more, no fewer."
+    },
+    "dispositionRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["destination", "disposition"],
+      "properties": {
+        "destination": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A repo-relative POSIX path in the TARGET tree."
+        },
+        "disposition": { "$ref": "#/$defs/dispositionEnum" },
+        "reason": {
+          "type": "string",
+          "description": "Optional: which rule in the chain fired, e.g. constitution-plane / marker-capable:AGENTS.md / hash-equal / hash-differ / no-existing-target."
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 0,
+          "items": { "$ref": "#/$defs/evidenceRef" },
+          "description": "Optional; may be empty for path-only rules that never read content."
+        }
+      }
+    },
+    "excludedDestinationRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["destination", "reason"],
+      "properties": {
+        "destination": { "type": "string", "minLength": 1 },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "E.g. \"gsd-owned\" — GSD-owned lanes are recorded here as EXCLUDED, never as a dispositions[] entry, so a reviewer can tell \"excluded\" apart from \"missed\"."
+        }
+      }
+    }
+  }
+}
