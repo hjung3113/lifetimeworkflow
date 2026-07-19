@@ -30,6 +30,19 @@
         "target": ".github/workflows"
       }
     ],
+    "codeowners_surfaces": [
+      {
+        "classification": "observed",
+        "evidence": [
+          {
+            "path": ".github/CODEOWNERS",
+            "sha256": "ad2ff214b3ea383ae5f551b318f56e2642c7f70b78befda4e19f6b42da3d8a23",
+            "size": 10
+          }
+        ],
+        "target": ".github/CODEOWNERS"
+      }
+    ],
     "documentation_surfaces": [
       {
         "classification": "observed",
@@ -115,6 +128,11 @@
     ],
     "included": [
       {
+        "path": ".github/CODEOWNERS",
+        "sha256": "ad2ff214b3ea383ae5f551b318f56e2642c7f70b78befda4e19f6b42da3d8a23",
+        "size": 10
+      },
+      {
         "path": ".github/workflows/ci.yml",
         "sha256": "6f226f96dc1167e947305b492f21b1f9bb321fc536b5463fbeefc4e2c5f3e2eb",
         "size": 31
@@ -130,6 +148,11 @@
         "size": 12
       },
       {
+        "path": "contracts/widget.schema.json",
+        "sha256": "eb217225d785a7a56210d52aec0c958b124561339aca20fd2f20b4a67267d671",
+        "size": 19
+      },
+      {
         "path": "docs/adr/0001-decision.md",
         "sha256": "2054f311cdbb52242d940bccc583a2d2c2762239b13c93fa3fa90749f29d19b5",
         "size": 11
@@ -143,6 +166,11 @@
         "path": "tests/test_widget.py",
         "sha256": "3b335815c47b04fff9a6d2370447e3851c0bfdf979c4cb93a4b0f33edd1aea93",
         "size": 28
+      },
+      {
+        "path": "tools/widget_tool.schema.json",
+        "sha256": "eb217225d785a7a56210d52aec0c958b124561339aca20fd2f20b4a67267d671",
+        "size": 19
       },
       {
         "path": "widget_a.py",
@@ -203,6 +231,19 @@
       }
     ],
     "max_file_bytes": 262144,
+    "schema_surfaces": [
+      {
+        "classification": "observed",
+        "evidence": [
+          {
+            "path": "contracts/widget.schema.json",
+            "sha256": "eb217225d785a7a56210d52aec0c958b124561339aca20fd2f20b4a67267d671",
+            "size": 19
+          }
+        ],
+        "target": "contracts/**/*.schema.json"
+      }
+    ],
     "target_ref": "unknown",
     "test_surfaces": [
       {
@@ -233,6 +274,19 @@
         "id": "agents-boundary/AGENTS.md",
         "kind": "agents-boundary",
         "target": "AGENTS.md"
+      },
+      {
+        "classification": "unknown",
+        "evidence": [
+          {
+            "path": ".github/CODEOWNERS",
+            "sha256": "ad2ff214b3ea383ae5f551b318f56e2642c7f70b78befda4e19f6b42da3d8a23",
+            "size": 10
+          }
+        ],
+        "id": "codeowners/.github/CODEOWNERS",
+        "kind": "codeowners",
+        "target": ".github/CODEOWNERS"
       },
       {
         "classification": "inferred",
@@ -363,6 +417,22 @@
         "kind": "docs-destination",
         "question": "Which Diataxis quadrant does 'docs/adr' belong to?",
         "target": "docs/adr"
+      },
+      {
+        "blocking": true,
+        "classification": "unknown",
+        "evidence": [
+          {
+            "path": ".github/CODEOWNERS",
+            "sha256": "ad2ff214b3ea383ae5f551b318f56e2642c7f70b78befda4e19f6b42da3d8a23",
+            "size": 10
+          }
+        ],
+        "group": "ownership",
+        "id": "Q-5dd56683d29b",
+        "kind": "codeowners-ownership",
+        "question": "Who owns the CODEOWNERS path '.github/CODEOWNERS'?",
+        "target": ".github/CODEOWNERS"
       },
       {
         "blocking": false,
@@ -577,7 +647,7 @@
       },
       {
         "destination": ".github/CODEOWNERS",
-        "disposition": "create"
+        "disposition": "conflict"
       },
       {
         "destination": ".github/workflows/ci.yml",

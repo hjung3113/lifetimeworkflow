@@ -40,6 +40,7 @@ _QUESTION_KIND_BY_PROPOSAL_KIND: dict[str, str] = {
     "test-command": "test-command",
     "docs-destination": "docs-destination",
     "agents-boundary": "agents-boundary",
+    "codeowners": "codeowners-ownership",
 }
 
 # D-05 group bucket per question kind (render-time grouping, coarse).
@@ -172,6 +173,19 @@ def classify(inventory: dict) -> list[dict]:
             {
                 "id": f"test-command/{entry['target']}",
                 "kind": "test-command",
+                "classification": "unknown",
+                "target": entry["target"],
+                "evidence": entry["evidence"],
+            }
+        )
+
+    for entry in inventory.get("codeowners_surfaces", []):
+        proposals.append(
+            {
+                "id": f"codeowners/{entry['target']}",
+                "kind": "codeowners",
+                # ALWAYS unknown — who owns a CODEOWNERS path is an ownership/authority claim
+                # D-02 reserves for a question, never a restatement of the source's "observed".
                 "classification": "unknown",
                 "target": entry["target"],
                 "evidence": entry["evidence"],

@@ -185,6 +185,31 @@ def test_nested_agents_md_gets_its_own_agents_boundary_proposal() -> None:
     assert agents_questions["AGENTS.md"]["id"] != agents_questions["libs/python/AGENTS.md"]["id"]
 
 
+def test_codeowners_ownership_question_fires() -> None:
+    """The codeowners-ownership question kind — structurally wired since Plan 26-03 but
+    permanently unreachable until this plan fed it a real inventory signal — actually fires on a
+    codeowners_surfaces entry."""
+    inventory = {
+        "target_ref": "unknown",
+        "codeowners_surfaces": [
+            {
+                "target": ".github/CODEOWNERS",
+                "classification": "observed",
+                "evidence": [_evidence_ref(".github/CODEOWNERS")],
+            }
+        ],
+    }
+
+    built = plan.build_plan(inventory)
+
+    codeowners_proposals = [p for p in built["proposals"] if p["kind"] == "codeowners"]
+    assert len(codeowners_proposals) == 1
+    assert codeowners_proposals[0]["classification"] == "unknown"
+
+    codeowners_questions = [q for q in built["questions"] if q["kind"] == "codeowners-ownership"]
+    assert len(codeowners_questions) == 1
+
+
 def test_classify_over_fixture_validates_shape(tmp_minirepo: Path) -> None:
     """build_plan() over the real D-06 fixture never invents a relationship (no relationship
     signal exists in the inventory), and every proposal carries a valid classification."""

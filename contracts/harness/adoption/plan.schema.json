@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://harness.local/contracts/harness/adoption/plan.schema.json",
   "title": "Brownfield adoption mapping plan",
-  "description": "ADOPT-02 evidence-separated mapping plan for a brownfield target: proposed members/components/relationships/contract-candidates/test-commands/docs-destinations/agents-boundaries, each classified observed/inferred/unknown with evidence; unresolved ownership stays a question, never invented authority. Relationship candidates duplicate the Phase-24 contracts/harness/topology/relationship.schema.json shape (D-11, not $ref'd). Self-contained Draft 2020-12 — no cross-file $ref.",
+  "description": "ADOPT-02 evidence-separated mapping plan for a brownfield target: proposed members/components/relationships/contract-candidates/test-commands/docs-destinations/agents-boundaries/codeowners, each classified observed/inferred/unknown with evidence; unresolved ownership stays a question, never invented authority. Relationship candidates duplicate the Phase-24 contracts/harness/topology/relationship.schema.json shape (D-11, not $ref'd). Self-contained Draft 2020-12 — no cross-file $ref.",
   "type": "object",
   "additionalProperties": false,
   "required": ["target_ref", "proposals", "relationships", "questions"],
@@ -60,7 +60,8 @@
             "contract-candidate",
             "test-command",
             "docs-destination",
-            "agents-boundary"
+            "agents-boundary",
+            "codeowners"
           ],
           "description": "ADOPT-02 category list."
         },
