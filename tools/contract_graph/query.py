@@ -40,8 +40,8 @@ def reverse(graph: dict, node: str) -> dict:
     """Return the direct (one-hop) incoming predecessors of ``node``.
 
     Builds a transposed adjacency (``dependent -> [authorities]``) once from ``graph["adjacency"]``,
-    then returns the sorted predecessors of ``node`` with 1-hop paths ``[node, predecessor]``. An
-    isolated node yields ``{"ids": [], "paths": []}`` — never a ``KeyError``.
+    then returns the sorted predecessors of ``node`` with 1-hop paths ``[node, predecessor]``.
+    An isolated node yields ``{"ids": [], "paths": []}`` — never a ``KeyError``.
     """
     transposed: dict[str, list[str]] = {}
     for authority, dependents in graph["adjacency"].items():
@@ -55,8 +55,8 @@ def reverse(graph: dict, node: str) -> dict:
 def transitive(graph: dict, node: str) -> dict:
     """Return every node reachable from ``node`` along outgoing edges (cycle-safe).
 
-    Iterative visited-set worklist (research Pattern 2): a node is checked against ``visited`` BEFORE
-    it is enqueued, so a legal cycle terminates — traversal is bounded to O(nodes+edges) with no
+    Iterative visited-set worklist (research Pattern 2): a node is checked against ``visited``
+    BEFORE it is enqueued, so a legal cycle terminates — traversal is bounded to O(nodes+edges), no
     recursion. Neighbours are visited in sorted order, so the recorded (first-found) path for each
     reached node is deterministic across runs.
 
