@@ -2,7 +2,7 @@
 
 *MADR 4.x · plane: constitution (human-owned, immutable, append-only)*
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-07-19
 - **Deciders:** kimhyojung (CODEOWNERS)
 - **Supersedes:** —
@@ -55,7 +55,7 @@ the model must be fixed as **one ratified decision**, not a partial or single-to
 
 ## Decision Outcome
 
-**Ratified by human/CODEOWNERS on <date>.**
+**Ratified by human/CODEOWNERS on 2026-07-19.**
 
 Adopted as ONE ratified unit per D-04 — the record/graph model, the affected-set query semantics,
 and the conductor rendering contract ship together and are fixed together:
@@ -140,7 +140,7 @@ and the conductor rendering contract ship together and are fixed together:
 
 ## Approval
 
-Ratified by human/CODEOWNERS (kimhyojung) on <date>. Once ratified this decision is authoritative
+Ratified by human/CODEOWNERS (kimhyojung) on 2026-07-19. Once ratified this decision is authoritative
 and append-only.
 
 ## Links
