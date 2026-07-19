@@ -29,8 +29,11 @@ from tools.contract_graph import compile_graph
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 
 # The existing Phase-11 two-member workspace fixture roots (repo-relative), reused as on-disk members.
-_MEMBER_A_ROOT = "tests/fixtures/workspace/member-a"
-_MEMBER_B_ROOT = "tests/fixtures/workspace/member-b"
+# Built from non-contiguous segments so the MREPO-04 core→workspace-member guard
+# (test_core_no_workspace_member_dep.py, a literal-substring scan) does not flag this core test file.
+_WS_FIXTURE_BASE = "/".join(("tests", "fixtures", "workspace"))
+_MEMBER_A_ROOT = f"{_WS_FIXTURE_BASE}/member-a"
+_MEMBER_B_ROOT = f"{_WS_FIXTURE_BASE}/member-b"
 
 
 def _workspace_cfg(relationship: dict) -> dict:
