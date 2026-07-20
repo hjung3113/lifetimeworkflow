@@ -175,44 +175,65 @@ def test_apply_disposition_refuses_path_escape_destinations_end_to_end(tmp_path,
 
 # --- WR-05 (27.2-01) — directory-shaped destinations refuse, never IsADirectoryError -----------
 #
-# Three classes, grouped so a reader can see which check each row exercises:
-#   (a) resolves to target_root itself — caught by the resolve-equality check;
-#   (b) trailing-slash / trailing-dot spellings whose target does NOT exist yet — caught ONLY by
-#       the structural pre-check on the raw spelling: `(root / "newdir/").resolve()` is
-#       `root/newdir`, which is neither equal to the root nor an existing directory, so a manifest
-#       asking for a directory would silently create a FILE named `newdir`;
-#   (c) an existing directory — caught by the `is_dir()` check.
-# `src/` is created by the test itself; `a/`, `b/`, `newdir/` deliberately never exist.
+# Each row carries the fragment identifying WHICH guard must fire, so a row cannot drift onto a
+# different check and still pass (WR-01: the three `(a)` rows below were all being intercepted by
+# the structural pre-check, leaving the root-equality branch with no test of its own).
+#   (a) structural pre-check on the raw spelling — the last segment is empty or `.`. This is the
+#       ONLY check that sees the trailing-slash class: `(root / "newdir/").resolve()` is
+#       `root/newdir`, neither root-equal nor an existing directory, so a manifest asking for a
+#       directory would otherwise silently create a FILE named `newdir`.
+#   (b) resolves to target_root itself — reachable ONLY via a symlink pointing at the root; every
+#       plain spelling of "the root" (`.`, `./`, ``) is stopped by (a) two checks earlier.
+#   (c) an existing directory — the `is_dir()` check.
+# `src/` and `selflink` are created by the test itself; `a/`, `b/`, `newdir/` deliberately never
+# exist.
 DIRECTORY_SHAPED_DESTINATIONS = [
-    # (a) resolves to the root itself
-    ("root_dot", "."),
-    ("root_dot_slash", "./"),
-    ("root_empty", ""),
-    # (b) trailing-slash / trailing-dot, target does not exist yet
-    ("trailing_slash_nonexistent", "a/"),
-    ("trailing_slash_newdir", "newdir/"),
-    ("trailing_dot_nonexistent", "a/b/."),
+    # (a) structural: last raw segment is empty or `.`
+    ("root_dot", ".", "names a directory"),
+    ("root_dot_slash", "./", "names a directory"),
+    ("root_empty", "", "names a directory"),
+    ("trailing_slash_nonexistent", "a/", "names a directory"),
+    ("trailing_slash_newdir", "newdir/", "names a directory"),
+    ("trailing_dot_nonexistent", "a/b/.", "names a directory"),
+    ("existing_dir_trailing_slash", "src/", "names a directory"),
+    # (b) resolves to the target root itself
+    ("symlink_to_root", "selflink", "target root itself"),
     # (c) an existing directory
-    ("existing_dir", "src"),
-    ("existing_dir_dot_prefixed", "./src"),
-    ("existing_dir_trailing_slash", "src/"),
+    ("existing_dir", "src", "existing directory"),
+    ("existing_dir_dot_prefixed", "./src", "existing directory"),
 ]
 
 
-@pytest.mark.parametrize(
-    ("case_name", "destination"),
-    DIRECTORY_SHAPED_DESTINATIONS,
-    ids=[case_name for case_name, _ in DIRECTORY_SHAPED_DESTINATIONS],
-)
-def test_refuse_unsafe_destination_rejects_directory_shaped(tmp_path, case_name, destination):
-    """WR-05: a destination that names a directory is refused at the choke point (D-02:
-    `PathEscapeError`, the existing refusal exception — not a new one)."""
+def _seed_directory_shaped_fixtures(tmp_path):
+    """Create the on-disk shapes the `(b)` and `(c)` rows need."""
     (tmp_path / "src").mkdir(exist_ok=True)
+    selflink = tmp_path / "selflink"
+    if not selflink.exists():
+        os.symlink(str(tmp_path), str(selflink))
+
+
+@pytest.mark.parametrize(
+    ("case_name", "destination", "expected_guard"),
+    DIRECTORY_SHAPED_DESTINATIONS,
+    ids=[case_name for case_name, _, _ in DIRECTORY_SHAPED_DESTINATIONS],
+)
+def test_refuse_unsafe_destination_rejects_directory_shaped(
+    tmp_path, case_name, destination, expected_guard
+):
+    """WR-05: a destination that names a directory is refused at the choke point (D-02:
+    `PathEscapeError`, the existing refusal exception — not a new one).
+
+    WR-01: `expected_guard` pins each row to the specific check that must reject it, so deleting
+    any one guard turns its own rows red instead of letting an earlier check absorb them.
+    """
+    _seed_directory_shaped_fixtures(tmp_path)
 
     with pytest.raises(apply.PathEscapeError) as excinfo:
         apply.refuse_unsafe_destination(destination, tmp_path)
 
-    assert f"'{destination}'" in str(excinfo.value), case_name
+    message = str(excinfo.value)
+    assert f"'{destination}'" in message, case_name
+    assert expected_guard in message, f"{case_name}: refused by the wrong guard — {message}"
 
 
 def test_refuse_unsafe_destination_still_allows_file_destinations(tmp_path):
