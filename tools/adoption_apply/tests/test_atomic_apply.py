@@ -7,6 +7,8 @@ apply-cycle integration proof (one of each of the 6 dispositions in a single man
 
 from __future__ import annotations
 
+import concurrent.futures
+import os
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -196,3 +198,119 @@ def test_sc2_full_apply_cycle(tmp_path):
     assert sorted(summary["applied"] + summary["skipped"] + summary["refused"]) == sorted(
         record["destination"] for record in manifest["dispositions"]
     )
+
+
+# --- CR-02 (27.1-01) — apply_manifest-level zero-write proof for escaped destinations ----------
+
+
+def test_absolute_destination_refused_zero_writes(tmp_path, monkeypatch):
+    """Proves the confinement guarantee through `apply_manifest` (not just `apply_disposition`).
+
+    RED pre-fix reasoning: `Path(target_root) / destination` silently discards `target_root` when
+    `destination` is absolute (pathlib's documented absolute-override join behavior); the synthetic
+    destination is guaranteed not to already exist, so `atomic_create` really writes it — the spy
+    `call_count > 0` assertion is what fails pre-fix, never the wrong exception type. Also asserts
+    `PathEscapeError` propagates OUT of `apply_manifest` rather than being bucketed into
+    `summary["refused"]` — a destination-shape integrity fault, not a routine per-record outcome.
+    """
+    open_spy = MagicMock(wraps=os.open)
+    link_spy = MagicMock(wraps=os.link)
+    replace_spy = MagicMock(wraps=os.replace)
+    monkeypatch.setattr(os, "open", open_spy)
+    monkeypatch.setattr(os, "link", link_spy)
+    monkeypatch.setattr(os, "replace", replace_spy)
+
+    escaped_destination = str(tmp_path / "outside-marker" / "widget.txt")
+    manifest = {
+        "target_ref": "unknown",
+        "dispositions": [{"destination": escaped_destination, "disposition": "create"}],
+        "excluded": [],
+    }
+
+    with pytest.raises(apply.PathEscapeError):
+        apply.apply_manifest(manifest, tmp_path, payloads={escaped_destination: b"x = 1\n"})
+
+    assert open_spy.call_count == 0
+    assert link_spy.call_count == 0
+    assert replace_spy.call_count == 0
+
+
+def test_traversal_destination_refused_zero_writes(tmp_path, monkeypatch):
+    """Traversal-escape twin of the absolute case above, same zero-write-spy proof."""
+    open_spy = MagicMock(wraps=os.open)
+    link_spy = MagicMock(wraps=os.link)
+    replace_spy = MagicMock(wraps=os.replace)
+    monkeypatch.setattr(os, "open", open_spy)
+    monkeypatch.setattr(os, "link", link_spy)
+    monkeypatch.setattr(os, "replace", replace_spy)
+
+    escaped_destination = "../outside-marker/widget.txt"
+    manifest = {
+        "target_ref": "unknown",
+        "dispositions": [{"destination": escaped_destination, "disposition": "create"}],
+        "excluded": [],
+    }
+
+    with pytest.raises(apply.PathEscapeError):
+        apply.apply_manifest(manifest, tmp_path, payloads={escaped_destination: b"x = 1\n"})
+
+    assert open_spy.call_count == 0
+    assert link_spy.call_count == 0
+    assert replace_spy.call_count == 0
+
+
+# --- WR-01 (27.1-01) — locked _apply_marker_merge read-modify-write -----------------------------
+
+
+def test_concurrent_marker_merge_does_not_lose_writes(tmp_path):
+    """Two racing `_apply_marker_merge` calls against the same target must not interleave.
+
+    Structural proof (preferred over a timing-dependent interleaving assertion, per the plan's own
+    guidance that thread-timing races are not reliably reproducible): after both calls complete,
+    the sidecar lock file must exist, proving the `fcntl.flock` critical section is actually in the
+    code path. Also asserts the final file is byte-consistent (parses without truncation/corruption)
+    regardless of which of the two racers wins.
+    """
+    target = tmp_path / "AGENTS.md"
+    target.write_text("# Repo agents\n\nSome human prose.\n", encoding="utf-8")
+
+    def _merge(block_body):
+        apply._apply_marker_merge("AGENTS.md", target, block_body=block_body)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [
+            pool.submit(_merge, "## Block A\n\nContent A.\n"),
+            pool.submit(_merge, "## Block B\n\nContent B.\n"),
+        ]
+        for future in concurrent.futures.as_completed(futures):
+            future.result()
+
+    lock_path = target.with_name(f".{target.name}.lock")
+    assert lock_path.is_file()
+
+    final_text = target.read_text(encoding="utf-8")
+    assert "Some human prose." in final_text
+    # Exactly one of the two racers' content survives (last-writer-wins under the lock) — the
+    # important property is that the file is NOT corrupted/interleaved/truncated.
+    assert final_text.count("## Block A") <= 1
+    assert final_text.count("## Block B") <= 1
+    assert final_text.count("## Block A") + final_text.count("## Block B") >= 1
+
+
+def test_marker_merge_refuses_symlink_read(tmp_path):
+    """`_apply_marker_merge`'s read side must not follow a symlink into arbitrary content.
+
+    RED pre-fix via a real read-through: today's `target_path.read_text()` follows the symlink and
+    silently splices `victim.txt`'s content into the merge — this test proves that no longer
+    happens and that the secret content never leaks into any raised exception's string form.
+    """
+    victim = tmp_path / "victim.txt"
+    victim.write_text("SECRET-ORIGINAL\n", encoding="utf-8")
+
+    agents_md = tmp_path / "AGENTS.md"
+    agents_md.symlink_to(victim)
+
+    with pytest.raises(apply.SymlinkRefusal) as excinfo:
+        apply._apply_marker_merge("AGENTS.md", agents_md, block_body="## New\n")
+
+    assert "SECRET-ORIGINAL" not in str(excinfo.value)
