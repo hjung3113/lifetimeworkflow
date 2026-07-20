@@ -16,6 +16,9 @@ including submodules that have not landed yet, so that the plans adding those su
 only and never edit this one — an edit here would be a same-wave file conflict. Consequence: within
 the phase, accessing a name whose submodule has not landed yet raises ``ModuleNotFoundError`` (not
 ``AttributeError``). That is a transient, within-phase condition, not a bug.
+
+The freeze above was a PHASE 28 arrangement; Phase 29 extended the map with ``exclusions``
+(DOCSUP-06).
 """
 
 from __future__ import annotations
@@ -39,6 +42,11 @@ _SUBMODULE_OF: dict[str, str] = {
     "classify": "guard",
     # impact.py — contract-graph impact ids (ids only, never fabricated).
     "impact_ids": "impact",
+    # exclusions.py — the DOCSUP-06 drafting exclusions (Phase 29).
+    "REASON_ACCEPTED_ADR": "exclusions",
+    "REASON_CONSTITUTION": "exclusions",
+    "REASON_DERIVED": "exclusions",
+    "exclusion_reason": "exclusions",
 }
 
 __all__ = sorted(_SUBMODULE_OF)
@@ -55,6 +63,8 @@ def __getattr__(name: str):  # PEP 562 — lazy re-export from the owning submod
             from tools.docs_guard import ledger as module  # type: ignore[no-redef]
         elif submodule == "guard":
             from tools.docs_guard import guard as module  # type: ignore[no-redef]
+        elif submodule == "exclusions":
+            from tools.docs_guard import exclusions as module  # type: ignore[no-redef]
         else:
             from tools.docs_guard import impact as module  # type: ignore[no-redef]
         return getattr(module, name)
