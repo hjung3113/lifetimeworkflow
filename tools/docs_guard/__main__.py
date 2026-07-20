@@ -9,7 +9,7 @@ from __future__ import annotations
 
 
 def main() -> int:
-    from tools.docs_guard.cli import main as cli_main
+    from tools.docs_guard.cli import main as cli_main  # pyright: ignore[reportMissingImports]
 
     return cli_main()
 
