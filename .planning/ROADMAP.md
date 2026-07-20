@@ -623,7 +623,7 @@ Plans:
 
 **Wave 3** *(blocked on 27-01/27-03/27-04)*
 
-- [ ] 27-05-PLAN.md — 3 domain-neutral fixtures (polyglot-single, client-server, partial-collision-crlf) + end-to-end proof (ADOPT-07, SC-3)
+- [x] 27-05-PLAN.md — 3 domain-neutral fixtures (polyglot-single, client-server, partial-collision-crlf) + end-to-end proof (ADOPT-07, SC-3)
 - [ ] 27-06-PLAN.md — /adopt command + brownfield-adoption skill + emit round-trip + phase gate (ADOPT-07, SC-4)
 
 ### Phase 28: Human-Docs Registry, Guard, Derived Queue *(v2.3 C)*

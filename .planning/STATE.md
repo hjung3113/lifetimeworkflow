@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: A)*
 status: executing
-stopped_at: Completed 26.2-01-PLAN.md
-last_updated: "2026-07-20T16:23:12.560Z"
+stopped_at: Completed 27-05-PLAN.md
+last_updated: "2026-07-20T16:37:03.427Z"
 last_activity: 2026-07-20
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 24
-  completed_plans: 22
-  percent: 92
+  completed_plans: 23
+  percent: 96
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 ## Current Position
 
 Phase: 27 (task-local-adoption-workflow-safe-application-v2-3-b) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-07-20
 
@@ -137,6 +137,7 @@ Last activity: 2026-07-20
 | Phase 27-task-local-adoption-workflow-safe-application-v2-3-b P02 | 32min | 2 tasks | 6 files |
 | Phase 27-03 P03 | 4min | 2 tasks | 3 files |
 | Phase 27 P04 | 12min | 2 tasks | 2 files |
+| Phase 27 P05 | 45min | 2 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -242,6 +243,7 @@ Recent decisions affecting current work:
 - [Phase 27-03]: apply.py refuse_if_constitution called first, unconditionally, in every apply_disposition branch — no cached per-batch check
 - [Phase 27-03]: create disposition's concurrent-drift check is existence-based, not hash-based: any existing target where the manifest recorded none is drift by definition
 - [Phase 27]: Reused GOLDEN_APPROVE_HUMAN verbatim rather than a new adoption-specific env var (RESEARCH-mandated precedent)
+- [Phase ?]: polyglot-single and partial-collision-crlf are NEW static checked-in fixture trees; client-server extends tests/fixtures/workspace/{member-a,member-b} — 27-PATTERNS.md D-07 finding; SC-3/ADOPT-07 fixture-proof
 
 ### Pending Todos
 
@@ -282,8 +284,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-20T16:22:21.349Z
-Stopped at: Completed 26.2-01-PLAN.md
+Last session: 2026-07-20T16:37:03.420Z
+Stopped at: Completed 27-05-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

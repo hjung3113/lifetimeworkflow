@@ -26,7 +26,7 @@
 - [x] **ADOPT-04** *(NEW+REUSE, Phase 27)*: 각 adoption batch가 `.workflow/tasks/<task-id>/artifacts/adoption/<batch-id>/`에 존재하며 inventory·plan·draft tree·question·conflict·source ref·task revision·artifact hash·approval을 기존 CAS·evidence·HANDOFF·resume lifecycle에 결합한다.
 - [x] **ADOPT-05** *(NEW+REUSE, Phase 27)*: discovery/draft 모드는 task artifact root 안에서만 쓰고, apply 모드는 review된 비-헌법 파일을 atomically create·marker-merge하되 silent overwrite·동시 target drift를 거부하고 `contracts/`·`docs/adr/`·`golden/` destination을 mutation 전에 거부한다.
 - [x] **ADOPT-06** *(NEW+REUSE, Phase 27)*: promotion이 제안된 contract·golden·ADR·relationship authority·conflict·unknown을 다루는 사람 결정을 요구하며, 정확한 draft hash·task revision·git ref에 결합되어 입력 변경 시 승인이 무효화된다.
-- [ ] **ADOPT-07** *(NEW+REUSE, Phase 27)*: 하나의 얇은 `/adopt` command와 `brownfield-adoption` skill이 결정론적 툴·기존 explorer/fan-out/orchestrator/task 게이트·promotion 워크플로·runbook을 조합하고, 3개 generic fixture(polyglot 단일 레포·2-레포 client/server·partial-adoption/collision)가 idempotence·임의 command 미실행·헌법 거부·emitter closure·GEN-04를 증명하며 최소 하나의 fixture는 CRLF·BOM 입력을 포함한다.
+- [x] **ADOPT-07** *(NEW+REUSE, Phase 27)*: 하나의 얇은 `/adopt` command와 `brownfield-adoption` skill이 결정론적 툴·기존 explorer/fan-out/orchestrator/task 게이트·promotion 워크플로·runbook을 조합하고, 3개 generic fixture(polyglot 단일 레포·2-레포 client/server·partial-adoption/collision)가 idempotence·임의 command 미실행·헌법 거부·emitter closure·GEN-04를 증명하며 최소 하나의 fixture는 CRLF·BOM 입력을 포함한다.
 
 ### Theme C — Human-Authored Documentation Upkeep (Phases 28–29)
 
@@ -81,7 +81,7 @@ Deferred to a later milestone:
 | ADOPT-04 | Phase 27 | Complete |
 | ADOPT-05 | Phase 27 | Complete |
 | ADOPT-06 | Phase 27 | Complete |
-| ADOPT-07 | Phase 27 | Pending |
+| ADOPT-07 | Phase 27 | Complete |
 | DOCSUP-01 | Phase 28 | Pending |
 | DOCSUP-02 | Phase 28 | Pending |
 | DOCSUP-03 | Phase 28 | Pending |
