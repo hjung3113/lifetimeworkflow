@@ -14,9 +14,11 @@ the CI stale-derived gate and the `/verify-work` freshness step verify, so commi
 The repo-map is session-ephemeral (PageRank churn is noise, D-02) — regenerated for local
 orientation, never committed, never gated. The pointer-index (`pointer-index.{json,md}`, the
 "what points to each memory item" reference-scan) is likewise gitignored-derived — rebuilt here,
-never committed, never gated.
+never committed, never gated. The docs-staleness queue (`docs-staleness.md`, the human-doc review
+obligations the SessionStart pointer counts) is the same kind: its content is a function of the
+files you are editing, so it is session-ephemeral, never committed, never gated.
 
-!`uv run python -m tools.memory_regen.repo_map && uv run python -m tools.memory_regen.pointer_index`
+!`uv run python -m tools.memory_regen.repo_map && uv run python -m tools.memory_regen.pointer_index && uv run python -m tools.memory_regen.docs_staleness`
 
 ## 2. Committed-derived (the gated set — commit after)
 
