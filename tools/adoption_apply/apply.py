@@ -51,8 +51,30 @@ from tools.harness_perms import resolve_path
 from tools.hooks.contract_guard import CONSTITUTION_GLOBS
 
 
+# The human-review ledger — a THIRD path-deny domain, disjoint from the constitution plane
+# (``CONSTITUTION_GLOBS``) and from the secret plane (``SECRET_PATH_GLOBS``). The boundary it
+# encodes: agents may PROPOSE registry rows in ``docs/doc-dependencies.toml`` (DOCSUP-07), but the
+# ledger is the docs plane's GREENNESS AUTHORITY — a disposition row in it is what makes a binding
+# FRESH — so only a human may author one. Deliberately NOT folded into ``CONSTITUTION_GLOBS``:
+# doing so would force ``GOLDEN_APPROVE_HUMAN`` onto every ordinary human review commit and break
+# the provably-disjoint-domain invariant documented at ``contract_guard.py:16-20``. Ratified
+# record: ADR-0010.
+REVIEW_LEDGER_GLOBS = ["docs/.docs-review-ledger.toml"]
+
+
 class ConstitutionRefusal(ValueError):
     """Raised when a destination resolves onto the CODEOWNERS-gated constitution plane."""
+
+
+class ReviewLedgerRefusal(ValueError):
+    """Raised when a destination resolves onto the human-review ledger.
+
+    Deliberately its OWN type, NOT a subclass of :class:`ConstitutionRefusal`.
+    ``GOLDEN_APPROVE_HUMAN`` authorizes CONSTITUTION writes and must never be understood to
+    authorize a ledger disposition: there is no token that makes an agent-authored disposition
+    legitimate — a human edits the ledger directly, outside the agent session. Conflating the two
+    would teach an operator the wrong remedy.
+    """
 
 
 class PathEscapeError(ValueError):
@@ -191,6 +213,16 @@ def refuse_unsafe_destination(destination: str, target_root: str | Path) -> Path
             )
 
     relative = target_path.relative_to(resolved_root).as_posix()
+    # Two disjoint domains, ONE normalization: both classifications run against the same resolved,
+    # lower-cased, target-root-relative path, through the same CONFIG-02 resolver — no sixth
+    # `_confine` spelling, and no way for a `.`/`..`/case variant to be seen differently by one
+    # check than by the other.
+    if resolve_path(REVIEW_LEDGER_GLOBS, relative.lower()) == "deny":
+        raise ReviewLedgerRefusal(
+            f"'{destination}' is the human-review ledger (docs/.docs-review-ledger.toml) — only a "
+            "human may author a review disposition, and no token authorizes an agent to. Edit it "
+            "directly, outside the agent session; GOLDEN_APPROVE_HUMAN does NOT apply here."
+        )
     refuse_if_constitution(relative.lower())
 
     return target_path
@@ -377,8 +409,9 @@ def apply_manifest(
     ``target_root``.
 
     Iterates ``dispositions[]`` ONLY, sorted by destination for deterministic output ordering.
-    ``ConstitutionRefusal`` is caught per-record and bucketed into ``"refused"`` — a single refused
-    destination does not abort the rest of the apply cycle. Every other exception
+    ``ConstitutionRefusal`` and ``ReviewLedgerRefusal`` are caught per-record and bucketed into
+    ``"refused"`` — both are refusals, not faults, so a single refused destination does not abort
+    the rest of the apply cycle. Every other exception
     (``ConcurrentDriftError``, ``UnknownDispositionError``, ``CollisionError``,
     ``PathEscapeError``, a malformed marker-capable destination) propagates immediately.
 
@@ -410,7 +443,7 @@ def apply_manifest(
                 payload=payloads.get(destination, b""),
                 block_body=block_bodies.get(destination, ""),
             )
-        except ConstitutionRefusal:
+        except (ConstitutionRefusal, ReviewLedgerRefusal):
             summary["refused"].append(destination)
             continue
         summary["applied" if result["status"] == "applied" else "skipped"].append(destination)
