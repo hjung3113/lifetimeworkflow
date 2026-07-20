@@ -184,3 +184,14 @@ None - no external service configuration required.
 ---
 *Phase: 27-task-local-adoption-workflow-safe-application-v2-3-b*
 *Completed: 2026-07-21*
+
+## Self-Check: PASSED
+
+- FOUND: tools/adoption_apply/apply.py
+- FOUND: tools/adoption_apply/tests/test_constitution_refusal.py
+- FOUND: tools/adoption_apply/tests/test_atomic_apply.py
+- FOUND: .planning/phases/27-task-local-adoption-workflow-safe-application-v2-3-b/27-03-SUMMARY.md
+- FOUND commit 3dfb958
+- FOUND commit c16eabc
+- FOUND commit 12b058d
+- FOUND commit b33b62c
