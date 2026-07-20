@@ -1,0 +1,14 @@
+# serializer version: 1
+# name: test_queue_matches_snapshot
+  '''
+  # DERIVED — do not hand-edit (tools/memory_regen/docs_staleness.py)
+  
+  Generated from docs/doc-dependencies.toml by `python -m tools.memory_regen.docs_staleness` (reuses tools.docs_guard). 2 binding(s) need review.
+  
+  | binding | target | state | severity | required disposition | impact |
+  | --- | --- | --- | --- | --- | --- |
+  | alpha-required | docs/how-to/alpha.md | BROKEN | required | updated | (none) |
+  | beta-advisory | docs/how-to/beta.md | STALE_ADVISORY | advisory | updated/reviewed-no-change | (none) |
+  
+  '''
+# ---
