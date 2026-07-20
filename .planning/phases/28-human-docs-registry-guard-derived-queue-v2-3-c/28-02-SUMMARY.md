@@ -151,7 +151,7 @@ E       AssertionError: split_across_files: digests are equal but must differ â€
 E       assert '769a4e6d0003189c7e96c5d9b7e810a0d11c3a12832527ec94b0f86d277f51ca' != '769a4e6d0003189c7e96c5d9b7e810a0d11c3a12832527ec94b0f86d277f51ca'
 
 tools/docs_guard/tests/test_digest.py:65: AssertionError
-=========================== short test summary import ==========================
+=========================== short test summary info ============================
 FAILED tools/docs_guard/tests/test_digest.py::test_ambiguity_case_is_distinguished[byte_move]
 FAILED tools/docs_guard/tests/test_digest.py::test_ambiguity_case_is_distinguished[empty_file_added]
 FAILED tools/docs_guard/tests/test_digest.py::test_ambiguity_case_is_distinguished[rename_only]
@@ -284,3 +284,8 @@ diff. No new network endpoint, auth path, or schema was introduced.
 | 2 (GREEN) | `c50f150` | `feat(28-02): implement the interleaved path+per-file-digest algorithm` |
 
 No REFACTOR commit â€” the GREEN implementation needed no cleanup pass.
+
+## Self-Check: PASSED
+
+All seven created files exist on disk; all three commit hashes (`b32ce44`, `2dee9bb`, `c50f150`)
+resolve in `git log --all`.
