@@ -99,6 +99,16 @@ Stated plainly so no later reader assumes double validation: **there is exactly 
 is not CI's generic schema step.** The schema's own description repeats this so the contract cannot
 be mistaken for a complete validator.
 
+**Selectors are constrained to exclude control characters and `|`.** The registry is agent-writable
+by design, and its `target` and `sources` values are interpolated into the derived staleness queue's
+markdown table — whose `"| "`-prefixed line count is what the SessionStart pointer reports as "N
+human doc(s) need review". A TOML multi-line basic string permits a real newline, so an
+unconstrained selector could forge queue rows and inflate that count. The constraint is stated in
+the schema as a `pattern`, restated by `tools.docs_guard.registry` for an operator-facing message
+(a printed regex teaches nothing), and neutralized defensively at the other end by
+`tools.memory_regen.docs_staleness.render` — a renderer that can be made to emit a forged row is a
+renderer bug regardless of who validated its input.
+
 ### 3. The digest algorithm (D-03) — a deliberate divergence
 
 The binding digest **interleaves the POSIX path with that file's own hex digest**, over the sorted,

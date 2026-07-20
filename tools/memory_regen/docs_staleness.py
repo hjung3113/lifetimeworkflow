@@ -111,6 +111,32 @@ def rows(
     return sorted(out)
 
 
+# Characters that would let a cell VALUE forge table structure. `|` ends a cell; a newline or
+# carriage return ends a ROW, which `inject.py`'s `"| "`-prefixed line count then reports as a real
+# obligation. The replacements are visible, not silent: an operator seeing `\n` in a target learns
+# there is something wrong with the registry rather than seeing a plausible extra row.
+_CELL_ESCAPES: tuple[tuple[str, str], ...] = (
+    ("\\", "\\\\"),  # first, so the escapes introduced below are not themselves re-escaped
+    ("\r", "\\r"),
+    ("\n", "\\n"),
+    ("\t", "\\t"),
+    ("|", "\\|"),
+)
+
+
+def _cell(value: str) -> str:
+    """Neutralize ``value`` for a markdown table cell (WR-02).
+
+    ``registry.load_registry`` rejects these characters at the source and the schema states the
+    same rule as a ``pattern``, so in a valid tree this is a no-op. It exists anyway because a
+    renderer that can be made to emit a forged row is a renderer bug regardless of who validated its
+    input — and this generator's output is counted, not read, by the SessionStart pointer.
+    """
+    for char, replacement in _CELL_ESCAPES:
+        value = value.replace(char, replacement)
+    return value
+
+
 def render(queue_rows: list[tuple[str, str, str, str, str, str]]) -> str:
     """Render rows into the deterministic DERIVED-marked markdown queue.
 
@@ -131,10 +157,8 @@ def render(queue_rows: list[tuple[str, str, str, str, str, str]]) -> str:
         return "\n".join(lines) + "\n"
     lines.append("| binding | target | state | severity | required disposition | impact |")
     lines.append("| --- | --- | --- | --- | --- | --- |")
-    for binding_id, target, state, severity, dispositions, impact in queue_rows:
-        lines.append(
-            f"| {binding_id} | {target} | {state} | {severity} | {dispositions} | {impact} |"
-        )
+    for row in queue_rows:
+        lines.append("| " + " | ".join(_cell(value) for value in row) + " |")
     return "\n".join(lines) + "\n"
 
 
