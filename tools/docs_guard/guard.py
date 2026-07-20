@@ -407,7 +407,21 @@ def classify(
     # ── the uncovered ratchet (read-only) ──────────────────────────────────────────────────────
     covered = {binding.target for binding in bindings}
     uncovered = [path for path in human_corpus(root_path) if path not in covered]
-    uncovered_max = coverage.get("uncovered_max")
+    # The ENFORCED ceiling is the PREVIOUS COMMITTED one, symmetric with `binding_min`
+    # (`ledger.py:435-439`): reading it from the working tree would let the same uncommitted edit
+    # that drops a document out of coverage also raise the bar it is about to breach. The
+    # working-tree value is used ONLY when there is no committed ledger to read — with no history
+    # there is no committed ceiling at all, so honouring the working-tree one can only ADD a
+    # constraint, never relax one (WR-01).
+    previous_coverage = (previous or {}).get("coverage")
+    committed_max = (
+        previous_coverage.get("uncovered_max") if isinstance(previous_coverage, dict) else None
+    )
+    uncovered_max = (
+        committed_max
+        if isinstance(committed_max, int) and not isinstance(committed_max, bool)
+        else coverage.get("uncovered_max")
+    )
     if uncovered_max is not None:
         if len(uncovered) > uncovered_max:
             ok = False
@@ -437,7 +451,8 @@ def classify(
     # The `binding_min` count ratchet is NOT evaluated here: `ledger.check_coherence` already
     # evaluates it against the PREVIOUS COMMITTED ledger, which is the authoritative threshold
     # (28-04) — reading it from the working tree would let the same edit that deletes a binding
-    # also lower the bar. Its findings are folded above; re-deriving it here would double-report.
+    # also lower the bar. `uncovered_max` above is read the SAME way for the same reason; the two
+    # ratchets are symmetric. Its findings are folded above; re-deriving it here would double-report.
     # It is NOT redundant with the uncovered ratchet: a binding whose target lies outside
     # HUMAN_CORPUS can be deleted without moving the uncovered count by a single unit, so that
     # deletion would otherwise be entirely unguarded (`binding_deleted_outside_corpus`).

@@ -438,6 +438,55 @@ def test_uncovered_ratchet(
     assert (suggestion in messages) is expect_tighten, f"{name}: tighten suggestion mismatch"
 
 
+def test_uncovered_max_comes_from_the_committed_ledger(docs_repo: Path) -> None:
+    """WR-01 adversarial row: the SAME uncommitted edit must not be able to raise its own ceiling.
+
+    ``binding_min`` is read from the previous COMMITTED ledger precisely so "the same edit that
+    deletes a binding cannot also lower the bar" (``ledger.py:435-439``). ``uncovered_max`` was read
+    from the freshly-parsed WORKING-TREE ledger, so the mirror-image move was unguarded: drop a
+    document out of coverage and raise the ceiling in one uncommitted change. The two ratchets are
+    now symmetric.
+    """
+    _seed_corpus(docs_repo)
+    strict = _ledger_toml(coverage={"uncovered_max": 0})
+    _write(docs_repo, LED_REL, strict)
+    _commit(docs_repo, "commit the strict ratchet")
+
+    # Baseline: the committed ceiling of 0 is genuinely violated by the live uncovered count.
+    baseline = guard.classify(
+        registry_path=docs_repo / REG_REL,
+        ledger_path=docs_repo / LED_REL,
+        root=docs_repo,
+        drift_gate=_clean_gate,
+    )
+    assert baseline["uncovered"]["live"] > 0
+    assert baseline["ok"] is False
+
+    # THE BYPASS: raise the ceiling in the working tree only, changing nothing about coverage.
+    _write(docs_repo, LED_REL, _ledger_toml(coverage={"uncovered_max": 99}))
+    raised = guard.classify(
+        registry_path=docs_repo / REG_REL,
+        ledger_path=docs_repo / LED_REL,
+        root=docs_repo,
+        drift_gate=_clean_gate,
+    )
+
+    assert raised["uncovered"]["max"] == 0, "the enforced ceiling must be the COMMITTED one"
+    assert raised["ok"] is False, "a working-tree edit raised its own ratchet — self-blessing"
+
+
+def test_uncovered_max_falls_back_to_the_working_tree_without_history(docs_repo: Path) -> None:
+    """Non-degradation control: with no committed ledger there IS no committed ceiling, so the
+    working-tree value is the only one available — and honouring it can only ADD a constraint,
+    never relax one. Without this row the fix could degrade into "no ratchet unless committed",
+    which would silently disable the gate in a fresh checkout."""
+    _seed_corpus(docs_repo)
+    result = _ratchet_result(docs_repo, 0)
+
+    assert result["uncovered"]["max"] == 0
+    assert result["ok"] is False
+
+
 def test_uncovered_no_ledger_means_no_ratchet(docs_repo: Path) -> None:
     """``max is None`` (no ledger seeded yet) is not a failure — plan 28-07 seeds the threshold."""
     _seed_corpus(docs_repo)

@@ -204,8 +204,14 @@ a single unit. Three of the eight seeded bindings are exactly that case (they ta
 `docs/adr/**`). Without the second ratchet, deleting an inconvenient binding would be entirely
 unguarded.
 
-`binding_min` is read from the PREVIOUS COMMITTED ledger, never the working tree — otherwise the same
-edit that deletes a binding could also lower the bar in the same breath.
+**BOTH thresholds are read from the PREVIOUS COMMITTED ledger, never the working tree** — otherwise
+the same edit that deletes a binding could also lower the bar in the same breath, and the same edit
+that drops a document out of coverage could raise the ceiling it is about to breach. The two
+ratchets are symmetric in this respect, and deliberately so: an asymmetry here is not a smaller
+version of the hole, it IS the hole, on whichever side is read from the working tree. The
+working-tree value is consulted only when there is no committed ledger to read at all — with no
+history there is no committed threshold, so honouring the working-tree one can only ADD a
+constraint, never relax one.
 
 ### 6. The unverifiable-history posture (D-08)
 
