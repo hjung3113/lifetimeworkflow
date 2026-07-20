@@ -215,11 +215,15 @@ def refuse_unsafe_destination(destination: str, target_root: str | Path) -> Path
                 "refusing the write."
             )
 
-    relative = target_path.relative_to(resolved_root).as_posix()
+    # The `\` fold matches step 1's, so the pre-check and the classification see ONE normalization
+    # (IN-02). On POSIX `docs\.docs-review-ledger.toml` is a single file whose NAME contains a
+    # backslash — a different file, and harmless — but on Windows that spelling IS the ledger, and a
+    # deny domain that depends on which OS reads the manifest is not a deny domain.
+    relative = target_path.relative_to(resolved_root).as_posix().replace("\\", "/")
     # Two disjoint domains, ONE normalization: both classifications run against the same resolved,
     # lower-cased, target-root-relative path, through the same CONFIG-02 resolver — no sixth
-    # `_confine` spelling, and no way for a `.`/`..`/case variant to be seen differently by one
-    # check than by the other.
+    # `_confine` spelling, and no way for a `.`/`..`/case/separator variant to be seen differently
+    # by one check than by the other.
     if resolve_path(REVIEW_LEDGER_GLOBS, relative.lower()) == "deny":
         raise ReviewLedgerRefusal(
             f"'{destination}' is the human-review ledger (docs/.docs-review-ledger.toml) — only a "

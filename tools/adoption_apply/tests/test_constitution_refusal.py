@@ -384,6 +384,11 @@ REVIEW_LEDGER_DESTINATIONS = [
     ("dotdot_resolving_onto_ledger", "docs/sub/../.docs-review-ledger.toml", "any"),
     ("upper_case", "DOCS/.DOCS-REVIEW-LEDGER.TOML", "ledger"),
     ("mixed_case", "docs/.Docs-Review-Ledger.toml", "ledger"),
+    # IN-02. On POSIX this spells a single file literally NAMED `docs\.docs-review-ledger.toml`, so
+    # the row is harmless on the supported CI runner — but on Windows that spelling IS the ledger,
+    # and the `..`-segment pre-check at the top of `refuse_unsafe_destination` already folds `\` to
+    # `/`. The classification below folded it too, so the two halves now see one normalization.
+    ("backslash_separator", "docs\\.docs-review-ledger.toml", "ledger"),
 ]
 
 # The narrowness control. Every row MUST stay writable; the first is the load-bearing one.
