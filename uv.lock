@@ -9,6 +9,7 @@ members = [
     "harness-task-control",
     "harness-task-packet",
     "lifecycle-eval",
+    "logparser-adoption-apply",
     "logparser-adoption-scan",
     "logparser-agree",
     "logparser-contract-drift",
@@ -241,6 +242,11 @@ wheels = [
 name = "lifecycle-eval"
 version = "0.0.0"
 source = { virtual = "tools/lifecycle_eval" }
+
+[[package]]
+name = "logparser-adoption-apply"
+version = "0.0.0"
+source = { virtual = "tools/adoption_apply" }
 
 [[package]]
 name = "logparser-adoption-scan"
