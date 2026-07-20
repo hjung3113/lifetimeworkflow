@@ -627,7 +627,13 @@ adoption-apply implementation to deprecate.
 | A3 | The 2-repo client/server fixture should reuse the existing `tests/fixtures/workspace/{member-a,member-b}` two-member layout (built for Phase 11/25) rather than a net-new fixture tree | The Three Fixtures | LOW risk if wrong — worst case is fixture duplication, not a correctness bug; but reusing an audited fixture is strictly safer than inventing file-tree shape assumptions from scratch |
 | A4 | `/adopt` should be a single command with argument-routed sub-verbs rather than 3-4 separate commands (`/adopt-discover`, `/adopt-apply`, ...) | Claude's Discretion | If wrong, the planner needs 3-4 thin command files instead of 1 — mechanically equivalent effort, does not change any correctness property, purely a UX/composition-count judgment call not pinned by ROADMAP text |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+**RESOLVED (all three) — 2026-07-21, during `/gsd:plan-phase 27`.** Q1 and Q2 were put to the
+human operator and decided; Q3 was closed by the pattern-mapping pass reading the fixture tree
+file-by-file. No open question remains for execution. Note: no `CONTEXT.md` exists for this phase —
+the decisions below were supplied directly to the planner as locked decisions D-01..D-08, and that
+decision list (not a CONTEXT.md) is the provenance for any "locked" citation in the plans.
 
 1. **Does an adoption batch gate any task-control phase transition, or is it purely additive
    evidence?**
@@ -643,6 +649,10 @@ adoption-apply implementation to deprecate.
      phase-gating, and `transitions.json` is constitution-plane (human-ratified); adding a
      requirement there is a separate, larger decision the planner should surface to the user
      explicitly rather than infer.
+   - **RESOLVED:** recommendation adopted (locked decision **D-01**, human-decided). An adoption
+     batch is purely additive evidence. `contracts/harness/task-control/transitions.json` is NOT
+     edited by any plan in this phase. Gating adoption on a phase transition is deliberately
+     deferred as a separate, larger decision.
 
 2. **What exactly identifies a "batch"?** (`<batch-id>` format)
    - What we know: `task.json`'s `task_id` pattern is `^T-[0-9]{14}-[a-z0-9]+(?:-[a-z0-9]+)*$`
@@ -657,6 +667,9 @@ adoption-apply implementation to deprecate.
      SC-1's "안전하게 재개" / "resumes safely"), and a materially different target/ref mints a new
      batch — but this needs explicit planner/user confirmation since it directly shapes the resume
      UX.
+   - **RESOLVED:** recommendation adopted (locked decision **D-02**, human-decided). `<batch-id>` is
+     content-derived from `(target_ref, discover-time UTC date)`, implemented in `batch.py` via
+     `batch_id_for`. No `--batch-id` override in this phase — keeps the test surface small.
 
 3. **Fixture domain-neutrality for the polyglot single-repo fixture.**
    - What we know: GEN-04 (`tools/harness_lint/tests/test_core_no_example_dep.py`) forbids core
@@ -670,6 +683,13 @@ adoption-apply implementation to deprecate.
      `package.json`, both empty/synthetic).
    - Recommendation: Wave 0 should read `tools/adoption_scan/tests/fixtures/minirepo/**` in full
      before deciding reuse-vs-new; this research pass did not exhaustively enumerate its contents.
+   - **RESOLVED:** closed by the pattern-mapping pass (`27-PATTERNS.md`), which read the fixture
+     tree file-by-file. Findings (locked decision **D-07**): `tools/adoption_scan/tests/conftest.py::tmp_minirepo`
+     is a **programmatic** fixture (19 embedded cases, domain-neutral vocabulary) with **no CRLF/BOM
+     file today**; `tests/fixtures/workspace/{member-a,member-b}/` (repo root) is a real static
+     2-member fixture. Therefore: `polyglot-single` = new static fixture following the `tmp_minirepo`
+     pattern, `client-server` = extends `tests/fixtures/workspace/`, `partial-collision-crlf` = built
+     NEW because it carries the mandatory CRLF/BOM input. All domain-neutral per GEN-04.
 
 ## Environment Availability
 
