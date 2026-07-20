@@ -139,5 +139,6 @@ EXPECTED_SKILLS = frozenset(
         "pipeline-map",
         "fan-out-synthesize",
         "context-budget",
+        "brownfield-adoption",
     }
 )
