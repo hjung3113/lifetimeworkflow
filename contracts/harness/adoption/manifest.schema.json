@@ -30,6 +30,7 @@
         "path": {
           "type": "string",
           "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$",
           "description": "Repo-relative POSIX path pointing INTO an already-hashed inventory includedEntry."
         },
         "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
@@ -56,6 +57,7 @@
         "destination": {
           "type": "string",
           "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$",
           "description": "A repo-relative POSIX path in the TARGET tree."
         },
         "disposition": { "$ref": "#/$defs/dispositionEnum" },
@@ -76,7 +78,11 @@
       "additionalProperties": false,
       "required": ["destination", "reason"],
       "properties": {
-        "destination": { "type": "string", "minLength": 1 },
+        "destination": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+        },
         "reason": {
           "type": "string",
           "minLength": 1,
