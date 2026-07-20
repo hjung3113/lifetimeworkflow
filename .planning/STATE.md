@@ -4,14 +4,14 @@ milestone: v2.3
 milestone_name: A)*
 status: executing
 stopped_at: Completed 26.2-01-PLAN.md
-last_updated: "2026-07-20T15:56:14.615Z"
+last_updated: "2026-07-20T16:03:34.987Z"
 last_activity: 2026-07-20
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 24
-  completed_plans: 19
-  percent: 79
+  completed_plans: 20
+  percent: 83
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 ## Current Position
 
 Phase: 27 (task-local-adoption-workflow-safe-application-v2-3-b) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 Status: Ready to execute
 Last activity: 2026-07-20
 
@@ -134,6 +134,7 @@ Last activity: 2026-07-20
 | Phase 26.1 P01 | resumed-continuation | 3 tasks | 8 files |
 | Phase 26.2 P01 | 22min | 3 tasks | 6 files |
 | Phase 27 P01 | 3min | 2 tasks | 8 files |
+| Phase 27-task-local-adoption-workflow-safe-application-v2-3-b P02 | 32min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -235,6 +236,7 @@ Recent decisions affecting current work:
 - [Phase 26.1]: SC-4 constitution-plane secret_patterns[1] edit human-ratified via blocking checkpoint ("approved"/승인), distinct from HARNESS_DEV_BYPASS write setting
 - [Phase 26.2]: 26.2-01: secret_patterns[1] rewritten with (?-i:...)-scoped case lookaheads (CR-01) + length-floor + 2-of-3-charset disjunction (D-01, relaxed WR-01 fix); mixed-case digit-less values now match; single-case-only and all-numeric digit-less remain an accepted, documented residual gap. SC-1 ci.yml false-positive re-verified green. Human-ratified via blocking checkpoint (08b5d68), distinct from HARNESS_DEV_BYPASS.
 - [Phase ?]: D-01/D-02 upheld: batch.py content-derives <batch-id> from (target_ref, UTC date); zero transitions.json edit
+- [Phase 27-02]: A1 followed — new self-contained approval.schema.json (D-11), not an attestation.schema.json extension. — Binding tuple (draft_hash, task_revision, git_ref) + closed 6-value decisionKindEnum ratified as Plan 27-04/27-06's target contract; human-ratified via blocking checkpoint 2026-07-21.
 
 ### Pending Todos
 
@@ -275,7 +277,7 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-20T15:55:26.411Z
+Last session: 2026-07-20T16:03:28.219Z
 Stopped at: Completed 26.2-01-PLAN.md
 Resume file: None
 
