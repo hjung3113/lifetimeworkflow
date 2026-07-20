@@ -38,7 +38,11 @@ from jsonschema import Draft202012Validator
 
 from tools.adoption_apply import apply as apply_module
 from tools.adoption_apply.apply import apply_manifest, refuse_if_outside_root
-from tools.adoption_apply.approval import AdoptionApprovalRefused, promote as approval_promote
+from tools.adoption_apply.approval import (
+    AdoptionApprovalRefused,
+    check_valid,
+    promote as approval_promote,
+)
 from tools.adoption_apply.batch import create_or_resume_batch
 from tools.adoption_scan import destinations, plan as plan_mod, scan
 
@@ -136,6 +140,19 @@ def _harness_block_body(destination: str) -> str:
 
 
 def _cmd_apply(args: argparse.Namespace) -> int:
+    # CR-03 (ADOPT-06): a batch must be promoted, and the promotion must still exactly match the
+    # batch's current (draft_hash, task_revision, git_ref) — checked FIRST, before any manifest
+    # read or write. repo_root here is the harness's OWN checkout root (D-02), never the
+    # brownfield --target being adopted into: git_ref/task_revision are harness-side concepts and
+    # a brownfield target may not even be a git repo.
+    if not check_valid(args.task_dir, args.batch_id, args.repo_root):
+        print(
+            f"tools.adoption_apply apply: REFUSED: batch '{args.batch_id}' has no valid, "
+            "current approval — run `promote` first (ADOPT-06 gates apply).",
+            file=sys.stderr,
+        )
+        return 4
+
     batch_root = _batch_root(args.task_dir, args.batch_id)
     manifest_path = batch_root / "manifest.json"
     if not manifest_path.is_file():
@@ -146,6 +163,16 @@ def _cmd_apply(args: argparse.Namespace) -> int:
         )
         return 2
     manifest = json.loads(manifest_path.read_bytes())
+
+    # WR-04: re-validate manifest.json against its schema before use — a schema-invalid or
+    # tampered manifest must refuse cleanly, not surface as an unhandled KeyError traceback.
+    error = _validate("manifest", manifest)
+    if error is not None:
+        print(
+            f"tools.adoption_apply apply: manifest.json failed schema validation: {error}",
+            file=sys.stderr,
+        )
+        return 1
 
     payloads: dict[str, bytes] = {}
     block_bodies: dict[str, str] = {}
@@ -165,6 +192,8 @@ def _cmd_apply(args: argparse.Namespace) -> int:
         apply_module.ConstitutionRefusal,
         apply_module.ConcurrentDriftError,
         apply_module.UnknownDispositionError,
+        apply_module.PathEscapeError,
+        apply_module.SymlinkRefusal,
     ) as exc:
         print(f"tools.adoption_apply apply: {exc}", file=sys.stderr)
         return 1
@@ -215,6 +244,10 @@ def main(argv: list[str] | None = None) -> int:
     apply_parser.add_argument("--task-dir", type=Path, required=True)
     apply_parser.add_argument("--batch-id", required=True)
     apply_parser.add_argument("--target", type=Path, required=True)
+    # D-02: mirrors promote_parser's own --repo-root — the harness's OWN checkout root, never the
+    # brownfield --target being adopted into (check_valid's git_ref/task_revision are harness-side
+    # concepts; a brownfield target may not even be a git repo).
+    apply_parser.add_argument("--repo-root", type=Path, required=True)
     apply_parser.set_defaults(func=_cmd_apply)
 
     promote_parser = subparsers.add_parser("promote", help="ratify a batch's reviewed decisions")

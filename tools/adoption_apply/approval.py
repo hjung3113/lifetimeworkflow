@@ -180,8 +180,14 @@ def check_valid(task_dir: Path, batch_id: str, repo_root: Path) -> bool:
         return False
     stored = json.loads(path.read_bytes())
     batch_dir = _batch_dir(task_dir, batch_id)
+    try:
+        draft_hash = _recompute_draft_hash(batch_dir)
+    except (FileNotFoundError, OSError):
+        # WR-02: an incomplete batch directory (a missing draft artifact) is no partial credit —
+        # the function's own docstring promise — never an uncaught crash out of a validity check.
+        return False
     return (
-        stored["draft_hash"] == _recompute_draft_hash(batch_dir)
+        stored["draft_hash"] == draft_hash
         and stored["task_revision"] == _current_task_revision(task_dir)
         and stored["git_ref"] == _current_git_ref(repo_root)
     )
