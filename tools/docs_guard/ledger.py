@@ -21,7 +21,7 @@ from __future__ import annotations
 import re
 import subprocess
 import tomllib
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -225,22 +225,14 @@ def _load_rows(name: str, block: object) -> list[ReviewedRow]:
 # ── previous committed ledger ─────────────────────────────────────────────────────────────────
 
 
-def previous_ledger(rel_path: str, cwd: str | Path) -> dict | None:
-    """``git show HEAD:./<rel_path>`` — the previous COMMITTED ledger, or ``None``.
+def previous_document(rel_path: str, cwd: str | Path) -> dict | None:
+    """``git show HEAD:./<rel_path>`` parsed as TOML — the previous COMMITTED document, or ``None``.
 
-    This copies the SHAPE of ``tools/contract_drift/drift.py:129-147`` (fixed argv, ``shell=False``,
-    the ``HEAD:./`` prefix, degrade-to-``None``) but NOT the function. ``_git_show_at`` calls
-    ``json.loads`` on its stdout and catches ``json.JSONDecodeError``; the ledger is TOML, so it
-    cannot be imported and reused here. The two divergences are deliberate and are the only
-    differences: ``tomllib.loads(stdout.decode("utf-8"))`` replaces ``json.loads``, and the except
-    tuple widens to cover ``tomllib.TOMLDecodeError`` and ``UnicodeDecodeError``.
-
-    The ``./`` prefix is load-bearing and is kept verbatim: a bare ``HEAD:<path>`` always resolves
-    against the REPO ROOT and ignores ``cwd``, which would silently read the wrong tree.
-
-    Degrading to ``None`` never raises into the gate (T-28-22). ``None`` means "history is
-    UNREADABLE" — a different fact from "history is readable but lacks this row", and
-    :func:`check_coherence` keeps the two apart because their remedies differ.
+    The retrieval half of :func:`previous_ledger`, factored out because the coherence rule needs the
+    previous committed REGISTRY as well as the previous committed ledger (a ratification is a
+    statement about a binding's meaning, and the registry is where that meaning is written). One
+    retrieval shape, so the two reads cannot drift apart in their argv, their ``./`` prefix, or
+    their degrade-to-``None`` posture.
     """
     try:
         proc = subprocess.run(
@@ -260,6 +252,26 @@ def previous_ledger(rel_path: str, cwd: str | Path) -> dict | None:
         return None
 
 
+def previous_ledger(rel_path: str, cwd: str | Path) -> dict | None:
+    """``git show HEAD:./<rel_path>`` — the previous COMMITTED ledger, or ``None``.
+
+    This copies the SHAPE of ``tools/contract_drift/drift.py:129-147`` (fixed argv, ``shell=False``,
+    the ``HEAD:./`` prefix, degrade-to-``None``) but NOT the function. ``_git_show_at`` calls
+    ``json.loads`` on its stdout and catches ``json.JSONDecodeError``; the ledger is TOML, so it
+    cannot be imported and reused here. The two divergences are deliberate and are the only
+    differences: ``tomllib.loads(stdout.decode("utf-8"))`` replaces ``json.loads``, and the except
+    tuple widens to cover ``tomllib.TOMLDecodeError`` and ``UnicodeDecodeError``.
+
+    The ``./`` prefix is load-bearing and is kept verbatim: a bare ``HEAD:<path>`` always resolves
+    against the REPO ROOT and ignores ``cwd``, which would silently read the wrong tree.
+
+    Degrading to ``None`` never raises into the gate (T-28-22). ``None`` means "history is
+    UNREADABLE" — a different fact from "history is readable but lacks this row", and
+    :func:`check_coherence` keeps the two apart because their remedies differ.
+    """
+    return previous_document(rel_path, cwd)
+
+
 # ── the coherence rule ────────────────────────────────────────────────────────────────────────
 
 
@@ -268,12 +280,18 @@ def check_coherence(
     previous: dict | None,
     live_digests: Mapping[str, tuple[str, str]],
     bindings: Mapping[str, str],
+    repointed_ids: Collection[str],
 ) -> list[Finding]:
     """Return the sorted incoherence findings for ``rows`` (DOCSUP-03).
 
     ``previous`` is the parsed previous COMMITTED ledger (or ``None``), ``live_digests`` maps a
     binding id to its live ``(source, target)`` digest pair, and ``bindings`` maps a binding id to
     its severity (``"required"`` / ``"advisory"``). The live binding COUNT is ``len(bindings)``.
+
+    ``repointed_ids`` is the set of binding ids whose ``(sources, target)`` MEANING differs from
+    the previous COMMITTED registry — see :func:`_check_content_bound`. It is a REQUIRED argument,
+    not an optional one with an empty default, because an empty default would silently reinstate
+    the id-only history test in any caller that forgot it.
 
     Pure: touches no filesystem, spawns no process, decides no exit code.
     """
@@ -326,18 +344,23 @@ def check_coherence(
             )
             continue
 
+        repointed = row.id in repointed_ids
         if row.disposition in CONTENT_BOUND_DISPOSITIONS:
-            findings.extend(_check_content_bound(row, previous, previous_rows, level))
+            findings.extend(_check_content_bound(row, previous, previous_rows, level, repointed))
             continue
 
-        findings.extend(_check_updated(row, previous, previous_rows, level))
+        findings.extend(_check_updated(row, previous, previous_rows, level, repointed))
 
     findings.extend(_check_binding_count(previous, len(bindings)))
     return sorted(findings)
 
 
 def _check_content_bound(
-    row: ReviewedRow, previous: dict | None, previous_rows: dict[str, dict], level: str
+    row: ReviewedRow,
+    previous: dict | None,
+    previous_rows: dict[str, dict],
+    level: str,
+    repointed: bool,
 ) -> list[Finding]:
     """D-04 half 1 plus its self-green closure.
 
@@ -357,11 +380,36 @@ def _check_content_bound(
     "has a human committed this row before?" is the only fact that separates them. The consequence
     is intended, not a defect — a genuinely new binding is amber for exactly one commit cycle, and
     the human review that lands the ledger row IS the ratification.
+
+    **The test keys on the binding's IDENTITY, not on its NAME alone.** A ledger row records no
+    statement about WHAT was reviewed beyond the id, so keying on the id alone carried a
+    ratification forward to whatever the registry later decided that id means. A *renamed* id was
+    caught (a new id is absent from history); a *REPOINTED* id — same name, different
+    ``(sources, target)`` pair — was not, and reported ``FRESH`` with zero findings. The registry is
+    agent-writable by design (DOCSUP-07), so that was a one-edit laundering path from an
+    already-ratified name to an arbitrary new obligation.
+
+    ``repointed`` closes it: it is True when the binding's ``(sources, target)`` meaning differs
+    from the PREVIOUS COMMITTED REGISTRY. A repoint is a NEW obligation and is therefore unratified,
+    exactly like a new id. The comparison is against committed history rather than against anything
+    stored in the row, so a human ratifier still hand-writes only the two content digests — the
+    ledger's DOCSUP-02 shape is unchanged.
     """
     if previous is None:
         return []  # history-free by design; the unreadable-history case belongs to `updated`
-    if row.id in previous_rows:
+    if row.id in previous_rows and not repointed:
         return []
+    if repointed:
+        return [
+            Finding(
+                row.id,
+                REASON_FIRST_SEEN,
+                level,
+                f"{REASON_FIRST_SEEN}: binding {row.id} now names a different source/target pair "
+                f"than the previous committed registry — repointing a binding creates a NEW review "
+                f"obligation, and its earlier ratification does not carry over",
+            )
+        ]
     return [
         Finding(
             row.id,
@@ -374,7 +422,11 @@ def _check_content_bound(
 
 
 def _check_updated(
-    row: ReviewedRow, previous: dict | None, previous_rows: dict[str, dict], level: str
+    row: ReviewedRow,
+    previous: dict | None,
+    previous_rows: dict[str, dict],
+    level: str,
+    repointed: bool,
 ) -> list[Finding]:
     """D-04 half 2 — the paste-the-live-digest control (T-28-16).
 
@@ -407,6 +459,20 @@ def _check_updated(
                 level,
                 f"{REASON_UNVERIFIED}: binding {row.id} claims 'updated' but has no row in the "
                 f"previous committed ledger to have been updated FROM",
+            )
+        ]
+    if repointed:
+        # The prior row exists, but it ratified a DIFFERENT (sources, target) pair, so the target
+        # delta computed below would compare two unrelated documents. Same closure as the
+        # content-bound half: a repoint is a new obligation, never an inherited ratification.
+        return [
+            Finding(
+                row.id,
+                REASON_FIRST_SEEN,
+                level,
+                f"{REASON_FIRST_SEEN}: binding {row.id} claims 'updated' but now names a different "
+                f"source/target pair than the previous committed registry — the prior row ratified "
+                f"a different binding, so there is nothing for this claim to have updated FROM",
             )
         ]
     source_moved = prior.get("source_digest") != row.source_digest

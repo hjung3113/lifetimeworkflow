@@ -154,11 +154,12 @@ The review ledger is consequently a **THIRD path-deny domain**, alongside consti
 disjoint from both.
 
 **Accepted cost, recorded rather than engineered around:** a genuinely new binding is **amber for
-exactly one commit cycle**. `first_seen-unratified` keys on the PREVIOUS COMMITTED ledger, so a row's
-first appearance can never be green — and that is correct, because the human review commit that lands
-the row **IS** the ratification. The second cycle turns it green. Any mechanism that removed this
-amber window would also remove the only fact that separates an honest first seed from a self-blessed
-one.
+exactly one commit cycle**. `first_seen-unratified` keys on the PREVIOUS COMMITTED ledger *and on
+the binding's meaning in the previous COMMITTED registry* (clause 4), so a row's first appearance —
+and equally a REPOINTED binding's first appearance in its new shape — can never be green. That is
+correct, because the human review commit that lands the row **IS** the ratification. The second
+cycle turns it green. Any mechanism that removed this amber window would also remove the only fact
+that separates an honest first seed from a self-blessed one.
 
 ### 4. Disposition coherence (D-04) — the anti-rubber-stamp control, and its closure
 
@@ -182,6 +183,23 @@ content-bound disposition whose id has **no PREVIOUS COMMITTED row** is not gree
 This is deliberately a **HISTORY test, not a content test** — because the self-blessed row and an
 honest first-ever seed row are **byte-identical**. No inspection of the row's content can tell them
 apart. Only "has a human committed this row before?" can.
+
+**The history test keys on the binding's MEANING, not on its NAME.** A ledger row records no
+statement about *what* was reviewed beyond the id, so "has a human committed this row before?" is
+asked of the pair `(id, the binding's committed (sources, target))`, retrieved from the previous
+COMMITTED REGISTRY through the same `git show HEAD:./<path>` shape clause 4 uses for the ledger. An
+id alone is not an identity: a *renamed* id is caught trivially (a new name is absent from history),
+but a *REPOINTED* id — same name, different source/target pair — would otherwise carry its earlier
+ratification to whatever the registry later decides that name means, and the registry is
+agent-writable by design (clause 3b). **Repointing a binding is a NEW obligation**, indistinguishable
+in weight from introducing one, and it is reported as `first_seen-unratified` for exactly that
+reason.
+
+Comparing against the committed REGISTRY rather than storing an identity digest IN the row is
+deliberate: it keeps the ledger's clause-1 shape unchanged, so a human ratifier still hand-writes
+only the two content digests and never a third derived value. A pure reordering of the `sources`
+list is **not** a repoint — the identity digest sorts its selectors — so the rule cannot degrade
+into "any registry edit de-ratifies everything".
 
 At the classifier level the same closure is restated: digest equality is **necessary but not
 sufficient** for `FRESH`. `FRESH` requires digest equality AND an empty blocking-finding set.

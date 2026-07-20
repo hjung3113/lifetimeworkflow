@@ -674,6 +674,112 @@ def test_binding_deleted_outside_corpus(docs_repo: Path) -> None:
     assert any(finding["reason"] == "binding-count-regression" for finding in after["findings"])
 
 
+# ── CR-03: ratification is bound to the binding's MEANING, not to its NAME ─────────────────────
+
+
+def _ratify(repo: Path, *, binding_id: str, sources: tuple[str, ...], target: str) -> None:
+    """Write registry + matching ledger row for ``binding_id`` and COMMIT both — a ratification."""
+    _write(repo, REG_REL, _binding_toml(id=binding_id, sources=sources, target=target))
+    source_digest, target_digest = _digests(repo, sources, target)
+    _write(
+        repo,
+        LED_REL,
+        _ledger_toml(((binding_id, source_digest, target_digest, "reviewed-no-change"),)),
+    )
+    _commit(repo, f"ratify {binding_id}")
+
+
+def test_repointing_a_ratified_binding_is_not_fresh(docs_repo: Path) -> None:
+    """CR-03 adversarial row: a REPOINTED id must not inherit its earlier ratification.
+
+    A ledger row records no statement about WHAT was reviewed beyond the id, so a history test
+    keyed on the id ALONE carried the ratification of ``b1`` forward to whatever the registry later
+    decided ``b1`` means. A *renamed* id was caught — a new name is absent from history. A
+    *repointed* id was not: same name, different ``(sources, target)`` pair, zero findings, FRESH.
+
+    The registry is agent-writable by design (DOCSUP-07), so this was a one-edit laundering path
+    from an already-ratified name to an arbitrary new obligation.
+    """
+    _write(docs_repo, "src/a.py", "A = 1\n")
+    _write(docs_repo, "src/b.py", "B = 2\n")
+    _write(docs_repo, "docs/how-to/hard.md", "hard\n")
+    _write(docs_repo, "docs/how-to/easy.md", "easy\n")
+    _commit(docs_repo, "seed both pairs")
+    _ratify(docs_repo, binding_id="b1", sources=("src/a.py",), target="docs/how-to/hard.md")
+
+    baseline = guard.classify(
+        registry_path=docs_repo / REG_REL,
+        ledger_path=docs_repo / LED_REL,
+        root=docs_repo,
+        drift_gate=_clean_gate,
+    )
+    assert baseline["ok"] is True, (
+        "fixture sanity: the ratified binding is green before the repoint"
+    )
+    assert _state_of(baseline, "b1") == "FRESH"
+
+    # THE REPOINT: same id, a different source/target pair, with the ledger digests rewritten to
+    # the new pair's live values in the SAME uncommitted change.
+    _ratify_free_repoint = ("src/b.py",)
+    _write(
+        docs_repo,
+        REG_REL,
+        _binding_toml(id="b1", sources=_ratify_free_repoint, target="docs/how-to/easy.md"),
+    )
+    source_digest, target_digest = _digests(docs_repo, _ratify_free_repoint, "docs/how-to/easy.md")
+    _write(
+        docs_repo,
+        LED_REL,
+        _ledger_toml((("b1", source_digest, target_digest, "reviewed-no-change"),)),
+    )
+
+    repointed = guard.classify(
+        registry_path=docs_repo / REG_REL,
+        ledger_path=docs_repo / LED_REL,
+        root=docs_repo,
+        drift_gate=_clean_gate,
+    )
+
+    assert _state_of(repointed, "b1") != "FRESH", (
+        "a repointed binding inherited its earlier ratification"
+    )
+    assert _findings_for(repointed, "b1", "first_seen-unratified"), (
+        "a repoint is a NEW obligation and must report first_seen-unratified"
+    )
+    assert repointed["ok"] is False
+
+
+def test_reordering_selectors_is_not_a_repoint(docs_repo: Path) -> None:
+    """Non-degradation control: the identity digest sorts its sources, so a pure reordering of the
+    selector list is NOT a repoint. Without this row the fix could degrade into "any registry edit
+    de-ratifies everything", which passes the attack row while making the registry unusable."""
+    _write(docs_repo, "src/a.py", "A = 1\n")
+    _write(docs_repo, "src/b.py", "B = 2\n")
+    _write(docs_repo, "docs/how-to/hard.md", "hard\n")
+    _commit(docs_repo, "seed sources")
+    _ratify(
+        docs_repo,
+        binding_id="b1",
+        sources=("src/a.py", "src/b.py"),
+        target="docs/how-to/hard.md",
+    )
+
+    _write(
+        docs_repo,
+        REG_REL,
+        _binding_toml(id="b1", sources=("src/b.py", "src/a.py"), target="docs/how-to/hard.md"),
+    )
+    result = guard.classify(
+        registry_path=docs_repo / REG_REL,
+        ledger_path=docs_repo / LED_REL,
+        root=docs_repo,
+        drift_gate=_clean_gate,
+    )
+
+    assert _state_of(result, "b1") == "FRESH"
+    assert result["ok"] is True
+
+
 # ── SUPPRESSION_CASES (D-13) ────────────────────────────────────────────────────────────────────
 
 _CONTRACT_SOURCE = "contracts/sample/greeting.schema.json"

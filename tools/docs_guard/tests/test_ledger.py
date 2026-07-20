@@ -132,11 +132,17 @@ class Case:
     setup: Callable[[Path], tuple[Bindings, list[tuple[str, str, str]]]]
 
 
-def _run(repo: Path, bindings: Bindings):
-    """The production call sequence — load, retrieve previous committed, check."""
+def _run(repo: Path, bindings: Bindings, repointed: frozenset[str] = frozenset()):
+    """The production call sequence — load, retrieve previous committed, check.
+
+    ``repointed`` is the CR-03 input: the ids whose ``(sources, target)`` meaning differs from the
+    previous COMMITTED registry. These cases author no registry at all, so the default is empty —
+    the same degrade-to-no-check posture an unreadable history takes everywhere else in this
+    module. ``test_repointed_binding_is_unratified`` supplies it explicitly.
+    """
     _coverage, rows = load_ledger(repo / LEDGER_REL)
     previous = previous_ledger(LEDGER_REL, repo)
-    return check_coherence(rows, previous, _live(repo, bindings), _severities(bindings))
+    return check_coherence(rows, previous, _live(repo, bindings), _severities(bindings), repointed)
 
 
 # ── the case setups ───────────────────────────────────────────────────────────────────────────
@@ -485,7 +491,58 @@ def test_reviewed_no_change_consults_no_history(empty_repo: Path) -> None:
     bindings, _ = _setup_reviewed_no_change_exact(empty_repo)
     _coverage, rows = load_ledger(empty_repo / LEDGER_REL)
 
-    assert check_coherence(rows, None, _live(empty_repo, bindings), _severities(bindings)) == []
+    assert (
+        check_coherence(rows, None, _live(empty_repo, bindings), _severities(bindings), frozenset())
+        == []
+    )
+
+
+def test_repointed_binding_is_unratified(prepared_repo: Path) -> None:
+    """CR-03 at the unit level: an id that IS in the previous committed ledger, whose digests match
+    the tree exactly, is still unratified when the registry has repointed it.
+
+    The row and the tree agree by construction — that is the whole difficulty — so nothing in the
+    row's CONTENT can contradict it. Only "does the registry still mean by this id what it meant
+    when the row was committed?" can. The guard-level fixture
+    (``test_repointing_a_ratified_binding_is_not_fresh``) drives the same rule end to end through a
+    real repointed registry; this row pins the ledger's half in isolation.
+    """
+    text = _ledger_text(_rows_for(prepared_repo, _BASE, "reviewed-no-change"))
+    _commit_ledger(prepared_repo, text)
+    _write(prepared_repo, LEDGER_REL, text)
+
+    assert _observed(_run(prepared_repo, _BASE)) == [], "control: unrepointed and ratified is green"
+
+    observed = _observed(_run(prepared_repo, _BASE, frozenset({"one"})))
+
+    assert observed == [("one", "first_seen-unratified", "fail")]
+
+
+def test_repointed_updated_claim_is_unratified(prepared_repo: Path) -> None:
+    """The ``updated`` half takes the same closure: a prior row exists, but it ratified a DIFFERENT
+    pair, so the target delta would compare two unrelated documents."""
+    _commit_ledger(
+        prepared_repo, _ledger_text(_rows_for(prepared_repo, _BASE, "reviewed-no-change"))
+    )
+    _write(prepared_repo, "src/one.py", "ONE = 1  # edited\n")
+    _write(prepared_repo, "docs/a.md", "alpha rewritten\n")
+    live = _live(prepared_repo, _BASE)
+    _write(
+        prepared_repo,
+        LEDGER_REL,
+        _ledger_text(
+            [
+                ("one", live["one"][0], live["one"][1], "updated"),
+                ("two", live["two"][0], live["two"][1], "reviewed-no-change"),
+            ]
+        ),
+    )
+
+    assert _observed(_run(prepared_repo, _BASE)) == [], "control: an honest update is green"
+
+    observed = _observed(_run(prepared_repo, _BASE, frozenset({"one"})))
+
+    assert observed == [("one", "first_seen-unratified", "fail")]
 
 
 def test_stale_is_not_disposition_incoherent(prepared_repo: Path) -> None:
@@ -722,6 +779,7 @@ _ALLOWED_PUBLIC_NAMES = frozenset(
         "REASON_UNVERIFIED",
         "check_coherence",
         "load_ledger",
+        "previous_document",
         "previous_ledger",
     }
 )

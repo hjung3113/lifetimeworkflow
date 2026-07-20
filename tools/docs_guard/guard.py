@@ -54,9 +54,16 @@ from tools.docs_guard.ledger import (
     ReviewedRow,
     check_coherence,
     load_ledger,
+    previous_document,
     previous_ledger,
 )
-from tools.docs_guard.registry import Binding, load_registry
+from tools.docs_guard.registry import (
+    DEFAULT_REGISTRY_PATH,
+    Binding,
+    identity_digest,
+    identity_digests,
+    load_registry,
+)
 from tools.harness_emit.manifest import is_gsd_owned
 from tools.harness_perms import resolve_path
 
@@ -64,6 +71,11 @@ from tools.harness_perms import resolve_path
 # CWD — same posture as registry.py.
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_LEDGER_PATH = REPO_ROOT / LEDGER_PATH
+
+# The registry's repo-relative spelling, the ``LEDGER_PATH`` twin. Used ONLY as the fallback when an
+# explicit ``--registry`` resolves outside the root, so nothing caller-influenced reaches the git
+# argv (T-28-20). Derived from the module constant rather than retyped.
+REGISTRY_PATH = DEFAULT_REGISTRY_PATH.relative_to(REPO_ROOT).as_posix()
 
 # The five DOCSUP-03 states plus ``SUPPRESSED`` (D-13). ``UNCOVERED`` is a per-DOCUMENT state, not
 # a binding state — it lives in ``result["uncovered"]``, never in a binding entry.
@@ -272,17 +284,18 @@ def _sorted_findings(findings: Iterable[dict]) -> list[dict]:
     return sorted(findings, key=lambda f: (f["binding_id"], f["reason"], f["message"]))
 
 
-def _previous_rel(ledger_path: Path, root: Path) -> str:
-    """The ledger's repo-relative path, for ``git show HEAD:./<rel>``.
+def _previous_rel(path: Path, root: Path, fallback: str) -> str:
+    """``path``'s repo-relative spelling, for ``git show HEAD:./<rel>``.
 
     Derived by ``relative_to(root)``, which by construction can only produce a path INSIDE the
-    root — an explicit ``--ledger`` outside the tree falls back to the module constant rather than
-    reaching the git argv (T-28-20's posture: nothing attacker-influenced in the command line).
+    root — an explicit ``--ledger`` / ``--registry`` outside the tree falls back to the module
+    constant rather than reaching the git argv (T-28-20's posture: nothing attacker-influenced in
+    the command line).
     """
     try:
-        return ledger_path.resolve().relative_to(root).as_posix()
+        return path.resolve().relative_to(root).as_posix()
     except ValueError:
-        return LEDGER_PATH
+        return fallback
 
 
 def classify(
@@ -311,7 +324,28 @@ def classify(
     bindings: Sequence[Binding] = load_registry(registry_path, root_path)
     coverage, rows = load_ledger(ledger)
     rows_by_id: dict[str, ReviewedRow] = {row.id: row for row in rows}
-    previous = previous_ledger(_previous_rel(ledger, root_path), root_path)
+    previous = previous_ledger(_previous_rel(ledger, root_path, LEDGER_PATH), root_path)
+
+    # A ratification is a statement about a binding's MEANING, so establishing it needs the
+    # previous committed REGISTRY as well as the previous committed ledger. Without this the
+    # history test keyed on the binding NAME alone, and repointing an already-ratified id at a
+    # different source/target pair inherited its ratification silently (CR-03). `previous is None`
+    # (history unreadable) yields an EMPTY repointed set — the same degrade-to-no-check posture
+    # every other history-dependent rule in this package takes.
+    previous_registry = previous_document(
+        _previous_rel(Path(registry_path), root_path, REGISTRY_PATH), root_path
+    )
+    committed_identity = identity_digests(previous_registry)
+    repointed_ids = (
+        frozenset()
+        if previous_registry is None
+        else frozenset(
+            binding.id
+            for binding in bindings
+            if committed_identity.get(binding.id)
+            != identity_digest(binding.sources, binding.target)
+        )
+    )
 
     live_digests: dict[str, tuple[str, str]] = {}
     broken_reasons: dict[str, list[str]] = {}
@@ -321,7 +355,11 @@ def classify(
         broken_reasons[binding.id] = reasons
 
     coherence = check_coherence(
-        rows, previous, live_digests, {binding.id: binding.severity for binding in bindings}
+        rows,
+        previous,
+        live_digests,
+        {binding.id: binding.severity for binding in bindings},
+        repointed_ids,
     )
     blocking_by_id: dict[str, list[str]] = {}
     for finding in coherence:

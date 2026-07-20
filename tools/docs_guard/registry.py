@@ -25,8 +25,10 @@ plan 28-05 owns ``cli.py``.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import tomllib
+from collections.abc import Iterable
 from pathlib import Path
 from typing import NamedTuple
 
@@ -61,8 +63,59 @@ __all__ = [
     "DERIVED_GLOBS",
     "Binding",
     "RegistryError",
+    "identity_digest",
+    "identity_digests",
     "load_registry",
 ]
+
+
+def identity_digest(sources: Iterable[str], target: str) -> str:
+    """A digest over a binding's MEANING — its sorted source selectors and its target.
+
+    This hashes SELECTORS, never file content: it answers "what is this binding ABOUT", the
+    question a ledger row's ratification is actually a statement about. Content lives in the
+    ``source_digest`` / ``target_digest`` pair and moves on every ordinary edit; the identity moves
+    only when someone repoints the binding.
+
+    Each field is prefixed with its own label and ``\\n``-terminated, so ``sources=["a"],
+    target="b"`` and ``sources=["b"], target="a"`` cannot collide. Sources are sorted, so a pure
+    reordering of the selector list is correctly NOT a repoint.
+    """
+    hasher = hashlib.sha256()
+    for selector in sorted(sources):
+        hasher.update(b"source\n")
+        hasher.update(selector.encode("utf-8"))
+        hasher.update(b"\n")
+    hasher.update(b"target\n")
+    hasher.update(target.encode("utf-8"))
+    hasher.update(b"\n")
+    return hasher.hexdigest()
+
+
+def identity_digests(document: dict | None) -> dict[str, str]:
+    """Index a PARSED registry document by binding id -> :func:`identity_digest`.
+
+    Deliberately LENIENT, mirroring ``ledger._previous_rows``: the caller feeds this the PREVIOUS
+    COMMITTED registry, which is history that already passed the gate once. Re-validating it here
+    would let a historical shape change fail a present-day review, so a malformed row is simply not
+    indexed rather than raising.
+    """
+    if document is None:
+        return {}
+    block = document.get("binding", [])
+    if not isinstance(block, list):
+        return {}
+    indexed: dict[str, str] = {}
+    for entry in block:
+        if not isinstance(entry, dict):
+            continue
+        rid, sources, target = entry.get("id"), entry.get("sources"), entry.get("target")
+        if not isinstance(rid, str) or not isinstance(target, str) or not isinstance(sources, list):
+            continue
+        if not all(isinstance(selector, str) for selector in sources):
+            continue
+        indexed[rid] = identity_digest(sources, target)
+    return indexed
 
 
 class Binding(NamedTuple):
