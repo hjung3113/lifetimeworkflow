@@ -29,6 +29,7 @@ EXPECTED_PAGES = frozenset(
     {
         "approval",
         "attestation",
+        "doc-dependencies",
         "evidence",
         "format-conventions",
         "greeting",

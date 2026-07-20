@@ -14,6 +14,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from tools.adoption_apply import apply
+from tools.harness_perms import load_matrix, resolve_path
 
 # CR-01 adversarial destinations: all four resolve onto the constitution plane
 # (contracts/) but only the first was caught by the raw-string, case-sensitive,
@@ -352,3 +353,138 @@ def test_symlink_into_contracts_is_refused(tmp_path, monkeypatch):
     assert open_spy.call_count == 0
     assert link_spy.call_count == 0
     assert replace_spy.call_count == 0
+
+
+# --- 28-09 — the human-review ledger is a THIRD path-deny domain -------------------------------
+#
+# `docs/.docs-review-ledger.toml` is the greenness authority for the docs plane: a disposition row
+# in it is what makes a binding FRESH. Agents may PROPOSE registry rows
+# (`docs/doc-dependencies.toml`, DOCSUP-07) but only a human may author a ledger disposition —
+# otherwise an agent lands a new binding plus its own blessing and self-greens.
+#
+# Every row carries the spelling a single literal comparison would miss (27.1 CR-01's lesson:
+# a refusal that a spelling bypasses is not a refusal). `expected` pins WHICH exception:
+#   "ledger" — must raise `ReviewLedgerRefusal`, and must NOT be a `ConstitutionRefusal`.
+#   "any"    — must be refused, but the row asserts nothing about which guard fires. The `..`
+#              spelling is already stopped by the 27.1 structural pre-check; its purpose here is to
+#              prove no spelling reaches the file, not to pin it to this plan's guard.
+REVIEW_LEDGER_DESTINATIONS = [
+    ("plain", "docs/.docs-review-ledger.toml", "ledger"),
+    ("dot_slash_prefixed", "./docs/.docs-review-ledger.toml", "ledger"),
+    ("interior_dot_segment", "docs/./.docs-review-ledger.toml", "ledger"),
+    ("dotdot_resolving_onto_ledger", "docs/sub/../.docs-review-ledger.toml", "any"),
+    ("upper_case", "DOCS/.DOCS-REVIEW-LEDGER.TOML", "ledger"),
+    ("mixed_case", "docs/.Docs-Review-Ledger.toml", "ledger"),
+]
+
+# The narrowness control. Every row MUST stay writable; the first is the load-bearing one.
+#   * `docs/doc-dependencies.toml` — THE REGISTRY. DOCSUP-07 requires `/adopt` to propose rows into
+#     it, and the D-01 plane split exists precisely so that stays possible. A refusal that also
+#     caught the registry would silently break Phase 29.
+#   * the two prefix-adjacent names — what a sloppy `startswith`/`docs/.docs-review-ledger*` glob
+#     would over-match.
+LEDGER_ADJACENT_ALLOWED = [
+    "docs/doc-dependencies.toml",
+    "docs/how-to/task-lifecycle.md",
+    "docs/.docs-review-ledger.toml.bak",
+    "docs/.docs-review-ledger-notes.md",
+    "docs/reference/doc-dependencies.md",
+]
+
+
+@pytest.mark.parametrize(
+    ("case_name", "destination", "expected"),
+    REVIEW_LEDGER_DESTINATIONS,
+    ids=[case_name for case_name, _, _ in REVIEW_LEDGER_DESTINATIONS],
+)
+def test_review_ledger_destination_is_refused(tmp_path, case_name, destination, expected):
+    """RED pre-fix: `apply.ReviewLedgerRefusal` does not exist, and no spelling of the ledger is
+    refused today — the ledger is absent from `CONSTITUTION_GLOBS`, from `path_deny_globs`, and
+    from CODEOWNERS.
+
+    The distinct exception type is the point: conflating it with `ConstitutionRefusal` would teach
+    an operator to reach for `GOLDEN_APPROVE_HUMAN`, which authorizes CONSTITUTION writes and must
+    never be understood to authorize a ledger disposition.
+    """
+    if expected == "any":
+        with pytest.raises(ValueError):
+            apply.refuse_unsafe_destination(destination, tmp_path)
+        return
+
+    with pytest.raises(apply.ReviewLedgerRefusal) as excinfo:
+        apply.refuse_unsafe_destination(destination, tmp_path)
+
+    assert f"'{destination}'" in str(excinfo.value), case_name
+    assert not isinstance(excinfo.value, apply.ConstitutionRefusal), case_name
+
+
+@pytest.mark.parametrize(
+    ("case_name", "destination", "expected"),
+    REVIEW_LEDGER_DESTINATIONS,
+    ids=[case_name for case_name, _, _ in REVIEW_LEDGER_DESTINATIONS],
+)
+def test_review_ledger_destination_is_refused_end_to_end(
+    tmp_path, monkeypatch, case_name, destination, expected
+):
+    """End-to-end through `apply_disposition`, with a zero-call write spy: the ledger is refused
+    before any `open()`/`os.link()`/`os.replace()`, for every spelling."""
+    open_spy = MagicMock(wraps=os.open)
+    link_spy = MagicMock(wraps=os.link)
+    replace_spy = MagicMock(wraps=os.replace)
+    monkeypatch.setattr(os, "open", open_spy)
+    monkeypatch.setattr(os, "link", link_spy)
+    monkeypatch.setattr(os, "replace", replace_spy)
+
+    expected_exception = ValueError if expected == "any" else apply.ReviewLedgerRefusal
+    record = {"destination": destination, "disposition": "create"}
+    with pytest.raises(expected_exception):
+        apply.apply_disposition(record, tmp_path, payload=b"content")
+
+    assert open_spy.call_count == 0, case_name
+    assert link_spy.call_count == 0, case_name
+    assert replace_spy.call_count == 0, case_name
+
+
+@pytest.mark.parametrize("destination", LEDGER_ADJACENT_ALLOWED)
+def test_review_ledger_adjacent_destination_stays_allowed(tmp_path, destination):
+    """Narrowness control — GREEN against unmodified code, and it must STAY green.
+
+    `docs/doc-dependencies.toml` is the row that matters: the registry must remain agent-writable
+    at the choke point or DOCSUP-07 becomes unimplementable.
+    """
+    result = apply.refuse_unsafe_destination(destination, tmp_path)
+    assert Path(tmp_path).resolve() in result.parents, destination
+
+
+def test_review_ledger_permission_matrix_denies_the_ledger():
+    """The `apply.py` choke point guards only the adoption-APPLY write path; a plain agent
+    `Write`/`Edit` never reaches it. `path_deny_globs` is what covers the ordinary tool path.
+
+    Asserted through the resolver the hooks actually consume, not by re-reading the JSON — a test
+    that re-reads the file proves the file's content, not the enforcement.
+    """
+    deny_globs = load_matrix()["path_deny_globs"]
+    assert resolve_path(deny_globs, "docs/.docs-review-ledger.toml") == "deny"
+
+
+def test_review_ledger_permission_matrix_keeps_registry_writable():
+    """DENY must not spill onto the registry, nor onto the prefix-adjacent names."""
+    deny_globs = load_matrix()["path_deny_globs"]
+    for path in LEDGER_ADJACENT_ALLOWED:
+        assert resolve_path(deny_globs, path) != "deny", path
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "contracts/widget.schema.json",
+        "docs/adr/0099-example.md",
+        "golden/y/baseline.verified.tsv",
+        "secrets.env",
+        "nested/dir/secrets.env",
+    ],
+)
+def test_review_ledger_matrix_edit_left_existing_denies_intact(path):
+    """The matrix edit added ONE glob and changed nothing else."""
+    deny_globs = load_matrix()["path_deny_globs"]
+    assert resolve_path(deny_globs, path) == "deny"
