@@ -25,6 +25,7 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
@@ -174,20 +175,36 @@ def check_valid(task_dir: Path, batch_id: str, repo_root: Path) -> bool:
 
     Every element is recomputed fresh at call time (T-27-04-03: no cached/stale validity result).
     No partial credit — any single mismatch returns ``False``.
+
+    Never raises: an unreadable, malformed, or structurally-wrong stored approval is treated as
+    invalid, extending WR-02's guarantee from the draft artifacts to the approval document itself
+    (WR-06).
     """
     path = _approval_path(task_dir, batch_id)
     if not path.is_file():
         return False
-    stored = json.loads(path.read_bytes())
     batch_dir = _batch_dir(task_dir, batch_id)
     try:
+        stored = json.loads(path.read_bytes())
         draft_hash = _recompute_draft_hash(batch_dir)
-    except (FileNotFoundError, OSError):
-        # WR-02: an incomplete batch directory (a missing draft artifact) is no partial credit —
-        # the function's own docstring promise — never an uncaught crash out of a validity check.
+        return (
+            stored["draft_hash"] == draft_hash
+            and stored["task_revision"] == _current_task_revision(task_dir)
+            and stored["git_ref"] == _current_git_ref(repo_root)
+        )
+    except (FileNotFoundError, OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
+        # FileNotFoundError/OSError: WR-02's original coverage — an incomplete batch directory (a
+        # missing draft artifact) is no partial credit, never an uncaught crash out of a validity
+        # check. WR-06 adds: JSONDecodeError for malformed approval bytes (it subclasses
+        # ValueError, not OSError, so it was genuinely uncovered), KeyError for a missing required
+        # key, and TypeError for valid JSON that is not an object, where ``stored["draft_hash"]``
+        # raises rather than returning a mismatch.
+        #
+        # The diagnostic names the path and the exception class ONLY — never the file's contents or
+        # the exception's message body, since a corrupted approval may hold arbitrary bytes (the
+        # same no-content-leak rule test_marker_merge_refuses_symlink_read establishes).
+        print(
+            f"approval.json unusable for batch '{batch_id}' at {path}: {type(exc).__name__}",
+            file=sys.stderr,
+        )
         return False
-    return (
-        stored["draft_hash"] == draft_hash
-        and stored["task_revision"] == _current_task_revision(task_dir)
-        and stored["git_ref"] == _current_git_ref(repo_root)
-    )
