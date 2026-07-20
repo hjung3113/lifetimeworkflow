@@ -588,55 +588,72 @@ def test_cli_apply_refuses_hostile_destination_cleanly(
 # --- WR-05 (27.2-01): a directory-shaped destination refuses cleanly at the CLI boundary --------
 
 
+@pytest.mark.parametrize(
+    ("case_name", "destination", "expected_guard"),
+    [
+        ("root_dot", ".", "names a directory"),
+        ("trailing_slash", "newdir/", "names a directory"),
+    ],
+    ids=["root_dot", "trailing_slash"],
+)
 def test_cli_apply_refuses_directory_shaped_destination(
     task_dir: Path,
     git_repo: Path,
     tmp_path: Path,
     decisions_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    case_name: str,
+    destination: str,
+    expected_guard: str,
 ) -> None:
     """WR-05: `destination: "."` crashes with an unhandled `IsADirectoryError` pre-fix, and
     `destination: "newdir/"` silently creates a FILE named `newdir` pre-fix. Both must exit 1 with
-    a clean stderr naming the destination and no `Traceback`."""
+    a clean stderr and no `Traceback`.
+
+    The assertion is on `expected_guard` — the refusal's own identifying text — NOT on the
+    destination substring: for the `"."` row, `assert destination in result.stderr` is satisfied by
+    any stderr this CLI can emit (the `tools.adoption_apply apply:` prefix alone contains a dot),
+    so with the guard reverted that row passed via `ConcurrentDriftError` -> exit 1 for entirely
+    the wrong reason. Parametrized rather than looped so a regression names the spelling that
+    broke instead of aborting a shared loop.
+    """
     apply_target = tmp_path / "dirshaped-target"
     apply_target.mkdir()
 
-    for case_name, destination in (("root_dot", "."), ("trailing_slash", "newdir/")):
-        manifest = {
-            "target_ref": "unknown",
-            "dispositions": [{"destination": destination, "disposition": "create"}],
-            "excluded": [],
-        }
-        batch_id, _ = _seed_batch_with_manifest(task_dir, manifest)
-        promote_exit = _promote(task_dir, batch_id, git_repo, decisions_path, monkeypatch)
-        assert promote_exit == 0, case_name
+    manifest = {
+        "target_ref": "unknown",
+        "dispositions": [{"destination": destination, "disposition": "create"}],
+        "excluded": [],
+    }
+    batch_id, _ = _seed_batch_with_manifest(task_dir, manifest)
+    promote_exit = _promote(task_dir, batch_id, git_repo, decisions_path, monkeypatch)
+    assert promote_exit == 0, case_name
 
-        result = subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "tools.adoption_apply",
-                "apply",
-                "--task-dir",
-                str(task_dir),
-                "--batch-id",
-                batch_id,
-                "--target",
-                str(apply_target),
-                "--repo-root",
-                str(git_repo),
-            ],
-            cwd=Path(__file__).resolve().parents[3],
-            capture_output=True,
-            text=True,
-        )
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "tools.adoption_apply",
+            "apply",
+            "--task-dir",
+            str(task_dir),
+            "--batch-id",
+            batch_id,
+            "--target",
+            str(apply_target),
+            "--repo-root",
+            str(git_repo),
+        ],
+        cwd=Path(__file__).resolve().parents[3],
+        capture_output=True,
+        text=True,
+    )
 
-        assert result.returncode == 1, (
-            f"{case_name}: stdout={result.stdout!r} stderr={result.stderr!r}"
-        )
-        assert "Traceback" not in result.stderr, f"{case_name}: unhandled exception leaked"
-        assert result.stderr.strip(), f"{case_name}: expected a clean refusal message"
-        assert destination in result.stderr, f"{case_name}: diagnostic must name the destination"
-
-    # The trailing-slash case must not have silently created a file where a directory was asked for.
-    assert not (apply_target / "newdir").exists()
+    assert result.returncode == 1, f"{case_name}: stdout={result.stdout!r} stderr={result.stderr!r}"
+    assert "Traceback" not in result.stderr, f"{case_name}: unhandled exception leaked"
+    assert expected_guard in result.stderr, (
+        f"{case_name}: refused by the wrong guard — stderr={result.stderr!r}"
+    )
+    # No directory-shaped row may leave anything behind in the target tree.
+    assert not (apply_target / "newdir").exists(), case_name
+    assert list(apply_target.iterdir()) == [], case_name
