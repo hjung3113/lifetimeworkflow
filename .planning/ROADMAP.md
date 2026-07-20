@@ -626,6 +626,26 @@ Plans:
 - [x] 27-05-PLAN.md — 3 domain-neutral fixtures (polyglot-single, client-server, partial-collision-crlf) + end-to-end proof (ADOPT-07, SC-3)
 - [x] 27-06-PLAN.md — /adopt command + brownfield-adoption skill + emit round-trip + phase gate (ADOPT-07, SC-4)
 
+### Phase 27.1: Adoption Safety — path-normalization bypass, apply-mode confinement, unconsulted approval gate (INSERTED)
+
+**Goal:** The safety properties Phase 27 documented are the safety properties `tools/adoption_apply` actually enforces. Phase 27 shipped green — 1096 tests, contract-drift clean, emit clean — while its three load-bearing controls each failed under an input shape no test supplied. `refuse_if_constitution()` glob-matches the raw `destination` string with no path normalization, so `./contracts/x.json`, `a/../contracts/x.json`, and (on this case-insensitive filesystem) `CONTRACTS/x.json` all pass a check that `contracts/x.json` fails — the exact structural refusal D-04 was written to guarantee, bypassed by a spelling. `refuse_if_outside_root()` is correct but wired only into draft mode; `apply_disposition` joins `Path(target_root) / destination` raw, and an absolute `destination` discards `target_root` entirely. And `approval.check_valid()` is called nowhere outside its own unit test, so a batch applies without `promote` ever running — while `brownfield-adoption/SKILL.md` tells its reader that promotion gates the apply. This phase makes the code match the claims.
+**Requirements**: ADOPT-05, ADOPT-06
+**Depends on:** Phase 27
+
+**Why urgent:** Phase 28/29 build the docs-supervision layer on top of adoption, and Phase 29 wires `/adopt` into a reviewed seeding loop. Every one of these three defects is a *write-path* defect on a tool whose entire purpose is writing into someone else's repository under a promise of non-destructiveness. Shipping the docs loop on top of an apply path that can reach `contracts/` by spelling, escape its target root by absolute path, and skip its own human gate turns a contained bug into a supply-chain-shaped one.
+
+**Success criteria:**
+- SC-1: Constitution refusal is decided on a *normalized, resolved* path, not a raw string. Data-based cases pin that `contracts/x.json`, `./contracts/x.json`, `a/../contracts/x.json`, `CONTRACTS/x.json` (case-insensitive FS), and a symlink whose target lands in `contracts/` are ALL refused — and that a legitimately non-constitution destination is still allowed.
+- SC-2: `refuse_if_outside_root()` (or equivalent resolved-path confinement) gates the *apply* write path, not only draft. An absolute `destination` and a `..`-traversal `destination` are each refused before any filesystem write, proven by a spy asserting zero `open()`/`os.link()`/`os.replace()` calls.
+- SC-3: `approval.check_valid()` is consulted by the apply path. Applying a batch that was never promoted, or whose approval is stale on any of `(draft_hash, task_revision, git_ref)`, is refused. `brownfield-adoption/SKILL.md`'s Stage-5 claim is either made true or corrected.
+- SC-4: `contracts/harness/adoption/manifest.schema.json` constrains `destination`'s shape (no absolute paths, no `..` segments) — a constitution-plane edit, so paired with hash rebaseline, derived regeneration, and human ratification in one atomic commit, `tools.contract_drift.drift` clean at that commit.
+- SC-5: Each of 27-REVIEW.md's findings CR-01, CR-02, CR-03, WR-01, WR-02, WR-03, WR-04 reaches a recorded disposition (fixed / accepted-with-rationale), none silently dropped. Every fix is preceded by a data-based case that fails against the shipped Phase 27 code — a test that cannot fail when the control regresses is not coverage.
+
+**Out of scope (documented seam, not this phase):** `tools/hooks/secret_scan.py:44-47` still hardcodes its own pattern list rather than reading the contract — carried forward unchanged from 26.2's fence.
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 27.1 to break down)
+
 ### Phase 28: Human-Docs Registry, Guard, Derived Queue *(v2.3 C)*
 
 **Goal:** semantic 정확성을 주장하거나 derived 생성기와 경쟁하지 않고 사람-문서 review 의무를 정확히 탐지·surface한다.
