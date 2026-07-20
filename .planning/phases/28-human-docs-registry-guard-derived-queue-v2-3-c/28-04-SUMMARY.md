@@ -52,8 +52,19 @@ unreadable) — plus the `binding_min` deletion ratchet, with no writer anywhere
 
 ## RED evidence (DOCSUP-03)
 
-All RED runs used the inverted form (`! uv run pytest ... -q`), which exits 0 only when the
-selection FAILS. Nothing was piped into `head`/`tail`. The throwaway checker loaded the TOML with
+**Method — a deliberate strengthening of the plan's `<verify>` form.** The plan specifies the
+inverted gate `! uv run pytest ... -q`, which exits 0 whenever the selection fails. That gate
+cannot tell an *assertion* failure from a *collection* failure: a `ModuleNotFoundError` also exits
+non-zero, so `!` reports it as RED. This exact trap bit plan 28-02. It is more dangerous here than
+anywhere else in the phase, because every RED state in this plan is **semantic** — "the attack is
+reported CLEAN", "the self-blessed binding is reported FRESH" — and an import error wearing a RED
+costume would let the self-green hole ship green.
+
+So each selection below was run in the PLAIN form and its output read in full, rather than reduced
+to an exit code. Every failure shown is an `AssertionError` at a named line in `test_ledger.py`,
+and each run reports passing tests alongside the failures (`2 failed, 1 passed`, `3 failed, 2
+passed`, ...) — which is itself proof that collection succeeded, since a collection error yields no
+passes at all. Nothing was piped into `head`/`tail`. The throwaway checker loaded the TOML with
 no allowlist, returned `None` from `previous_ledger` unconditionally, and reported a finding only
 when a stored digest disagreed with the live one.
 
