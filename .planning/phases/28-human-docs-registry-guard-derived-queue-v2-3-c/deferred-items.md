@@ -1,6 +1,13 @@
 # Phase 28 — deferred items (out of scope for the discovering plan)
 
-## DEF-28-01 — GEN-04 breach in plan 28-05's shipped `tools/docs_guard`
+## DEF-28-01 — GEN-04 breach in plan 28-05's shipped `tools/docs_guard` — **CLOSED**
+
+**Closed by:** plan 28-08's fan-in, commit `e9fb934`, following the suggested remedy below verbatim:
+`guard.py:97`'s comment drops the literal path and says "the instance tree", and `test_guard.py`'s
+fixture path is assembled from segments into the `_INSTANCE_TREE_DOC` module constant. No assertion
+and no behaviour changed. `uv run pytest tools/harness_lint/tests/test_core_no_example_dep.py
+tools/docs_guard -q` → `197 passed`.
+
 
 **Discovered by:** plan 28-07, Task 1 (its automated gate is
 `uv run pytest tools/harness_lint/tests/test_core_no_example_dep.py -q`).

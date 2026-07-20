@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: A)*
-status: verifying
-stopped_at: Completed 27.1-03-PLAN.md
-last_updated: "2026-07-20T19:07:10.786Z"
-last_activity: 2026-07-20
+status: blocked-on-human
+stopped_at: Completed 28-08-PLAN.md Tasks 1–2; Task 3 blocked on human ratification
+last_updated: "2026-07-20T21:34:01.408Z"
+last_activity: 2026-07-21
 progress:
-  total_phases: 9
-  completed_phases: 7
-  total_plans: 27
-  completed_plans: 27
+  total_phases: 10
+  completed_phases: 9
+  total_plans: 38
+  completed_plans: 38
   percent: 100
 ---
 
@@ -21,14 +21,18 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-18)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 27.1 — adoption-safety-path-normalization-bypass-apply-mode-confine
+**Current focus:** Phase 28 — human-docs-registry-guard-derived-queue (v2.3 C)
 
 ## Current Position
 
-Phase: 27.1 (adoption-safety-path-normalization-bypass-apply-mode-confine) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-07-20
+Phase: 28 (human-docs-registry-guard-derived-queue-v2-3-c) — EXECUTING
+Plan: 9 of 9 (all plans landed; 28-08 Task 3 is a blocking human checkpoint)
+Status: Machinery complete and green. **Two human ratifications outstanding** — (1) author and
+commit `docs/.docs-review-ledger.toml` from the byte-exact proposal in `28-07-SUMMARY.md`, and
+(2) flip `docs/adr/0010-human-docs-review-obligation-model.md` from `proposed` to `accepted`.
+`python -m tools.docs_guard` exits 1 until (1) lands — that is the designed pre-ratification
+state, not a defect.
+Last activity: 2026-07-21
 
 ## Performance Metrics
 
@@ -296,18 +300,33 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-20T19:07:10.780Z
-Stopped at: Completed 27.1-03-PLAN.md
-Resume file: None
+Last session: 2026-07-21
+Stopped at: Completed 28-08-PLAN.md Tasks 1–2; Task 3 blocked on human ratification
+Resume file: .planning/phases/28-human-docs-registry-guard-derived-queue-v2-3-c/28-08-SUMMARY.md
 
 ## Operator Next Steps
 
-**► NEXT — plan Phase 12 (Model + ADR + Doc Reframe).**
+**► NEXT — two human ratifications close Phase 28. Both are blocking; neither may be done by an agent.**
 
-- `/gsd:plan-phase 12` — decompose Phase 12 (MEM2-01 `.memory/agreements/` scaffold + entry shape; MEM2-03 reword distrust prose to data-authority in the 5 echo sites; ADR-0006 authoring via the human-ratified constitution path). Machinery: `adr` skill / `/adr`, CODEOWNERS ratification. NOTE: an agent Write to `docs/adr/` is correctly denied by contract-guard — the ADR lands via the human-ratified path (mirrors ADR-0004/0005).
-- Locked kickoff decisions (PROJECT.md / REQUIREMENTS.md): Q1=committed-but-writable (`.memory/agreements/`, provenance-lint is the guard) · Q2=dedicated `/agree` · Q3=per-guideline files (§7b) · Q4=capped full-body · Q5=retire via per-file status · Q6=agent-side freshness (no fixed threshold, no wall-clock in `assemble()`/hook-wrapper).
-- Design source: read `.planning/MEMORY-UPGRADE-PROPOSAL.md` §7 (operator refinements are AUTHORITATIVE) before planning.
+1. **Author and commit `docs/.docs-review-ledger.toml`.** The byte-exact content is in
+   `.planning/phases/28-human-docs-registry-guard-derived-queue-v2-3-c/28-07-SUMMARY.md` under
+   *Proposed ledger (for human authorship)*, with a one-sentence justification per binding in the
+   table above it. Reject any binding whose sources do not genuinely determine its target, and
+   re-derive both ratchets if you do. All 16 digests in that proposal were re-verified unchanged
+   at the end of plan 28-08. An agent cannot write this file — it is denied at the permission layer
+   and refused at the adoption-apply choke point (plan 28-09).
 
----
+2. **Flip `docs/adr/0010-human-docs-review-obligation-model.md`'s status line from `proposed` to
+   `accepted`**, record the date and deciders, and update its row in `docs/adr/README.md`. (Spelled
+   without the literal status-field syntax on purpose — `gsd-sdk query state.update-progress` scrapes
+   that pattern out of this file and overwrites the frontmatter `status:` key with it.) Read clause 3b (the
+   docs-plane agent-authority boundary) with particular care: ADRs here are append-only, so
+   Phase 29 cannot amend it — a second full ratification would be the only remedy.
 
-Clean milestone boundary otherwise — v2.0 complete + archived, full-harness audit done, v2.1 roadmap set.
+After (1), the seeded rows are amber (`first_seen-unratified`) for exactly one commit cycle by
+design; the ratification commit itself is what turns them green. Re-run `uv run python -m
+tools.docs_guard` after the FOLLOWING commit to confirm, and record the output in
+`28-07-SUMMARY.md`'s empty *Guard output — AFTER the human lands the ledger* section.
+
+Then: `/gsd:verify-phase 28`, and Phase 29 (`/docs-update` drive loop + adoption integration +
+v2.3 closeout) is ready to plan.

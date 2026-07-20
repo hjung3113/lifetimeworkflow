@@ -30,11 +30,11 @@
 
 ### Theme C — Human-Authored Documentation Upkeep (Phases 28–29)
 
-- [ ] **DOCSUP-01** *(NEW+REUSE, Phase 28)*: review된 `docs/doc-dependencies.toml`이 stable source selector를 사람 작성 target 문서·disposition 정책·`required`/`advisory` 심각도에 결합하고, path escape·중복 id·빈 required selector·derived/reference target·accepted-ADR 편집 정책을 거부한다.
-- [ ] **DOCSUP-02** *(NEW+REUSE, Phase 28)*: 결정론적 guard가 정렬된 source·target path/byte 세트를 해시하고, committed ledger가 binding id·정확한 review된 digest·`updated`/`reviewed-no-change` disposition만 저장한다(시간·사람·prose copy·모델 식별자 없음).
-- [ ] **DOCSUP-03** *(NEW+REUSE, Phase 28)*: guard가 binding을 `FRESH`/`BROKEN`/`STALE_REQUIRED`/`STALE_ADVISORY`/`UNCOVERED`로 분류하고, `BROKEN`·`STALE_REQUIRED`를 fail·`STALE_ADVISORY`를 warn·uncovered-count 비-회귀를 강제하며, 매칭 disposition 없는 ledger-only digest bump을 거부한다.
-- [ ] **DOCSUP-04** *(NEW+REUSE, Phase 28)*: 기존 memory-regeneration 기계가 pointer-only `.memory/derived/docs-staleness.md` 큐를 결정론적으로 렌더하고 최대 한 줄의 조건부 SessionStart pointer를 추가하되, derived-never-hand-edited·byte-identical `assemble()`·기존 ~4,000자 예산을 보존한다.
-- [ ] **DOCSUP-05** *(NEW+REUSE, Phase 28)*: 안정 리포트가 변경된 path/hash·그래프 impact id·target doc·심각도·요구 disposition을 그룹핑하고, accepted ADR은 `REVIEWED_STILL_CURRENT`/`SUPERSEDING_ADR_REQUIRED`만 내며, contract/golden 실패는 선행·authoritative로 유지되고, old-to-new diff는 git에서 회수 가능할 때만 표시한다.
+- [x] **DOCSUP-01** *(NEW+REUSE, Phase 28)*: review된 `docs/doc-dependencies.toml`이 stable source selector를 사람 작성 target 문서·disposition 정책·`required`/`advisory` 심각도에 결합하고, path escape·중복 id·빈 required selector·derived/reference target·accepted-ADR 편집 정책을 거부한다.
+- [x] **DOCSUP-02** *(NEW+REUSE, Phase 28)*: 결정론적 guard가 정렬된 source·target path/byte 세트를 해시하고, committed ledger가 binding id·정확한 review된 digest·`updated`/`reviewed-no-change` disposition만 저장한다(시간·사람·prose copy·모델 식별자 없음).
+- [x] **DOCSUP-03** *(NEW+REUSE, Phase 28)*: guard가 binding을 `FRESH`/`BROKEN`/`STALE_REQUIRED`/`STALE_ADVISORY`/`UNCOVERED`로 분류하고, `BROKEN`·`STALE_REQUIRED`를 fail·`STALE_ADVISORY`를 warn·uncovered-count 비-회귀를 강제하며, 매칭 disposition 없는 ledger-only digest bump을 거부한다.
+- [x] **DOCSUP-04** *(NEW+REUSE, Phase 28)*: 기존 memory-regeneration 기계가 pointer-only `.memory/derived/docs-staleness.md` 큐를 결정론적으로 렌더하고 최대 한 줄의 조건부 SessionStart pointer를 추가하되, derived-never-hand-edited·byte-identical `assemble()`·기존 ~4,000자 예산을 보존한다.
+- [x] **DOCSUP-05** *(NEW+REUSE, Phase 28)*: 안정 리포트가 변경된 path/hash·그래프 impact id·target doc·심각도·요구 disposition을 그룹핑하고, accepted ADR은 `REVIEWED_STILL_CURRENT`/`SUPERSEDING_ADR_REQUIRED`만 내며, contract/golden 실패는 선행·authoritative로 유지되고, old-to-new diff는 git에서 회수 가능할 때만 표시한다.
 - [ ] **DOCSUP-06** *(NEW+REUSE, Phase 29)*: 하나의 얇은 `/docs-update` command와 `docs-upkeep` skill이 결정론적 큐를 읽어 bounded 사람-doc 편집 또는 정확한 review disposition을 draft하고 기존 review/verify 흐름으로 라우팅하며, accepted ADR·`docs/reference/**`·`.memory/derived/**`·contracts·golden을 구조적으로 제외하고 두 런타임에 왕복한다.
 - [ ] **DOCSUP-07** *(NEW+REUSE, Phase 29)*: 정상 사람-review 변경이 최고 위험 기존 문서와 adoption runbook의 binding을 seed하며, `/adopt`은 registry/ledger 항목을 제안할 수 있으나 inferred ownership은 미해결로 남기고 명시적 review 없이는 green이 될 수 없다.
 
@@ -82,10 +82,10 @@ Deferred to a later milestone:
 | ADOPT-05 | Phase 27 | Complete |
 | ADOPT-06 | Phase 27 | Complete |
 | ADOPT-07 | Phase 27 | Complete |
-| DOCSUP-01 | Phase 28 | Pending |
-| DOCSUP-02 | Phase 28 | Pending |
-| DOCSUP-03 | Phase 28 | Pending |
-| DOCSUP-04 | Phase 28 | Pending |
-| DOCSUP-05 | Phase 28 | Pending |
+| DOCSUP-01 | Phase 28 | Complete |
+| DOCSUP-02 | Phase 28 | Complete |
+| DOCSUP-03 | Phase 28 | Complete |
+| DOCSUP-04 | Phase 28 | Complete |
+| DOCSUP-05 | Phase 28 | Complete |
 | DOCSUP-06 | Phase 29 | Pending |
 | DOCSUP-07 | Phase 29 | Pending |

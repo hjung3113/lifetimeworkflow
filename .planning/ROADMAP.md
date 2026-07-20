@@ -700,27 +700,29 @@ Plans:
 
 **Wave 1** *(parallel — no `files_modified` overlap)*
 
-- [ ] 28-01-PLAN.md — constitution-plane atomic commit: `contracts/harness/docs/doc-dependencies.schema.json` + hash rebaseline + docs_sync + contracts_index + both syrupy snapshots + blocking human ratification (DOCSUP-01)
-- [ ] 28-02-PLAN.md — `tools/docs_guard/` uv member scaffold, the phase's frozen public interface, and `digest.py`'s interleaved path+per-file-digest algorithm proven against a RED ambiguity table (DOCSUP-02)
-- [ ] 28-09-PLAN.md — close the ledger write-side self-green hole: `REVIEW_LEDGER_GLOBS` + `ReviewLedgerRefusal` at the adoption-apply choke point AND a `path_deny_globs` deny for the ordinary agent write path, with the registry provably still writable (DOCSUP-02, DOCSUP-03)
+- [x] 28-01-PLAN.md — constitution-plane atomic commit: `contracts/harness/docs/doc-dependencies.schema.json` + hash rebaseline + docs_sync + contracts_index + both syrupy snapshots + blocking human ratification (DOCSUP-01)
+- [x] 28-02-PLAN.md — `tools/docs_guard/` uv member scaffold, the phase's frozen public interface, and `digest.py`'s interleaved path+per-file-digest algorithm proven against a RED ambiguity table (DOCSUP-02)
+- [x] 28-09-PLAN.md — close the ledger write-side self-green hole: `REVIEW_LEDGER_GLOBS` + `ReviewLedgerRefusal` at the adoption-apply choke point AND a `path_deny_globs` deny for the ordinary agent write path, with the registry provably still writable (DOCSUP-02, DOCSUP-03)
 
 **Wave 2** *(parallel)*
 
-- [ ] 28-03-PLAN.md — `registry.py`: schema validation plus the five DOCSUP-01 rejections (path escape, duplicate id, empty required selector, derived/reference target, accepted-ADR policy), RED-confirmed against a shape-only validator (DOCSUP-01)
-- [ ] 28-04-PLAN.md — `ledger.py`: allowlisted committed shape, previous-committed retrieval, the disposition-coherence rule that defeats the paste-the-live-digest attack, the `first_seen-unratified` self-green closure, and the `binding_min` deletion ratchet; no writer anywhere in the module (DOCSUP-02, DOCSUP-03)
+- [x] 28-03-PLAN.md — `registry.py`: schema validation plus the five DOCSUP-01 rejections (path escape, duplicate id, empty required selector, derived/reference target, accepted-ADR policy), RED-confirmed against a shape-only validator (DOCSUP-01)
+- [x] 28-04-PLAN.md — `ledger.py`: allowlisted committed shape, previous-committed retrieval, the disposition-coherence rule that defeats the paste-the-live-digest attack, the `first_seen-unratified` self-green closure, and the `binding_min` deletion ratchet; no writer anywhere in the module (DOCSUP-02, DOCSUP-03)
 
 **Wave 3**
 
-- [ ] 28-05-PLAN.md — `guard.py` five-state first-match-wins classification + uncovered ratchet + contract-drift suppression, `impact.py` graph ids, `cli.py` report and 0/1/3 exit mapping (DOCSUP-03, DOCSUP-05)
+- [x] 28-05-PLAN.md — `guard.py` five-state first-match-wins classification + uncovered ratchet + contract-drift suppression, `impact.py` graph ids, `cli.py` report and 0/1/3 exit mapping (DOCSUP-03, DOCSUP-05)
 
 **Wave 4** *(parallel)*
 
-- [ ] 28-06-PLAN.md — `docs_staleness.py` derived queue + the conditional one-line droppable SessionStart pointer + `/refresh-memory` wiring and emitter round-trip, gated on the six named injector tests (DOCSUP-04, DOCSUP-05)
-- [ ] 28-07-PLAN.md — seed the core registry, PROPOSE the ledger for blocking human authorship (the agent is denied that write by 28-09), and add the separate `docs-guard` CI job joined to the fan-in gate (DOCSUP-01, DOCSUP-02, DOCSUP-03)
+- [x] 28-06-PLAN.md — `docs_staleness.py` derived queue + the conditional one-line droppable SessionStart pointer + `/refresh-memory` wiring and emitter round-trip, gated on the six named injector tests (DOCSUP-04, DOCSUP-05)
+- [x] 28-07-PLAN.md — seed the core registry, PROPOSE the ledger for blocking human authorship (the agent is denied that write by 28-09), and add the separate `docs-guard` CI job joined to the fan-in gate (DOCSUP-01, DOCSUP-02, DOCSUP-03)
 
 **Wave 5**
 
-- [ ] 28-08-PLAN.md — ADR-0010 (`Status: proposed`) recording the obligation model AND the docs-plane agent-authority boundary, the phase-closing full gate fan-in, and one blocking human ratification covering both the ADR and the seeded dispositions (DOCSUP-01..05)
+- [x] 28-08-PLAN.md — ADR-0010 (`Status: proposed`) recording the obligation model AND the docs-plane agent-authority boundary, the phase-closing full gate fan-in, and one blocking human ratification covering both the ADR and the seeded dispositions (DOCSUP-01..05)
+
+**Progress:** 9 of 9 plans landed. All machinery green in the 28-08 fan-in (full suite, root/example/workspace drift, emit round-trip, stale-derived, GEN-04, golden, whitespace). **Phase status: BLOCKED ON HUMAN** — two ratifications remain and neither may be performed by an agent: (a) authoring `docs/.docs-review-ledger.toml` from the byte-exact proposal in `28-07-SUMMARY.md` (28-07 Task 2), and (b) flipping ADR-0010 from `proposed` to `accepted` (28-08 Task 3). `python -m tools.docs_guard` exits 1 until (a) lands — the designed pre-ratification state.
 
 ### Phase 29: Docs Drive Loop + Adoption Integration + Closeout *(v2.3 C)*
 
