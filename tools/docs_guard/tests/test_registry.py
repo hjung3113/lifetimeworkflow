@@ -27,7 +27,6 @@ from __future__ import annotations
 
 import builtins
 from pathlib import Path
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -216,7 +215,7 @@ def registry_root(tmp_path: Path) -> Path:
 
 
 def _write_registry(root: Path, text: str | None) -> Path:
-    """Materialize a case's registry under ``root`` and return its path (unwritten when ``None``)."""
+    """Materialize a case's registry under ``root``, returning its path (unwritten if ``None``)."""
     path = root / "docs" / "doc-dependencies.toml"
     if text is not None:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -276,24 +275,45 @@ def test_class_a_reads_nothing_outside_root(
     """
     path = _write_registry(registry_root, toml_text)
     outside = registry_root.parent / "outside"
+    read_paths: list[str] = []
 
-    def _outside_calls(spy: MagicMock) -> list:
-        return [call for call in spy.call_args_list if str(outside) in str(call.args[:1])]
+    # Hand-rolled wrappers, not ``MagicMock(wraps=...)``: patching an UNBOUND method on ``Path``
+    # with a mock drops ``self``, so the spy itself would fail rather than observe anything.
+    original_open = builtins.open
+    original_path_open = Path.open
+    original_read_bytes = Path.read_bytes
+    original_read_text = Path.read_text
 
-    open_spy = MagicMock(wraps=builtins.open)
-    read_bytes_spy = MagicMock(wraps=Path.read_bytes)
-    read_text_spy = MagicMock(wraps=Path.read_text)
-    monkeypatch.setattr(builtins, "open", open_spy)
-    monkeypatch.setattr(Path, "read_bytes", read_bytes_spy)
-    monkeypatch.setattr(Path, "read_text", read_text_spy)
+    def spy_open(file, *args, **kwargs):
+        read_paths.append(str(file))
+        return original_open(file, *args, **kwargs)
+
+    def spy_path_open(self, *args, **kwargs):
+        read_paths.append(str(self))
+        return original_path_open(self, *args, **kwargs)
+
+    def spy_read_bytes(self, *args, **kwargs):
+        read_paths.append(str(self))
+        return original_read_bytes(self, *args, **kwargs)
+
+    def spy_read_text(self, *args, **kwargs):
+        read_paths.append(str(self))
+        return original_read_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "open", spy_open)
+    monkeypatch.setattr(Path, "open", spy_path_open)
+    monkeypatch.setattr(Path, "read_bytes", spy_read_bytes)
+    monkeypatch.setattr(Path, "read_text", spy_read_text)
 
     with pytest.raises(registry.RegistryError):
         registry.load_registry(path=path, root=registry_root)
 
-    assert _outside_calls(open_spy) == []
-    assert _outside_calls(read_bytes_spy) == []
-    assert _outside_calls(read_text_spy) == []
-    assert "etc/passwd" not in str(open_spy.call_args_list)
+    monkeypatch.undo()
+    assert [read for read in read_paths if str(outside) in read] == []
+    assert [read for read in read_paths if "etc/passwd" in read] == []
+    # The registry file itself IS legitimately read — a spy that observed nothing at all would
+    # pass vacuously and prove nothing about the escaping path.
+    assert str(path) in read_paths
 
 
 def test_duplicate_id_diagnostic_is_deterministically_sorted(registry_root: Path):
