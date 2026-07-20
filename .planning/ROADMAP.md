@@ -649,7 +649,7 @@ Plans:
 **Wave 1** *(parallel — no file overlap)*
 
 - [x] 27.1-01-PLAN.md — CR-01/CR-02/WR-01 + symlink-read defense: `refuse_unsafe_destination` choke point wired into `apply_disposition`, locked/symlink-safe `_apply_marker_merge` (ADOPT-05)
-- [ ] 27.1-02-PLAN.md — CR-03/WR-02/WR-04: `check_valid` wired into `_cmd_apply` (exit 4), `--repo-root` flag, apply-time manifest schema re-validation, `check_valid` never raises (ADOPT-05, ADOPT-06)
+- [x] 27.1-02-PLAN.md — CR-03/WR-02/WR-04: `check_valid` wired into `_cmd_apply` (exit 4), `--repo-root` flag, apply-time manifest schema re-validation, `check_valid` never raises (ADOPT-05, ADOPT-06)
 
 **Wave 2** *(blocked on 27.1-01, 27.1-02)*
 
