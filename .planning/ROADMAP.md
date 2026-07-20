@@ -675,6 +675,14 @@ Plans:
 
 **Out of scope:** `tools/hooks/secret_scan.py:44-47` pattern-list hardcoding (carried forward unchanged from 26.2/27.1). No new adoption features — robustness only.
 
+**Plans:** 2 plans (1 wave)
+Plans:
+
+**Wave 1** *(parallel — no `files_modified` overlap)*
+
+- [ ] 27.2-01-PLAN.md — WR-05 directory-shaped destination refusal at the `refuse_unsafe_destination` choke point + WR-06 `check_valid` never raises on a corrupted `approval.json`, both preceded by a RED-confirmed adversarial-input table (ADOPT-05, ADOPT-06)
+- [ ] 27.2-02-PLAN.md — WR-07 concurrency-test rewrite: observed mutual exclusion + a `flock`-as-no-op negative control proving the test detects the control's removal (ADOPT-05)
+
 ### Phase 28: Human-Docs Registry, Guard, Derived Queue *(v2.3 C)*
 
 **Goal:** semantic 정확성을 주장하거나 derived 생성기와 경쟁하지 않고 사람-문서 review 의무를 정확히 탐지·surface한다.
