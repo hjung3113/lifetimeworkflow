@@ -400,6 +400,41 @@ def test_exit_three_on_invalid_ledger(docs_repo: Path, capsys) -> None:
     assert "zz-leak-canary-zz" not in captured.err, "ledger CONTENT leaked into the diagnostic"
 
 
+def test_config_error_in_impact_cannot_escape_the_exit_contract(
+    docs_repo: Path, capsys, monkeypatch
+) -> None:
+    """WR-03 adversarial row: the 0/1/3 contract must hold when the GRAPH config is broken.
+
+    ``render()`` calls ``impact_ids(entry["sources"])`` with ``cfg=None`` for every binding, which
+    reaches ``effective_relationships(None)`` and ``compile_graph(None)`` — both read the live
+    ``harness/project.toml`` and both raise ``ValueError`` on a malformed or self-contradictory
+    config (e.g. one contract claimed by two authorities). Only ``classify()`` used to sit inside
+    the try, so that raise surfaced as a raw traceback and an UNDOCUMENTED exit code out of the CI
+    job. The stub reproduces exactly that raise at exactly that call site.
+
+    ``impact.py``'s NEVER-FABRICATE posture already establishes that an EMPTY impact list is the
+    correct degraded answer, so the report degrades and keeps its documented code.
+    """
+    target = "docs/how-to/one.md"
+    _write(docs_repo, target, "v1\n")
+    _commit(docs_repo, "seed target")
+    _write(docs_repo, REG_REL, _binding_toml(id="how-to-one", sources=_ONE, target=target))
+
+    def exploding_impact(sources, cfg=None):
+        raise ValueError("harness/project.toml: contract 'widget' is claimed by two authorities")
+
+    monkeypatch.setattr(cli, "impact_ids", exploding_impact)
+
+    code = cli.main(_argv(docs_repo))
+
+    assert code in (0, 1, 3), f"exit {code} is outside the pinned 0/1/3 contract"
+    assert code == 1, "the binding is STALE_REQUIRED, so the documented code is 1"
+    captured = capsys.readouterr()
+    assert "Traceback" not in captured.err + captured.out
+    assert "impact" in captured.err.lower(), "the degradation must be stated, not silent"
+    assert cli._NO_IMPACT in captured.out + captured.err
+
+
 def test_missing_registry_is_exit_zero_not_three(docs_repo: Path) -> None:
     """A MISSING registry is exit 0 with zero bindings (plan 28-07 seeds it), never invalid."""
     assert cli.main(_argv(docs_repo)) == 0

@@ -14,6 +14,11 @@ and the disposition vocabulary spelled below, so both are pinned here rather tha
  2     argparse's stdlib usage error. NEVER produced deliberately.
 ===== ==================================================================================
 
+Nothing else may escape that table. In particular the graph-impact computation — which reads the
+live ``harness/project.toml`` and raises on a malformed or self-contradictory config — is run
+inside :func:`main` behind a containment that degrades to an EMPTY impact map and says so on
+stderr, rather than letting a config error out as a traceback and an undocumented code (WR-03).
+
 Two things this report deliberately does NOT do:
 
 **It never restates contract-drift or golden.** Those gates are LEADING and authoritative (D-13),
@@ -216,7 +221,24 @@ def main(argv: list[str] | None = None) -> int:
         print(f"docs-guard: registry/ledger invalid — {error}", file=sys.stderr)
         return 3
 
-    out, err = render(result)
+    # The graph impact is computed HERE, not inside `render`, and its failure is contained: both
+    # `effective_relationships(None)` and `compile_graph(None)` read the live `harness/project.toml`
+    # and raise on a malformed or self-contradictory config (one contract claimed by two
+    # authorities). Left inside `render` that raise escaped `main` as a traceback and an
+    # UNDOCUMENTED exit code — the exact failure mode the exit table above forbids. Degrading to an
+    # EMPTY impact map is the already-established correct answer (`impact.py`'s NEVER FABRICATE
+    # posture): an unmappable impact set is empty, never invented. The degradation is STATED on
+    # stderr, never silent — a report that quietly drops a column teaches the wrong confidence.
+    try:
+        impact = {entry["id"]: impact_ids(entry["sources"]) for entry in result["bindings"]}
+    except Exception as error:  # noqa: BLE001 — same posture as guard.py's drift-gate degradation
+        impact = {entry["id"]: [] for entry in result["bindings"]}
+        print(
+            f"docs-guard: graph impact unavailable, reporting no impact ids — {error}",
+            file=sys.stderr,
+        )
+
+    out, err = render(result, impact)
     for line in out:
         print(line)
     for line in err:
