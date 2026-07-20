@@ -653,7 +653,7 @@ Plans:
 
 **Wave 2** *(blocked on 27.1-01, 27.1-02)*
 
-- [ ] 27.1-03-PLAN.md — WR-03/SC-4: `manifest.schema.json` `destination`/`path` pattern constraint, hash rebaseline + both derived-plane artifacts, blocking human-ratification checkpoint, SC-5 seven-finding disposition table (ADOPT-05, ADOPT-06)
+- [x] 27.1-03-PLAN.md — WR-03/SC-4: `manifest.schema.json` `destination`/`path` pattern constraint, hash rebaseline + both derived-plane artifacts, blocking human-ratification checkpoint, SC-5 seven-finding disposition table (ADOPT-05, ADOPT-06)
 
 ### Phase 28: Human-Docs Registry, Guard, Derived Queue *(v2.3 C)*
 

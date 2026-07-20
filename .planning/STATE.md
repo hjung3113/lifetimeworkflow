@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: A)*
-status: executing
-stopped_at: Completed 27.1-01-PLAN.md
-last_updated: "2026-07-20T18:40:54.573Z"
+status: verifying
+stopped_at: Completed 27.1-03-PLAN.md
+last_updated: "2026-07-20T19:07:10.786Z"
 last_activity: 2026-07-20
 progress:
   total_phases: 9
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 27
-  completed_plans: 26
-  percent: 96
+  completed_plans: 27
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 
 Phase: 27.1 (adoption-safety-path-normalization-bypass-apply-mode-confine) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-20
 
 ## Performance Metrics
@@ -141,6 +141,7 @@ Last activity: 2026-07-20
 | Phase 27 P06 | 55min | 3 tasks | 12 files |
 | Phase 27.1 P01 | 4min | 2 tasks | 4 files |
 | Phase 27.1 P02 | 35min | 2 tasks | 4 files |
+| Phase 27.1 P03 | 25min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -254,6 +255,7 @@ Recent decisions affecting current work:
 - [Phase ?]: Case-insensitive constitution-glob matching is always-on, never sys.platform-conditioned
 - [Phase ?]: _apply_marker_merge lock sidecar files (.NAME.lock) are expected persistent operational state, mirroring batch.py
 - [Phase 27.1]: D-02 upheld: check_valid's repo_root in _cmd_apply is the harness's own checkout root via a required --repo-root flag mirroring promote's, never the brownfield target.
+- [Phase 27.1]: 27.1-03: manifest.schema.json destination/path pattern constraint (WR-03) landed with hash rebaseline + both derived-plane artifacts in one human-ratified commit (f6be4f1); SC-5 seven-finding (plus symlink-read) disposition table closes Phase 27.1.
 
 ### Pending Todos
 
@@ -294,8 +296,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-20T18:40:15.283Z
-Stopped at: Completed 27.1-01-PLAN.md
+Last session: 2026-07-20T19:07:10.780Z
+Stopped at: Completed 27.1-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
