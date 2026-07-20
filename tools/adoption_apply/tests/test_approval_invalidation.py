@@ -8,6 +8,7 @@ Pitfall 2), a positive control, and the SC-1 full resume+invalidation compositio
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
@@ -302,11 +303,18 @@ def test_check_valid_never_raises_on_corrupt_approval(
     task_dir: Path,
     git_repo: Path,
     monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
     case_name: str,
     corruption: object,
 ) -> None:
     """WR-06: every corruption row returns False. Asserted on the return value directly — a
-    `pytest.raises` inversion would not distinguish "returned False" from "raised"."""
+    `pytest.raises` inversion would not distinguish "returned False" from "raised".
+
+    AD-03: also asserts the no-content-leak property `approval.py`'s comment claims. A corrupted
+    approval may hold arbitrary bytes, so the diagnostic must name the batch, the path and the
+    exception CLASS and nothing else — pinned here by matching stderr against the exact one-line
+    shape rather than by searching for individual payload substrings.
+    """
     monkeypatch.setenv(HUMAN_TOKEN_ENV, _HUMAN_VALUE)
     batch_id = _seed_batch(task_dir, git_repo)
     promote(
@@ -331,7 +339,18 @@ def test_check_valid_never_raises_on_corrupt_approval(
             produced if isinstance(produced, bytes) else json.dumps(produced).encode("utf-8")
         )
 
+    capsys.readouterr()
     assert check_valid(task_dir, batch_id, git_repo) is False, case_name
+
+    # AD-03: a row that returns False by simple inequality prints nothing; a row that trips the
+    # corruption handler must print exactly one line of the fixed shape, with no payload bytes.
+    stderr = capsys.readouterr().err
+    if stderr:
+        expected = re.compile(
+            rf"^approval\.json unusable for batch '{re.escape(batch_id)}' "
+            rf"at {re.escape(str(approval_path))}: [A-Za-z]+\n$"
+        )
+        assert expected.match(stderr), f"{case_name}: diagnostic leaked content — {stderr!r}"
 
 
 def test_check_valid_lets_a_task_control_defect_surface(
