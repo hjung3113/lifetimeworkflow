@@ -539,10 +539,14 @@ def test_forbidden_key_is_rejected(tmp_path: Path, case: str, extra: str, token:
 
 def test_forbidden_model_identifier_as_a_value(tmp_path: Path) -> None:
     """A model identifier as a VALUE, not a key — a careless paste is the realistic vector, and the
-    ledger is the one new committed artifact of this phase."""
+    ledger is the one new committed artifact of this phase.
+
+    The fixture is a SHAPE-matching but NON-EXISTENT id. CLAUDE.md's non-negotiable ("no model
+    identifier in a repo artifact") reads on the artifact, not on the author's intent, so a live id
+    committed as executable test data violates it exactly as a live id in a comment would."""
     path = tmp_path / "ledger.toml"
     path.write_text(
-        _ledger_text([("claude-opus-4-8", "a" * 64, "b" * 64, "reviewed-no-change")]),
+        _ledger_text([("claude-opus-0-0", "a" * 64, "b" * 64, "reviewed-no-change")]),
         encoding="utf-8",
     )
 
