@@ -38,6 +38,7 @@ content — in fact it never calls ``subprocess`` at all.
 
 from __future__ import annotations
 
+import fcntl
 import json
 import os
 import tempfile
@@ -71,6 +72,12 @@ class ConcurrentDriftError(ValueError):
     time."""
 
 
+class SymlinkRefusal(ValueError):
+    """Raised when ``_apply_marker_merge``'s read side would have to follow a symlink at the
+    destination itself — refuses reading through it rather than silently splicing in whatever
+    content the symlink points at (including constitution-plane content)."""
+
+
 def refuse_if_constitution(destination: str) -> None:
     """Raise :class:`ConstitutionRefusal` iff ``destination`` is on the constitution plane.
 
@@ -97,6 +104,43 @@ def refuse_if_outside_root(path: str | Path, root: str | Path) -> None:
         raise PathEscapeError(
             f"'{path}' resolves outside the confined root '{root}' — refusing the write."
         )
+
+
+def refuse_unsafe_destination(destination: str, target_root: str | Path) -> Path:
+    """Single choke point: resolve, confine, and classify ``destination`` before any write.
+
+    Closes CR-01 (constitution-plane bypass via ``.``/``..``/case-variant spellings and symlinks)
+    and CR-02 (absolute-path confinement bypass — ``Path(target_root) / destination`` silently
+    discards ``target_root`` when ``destination`` is absolute) by funnelling every apply-mode
+    destination through ONE function, rather than trusting every call site to remember both
+    ``refuse_if_constitution`` and ``refuse_if_outside_root`` independently.
+
+    1. Structural pre-check, before any filesystem call: reject an absolute ``destination`` or one
+       containing a literal ``..`` path segment (not a substring — ``foo/bar..json`` is fine).
+    2. Resolve ``target_root / destination`` (``strict=False`` — the target need not exist yet).
+    3. Confine via the existing, unchanged ``refuse_if_outside_root``.
+    4. Classify the resolved, target-root-relative path against ``CONSTITUTION_GLOBS`` — always
+       case-insensitively (lowering the candidate only, never the globs; RESEARCH verified
+       ``Path.resolve()`` does not itself canonicalize case) — by reusing the unchanged, thin
+       ``refuse_if_constitution`` wrapper (D-01).
+
+    Returns the resolved ``target_path`` so callers reuse it instead of recomputing
+    ``Path(target_root) / destination`` (which is exactly the bug this function closes).
+    """
+    segments = destination.replace("\\", "/").split("/")
+    if Path(destination).is_absolute() or any(segment == ".." for segment in segments):
+        raise PathEscapeError(
+            f"'{destination}' is absolute or contains a '..' path segment — refusing the write "
+            "before any resolution or filesystem call."
+        )
+
+    target_path = (Path(target_root) / destination).resolve(strict=False)
+    refuse_if_outside_root(target_path, target_root)
+
+    relative = target_path.relative_to(Path(target_root).resolve()).as_posix()
+    refuse_if_constitution(relative.lower())
+
+    return target_path
 
 
 def atomic_create(path: Path, payload: bytes) -> None:
@@ -163,6 +207,28 @@ def _atomic_replace(path: Path, payload: bytes) -> None:
         raise
 
 
+def _read_target_no_symlink(path: Path) -> str | None:
+    """Read ``path`` as UTF-8 text, refusing to follow a symlink at the destination itself.
+
+    Returns ``None`` when ``path`` does not exist yet (same semantics as the previous
+    ``target_path.is_file()`` guard). Raises :class:`SymlinkRefusal` when the final path component
+    is a symlink (``os.O_NOFOLLOW`` -> ``OSError`` — verified live in RESEARCH to raise
+    ``errno 62``/"Too many levels of symbolic links" on this platform) — defense in depth against
+    constitution-plane (or any other) content being silently read through a symlinked
+    marker-capable target and spliced into a foreign file.
+    """
+    try:
+        descriptor = os.open(str(path), os.O_RDONLY | os.O_NOFOLLOW)
+    except FileNotFoundError:
+        return None
+    except OSError as exc:
+        raise SymlinkRefusal(
+            f"refusing to read through a symlink at marker-merge destination '{path}'"
+        ) from exc
+    with os.fdopen(descriptor, "rb") as handle:
+        return handle.read().decode("utf-8")
+
+
 def _apply_marker_merge(destination: str, target_path: Path, block_body: str = "") -> None:
     """Merge the harness-managed content into ``target_path`` and publish it atomically.
 
@@ -170,19 +236,29 @@ def _apply_marker_merge(destination: str, target_path: Path, block_body: str = "
     marker-capable destination (``AGENTS.md``/``CLAUDE.md``) goes through ``splice_managed_block``
     with ``block_body`` as the fenced content. Both merge functions are already documented
     idempotent — a second call with the same input reproduces the same output byte-for-byte.
+
+    The entire read-merge-write sequence is guarded by an ``fcntl.flock``-held sidecar lock
+    (mirroring ``batch.py::update_status``'s exact idiom) so two concurrent ``apply`` invocations
+    against the same target never interleave (WR-01). The read itself refuses to follow a symlink
+    at the destination (``_read_target_no_symlink``).
     """
     target_path = Path(target_path)
-    if destination.endswith(".json"):
-        existing: dict[str, Any] = (
-            json.loads(target_path.read_text(encoding="utf-8")) if target_path.is_file() else {}
-        )
-        merged = merge_settings(existing)
-        payload = (json.dumps(merged, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
-    else:
-        existing_text = target_path.read_text(encoding="utf-8") if target_path.is_file() else ""
-        merged_text = splice_managed_block(existing_text, block_body)
-        payload = merged_text.encode("utf-8")
-    _atomic_replace(target_path, payload)
+    lock_path = target_path.with_name(f".{target_path.name}.lock")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+b") as lock:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        if destination.endswith(".json"):
+            existing_text = _read_target_no_symlink(target_path)
+            existing: dict[str, Any] = (
+                json.loads(existing_text) if existing_text is not None else {}
+            )
+            merged = merge_settings(existing)
+            payload = (json.dumps(merged, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+        else:
+            existing_text = _read_target_no_symlink(target_path)
+            merged_text = splice_managed_block(existing_text or "", block_body)
+            payload = merged_text.encode("utf-8")
+        _atomic_replace(target_path, payload)
 
 
 def apply_disposition(
@@ -194,23 +270,23 @@ def apply_disposition(
 ) -> dict[str, str]:
     """Dispatch a single ``dispositionRecord`` to the correct writer, or refuse the write.
 
-    ``refuse_if_constitution(destination)`` is called FIRST — before any branch, before any
-    ``open()``/``os.link()``/``os.replace()`` call — so a constitution-plane destination is refused
-    regardless of its disposition value. Returns ``{"destination", "disposition", "status"}`` where
-    ``status`` is ``"applied"`` or ``"skipped"``. Raises on any refusal/error rather than returning
-    a refused status — the caller (``apply_manifest``) decides which exceptions to bucket vs.
-    propagate.
+    ``refuse_unsafe_destination(destination, target_root)`` is called FIRST — before any branch,
+    before any ``open()``/``os.link()``/``os.replace()`` call — so a destination that is absolute,
+    ``..``-escaping, or resolves onto the constitution plane (including via a symlink or a
+    case-variant spelling) is refused regardless of its disposition value (CR-01/CR-02). The
+    returned, already-resolved ``target_path`` is reused by every branch below instead of being
+    recomputed. Returns ``{"destination", "disposition", "status"}`` where ``status`` is
+    ``"applied"`` or ``"skipped"``. Raises on any refusal/error rather than returning a refused
+    status — the caller (``apply_manifest``) decides which exceptions to bucket vs. propagate.
     """
     destination = record["destination"]
     disposition_value = record["disposition"]
-    refuse_if_constitution(destination)
+    target_path = refuse_unsafe_destination(destination, target_root)
 
     if disposition_value not in DISPOSITION_ENUM:
         raise UnknownDispositionError(
             f"unknown disposition {disposition_value!r} for destination {destination!r}"
         )
-
-    target_path = Path(target_root) / destination
 
     if disposition_value == "create":
         if target_path.exists():

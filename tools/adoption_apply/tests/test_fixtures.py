@@ -62,12 +62,18 @@ def _copy_fixture(name: str, tmp_path: Path) -> Path:
 
 
 def _snapshot(target: Path) -> dict[str, bytes]:
-    """``{repo-relative path: bytes}`` over every file under ``target`` — used to prove
-    idempotence (byte-identical second apply) and cross-member isolation."""
+    """``{repo-relative path: bytes}`` over every managed-content file under ``target`` — used to
+    prove idempotence (byte-identical second apply) and cross-member isolation.
+
+    Excludes ``*.lock`` sidecar files: ``_apply_marker_merge``'s ``fcntl.flock``-guarded
+    read-modify-write (WR-01, 27.1-01) persists a sidecar lock file next to its target, mirroring
+    ``batch.py``'s own lock-file convention — this is expected operational state, not managed
+    content, and its mere presence must not fail an idempotence/isolation comparison.
+    """
     return {
         p.relative_to(target).as_posix(): p.read_bytes()
         for p in sorted(target.rglob("*"))
-        if p.is_file()
+        if p.is_file() and not p.name.endswith(".lock")
     }
 
 
