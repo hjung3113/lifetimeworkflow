@@ -580,6 +580,7 @@ Plans:
 **Goal:** `secret_patterns[1]` behaves as its contract documents, and the branch this repo actually edits is actually tested. Phase 26.1 shipped a pattern documented as requiring "upper+lower+digit charset diversity", but both consumers (`tools/adoption_scan/scan.py:113`, `tools/evidence/capture.py:100`) compile the registry with `re.IGNORECASE`, and Python folds case *inside character classes* — so `(?=[^\s]*[A-Z])` and `(?=[^\s]*[a-z])` both collapse to "contains any letter" and the documented diversity constraint is not enforced at runtime. Separately, 26.1's new digit requirement drops secret shapes the pre-26.1 pattern caught (digit-less passphrases, pure-alpha tokens) — a genuine false-negative regression that also reaches `capture.py`'s evidence-redaction path, where a miss writes a secret in plaintext into a committed evidence artifact. This phase reconciles documented semantics with runtime behavior, decides the digit question deliberately rather than incidentally, and closes the test blind spot that let both ship green.
 **Requirements**: ADOPT-01
 **Depends on:** Phase 26.1
+**Plans:** 1 plan
 
 **Why urgent:** Same reason 26.1 was urgent — Phase 27 broadens secret classification to arbitrary brownfield targets. But the direction of risk here is the opposite of 26.1's: this is a *false-negative* seam feeding a redaction gate, so shipping 27 on top of it risks a real secret reaching a committed artifact rather than merely over-excluding a file. In a contract-first repo, a contract whose documented semantics do not match its runtime behavior is also a defect in its own right, independent of severity.
 
@@ -593,7 +594,7 @@ Plans:
 **Out of scope (documented seam, not this phase):** `tools/hooks/secret_scan.py:44-47` hardcodes its own near-twin pattern list rather than reading the contract. That single-source-of-truth divergence is real and grows with every registry change, but converging it is a code change with its own blast radius — it belongs in a dedicated phase or ADR.
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 26.2 to break down)
+- [ ] 26.2-01-PLAN.md — CR-01 (?-i:...) case-scoping fix + WR-01 2-of-3 charset relaxation (D-01), data-based tests against both live consumer functions with branch attribution (SC-1/SC-2/SC-3), CR-01/WR-01/IN-01/IN-02 disposition table, blocking human-ratification checkpoint (SC-4/SC-5)
 
 ### Phase 27: Task-Local Adoption Workflow + Safe Application *(v2.3 B)*
 
