@@ -8,7 +8,10 @@ apply-cycle integration proof (one of each of the 6 dispositions in a single man
 from __future__ import annotations
 
 import concurrent.futures
+import fcntl
 import os
+import threading
+import time
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -259,20 +262,50 @@ def test_traversal_destination_refused_zero_writes(tmp_path, monkeypatch):
     assert replace_spy.call_count == 0
 
 
-# --- WR-01 (27.1-01) — locked _apply_marker_merge read-modify-write -----------------------------
+# --- WR-01 (27.1-01) / WR-07 (27.2-02) — locked _apply_marker_merge read-modify-write -----------
+
+# NEVER assert the existence of the `.lock` sidecar here. That was the WR-07 defect: it is created
+# by `lock_path.open("a+b")` alone, so the assertion held even with the `fcntl.flock` line deleted —
+# a control tested only by an input the control already handles. The observed-mutual-exclusion
+# helpers below replace it, and `test_concurrency_control_removal_is_detected` proves they go red.
+
+_DWELL_SECONDS = 0.2
+_BARRIER_TIMEOUT_SECONDS = 5.0
 
 
-def test_concurrent_marker_merge_does_not_lose_writes(tmp_path):
-    """Two racing `_apply_marker_merge` calls against the same target must not interleave.
+def _observe_marker_merge_concurrency(tmp_path, monkeypatch, *, barrier=None):
+    """Run two racing `_apply_marker_merge` calls with the critical section instrumented.
 
-    Structural proof (preferred over a timing-dependent interleaving assertion, per the plan's own
-    guidance that thread-timing races are not reliably reproducible): after both calls complete,
-    the sidecar lock file must exist, proving the `fcntl.flock` critical section is actually in the
-    code path. Also asserts the final file is byte-consistent (parses without truncation/corruption)
-    regardless of which of the two racers wins.
+    `apply.splice_managed_block` is called INSIDE the flock-held critical section, between the read
+    and the atomic write, so wrapping it makes any overlap of the two racers directly observable.
+    The wrapper delegates to the real function, so the merge semantics under test are unchanged.
+
+    Returns `(max_concurrent, events, final_text)`.
     """
     target = tmp_path / "AGENTS.md"
     target.write_text("# Repo agents\n\nSome human prose.\n", encoding="utf-8")
+
+    real_splice = apply.splice_managed_block
+    counter_lock = threading.Lock()
+    state = {"inside": 0, "max_concurrent": 0}
+    events: list[tuple[str, str]] = []
+
+    def _instrumented(existing_text, block_body):
+        tag = block_body.strip().splitlines()[0]
+        if barrier is not None:
+            # Force — not merely encourage — the overlap the negative control needs to observe.
+            barrier.wait(timeout=_BARRIER_TIMEOUT_SECONDS)
+        with counter_lock:
+            state["inside"] += 1
+            state["max_concurrent"] = max(state["max_concurrent"], state["inside"])
+            events.append(("enter", tag))
+        time.sleep(_DWELL_SECONDS)
+        with counter_lock:
+            events.append(("exit", tag))
+            state["inside"] -= 1
+        return real_splice(existing_text, block_body)
+
+    monkeypatch.setattr(apply, "splice_managed_block", _instrumented)
 
     def _merge(block_body):
         apply._apply_marker_merge("AGENTS.md", target, block_body=block_body)
@@ -282,19 +315,96 @@ def test_concurrent_marker_merge_does_not_lose_writes(tmp_path):
             pool.submit(_merge, "## Block A\n\nContent A.\n"),
             pool.submit(_merge, "## Block B\n\nContent B.\n"),
         ]
-        for future in concurrent.futures.as_completed(futures):
+        for future in futures:
             future.result()
 
-    lock_path = target.with_name(f".{target.name}.lock")
-    assert lock_path.is_file()
+    return state["max_concurrent"], events, target.read_text(encoding="utf-8")
 
-    final_text = target.read_text(encoding="utf-8")
+
+def _assert_mutual_exclusion(max_concurrent, events):
+    """The one pass/fail judgement for WR-01, shared by the positive test AND the negative control.
+
+    Keeping it in one helper is what makes "the negative control proves the positive test goes red"
+    literally true rather than merely analogous — both call THESE assertions.
+    """
+    assert max_concurrent == 1, (
+        f"marker-merge critical section was entered concurrently: max_concurrent="
+        f"{max_concurrent} (expected 1); events={events}"
+    )
+    expected = "enter"
+    for kind, tag in events:
+        assert kind == expected, (
+            f"marker-merge enter/exit events interleaved: got {kind!r} for {tag!r} where "
+            f"{expected!r} was expected; events={events}"
+        )
+        expected = "exit" if kind == "enter" else "enter"
+    assert expected == "enter", f"unterminated critical section; events={events}"
+
+
+def test_concurrent_marker_merge_does_not_lose_writes(tmp_path, monkeypatch):
+    """Two racing `_apply_marker_merge` calls against the same target must not interleave.
+
+    Asserts OBSERVED mutual exclusion of the critical section — never the existence of the `.lock`
+    sidecar, which plain `open()` creates independently of `fcntl.flock` (WR-07). The second racer
+    is blocked on the lock for the whole dwell, so `max_concurrent` stays 1 and the enter/exit
+    event stream strictly alternates. No barrier here — a barrier would deadlock against the very
+    lock under test.
+    """
+    max_concurrent, events, final_text = _observe_marker_merge_concurrency(tmp_path, monkeypatch)
+
+    _assert_mutual_exclusion(max_concurrent, events)
+
     assert "Some human prose." in final_text
     # Exactly one of the two racers' content survives (last-writer-wins under the lock) — the
     # important property is that the file is NOT corrupted/interleaved/truncated.
     assert final_text.count("## Block A") <= 1
     assert final_text.count("## Block B") <= 1
     assert final_text.count("## Block A") + final_text.count("## Block B") >= 1
+
+
+def test_concurrency_control_removal_is_detected(tmp_path, monkeypatch, capsys):
+    """Negative control: with `fcntl.flock` neutered, the POSITIVE test's own assertion goes red.
+
+    This is the executable form of "would this test still pass if the fix were reverted?" —
+    deleting the real `fcntl.flock` line to prove a test is a one-off local mutation that does not
+    repeat in CI, which is exactly why WR-07 survived review. Here the control is removed by
+    patching the module attribute, the same observer runs, and `_assert_mutual_exclusion` — the
+    very helper the positive test calls — is required to raise. Observing `max_concurrent == 2`
+    alone would prove only that the instrumentation can see overlap, not that the guarding
+    assertion fails; the `pytest.raises(AssertionError)` below is the load-bearing assertion.
+    """
+    monkeypatch.setattr(apply.fcntl, "flock", lambda *args, **kwargs: None)
+
+    max_concurrent, events, _ = _observe_marker_merge_concurrency(
+        tmp_path, monkeypatch, barrier=threading.Barrier(2)
+    )
+
+    with pytest.raises(AssertionError) as excinfo:
+        _assert_mutual_exclusion(max_concurrent, events)
+
+    # Recorded for the plan SUMMARY's RED evidence (SC-4) — this text IS the failure the positive
+    # test would emit if someone deleted the `fcntl.flock` call from `_apply_marker_merge`.
+    print(f"WR-07 negative control observed max_concurrent={max_concurrent}")
+    print(f"WR-07 negative control AssertionError: {excinfo.value}")
+
+
+def test_marker_merge_acquires_exclusive_flock(tmp_path, monkeypatch):
+    """Structural spy: the `fcntl.flock(..., LOCK_EX)` call site still exists, whatever the timing.
+
+    Closes the "the flock line was silently deleted" gap directly — the timing-based tests above
+    could in principle be satisfied by an unrelated serialization, this cannot.
+    """
+    target = tmp_path / "AGENTS.md"
+    target.write_text("# Repo agents\n\nSome human prose.\n", encoding="utf-8")
+
+    real_flock = fcntl.flock
+    flock_spy = MagicMock(wraps=real_flock)
+    monkeypatch.setattr(apply.fcntl, "flock", flock_spy)
+
+    apply._apply_marker_merge("AGENTS.md", target, block_body="## Block A\n\nContent A.\n")
+
+    assert flock_spy.call_count >= 1
+    assert any(call.args[1] == fcntl.LOCK_EX for call in flock_spy.call_args_list)
 
 
 def test_marker_merge_refuses_symlink_read(tmp_path):
