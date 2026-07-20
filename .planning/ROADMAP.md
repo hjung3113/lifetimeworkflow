@@ -575,6 +575,26 @@ Plans:
 Plans:
 - [x] 26.1-01-PLAN.md — tighten secret_patterns[1] (SC-1/SC-2 red-green + 7-shape regression tests), rebaseline contract hash + derived plane, blocking human-ratification checkpoint (SC-3/SC-4)
 
+### Phase 26.2: Secret-Pattern Semantics — IGNORECASE collapse + digit-less false negatives (INSERTED)
+
+**Goal:** `secret_patterns[1]` behaves as its contract documents, and the branch this repo actually edits is actually tested. Phase 26.1 shipped a pattern documented as requiring "upper+lower+digit charset diversity", but both consumers (`tools/adoption_scan/scan.py:113`, `tools/evidence/capture.py:100`) compile the registry with `re.IGNORECASE`, and Python folds case *inside character classes* — so `(?=[^\s]*[A-Z])` and `(?=[^\s]*[a-z])` both collapse to "contains any letter" and the documented diversity constraint is not enforced at runtime. Separately, 26.1's new digit requirement drops secret shapes the pre-26.1 pattern caught (digit-less passphrases, pure-alpha tokens) — a genuine false-negative regression that also reaches `capture.py`'s evidence-redaction path, where a miss writes a secret in plaintext into a committed evidence artifact. This phase reconciles documented semantics with runtime behavior, decides the digit question deliberately rather than incidentally, and closes the test blind spot that let both ship green.
+**Requirements**: ADOPT-01
+**Depends on:** Phase 26.1
+
+**Why urgent:** Same reason 26.1 was urgent — Phase 27 broadens secret classification to arbitrary brownfield targets. But the direction of risk here is the opposite of 26.1's: this is a *false-negative* seam feeding a redaction gate, so shipping 27 on top of it risks a real secret reaching a committed artifact rather than merely over-excluding a file. In a contract-first repo, a contract whose documented semantics do not match its runtime behavior is also a defect in its own right, independent of severity.
+
+**Success criteria:**
+- SC-1: The contract's documented charset semantics and its runtime behavior agree under the `re.IGNORECASE` compilation both consumers actually use — proven by data-based cases asserted against the pattern *as compiled by the consumers*, not against a standalone case-sensitive compile.
+- SC-2: The digit-presence requirement is either removed, or retained with an explicit written rationale plus data-based cases pinning which digit-less shapes are deliberately out of scope. Whichever way it goes, `password:` followed by a long digit-less passphrase has a recorded, intentional disposition.
+- SC-3: `tools/adoption_scan/tests/` gains data-based cases that exercise the `secret_patterns[1]` alternation branch directly. 26.1's 7-shape suite passes entirely through *other* branches, which is precisely why CR-01 and WR-01 shipped green — a test that cannot fail when the changed element is wrong is not coverage.
+- SC-4: `26.1-REVIEW.md` findings CR-01, WR-01, IN-01, IN-02 each reach a recorded disposition (fixed / accepted-with-rationale), none silently dropped.
+- SC-5: Contract edit paired with hash rebaseline, derived-plane regeneration, and human ratification in one atomic commit; `tools.contract_drift.drift` clean at that commit.
+
+**Out of scope (documented seam, not this phase):** `tools/hooks/secret_scan.py:44-47` hardcodes its own near-twin pattern list rather than reading the contract. That single-source-of-truth divergence is real and grows with every registry change, but converging it is a code change with its own blast radius — it belongs in a dedicated phase or ADR.
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 26.2 to break down)
+
 ### Phase 27: Task-Local Adoption Workflow + Safe Application *(v2.3 B)*
 
 **Goal:** 결정론적 plan을 출하된 task control plane 위에서 재개 가능·사람 ratified·비파괴 adoption 워크플로로 전환한다.
