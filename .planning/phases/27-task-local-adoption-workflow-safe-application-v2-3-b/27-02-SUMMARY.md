@@ -118,3 +118,11 @@ None - no external service configuration required.
 ---
 *Phase: 27-task-local-adoption-workflow-safe-application-v2-3-b*
 *Completed: 2026-07-21*
+
+## Self-Check: PASSED
+
+- FOUND: contracts/harness/adoption/approval.schema.json
+- FOUND: docs/reference/approval.md
+- FOUND: .planning/phases/27-task-local-adoption-workflow-safe-application-v2-3-b/27-02-SUMMARY.md
+- FOUND: commit c5e91bb (feat(27-02): author approval.schema.json...)
+- FOUND: commit a7ad43b (docs(27-02): add plan execution summary...)
