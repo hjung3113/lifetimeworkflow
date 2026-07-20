@@ -695,6 +695,32 @@ Plans:
 3. `BROKEN`·`STALE_REQUIRED` fail·`STALE_ADVISORY` warn·uncovered 비-회귀가 강제된다.
 4. 파생 큐가 결정론적으로 재생성되고 injector byte-identity + ~4,000자 예산 테스트가 green이며 `/docs-sync`·`/refresh-memory`·stale-derived 의미가 불변이다.
 
+**Plans:** 8 plans (5 waves)
+Plans:
+
+**Wave 1** *(parallel — no `files_modified` overlap)*
+
+- [ ] 28-01-PLAN.md — constitution-plane atomic commit: `contracts/harness/docs/doc-dependencies.schema.json` + hash rebaseline + docs_sync + contracts_index + both syrupy snapshots + blocking human ratification (DOCSUP-01)
+- [ ] 28-02-PLAN.md — `tools/docs_guard/` uv member scaffold, the phase's frozen public interface, and `digest.py`'s interleaved path+per-file-digest algorithm proven against a RED ambiguity table (DOCSUP-02)
+
+**Wave 2** *(parallel)*
+
+- [ ] 28-03-PLAN.md — `registry.py`: schema validation plus the five DOCSUP-01 rejections (path escape, duplicate id, empty required selector, derived/reference target, accepted-ADR policy), RED-confirmed against a shape-only validator (DOCSUP-01)
+- [ ] 28-04-PLAN.md — `ledger.py`: allowlisted committed shape, previous-committed retrieval, and the disposition-coherence rule that defeats the paste-the-live-digest attack; no writer anywhere in the module (DOCSUP-02, DOCSUP-03)
+
+**Wave 3**
+
+- [ ] 28-05-PLAN.md — `guard.py` five-state first-match-wins classification + uncovered ratchet + contract-drift suppression, `impact.py` graph ids, `cli.py` report and 0/1/3 exit mapping (DOCSUP-03, DOCSUP-05)
+
+**Wave 4** *(parallel)*
+
+- [ ] 28-06-PLAN.md — `docs_staleness.py` derived queue + the conditional one-line droppable SessionStart pointer + `/refresh-memory` wiring and emitter round-trip, gated on the six named injector tests (DOCSUP-04, DOCSUP-05)
+- [ ] 28-07-PLAN.md — seed the core registry and its content-bound ledger, and add the separate `docs-guard` CI job joined to the fan-in gate (DOCSUP-01, DOCSUP-02, DOCSUP-03)
+
+**Wave 5**
+
+- [ ] 28-08-PLAN.md — ADR-0010 (`Status: proposed`) recording the obligation model, the phase-closing full gate fan-in, and one blocking human ratification covering both the ADR and the seeded dispositions (DOCSUP-01..05)
+
 ### Phase 29: Docs Drive Loop + Adoption Integration + Closeout *(v2.3 C)*
 
 **Goal:** bounded 사람 대면 docs 워크플로를 추가하고 adoption seeding을 연결하며 세 테마를 전체 게이트 fan-in으로 닫는다.
