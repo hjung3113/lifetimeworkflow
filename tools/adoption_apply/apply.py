@@ -379,9 +379,20 @@ def apply_manifest(
     Iterates ``dispositions[]`` ONLY, sorted by destination for deterministic output ordering.
     ``ConstitutionRefusal`` is caught per-record and bucketed into ``"refused"`` — a single refused
     destination does not abort the rest of the apply cycle. Every other exception
-    (``ConcurrentDriftError``, ``UnknownDispositionError``, ``CollisionError``, a malformed
-    marker-capable destination) propagates immediately — those are integrity faults, not routine
-    per-destination outcomes.
+    (``ConcurrentDriftError``, ``UnknownDispositionError``, ``CollisionError``,
+    ``PathEscapeError``, a malformed marker-capable destination) propagates immediately.
+
+    **Partial application is therefore reachable** (AD-05): a record that raises after earlier
+    records have been written leaves those earlier writes committed. Because records are applied in
+    sorted-destination order the surviving state is deterministic, but it is not a transaction —
+    the caller re-runs the batch after fixing the manifest, relying on ``atomic_create``'s
+    collision check rather than on rollback. WR-05 widened what raises ``PathEscapeError`` from
+    "hostile spelling" to "a plausible manifest row asking for a directory", so this is now
+    reachable from an honest mistake, not only from an attack.
+
+    Note (AD-04): the CLI maps ``CollisionError`` and ``ConcurrentDriftError`` to the same exit 1
+    as a routine path refusal, so the integrity-fault-vs-refusal distinction drawn here is NOT
+    preserved in the process exit code — only in the exception type seen by an in-process caller.
 
     Returns ``{"applied": [...], "skipped": [...], "refused": [...]}`` — destinations only.
     """
