@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: A)*
 status: executing
-stopped_at: Completed 27-06-PLAN.md
-last_updated: "2026-07-20T18:24:22.997Z"
-last_activity: 2026-07-20 -- Phase 27.1 planning complete
+stopped_at: Completed 27.1-01-PLAN.md
+last_updated: "2026-07-20T18:33:04.827Z"
+last_activity: 2026-07-20
 progress:
   total_phases: 9
   completed_phases: 6
   total_plans: 27
-  completed_plans: 24
-  percent: 89
+  completed_plans: 25
+  percent: 93
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-18)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 27 — task-local-adoption-workflow-safe-application-v2-3-b
+**Current focus:** Phase 27.1 — adoption-safety-path-normalization-bypass-apply-mode-confine
 
 ## Current Position
 
-Phase: 27 (task-local-adoption-workflow-safe-application-v2-3-b) — EXECUTING
-Plan: 6 of 6
+Phase: 27.1 (adoption-safety-path-normalization-bypass-apply-mode-confine) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-07-20 -- Phase 27.1 planning complete
+Last activity: 2026-07-20
 
 ## Performance Metrics
 
@@ -139,6 +139,7 @@ Last activity: 2026-07-20 -- Phase 27.1 planning complete
 | Phase 27 P04 | 12min | 2 tasks | 2 files |
 | Phase 27 P05 | 45min | 2 tasks | 17 files |
 | Phase 27 P06 | 55min | 3 tasks | 12 files |
+| Phase 27.1 P01 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -248,6 +249,9 @@ Recent decisions affecting current work:
 - [Phase 27]: cli.py apply sources create/marker-merge payload content from the harness checkout's own files at each destination (CR-01), never from the scanned target
 - [Phase 27]: Added JSON Schema validation of inventory/plan/manifest before writing in cli.py draft (Rule 2)
 - [Phase 27]: promote's --decisions flag is optional; a missing decisions list still refuses via approval.promote's own check
+- [Phase ?]: D-01: refuse_if_constitution kept unchanged as thin wrapper; refuse_unsafe_destination is the new choke point apply_disposition calls
+- [Phase ?]: Case-insensitive constitution-glob matching is always-on, never sys.platform-conditioned
+- [Phase ?]: _apply_marker_merge lock sidecar files (.NAME.lock) are expected persistent operational state, mirroring batch.py
 
 ### Pending Todos
 
@@ -288,8 +292,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-20T16:49:11.257Z
-Stopped at: Completed 27-06-PLAN.md
+Last session: 2026-07-20T18:33:04.818Z
+Stopped at: Completed 27.1-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
