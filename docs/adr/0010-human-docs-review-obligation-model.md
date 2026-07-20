@@ -135,9 +135,26 @@ This boundary is enforced in **three layers, and no single layer suffices**:
 
 | Layer | Surface it covers | Why the others cannot cover it |
 |-------|-------------------|-------------------------------|
-| `path_deny_globs` entry for `docs/.docs-review-ledger.toml` (`harness/permission-matrix.json`, read through the CONFIG-02 resolver) | the ordinary agent `Write`/`Edit` tool path | a plain tool call never enters the adoption-apply module |
+| `tools/hooks/ledger_guard.py` — a PreToolUse(`Write`\|`Edit`) deny gate owning `REVIEW_LEDGER_GLOBS` and feeding it to the CONFIG-02 resolver, wired into both runtimes by `tools.harness_emit` | the ordinary agent `Write`/`Edit` tool path | a plain tool call never enters the adoption-apply module |
 | `refuse_unsafe_destination` → `ReviewLedgerRefusal` (`tools/adoption_apply/apply.py`) | the adoption-apply write path, i.e. Phase 29's `/adopt` writing through a manifest | the permission matrix is not consulted inside a bare `python -m tools.adoption_apply apply` invocation |
 | `first_seen-unratified` (`tools/docs_guard/ledger.py`) | the **greenness** side | a write that slips past both write-side layers still cannot produce green |
+
+**The `path_deny_globs` matrix row is DATA, not the layer.** `harness/permission-matrix.json` still
+carries `docs/.docs-review-ledger.toml`, and `tools.harness_emit.permissions` strips
+`path_deny_globs` from the emitted `opencode.json` as a resolver-only key — so the matrix entry has
+no enforcement of its own and never did. Every *other* entry in that list is separately re-declared
+inside a hook (`contract_guard.CONSTITUTION_GLOBS`, `secret_scan.SECRET_PATH_GLOBS`), and the ledger
+entry is now no exception: `tools/hooks/ledger_guard.py` is its enforcer and its single
+authoritative home for `REVIEW_LEDGER_GLOBS`, which `tools/adoption_apply/apply.py` IMPORTS rather
+than re-declaring. This is recorded explicitly because a layer that is only a data row is a claimed
+control that does not exist — worse than a missing layer, because it reads as covered. The test that
+proves layer 1 drives the hook's `decide()` and asserts a deny; a test that only re-reads the matrix
+proves the file's content, not the enforcement.
+
+`ledger_guard` honours **no** opt-out — not `GOLDEN_APPROVE_HUMAN`, and not the ADR-0007
+`HARNESS_DEV_BYPASS` local-dev path. Both are constitution-plane opt-outs; the ledger is a different
+domain, and a human authors a disposition outside an agent session, so there is nothing for a
+session-scoped opt-out to express.
 
 The write side uses its **OWN constant** (`REVIEW_LEDGER_GLOBS`) and its **OWN exception type**
 (`ReviewLedgerRefusal`, explicitly not a subclass of `ConstitutionRefusal`) rather than widening
@@ -376,8 +393,10 @@ append-only.
 - Registry data + ledger: `docs/doc-dependencies.toml`, `docs/.docs-review-ledger.toml`.
 - Implementation: `tools/docs_guard/{digest,registry,ledger,guard,impact,cli}.py`; derived queue
   `tools/memory_regen/docs_staleness.py`; SessionStart pointer in `tools/memory_regen/inject.py`.
-- Write-side boundary: `tools/adoption_apply/apply.py` (`REVIEW_LEDGER_GLOBS`, `ReviewLedgerRefusal`)
-  and `harness/permission-matrix.json` (`path_deny_globs`).
+- Write-side boundary: `tools/hooks/ledger_guard.py` (layer 1 — owns `REVIEW_LEDGER_GLOBS`; opencode
+  twin `harness/plugins/ledger-guard.ts`; wired by `tools/harness_emit/merge.py`),
+  `tools/adoption_apply/apply.py` (layer 2 — `ReviewLedgerRefusal`), and
+  `harness/permission-matrix.json` (`path_deny_globs`, the authored data the hook must agree with).
 - Precedents deliberately diverged from or preserved: `tools/adoption_apply/approval.py:57-63`
   (concatenation digest), `tools/contract_drift/drift.py:129-147` (git-show shape),
   `tools/hooks/contract_guard.py:16-20,44` (disjoint domains, constitution deny).

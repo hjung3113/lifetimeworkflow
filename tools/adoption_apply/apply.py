@@ -50,7 +50,6 @@ from tools.harness_emit.merge import merge_settings, splice_managed_block
 from tools.harness_perms import resolve_path
 from tools.hooks.contract_guard import CONSTITUTION_GLOBS
 
-
 # The human-review ledger — a THIRD path-deny domain, disjoint from the constitution plane
 # (``CONSTITUTION_GLOBS``) and from the secret plane (``SECRET_PATH_GLOBS``). The boundary it
 # encodes: agents may PROPOSE registry rows in ``docs/doc-dependencies.toml`` (DOCSUP-07), but the
@@ -59,7 +58,11 @@ from tools.hooks.contract_guard import CONSTITUTION_GLOBS
 # doing so would force ``GOLDEN_APPROVE_HUMAN`` onto every ordinary human review commit and break
 # the provably-disjoint-domain invariant documented at ``contract_guard.py:16-20``. Ratified
 # record: ADR-0010.
-REVIEW_LEDGER_GLOBS = ["docs/.docs-review-ledger.toml"]
+#
+# IMPORTED as DATA from the PreToolUse gate that owns it (ADR-0010 clause 3b layer 1), never
+# re-declared — exactly as ``CONSTITUTION_GLOBS`` is imported above. Two copies of a deny list is
+# two chances for the tool path and the apply path to disagree about what the ledger is.
+from tools.hooks.ledger_guard import REVIEW_LEDGER_GLOBS
 
 
 class ConstitutionRefusal(ValueError):

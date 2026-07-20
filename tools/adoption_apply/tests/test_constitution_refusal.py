@@ -14,7 +14,16 @@ from unittest.mock import MagicMock
 import pytest
 
 from tools.adoption_apply import apply
+from tools.harness_emit import merge as merge_module
+from tools.harness_emit.merge import merge_settings
 from tools.harness_perms import load_matrix, resolve_path
+from tools.hooks import ledger_guard
+from tools.hooks._stdin import _REPO_ROOT as REPO_ROOT
+from tools.hooks.contract_guard import CONSTITUTION_GLOBS
+from tools.hooks.secret_scan import SECRET_PATH_GLOBS
+
+# The ledger's repo-relative spelling — the path all three deny domains are probed against.
+LEDGER_REL = "docs/.docs-review-ledger.toml"
 
 # CR-01 adversarial destinations: all four resolve onto the constitution plane
 # (contracts/) but only the first was caught by the raw-string, case-sensitive,
@@ -456,15 +465,112 @@ def test_review_ledger_adjacent_destination_stays_allowed(tmp_path, destination)
     assert Path(tmp_path).resolve() in result.parents, destination
 
 
-def test_review_ledger_permission_matrix_denies_the_ledger():
-    """The `apply.py` choke point guards only the adoption-APPLY write path; a plain agent
-    `Write`/`Edit` never reaches it. `path_deny_globs` is what covers the ordinary tool path.
+def test_review_ledger_ordinary_tool_path_is_denied_by_a_real_hook(tmp_path):
+    """CR-02: ADR-0010 clause 3b layer 1 must be an ENFORCER, not a data row.
 
-    Asserted through the resolver the hooks actually consume, not by re-reading the JSON — a test
-    that re-reads the file proves the file's content, not the enforcement.
+    The `apply.py` choke point guards only the adoption-APPLY write path; a plain agent
+    `Write`/`Edit` never reaches it. The previous version of this test asserted
+    `resolve_path(load_matrix()["path_deny_globs"], "<the ledger>") == "deny"` — but at that time
+    NO hook consumed `path_deny_globs`, and the emitter strips the key from `opencode.json` as
+    resolver-only, so the assertion reduced to "the glob I just added matches the path I just
+    added". It could not fail while the control was absent, which is the definition of vacuous
+    coverage.
+
+    This drives the hook's own `decide()` with an ABSOLUTE path, the shape the runtime actually
+    passes, and asserts a deny decision. Delete the hook and this fails.
+    """
+    ledger = Path(REPO_ROOT) / "docs" / ".docs-review-ledger.toml"
+
+    decision = ledger_guard.decide(str(ledger))
+
+    assert decision is not None, "a plain agent Write to the review ledger was not denied"
+    output = decision["hookSpecificOutput"]
+    assert output["permissionDecision"] == "deny"
+    reason = output["permissionDecisionReason"]
+    assert "GOLDEN_APPROVE_HUMAN" in reason, (
+        "the deny must say the constitution token does NOT apply"
+    )
+    assert "doc-dependencies.toml" in reason, "the deny must name the agent-writable alternative"
+
+
+def test_review_ledger_hook_honours_no_token_and_no_dev_bypass(monkeypatch):
+    """No token legitimizes an agent-authored disposition, so neither opt-out may open this gate.
+
+    `GOLDEN_APPROVE_HUMAN` authorizes CONSTITUTION writes and `HARNESS_DEV_BYPASS` is the ADR-0007
+    local-dev opt-out for that same plane. The ledger is a DIFFERENT domain — the docs plane's
+    greenness authority — so both must be inert here (ADR-0010 clause 3b).
+    """
+    monkeypatch.setenv("GOLDEN_APPROVE_HUMAN", "yes-i-am-a-human")
+    monkeypatch.setenv("HARNESS_DEV_BYPASS", "1")
+
+    ledger = Path(REPO_ROOT) / "docs" / ".docs-review-ledger.toml"
+
+    assert ledger_guard.decide(str(ledger)) is not None
+
+
+def test_review_ledger_hook_leaves_the_registry_and_neighbours_writable():
+    """Narrowness control — DENY must not spill onto the agent-writable registry (DOCSUP-07)."""
+    for destination in LEDGER_ADJACENT_ALLOWED:
+        assert ledger_guard.decide(str(Path(REPO_ROOT) / destination)) is None, destination
+
+
+def test_review_ledger_hook_is_a_disjoint_third_domain():
+    """`contract_guard.py:16-20`'s provably-disjoint-domain invariant must survive a third domain.
+
+    Pairwise disjointness is asserted on the GLOBS, not on prose: the ledger domain may not overlap
+    the constitution plane (which honours `GOLDEN_APPROVE_HUMAN`) or the secret plane.
+    """
+    assert resolve_path(CONSTITUTION_GLOBS, LEDGER_REL) != "deny"
+    assert resolve_path(SECRET_PATH_GLOBS, LEDGER_REL) != "deny"
+    assert resolve_path(ledger_guard.REVIEW_LEDGER_GLOBS, LEDGER_REL) == "deny"
+    for glob_list, name in ((CONSTITUTION_GLOBS, "constitution"), (SECRET_PATH_GLOBS, "secret")):
+        for probe in (
+            "contracts/w.schema.json",
+            "docs/adr/0099-x.md",
+            "golden/b.verified",
+            "a.env",
+        ):
+            if resolve_path(glob_list, probe) == "deny":
+                assert resolve_path(ledger_guard.REVIEW_LEDGER_GLOBS, probe) != "deny", (
+                    f"the ledger domain overlaps the {name} domain at {probe}"
+                )
+
+
+def test_review_ledger_hook_is_wired_into_the_emitted_pretooluse_set():
+    """The wiring, not just the module. A gate nobody invokes is the CR-02 defect in a new place.
+
+    Asserted through `merge_settings` — the function the emitter actually runs to produce
+    `.claude/settings.json` — so deleting the hook group from `HARNESS_HOOK_GROUPS` fails this,
+    and so does dropping its signature (which would make the group unowned and unplaced).
+    """
+    merged = merge_settings({"hooks": {}})
+
+    commands = [
+        hook["command"] for group in merged["hooks"]["PreToolUse"] for hook in group["hooks"]
+    ]
+    assert any("tools.hooks.ledger_guard" in command for command in commands), (
+        "ledger_guard is not wired into the emitted PreToolUse set — ADR-0010's layer 1 is inert"
+    )
+    matchers = [
+        group["matcher"]
+        for group in merged["hooks"]["PreToolUse"]
+        if any("tools.hooks.ledger_guard" in hook["command"] for hook in group["hooks"])
+    ]
+    assert matchers == ["Write|Edit"], "layer 1 covers the ordinary Write/Edit tool path"
+    assert "tools.hooks.ledger_guard" in merge_module.HARNESS_SIGNATURES
+
+
+def test_review_ledger_permission_matrix_still_carries_the_glob():
+    """The matrix row remains, and it must AGREE with the hook that now enforces it.
+
+    Kept as a consistency check between the two, never as the proof of enforcement — that is
+    `test_review_ledger_ordinary_tool_path_is_denied_by_a_real_hook`.
     """
     deny_globs = load_matrix()["path_deny_globs"]
-    assert resolve_path(deny_globs, "docs/.docs-review-ledger.toml") == "deny"
+    assert resolve_path(deny_globs, LEDGER_REL) == "deny"
+    assert set(ledger_guard.REVIEW_LEDGER_GLOBS) <= set(deny_globs), (
+        "the hook denies a path the authored matrix does not — the two have drifted"
+    )
 
 
 def test_review_ledger_permission_matrix_keeps_registry_writable():

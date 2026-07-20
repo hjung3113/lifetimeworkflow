@@ -519,7 +519,8 @@ def classify(
     # evaluates it against the PREVIOUS COMMITTED ledger, which is the authoritative threshold
     # (28-04) — reading it from the working tree would let the same edit that deletes a binding
     # also lower the bar. `uncovered_max` above is read the SAME way for the same reason; the two
-    # ratchets are symmetric. Its findings are folded above; re-deriving it here would double-report.
+    # ratchets are symmetric. Its findings are folded above; re-deriving it here would double-
+    # report.
     # It is NOT redundant with the uncovered ratchet: a binding whose target lies outside
     # HUMAN_CORPUS can be deleted without moving the uncovered count by a single unit, so that
     # deletion would otherwise be entirely unguarded (`binding_deleted_outside_corpus`).
