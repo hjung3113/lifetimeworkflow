@@ -1,9 +1,10 @@
 # DERIVED — do not hand-edit (tools/memory_regen/contracts_index.py)
 
-Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reuses tools.contract_hash + tools.contract_drift). 13 contract(s).
+Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reuses tools.contract_hash + tools.contract_drift). 14 contract(s).
 
 | contract | kind | owner | hash | drift |
 | --- | --- | --- | --- | --- |
+| contracts/harness/adoption/approval.schema.json | other | TBD | 7a1683f9c4ec | clean |
 | contracts/harness/adoption/inventory.schema.json | other | TBD | 34a31944180f | clean |
 | contracts/harness/adoption/manifest.schema.json | other | TBD | d84c1f62653a | clean |
 | contracts/harness/adoption/plan.schema.json | other | TBD | 5c4f2db58648 | clean |
