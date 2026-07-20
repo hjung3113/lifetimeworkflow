@@ -172,6 +172,28 @@ out of this plan's scope. Flagged for plan 28-08's ADR-0010 to record.
 - Task 2 step 4 explicitly says "Add it to `cli.py::_cmd_apply`'s except tuple as well". Followed
   the action text; the frontmatter list is the incomplete one.
 
+**4. [Repo-state — cross-plan commit contamination] Commit `05c06f4` carries seven files this plan does not own.**
+- **Found:** flagged by the team lead after the fact.
+- **What landed:** `05c06f4` contains `tools/adoption_apply/tests/test_constitution_refusal.py`
+  (this plan's) **plus** `exec-28-01`'s entire constitution-plane set —
+  `contracts/harness/docs/doc-dependencies.schema.json`, `contracts/.hashes/manifest.json`,
+  `docs/reference/doc-dependencies.md`, `.memory/derived/contracts-index.md`,
+  `tools/docs_sync/tests/test_docs_sync_determinism.py` and its `.ambr`, and
+  `tools/memory_regen/tests/__snapshots__/test_contracts_index.ambr`.
+- **Mechanism (matters for the fix):** the `git add` was already pathspec-limited to the single
+  test file. The contamination came from the **index**, not from the add — `exec-28-01` had staged
+  those seven files in the shared working tree and not yet committed, and `git commit` publishes
+  the whole index regardless of what the immediately preceding `add` named. A pathspec-limited
+  `git add` therefore does **not** prevent this; only `git commit -- <pathspec>` (or inspecting
+  `git diff --cached --name-only` before committing) does.
+- **Ruling (team lead):** history stays as-is. All seven landed atomically, so `drift` /
+  `stale-derived` can never observe a half-landed constitution plane; un-mixing would need a
+  destructive `reset --soft` racy against live siblings. Not attempted.
+- **Remediation applied for the rest of this run:** every subsequent commit used an explicit
+  pathspec. Verified clean: `246fcac` = 3 files (`apply.py`, `cli.py`, `permission-matrix.json`),
+  `7879292` = 1 file (this SUMMARY). Only `05c06f4` is mixed.
+- **Cross-referenced in** `28-01-SUMMARY.md`.
+
 ## Deferred Issues (out of scope — logged, not fixed)
 
 - `harness/skills/gate-model/SKILL.md:17-21` says "These are the `path_deny_globs` in
