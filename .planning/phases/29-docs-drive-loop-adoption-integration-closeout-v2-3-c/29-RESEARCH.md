@@ -702,7 +702,7 @@ from tools.hooks.contract_guard import CONSTITUTION_GLOBS
 
 ---
 
-## Open Questions
+## Open Questions *(RESOLVED — all four adopted at `29-CONTEXT.md:28`; see D-09, D-12, D-07, D-08)*
 
 1. **Are `AGENTS.md` / `CLAUDE.md` in the seed set?**
    - Known: both carry an emitter-owned HARNESS-MANAGED fence (`AGENTS.md:98-107`, spliced at `generate.py:441-449`); an edit inside it is reverted and reds `emit-drift`.
