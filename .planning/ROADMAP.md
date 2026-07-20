@@ -716,7 +716,7 @@ Plans:
 **Wave 4** *(parallel)*
 
 - [ ] 28-06-PLAN.md — `docs_staleness.py` derived queue + the conditional one-line droppable SessionStart pointer + `/refresh-memory` wiring and emitter round-trip, gated on the six named injector tests (DOCSUP-04, DOCSUP-05)
-- [ ] 28-07-PLAN.md — seed the core registry and its content-bound ledger, and add the separate `docs-guard` CI job joined to the fan-in gate (DOCSUP-01, DOCSUP-02, DOCSUP-03)
+- [ ] 28-07-PLAN.md — seed the core registry, PROPOSE the ledger for blocking human authorship (the agent is denied that write by 28-09), and add the separate `docs-guard` CI job joined to the fan-in gate (DOCSUP-01, DOCSUP-02, DOCSUP-03)
 
 **Wave 5**
 
