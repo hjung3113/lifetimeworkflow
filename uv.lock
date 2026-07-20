@@ -15,6 +15,7 @@ members = [
     "logparser-contract-drift",
     "logparser-contract-graph",
     "logparser-contract-hash",
+    "logparser-docs-guard",
     "logparser-docs-sync",
     "logparser-golden-runner",
     "logparser-harness",
@@ -284,6 +285,11 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [{ name = "rfc8785", specifier = "==0.1.4" }]
+
+[[package]]
+name = "logparser-docs-guard"
+version = "0.0.0"
+source = { virtual = "tools/docs_guard" }
 
 [[package]]
 name = "logparser-docs-sync"
