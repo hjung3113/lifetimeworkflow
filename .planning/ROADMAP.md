@@ -56,6 +56,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 25: Graph Compiler, Queries, Conductor, Proof** *(v2.3 A)* - One domain-neutral compiler + `harness_lint` consistency gate, cycle-safe affected-set queries, `/pipeline`·`pipeline-map`·orchestrator generalized (no new command/persona), non-linear generic + cross-repo fixtures, and a human-ratified topology ADR. (TOPO-04, TOPO-05, TOPO-06, TOPO-07) (completed 2026-07-19)
 - [x] **Phase 26: Deterministic Brownfield Inventory + Mapping** *(v2.3 B)* - A read-only deterministic repo inventory, an evidence-classified (observed/inferred/unknown) mapping plan in the TOPO vocabulary, and a complete destination/disposition manifest — agent-free, fully CI-testable. (ADOPT-01, ADOPT-02, ADOPT-03) (completed 2026-07-19)
 - [x] **Phase 27: Task-Local Adoption Workflow + Safe Application** *(v2.3 B)* - Adoption as a `.workflow/tasks/` task (reusing v2.2 CAS/evidence/HANDOFF), structural constitution-write refusal + idempotent collision-safe apply, hash-bound human ratification, and the `/adopt` skill+command with three fixtures (one §4.3–4.6-dirty). (ADOPT-04, ADOPT-05, ADOPT-06, ADOPT-07) (completed 2026-07-20)
+- [ ] **Phase 27.2: Adoption Apply Robustness** *(v2.3 B, INSERTED)* - Close the three findings left open by 27.1-REVIEW.md: clean refusal for directory-shaped destinations (WR-05), `check_valid` never raises on a corrupted `approval.json` (WR-06), and a concurrency test that actually fails when `fcntl.flock()` is removed (WR-07). (ADOPT-05, ADOPT-06)
 - [ ] **Phase 28: Human-Docs Registry, Guard, Derived Queue** *(v2.3 C)* - Central `docs/doc-dependencies.toml` + review ledger, deterministic fingerprints, the FRESH/BROKEN/STALE_REQUIRED/STALE_ADVISORY/UNCOVERED gate, ADR-safe dispositions, and a derived staleness queue + conditional SessionStart pointer. (DOCSUP-01, DOCSUP-02, DOCSUP-03, DOCSUP-04, DOCSUP-05)
 - [ ] **Phase 29: Docs Drive Loop + Adoption Integration + Closeout** *(v2.3 C)* - The `/docs-update` drive loop (ADR/reference/derived excluded), reviewed seeding of the high-risk corpus + adoption-runbook bindings, and the milestone closeout against the full existing gate fan-in. (DOCSUP-06, DOCSUP-07)
 
@@ -654,6 +655,25 @@ Plans:
 **Wave 2** *(blocked on 27.1-01, 27.1-02)*
 
 - [x] 27.1-03-PLAN.md — WR-03/SC-4: `manifest.schema.json` `destination`/`path` pattern constraint, hash rebaseline + both derived-plane artifacts, blocking human-ratification checkpoint, SC-5 seven-finding disposition table (ADOPT-05, ADOPT-06)
+
+### Phase 27.2: Adoption Apply Robustness — clean-refusal completeness + regression-detecting concurrency test (INSERTED)
+
+**Goal:** The three findings left open by `27.1-REVIEW.md` are closed, and the test that guards the concurrency control actually fails when that control is removed. All three fail closed, so none is a security bypass — but each one contradicts a property Phase 27.1 explicitly claimed. WR-05: `destination: "."` satisfies both the `manifest.schema.json` `pattern` and `refuse_unsafe_destination`, then reaches `apply_disposition` and raises an unhandled `IsADirectoryError` that `cli.py`'s `except` tuple does not name — a traceback where 27.1 promised a clean refusal with a stable exit code. WR-06: WR-02's "never raises" fix wrapped only `_recompute_draft_hash`; the `json.loads` at `approval.py:181` and the subsequent `stored[...]` subscripts sit outside the `try`, so a corrupted or truncated `approval.json` still propagates an uncaught exception out of `check_valid`. WR-07: the WR-01 concurrency test asserts only that the `.lock` sidecar exists — which plain `open()` creates — so deleting the `fcntl.flock()` call leaves the test green. That is the exact defect class (a control tested only by the input spelling it already handles) that produced Phase 27's three Criticals and 27.1's own review findings; closing it is the highest-priority item here despite carrying the lowest severity label.
+
+**Requirements**: ADOPT-05, ADOPT-06
+
+**Depends on:** Phase 27.1
+
+**Why now (before Phase 28):** Phase 29 wires `/adopt` into a reviewed seeding loop, so the docs-supervision layer inherits whatever confidence the adoption write path has. Two of these three are unhandled-exception paths on that write path; the third means the repo has no working regression detector for the file-locking control that makes concurrent apply safe. Closing them before 28/29 keeps the adoption spine trustworthy at the point the docs loop starts depending on it, rather than compounding the debt.
+
+**Success criteria:**
+- SC-1: WR-05 closed — `destination: "."` (and the other directory-shaped destinations reachable through the schema `pattern`: `"./"`, an existing directory path, a path whose parent chain resolves to a directory) each produce a clean refusal with the documented exit code and a diagnostic naming the destination, never a traceback. Proven by data-based cases that fail against the current code for the stated reason.
+- SC-2: WR-06 closed — `check_valid` returns a structured invalid result, never raises, for a corrupted `approval.json` across the full corruption table: invalid JSON, valid JSON that is not an object, an object missing each required key in turn, and a key present with the wrong type. Each case is a row in a data-based table, not a single smoke test.
+- SC-3: WR-07 closed — the concurrency test detects removal of the control. The gate is explicit and recorded: with the `fcntl.flock()` call deleted (or its module patched to a no-op), the test FAILS; restored, it passes. The assertion is about observed mutual exclusion, not about the `.lock` file existing.
+- SC-4: The anti-pattern is closed structurally, not just for these three: for every control-shaped fix in this phase the adversarial-input table is authored BEFORE the fix, and the RED run is recorded in the plan summary with the failure message it produced. A fix whose test cannot be shown failing against pre-fix code is not accepted as done.
+- SC-5: Full gate stays green at the closing commit — `uv run pytest` (non-example suite), `tools.contract_drift.drift` clean, emit round-trip clean, `harness_lint` GEN-04 green. No contract-plane edit is expected; if one becomes necessary it is paired with hash rebaseline, derived regeneration, and human ratification in one atomic commit.
+
+**Out of scope:** `tools/hooks/secret_scan.py:44-47` pattern-list hardcoding (carried forward unchanged from 26.2/27.1). No new adoption features — robustness only.
 
 ### Phase 28: Human-Docs Registry, Guard, Derived Queue *(v2.3 C)*
 
