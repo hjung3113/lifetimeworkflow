@@ -16,6 +16,12 @@ Two halves, in a load-bearing ORDER:
    empty selector on a ``required`` row, a derived/generated ``target``, and the accepted-ADR edit
    policy (D-09).
 
+A sixth rejection — control characters and the markdown table separator in a selector — IS
+expressible in the schema and is stated there as a ``pattern``. It is restated here, and ordered
+BEFORE the shape pass, only so the operator sees a named-character message instead of a printed
+regex: the reason a path may not contain a newline (a forged row in the derived queue, and an
+inflated SessionStart count) is not recoverable from the regex.
+
 Determinism: every diagnostic list is ``sorted()`` before it reaches a message — a gate whose
 message ordering varies across runs is not reviewable (``tools/harness_config/loader.py:149-160``).
 
@@ -25,8 +31,10 @@ plan 28-05 owns ``cli.py``.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import tomllib
+from collections.abc import Iterable
 from pathlib import Path
 from typing import NamedTuple
 
@@ -61,8 +69,59 @@ __all__ = [
     "DERIVED_GLOBS",
     "Binding",
     "RegistryError",
+    "identity_digest",
+    "identity_digests",
     "load_registry",
 ]
+
+
+def identity_digest(sources: Iterable[str], target: str) -> str:
+    """A digest over a binding's MEANING — its sorted source selectors and its target.
+
+    This hashes SELECTORS, never file content: it answers "what is this binding ABOUT", the
+    question a ledger row's ratification is actually a statement about. Content lives in the
+    ``source_digest`` / ``target_digest`` pair and moves on every ordinary edit; the identity moves
+    only when someone repoints the binding.
+
+    Each field is prefixed with its own label and ``\\n``-terminated, so ``sources=["a"],
+    target="b"`` and ``sources=["b"], target="a"`` cannot collide. Sources are sorted, so a pure
+    reordering of the selector list is correctly NOT a repoint.
+    """
+    hasher = hashlib.sha256()
+    for selector in sorted(sources):
+        hasher.update(b"source\n")
+        hasher.update(selector.encode("utf-8"))
+        hasher.update(b"\n")
+    hasher.update(b"target\n")
+    hasher.update(target.encode("utf-8"))
+    hasher.update(b"\n")
+    return hasher.hexdigest()
+
+
+def identity_digests(document: dict | None) -> dict[str, str]:
+    """Index a PARSED registry document by binding id -> :func:`identity_digest`.
+
+    Deliberately LENIENT, mirroring ``ledger._previous_rows``: the caller feeds this the PREVIOUS
+    COMMITTED registry, which is history that already passed the gate once. Re-validating it here
+    would let a historical shape change fail a present-day review, so a malformed row is simply not
+    indexed rather than raising.
+    """
+    if document is None:
+        return {}
+    block = document.get("binding", [])
+    if not isinstance(block, list):
+        return {}
+    indexed: dict[str, str] = {}
+    for entry in block:
+        if not isinstance(entry, dict):
+            continue
+        rid, sources, target = entry.get("id"), entry.get("sources"), entry.get("target")
+        if not isinstance(rid, str) or not isinstance(target, str) or not isinstance(sources, list):
+            continue
+        if not all(isinstance(selector, str) for selector in sources):
+            continue
+        indexed[rid] = identity_digest(sources, target)
+    return indexed
 
 
 class Binding(NamedTuple):
@@ -110,6 +169,28 @@ def _reject_structural_escape(selector: str, label: str) -> str | None:
     return None
 
 
+def _reject_forbidden_characters(selector: str, label: str) -> str | None:
+    """Return a diagnostic iff ``selector`` carries a control character or the table separator.
+
+    The schema expresses the same rule as a ``pattern``, and that is the primary control. This is
+    restated here for the operator-facing MESSAGE: a raw jsonschema ``pattern`` failure prints the
+    regex, which teaches nothing about why a path may not contain a newline. The reason is
+    concrete — the registry is agent-writable by design (DOCSUP-07), and these values are
+    interpolated into the derived staleness queue's markdown table, whose row count the SessionStart
+    pointer reports, so a TOML multi-line basic string could forge queue rows and inflate that
+    count.
+
+    The offending character is reported by NAME, never echoed: a hostile registry may carry
+    arbitrary bytes and this diagnostic reaches the gate's output (T-28-14).
+    """
+    for char in selector:
+        if char == "|":
+            return f"{label} contains a forbidden character: '|' (markdown table separator)"
+        if ord(char) < 0x20 or ord(char) == 0x7F:
+            return f"{label} contains a forbidden control character: U+{ord(char):04X}"
+    return None
+
+
 def _adr_status(target_path: Path) -> str | None:
     """Return the ADR's ``- **Status:**`` value, or ``None`` when absent/unreadable.
 
@@ -152,7 +233,37 @@ def load_registry(
         # and the offending token only, not the file body.
         raise RegistryError(f"registry is not valid TOML: {path.name}: {error}") from error
 
-    # ── 2. SHAPE — the constitution-plane schema, ALL errors at once ────────────────────────────
+    # ── 2. FORBIDDEN CHARACTERS — ordered BEFORE the schema on purpose ─────────────────────────
+    # The schema carries the same rule as a ``pattern``, but a raw jsonschema pattern failure prints
+    # the REGEX, which teaches nothing about why a path may not contain a newline. Running the
+    # named-character scan first means the operator sees the actionable message; the schema remains
+    # the primary, machine-checkable statement of the constraint (WR-02). Access is defensive
+    # because shape has not been validated yet — a malformed row is left for step 3 to report.
+    forbidden: list[str] = []
+    for row in document.get("binding", []) if isinstance(document.get("binding"), list) else []:
+        if not isinstance(row, dict):
+            continue
+        rid = row.get("id")
+        label_id = rid if isinstance(rid, str) else "<unnamed>"
+        selectors = row.get("sources")
+        if isinstance(selectors, list):
+            for index, selector in enumerate(selectors):
+                if not isinstance(selector, str):
+                    continue
+                found = _reject_forbidden_characters(
+                    selector, f"binding {label_id!r} sources[{index}]"
+                )
+                if found:
+                    forbidden.append(found)
+        target = row.get("target")
+        if isinstance(target, str):
+            found = _reject_forbidden_characters(target, f"binding {label_id!r} target")
+            if found:
+                forbidden.append(found)
+    if forbidden:
+        _fail("registry forbidden character", forbidden)
+
+    # ── 3. SHAPE — the constitution-plane schema, ALL errors at once ────────────────────────────
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     shape_errors = Draft202012Validator(schema).iter_errors(document)
     diagnostics = sorted(f"{error.json_path}: {error.message}" for error in shape_errors)

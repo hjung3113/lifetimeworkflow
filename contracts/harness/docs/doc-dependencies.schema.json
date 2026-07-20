@@ -42,13 +42,18 @@
         "sources": {
           "type": "array",
           "uniqueItems": true,
-          "items": { "type": "string", "minLength": 1 },
-          "description": "Repo-relative POSIX selectors whose content changes create the review obligation. minItems is deliberately NOT set here: DOCSUP-01 requires the empty-selector rejection to be CONDITIONAL on severity == 'required', and an unconditional minItems would make an advisory row with no sources unrepresentable rather than merely warned. tools.docs_guard.registry applies the conditional rule, and also performs the path-escape rejection (absolute or '..' segment), which needs the live filesystem."
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001F\\u007F|]+$"
+          },
+          "description": "Repo-relative POSIX selectors whose content changes create the review obligation. minItems is deliberately NOT set here: DOCSUP-01 requires the empty-selector rejection to be CONDITIONAL on severity == 'required', and an unconditional minItems would make an advisory row with no sources unrepresentable rather than merely warned. tools.docs_guard.registry applies the conditional rule, and also performs the path-escape rejection (absolute or '..' segment), which needs the live filesystem. The pattern forbids C0/DEL control characters and the markdown table separator '|': the registry is agent-writable by design (DOCSUP-07) and these values are interpolated into the derived staleness queue's markdown table, whose row count the SessionStart pointer reports — a TOML multi-line basic string carrying a newline could otherwise forge queue rows and inflate that count."
         },
         "target": {
           "type": "string",
           "minLength": 1,
-          "description": "Exactly one human-authored target document (not an array). The derived/reference-target rejection tests membership in tools.adoption_scan.destinations.DERIVED_GLOBS — a glob-set test against a live tree — and is enforced by tools.docs_guard.registry, not here."
+          "pattern": "^[^\\u0000-\\u001F\\u007F|]+$",
+          "description": "Exactly one human-authored target document (not an array). The derived/reference-target rejection tests membership in tools.adoption_scan.destinations.DERIVED_GLOBS — a glob-set test against a live tree — and is enforced by tools.docs_guard.registry, not here. The pattern forbids C0/DEL control characters and the markdown table separator '|' — see the same constraint on 'sources' for why: an unconstrained target could forge rows into the derived staleness queue and inflate the SessionStart pointer's count. tools.docs_guard.registry restates the rejection with an operator-facing message, and tools.memory_regen.docs_staleness.render escapes defensively at the other end."
         },
         "severity": { "$ref": "#/$defs/severity" },
         "dispositions": {

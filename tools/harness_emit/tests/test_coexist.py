@@ -182,6 +182,16 @@ _SEED_SETTINGS = {
                     }
                 ],
             },
+            {
+                "matcher": "Write|Edit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "uv run python -m tools.hooks.ledger_guard",
+                        "timeout": 10,
+                    }
+                ],
+            },
         ],
     }
 }

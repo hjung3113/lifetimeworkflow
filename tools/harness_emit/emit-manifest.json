@@ -78,6 +78,7 @@
     ".opencode/command/verify-work.md",
     ".opencode/plugin/contract-guard.ts",
     ".opencode/plugin/format-on-write.ts",
+    ".opencode/plugin/ledger-guard.ts",
     ".opencode/plugin/polyglot-lint.ts",
     ".opencode/plugin/resume-gate.ts",
     ".opencode/plugin/secret-scan.ts",

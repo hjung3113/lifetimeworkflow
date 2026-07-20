@@ -111,6 +111,32 @@ def rows(
     return sorted(out)
 
 
+# Characters that would let a cell VALUE forge table structure. `|` ends a cell; a newline or
+# carriage return ends a ROW, which `inject.py`'s `"| "`-prefixed line count then reports as a real
+# obligation. The replacements are visible, not silent: an operator seeing `\n` in a target learns
+# there is something wrong with the registry rather than seeing a plausible extra row.
+_CELL_ESCAPES: tuple[tuple[str, str], ...] = (
+    ("\\", "\\\\"),  # first, so the escapes introduced below are not themselves re-escaped
+    ("\r", "\\r"),
+    ("\n", "\\n"),
+    ("\t", "\\t"),
+    ("|", "\\|"),
+)
+
+
+def _cell(value: str) -> str:
+    """Neutralize ``value`` for a markdown table cell (WR-02).
+
+    ``registry.load_registry`` rejects these characters at the source and the schema states the
+    same rule as a ``pattern``, so in a valid tree this is a no-op. It exists anyway because a
+    renderer that can be made to emit a forged row is a renderer bug regardless of who validated its
+    input — and this generator's output is counted, not read, by the SessionStart pointer.
+    """
+    for char, replacement in _CELL_ESCAPES:
+        value = value.replace(char, replacement)
+    return value
+
+
 def render(queue_rows: list[tuple[str, str, str, str, str, str]]) -> str:
     """Render rows into the deterministic DERIVED-marked markdown queue.
 
@@ -131,15 +157,30 @@ def render(queue_rows: list[tuple[str, str, str, str, str, str]]) -> str:
         return "\n".join(lines) + "\n"
     lines.append("| binding | target | state | severity | required disposition | impact |")
     lines.append("| --- | --- | --- | --- | --- | --- |")
-    for binding_id, target, state, severity, dispositions, impact in queue_rows:
-        lines.append(
-            f"| {binding_id} | {target} | {state} | {severity} | {dispositions} | {impact} |"
-        )
+    for row in queue_rows:
+        lines.append("| " + " | ".join(_cell(value) for value in row) + " |")
     return "\n".join(lines) + "\n"
 
 
+def write_rows(
+    queue_path: str | Path, queue_rows: list[tuple[str, str, str, str, str, str]]
+) -> Path:
+    """Render ``queue_rows`` to ``queue_path`` (mkdir parents), returning the path.
+
+    Split out of :func:`write` so a caller that ALREADY holds the rows can publish them without
+    re-classifying. Classification is expensive (a ``git ls-files`` subprocess, a full corpus walk
+    and a whole contract-manifest rebuild) but, more importantly, it is a function of the tree at
+    the moment it runs: a second run can legitimately return a DIFFERENT answer, so anything
+    reported about the written file must be derived from the rows that were actually written.
+    """
+    out = Path(queue_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(render(queue_rows), encoding="utf-8")
+    return out
+
+
 def write(
-    queue_path: str | Path = QUEUE_PATH,
+    queue_path: str | Path | None = None,
     *,
     registry_path: str | Path = DEFAULT_REGISTRY_PATH,
     ledger_path: str | Path = DEFAULT_LEDGER_PATH,
@@ -147,29 +188,37 @@ def write(
     cfg: dict | None = None,
     drift_gate: Callable[[], dict] | None = None,
 ) -> Path:
-    """Regenerate the derived queue and write it (mkdir parents), returning the path."""
-    out = Path(queue_path)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(
-        render(
-            rows(
-                registry_path=registry_path,
-                ledger_path=ledger_path,
-                root=root,
-                cfg=cfg,
-                drift_gate=drift_gate,
-            )
+    """Regenerate the derived queue and write it (mkdir parents), returning the path.
+
+    ``queue_path=None`` resolves to :data:`QUEUE_PATH` at CALL time rather than binding it at
+    definition time, so the module constant stays the single source of the destination.
+    """
+    return write_rows(
+        QUEUE_PATH if queue_path is None else queue_path,
+        rows(
+            registry_path=registry_path,
+            ledger_path=ledger_path,
+            root=root,
+            cfg=cfg,
+            drift_gate=drift_gate,
         ),
-        encoding="utf-8",
     )
-    return out
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI: regenerate ``.memory/derived/docs-staleness.md`` (`python -m ...docs_staleness`)."""
+    """CLI: regenerate ``.memory/derived/docs-staleness.md`` (`python -m ...docs_staleness`).
+
+    Classifies EXACTLY ONCE and reports from the rows it wrote (WR-04). Computing the count a
+    second time would both double the cost and let the operator's number disagree with the file's.
+    """
     argv = sys.argv[1:] if argv is None else argv  # noqa: F841 (reserved for future flags)
-    out = write()
-    print(f"wrote {out.relative_to(_REPO_ROOT)} ({len(rows())} binding(s) needing review)")
+    queue_rows = rows()
+    out = write_rows(QUEUE_PATH, queue_rows)
+    try:
+        label: Path | str = out.relative_to(_REPO_ROOT)
+    except ValueError:
+        label = out
+    print(f"wrote {label} ({len(queue_rows)} binding(s) needing review)")
     return 0
 
 

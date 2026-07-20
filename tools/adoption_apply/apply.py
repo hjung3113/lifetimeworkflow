@@ -50,7 +50,6 @@ from tools.harness_emit.merge import merge_settings, splice_managed_block
 from tools.harness_perms import resolve_path
 from tools.hooks.contract_guard import CONSTITUTION_GLOBS
 
-
 # The human-review ledger — a THIRD path-deny domain, disjoint from the constitution plane
 # (``CONSTITUTION_GLOBS``) and from the secret plane (``SECRET_PATH_GLOBS``). The boundary it
 # encodes: agents may PROPOSE registry rows in ``docs/doc-dependencies.toml`` (DOCSUP-07), but the
@@ -59,7 +58,11 @@ from tools.hooks.contract_guard import CONSTITUTION_GLOBS
 # doing so would force ``GOLDEN_APPROVE_HUMAN`` onto every ordinary human review commit and break
 # the provably-disjoint-domain invariant documented at ``contract_guard.py:16-20``. Ratified
 # record: ADR-0010.
-REVIEW_LEDGER_GLOBS = ["docs/.docs-review-ledger.toml"]
+#
+# IMPORTED as DATA from the PreToolUse gate that owns it (ADR-0010 clause 3b layer 1), never
+# re-declared — exactly as ``CONSTITUTION_GLOBS`` is imported above. Two copies of a deny list is
+# two chances for the tool path and the apply path to disagree about what the ledger is.
+from tools.hooks.ledger_guard import REVIEW_LEDGER_GLOBS
 
 
 class ConstitutionRefusal(ValueError):
@@ -212,11 +215,15 @@ def refuse_unsafe_destination(destination: str, target_root: str | Path) -> Path
                 "refusing the write."
             )
 
-    relative = target_path.relative_to(resolved_root).as_posix()
+    # The `\` fold matches step 1's, so the pre-check and the classification see ONE normalization
+    # (IN-02). On POSIX `docs\.docs-review-ledger.toml` is a single file whose NAME contains a
+    # backslash — a different file, and harmless — but on Windows that spelling IS the ledger, and a
+    # deny domain that depends on which OS reads the manifest is not a deny domain.
+    relative = target_path.relative_to(resolved_root).as_posix().replace("\\", "/")
     # Two disjoint domains, ONE normalization: both classifications run against the same resolved,
     # lower-cased, target-root-relative path, through the same CONFIG-02 resolver — no sixth
-    # `_confine` spelling, and no way for a `.`/`..`/case variant to be seen differently by one
-    # check than by the other.
+    # `_confine` spelling, and no way for a `.`/`..`/case/separator variant to be seen differently
+    # by one check than by the other.
     if resolve_path(REVIEW_LEDGER_GLOBS, relative.lower()) == "deny":
         raise ReviewLedgerRefusal(
             f"'{destination}' is the human-review ledger (docs/.docs-review-ledger.toml) — only a "

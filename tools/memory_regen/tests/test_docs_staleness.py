@@ -17,6 +17,7 @@ registry, the live ledger, or the live corpus.
 from __future__ import annotations
 
 import hashlib
+import re
 from pathlib import Path
 
 from tools.memory_regen import docs_staleness
@@ -141,6 +142,88 @@ def test_queue_empty_when_nothing_stale(tmp_path: Path) -> None:
     assert text.splitlines()[0] == f"# {docs_staleness.DERIVED_HEADER}"
     # main() must be idempotent over an empty queue: the file exists and is stable.
     assert text == docs_staleness.render([])
+
+
+# ---- render() cannot be made to emit a forged row (WR-02) -------------------------------------
+
+
+def _table_rows(text: str) -> list[str]:
+    """Every markdown table line, header and separator included — what inject.py counts."""
+    return [line for line in text.splitlines() if line.startswith("| ")]
+
+
+def test_render_neutralizes_injected_table_rows(tmp_path: Path) -> None:
+    """WR-02 adversarial row: one binding must render exactly one queue row.
+
+    The registry is agent-writable by design (DOCSUP-07) and TOML multi-line basic strings permit
+    real newlines, so a ``target`` could carry a forged ``| ... |`` line. ``render`` interpolated it
+    into a table cell with no escaping, and ``inject.py:98`` counts lines beginning ``"| "`` and
+    subtracts 2 — so a single binding could render a fabricated obligation AND inflate the
+    SessionStart pointer's count.
+
+    ``registry.load_registry`` now rejects the character at the source (``test_registry.py`` class
+    F). This row pins the defence-in-depth half: a renderer that can be made to emit a forged row is
+    a renderer bug regardless of who validated its input.
+    """
+    hostile = "docs/how-to/alpha.md\n| FAKE | forged.md | BROKEN | required | updated | (none) |"
+    text = docs_staleness.render(
+        [("alpha-required", hostile, "BROKEN", "required", "updated", "(none)")]
+    )
+
+    assert len(_table_rows(text)) == 3, (
+        f"expected header + separator + ONE row, got {len(_table_rows(text))}: {_table_rows(text)}"
+    )
+    assert "1 binding(s) need review." in text
+    assert "\n| FAKE" not in text
+
+
+def test_render_neutralizes_a_pipe_in_a_cell(tmp_path: Path) -> None:
+    """A bare ``|`` splits a cell without needing a newline — same forgery, one character."""
+    text = docs_staleness.render(
+        [("alpha-required", "docs/a.md | FAKE | x", "BROKEN", "required", "updated", "(none)")]
+    )
+
+    row = [line for line in _table_rows(text) if line.startswith("| alpha-required")]
+    assert len(row) == 1
+    separators = len(re.findall(r"(?<!\\)\|", row[0]))
+    assert separators == 7, f"a cell separator leaked into the row: {row[0]!r}"
+    assert "\\|" in row[0], "the pipe must be neutralized visibly, not dropped"
+
+
+# ---- main() reports the file it wrote, and classifies exactly once (WR-04) --------------------
+
+_ONE_ROW = [("alpha-required", "docs/how-to/alpha.md", "BROKEN", "required", "updated", "(none)")]
+
+
+def test_main_classifies_once_and_reports_what_it_wrote(monkeypatch, tmp_path, capsys) -> None:
+    """WR-04 adversarial row.
+
+    ``rows()`` walks the corpus, shells out to ``git ls-files`` and rebuilds the whole contract
+    manifest. ``main()`` calling it a SECOND time purely to print a count is not just double cost:
+    the second run re-reads the tree, so the number shown to the operator can disagree with the
+    number in the file that was just written. This stub makes the two runs disagree by
+    construction — first call one obligation, every later call none — so a ``main()`` that
+    classifies twice prints ``0`` over a file that says ``1``.
+    """
+    out = tmp_path / "derived" / "docs-staleness.md"
+    monkeypatch.setattr(docs_staleness, "QUEUE_PATH", out)
+    calls: list[int] = []
+
+    def counting_rows(**_kwargs):
+        calls.append(1)
+        return _ONE_ROW if len(calls) == 1 else []
+
+    monkeypatch.setattr(docs_staleness, "rows", counting_rows)
+
+    assert docs_staleness.main([]) == 0
+
+    assert len(calls) == 1, f"classification ran {len(calls)} time(s); main() must compute it once"
+    printed = capsys.readouterr().out
+    written = out.read_text(encoding="utf-8")
+    assert "1 binding(s) need review." in written
+    assert "(1 binding(s) needing review)" in printed, (
+        f"the printed count disagrees with the file that was written: {printed!r}"
+    )
 
 
 # ---- (b) pointer-only: never a prose excerpt, never a diff body -------------------------------

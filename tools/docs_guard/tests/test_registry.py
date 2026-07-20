@@ -42,6 +42,7 @@ DERIVED = "derived target"
 ADR_PAIR = "accepted-ADR disposition pair"
 ADR_PROPOSED = "not an accepted ADR"
 ADR_VOCAB = "ADR-only disposition"
+CONTROL = "forbidden character"
 
 # The forced pair for a docs/adr/** target (D-09). Order is irrelevant to the rule; the SET is not.
 ADR_PAIR_VALUE = ["REVIEWED_STILL_CURRENT", "SUPERSEDING_ADR_REQUIRED"]
@@ -161,7 +162,30 @@ CLASS_E: list[tuple[str, str, str]] = [
     ),
 ]
 
-REJECTION_CASES: list[tuple[str, str, str]] = [*CLASS_A, *CLASS_B, *CLASS_C, *CLASS_D, *CLASS_E]
+# ── Class F — control characters and the table separator in a selector (WR-02) ─────────────────
+# The registry is agent-writable BY DESIGN (DOCSUP-07) and its `target` flows unescaped into the
+# derived queue's markdown table, whose row count the SessionStart pointer reports. A TOML
+# multi-line basic string permits a real newline, so a single `target` could forge extra rows into
+# the queue and inflate the pointer. Rejected at the source here; `docs_staleness.render` also
+# neutralizes defensively, because a renderer that can be made to emit a forged row is a renderer
+# bug no matter who validated the input.
+CLASS_F: list[tuple[str, str, str]] = [
+    ("target_newline", _reg(_row(target="docs/how-to/x.md\n| FAKE | f | BROKEN |")), CONTROL),
+    ("target_carriage_return", _reg(_row(target="docs/how-to/x.md\r| FAKE |")), CONTROL),
+    ("target_pipe", _reg(_row(target="docs/how-to/x|y.md")), CONTROL),
+    ("target_tab", _reg(_row(target="docs/how-to/x\ty.md")), CONTROL),
+    ("source_newline", _reg(_row(sources=["src/one.py\n| FAKE |"])), CONTROL),
+    ("source_pipe", _reg(_row(sources=["src/one|two.py"])), CONTROL),
+]
+
+REJECTION_CASES: list[tuple[str, str, str]] = [
+    *CLASS_A,
+    *CLASS_B,
+    *CLASS_C,
+    *CLASS_D,
+    *CLASS_E,
+    *CLASS_F,
+]
 
 # ── Negative control — none of these may be refused ─────────────────────────────────────────────
 # ``None`` payload == "do not write the registry file at all": missing is not invalid (it yields

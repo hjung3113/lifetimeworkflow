@@ -99,6 +99,16 @@ Stated plainly so no later reader assumes double validation: **there is exactly 
 is not CI's generic schema step.** The schema's own description repeats this so the contract cannot
 be mistaken for a complete validator.
 
+**Selectors are constrained to exclude control characters and `|`.** The registry is agent-writable
+by design, and its `target` and `sources` values are interpolated into the derived staleness queue's
+markdown table — whose `"| "`-prefixed line count is what the SessionStart pointer reports as "N
+human doc(s) need review". A TOML multi-line basic string permits a real newline, so an
+unconstrained selector could forge queue rows and inflate that count. The constraint is stated in
+the schema as a `pattern`, restated by `tools.docs_guard.registry` for an operator-facing message
+(a printed regex teaches nothing), and neutralized defensively at the other end by
+`tools.memory_regen.docs_staleness.render` — a renderer that can be made to emit a forged row is a
+renderer bug regardless of who validated its input.
+
 ### 3. The digest algorithm (D-03) — a deliberate divergence
 
 The binding digest **interleaves the POSIX path with that file's own hex digest**, over the sorted,
@@ -135,9 +145,26 @@ This boundary is enforced in **three layers, and no single layer suffices**:
 
 | Layer | Surface it covers | Why the others cannot cover it |
 |-------|-------------------|-------------------------------|
-| `path_deny_globs` entry for `docs/.docs-review-ledger.toml` (`harness/permission-matrix.json`, read through the CONFIG-02 resolver) | the ordinary agent `Write`/`Edit` tool path | a plain tool call never enters the adoption-apply module |
+| `tools/hooks/ledger_guard.py` — a PreToolUse(`Write`\|`Edit`) deny gate owning `REVIEW_LEDGER_GLOBS` and feeding it to the CONFIG-02 resolver, wired into both runtimes by `tools.harness_emit` | the ordinary agent `Write`/`Edit` tool path | a plain tool call never enters the adoption-apply module |
 | `refuse_unsafe_destination` → `ReviewLedgerRefusal` (`tools/adoption_apply/apply.py`) | the adoption-apply write path, i.e. Phase 29's `/adopt` writing through a manifest | the permission matrix is not consulted inside a bare `python -m tools.adoption_apply apply` invocation |
 | `first_seen-unratified` (`tools/docs_guard/ledger.py`) | the **greenness** side | a write that slips past both write-side layers still cannot produce green |
+
+**The `path_deny_globs` matrix row is DATA, not the layer.** `harness/permission-matrix.json` still
+carries `docs/.docs-review-ledger.toml`, and `tools.harness_emit.permissions` strips
+`path_deny_globs` from the emitted `opencode.json` as a resolver-only key — so the matrix entry has
+no enforcement of its own and never did. Every *other* entry in that list is separately re-declared
+inside a hook (`contract_guard.CONSTITUTION_GLOBS`, `secret_scan.SECRET_PATH_GLOBS`), and the ledger
+entry is now no exception: `tools/hooks/ledger_guard.py` is its enforcer and its single
+authoritative home for `REVIEW_LEDGER_GLOBS`, which `tools/adoption_apply/apply.py` IMPORTS rather
+than re-declaring. This is recorded explicitly because a layer that is only a data row is a claimed
+control that does not exist — worse than a missing layer, because it reads as covered. The test that
+proves layer 1 drives the hook's `decide()` and asserts a deny; a test that only re-reads the matrix
+proves the file's content, not the enforcement.
+
+`ledger_guard` honours **no** opt-out — not `GOLDEN_APPROVE_HUMAN`, and not the ADR-0007
+`HARNESS_DEV_BYPASS` local-dev path. Both are constitution-plane opt-outs; the ledger is a different
+domain, and a human authors a disposition outside an agent session, so there is nothing for a
+session-scoped opt-out to express.
 
 The write side uses its **OWN constant** (`REVIEW_LEDGER_GLOBS`) and its **OWN exception type**
 (`ReviewLedgerRefusal`, explicitly not a subclass of `ConstitutionRefusal`) rather than widening
@@ -154,11 +181,12 @@ The review ledger is consequently a **THIRD path-deny domain**, alongside consti
 disjoint from both.
 
 **Accepted cost, recorded rather than engineered around:** a genuinely new binding is **amber for
-exactly one commit cycle**. `first_seen-unratified` keys on the PREVIOUS COMMITTED ledger, so a row's
-first appearance can never be green — and that is correct, because the human review commit that lands
-the row **IS** the ratification. The second cycle turns it green. Any mechanism that removed this
-amber window would also remove the only fact that separates an honest first seed from a self-blessed
-one.
+exactly one commit cycle**. `first_seen-unratified` keys on the PREVIOUS COMMITTED ledger *and on
+the binding's meaning in the previous COMMITTED registry* (clause 4), so a row's first appearance —
+and equally a REPOINTED binding's first appearance in its new shape — can never be green. That is
+correct, because the human review commit that lands the row **IS** the ratification. The second
+cycle turns it green. Any mechanism that removed this amber window would also remove the only fact
+that separates an honest first seed from a self-blessed one.
 
 ### 4. Disposition coherence (D-04) — the anti-rubber-stamp control, and its closure
 
@@ -183,6 +211,23 @@ This is deliberately a **HISTORY test, not a content test** — because the self
 honest first-ever seed row are **byte-identical**. No inspection of the row's content can tell them
 apart. Only "has a human committed this row before?" can.
 
+**The history test keys on the binding's MEANING, not on its NAME.** A ledger row records no
+statement about *what* was reviewed beyond the id, so "has a human committed this row before?" is
+asked of the pair `(id, the binding's committed (sources, target))`, retrieved from the previous
+COMMITTED REGISTRY through the same `git show HEAD:./<path>` shape clause 4 uses for the ledger. An
+id alone is not an identity: a *renamed* id is caught trivially (a new name is absent from history),
+but a *REPOINTED* id — same name, different source/target pair — would otherwise carry its earlier
+ratification to whatever the registry later decides that name means, and the registry is
+agent-writable by design (clause 3b). **Repointing a binding is a NEW obligation**, indistinguishable
+in weight from introducing one, and it is reported as `first_seen-unratified` for exactly that
+reason.
+
+Comparing against the committed REGISTRY rather than storing an identity digest IN the row is
+deliberate: it keeps the ledger's clause-1 shape unchanged, so a human ratifier still hand-writes
+only the two content digests and never a third derived value. A pure reordering of the `sources`
+list is **not** a repoint — the identity digest sorts its selectors — so the rule cannot degrade
+into "any registry edit de-ratifies everything".
+
 At the classifier level the same closure is restated: digest equality is **necessary but not
 sufficient** for `FRESH`. `FRESH` requires digest equality AND an empty blocking-finding set.
 
@@ -204,8 +249,14 @@ a single unit. Three of the eight seeded bindings are exactly that case (they ta
 `docs/adr/**`). Without the second ratchet, deleting an inconvenient binding would be entirely
 unguarded.
 
-`binding_min` is read from the PREVIOUS COMMITTED ledger, never the working tree — otherwise the same
-edit that deletes a binding could also lower the bar in the same breath.
+**BOTH thresholds are read from the PREVIOUS COMMITTED ledger, never the working tree** — otherwise
+the same edit that deletes a binding could also lower the bar in the same breath, and the same edit
+that drops a document out of coverage could raise the ceiling it is about to breach. The two
+ratchets are symmetric in this respect, and deliberately so: an asymmetry here is not a smaller
+version of the hole, it IS the hole, on whichever side is read from the working tree. The
+working-tree value is consulted only when there is no committed ledger to read at all — with no
+history there is no committed threshold, so honouring the working-tree one can only ADD a
+constraint, never relax one.
 
 ### 6. The unverifiable-history posture (D-08)
 
@@ -255,9 +306,20 @@ a report that teaches the wrong action is itself the defect.
 ### 9. Contract and golden stay leading (D-13)
 
 The guard reads `run_gate()` for **SUPPRESSION ONLY**. A binding whose source is a currently-drifted
-contract reports `SUPPRESSED (contract-drift leading)` rather than `STALE_REQUIRED`, and a suppressed
-binding's coherence findings are demoted to note level. The guard **never restates another gate's
-findings**. Without this, every contract change fails twice with two different remedies.
+contract reports `SUPPRESSED (contract-drift leading)` rather than `STALE_REQUIRED`, and its
+**staleness** finding is demoted to note level. The guard **never restates another gate's findings**.
+Without this, every contract change fails twice with two different remedies.
+
+**Suppression is scoped to what is genuinely downstream of drift, and that scope is part of the
+decision, not an implementation detail.** Only `stale-digest` may be demoted: the source moved, so
+of course the reviewed digest no longer matches. The ratification-authority findings —
+`first_seen-unratified`, `disposition-incoherent`, `unverified-disposition`, `unknown-binding`,
+`superseding-adr-required` — are **never** demoted, and a binding carrying any of them **never
+reaches the `SUPPRESSED` state at all**. They answer "who ratified what", a question a drifted
+source has no bearing on. A blanket demotion would make contract drift a laundering channel for
+clause 3b's self-blessed row, and the escape would be **permanent rather than one-cycle**: the
+commit the gate would have failed is the commit that lands the row into history, after which
+clause 4's history test reports it green unconditionally.
 
 ### 10. The derived queue's placement and ignore status (D-10)
 
@@ -341,8 +403,10 @@ append-only.
 - Registry data + ledger: `docs/doc-dependencies.toml`, `docs/.docs-review-ledger.toml`.
 - Implementation: `tools/docs_guard/{digest,registry,ledger,guard,impact,cli}.py`; derived queue
   `tools/memory_regen/docs_staleness.py`; SessionStart pointer in `tools/memory_regen/inject.py`.
-- Write-side boundary: `tools/adoption_apply/apply.py` (`REVIEW_LEDGER_GLOBS`, `ReviewLedgerRefusal`)
-  and `harness/permission-matrix.json` (`path_deny_globs`).
+- Write-side boundary: `tools/hooks/ledger_guard.py` (layer 1 — owns `REVIEW_LEDGER_GLOBS`; opencode
+  twin `harness/plugins/ledger-guard.ts`; wired by `tools/harness_emit/merge.py`),
+  `tools/adoption_apply/apply.py` (layer 2 — `ReviewLedgerRefusal`), and
+  `harness/permission-matrix.json` (`path_deny_globs`, the authored data the hook must agree with).
 - Precedents deliberately diverged from or preserved: `tools/adoption_apply/approval.py:57-63`
   (concatenation digest), `tools/contract_drift/drift.py:129-147` (git-show shape),
   `tools/hooks/contract_guard.py:16-20,44` (disjoint domains, constitution deny).

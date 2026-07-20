@@ -47,15 +47,23 @@ from tools.docs_guard.ledger import (
     REASON_FIRST_SEEN,
     REASON_INCOHERENT,
     REASON_OPEN_OBLIGATION,
+    REASON_STALE,
     REASON_UNKNOWN_BINDING,
     REASON_UNVERIFIED,
     Finding,
     ReviewedRow,
     check_coherence,
     load_ledger,
+    previous_document,
     previous_ledger,
 )
-from tools.docs_guard.registry import Binding, load_registry
+from tools.docs_guard.registry import (
+    DEFAULT_REGISTRY_PATH,
+    Binding,
+    identity_digest,
+    identity_digests,
+    load_registry,
+)
 from tools.harness_emit.manifest import is_gsd_owned
 from tools.harness_perms import resolve_path
 
@@ -63,6 +71,11 @@ from tools.harness_perms import resolve_path
 # CWD — same posture as registry.py.
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_LEDGER_PATH = REPO_ROOT / LEDGER_PATH
+
+# The registry's repo-relative spelling, the ``LEDGER_PATH`` twin. Used ONLY as the fallback when an
+# explicit ``--registry`` resolves outside the root, so nothing caller-influenced reaches the git
+# argv (T-28-20). Derived from the module constant rather than retyped.
+REGISTRY_PATH = DEFAULT_REGISTRY_PATH.relative_to(REPO_ROOT).as_posix()
 
 # The five DOCSUP-03 states plus ``SUPPRESSED`` (D-13). ``UNCOVERED`` is a per-DOCUMENT state, not
 # a binding state — it lives in ``result["uncovered"]``, never in a binding entry.
@@ -120,7 +133,21 @@ BLOCKING_REASONS: frozenset[str] = frozenset(
     }
 )
 
-__all__ = ["BLOCKING_REASONS", "HUMAN_CORPUS", "STATES", "classify"]
+# The ONLY reasons drift suppression may demote. `stale-digest` is the one finding that is
+# genuinely DOWNSTREAM of contract drift — the source moved, so of course the reviewed digest no
+# longer matches, and reporting that here would give one change two remedies (D-13).
+#
+# Everything in BLOCKING_REASONS is deliberately ABSENT. Those findings are about WHO RATIFIED
+# WHAT, not about whether a source moved: `first_seen-unratified` says nobody has ever ratified
+# this binding, `disposition-incoherent` says the claim contradicts history,
+# `unverified-disposition` says the claim cannot be checked at all, `unknown-binding` says the row
+# blesses something that does not exist, and `superseding-adr-required` is an open obligation. A
+# drifted source has no bearing on any of them, and demoting them let a brand-new self-blessed
+# binding report ok=True merely because one of its sources happened to be mid-drift — a PERMANENT
+# escape, because the commit that would have failed is the commit that lands the row into history.
+SUPPRESSIBLE_REASONS: frozenset[str] = frozenset({REASON_STALE})
+
+__all__ = ["BLOCKING_REASONS", "HUMAN_CORPUS", "STATES", "SUPPRESSIBLE_REASONS", "classify"]
 
 
 # ── corpus enumeration (P6 / Phase 26 CR-01) ──────────────────────────────────────────────────
@@ -257,17 +284,18 @@ def _sorted_findings(findings: Iterable[dict]) -> list[dict]:
     return sorted(findings, key=lambda f: (f["binding_id"], f["reason"], f["message"]))
 
 
-def _previous_rel(ledger_path: Path, root: Path) -> str:
-    """The ledger's repo-relative path, for ``git show HEAD:./<rel>``.
+def _previous_rel(path: Path, root: Path, fallback: str) -> str:
+    """``path``'s repo-relative spelling, for ``git show HEAD:./<rel>``.
 
     Derived by ``relative_to(root)``, which by construction can only produce a path INSIDE the
-    root — an explicit ``--ledger`` outside the tree falls back to the module constant rather than
-    reaching the git argv (T-28-20's posture: nothing attacker-influenced in the command line).
+    root — an explicit ``--ledger`` / ``--registry`` outside the tree falls back to the module
+    constant rather than reaching the git argv (T-28-20's posture: nothing attacker-influenced in
+    the command line).
     """
     try:
-        return ledger_path.resolve().relative_to(root).as_posix()
+        return path.resolve().relative_to(root).as_posix()
     except ValueError:
-        return LEDGER_PATH
+        return fallback
 
 
 def classify(
@@ -296,7 +324,28 @@ def classify(
     bindings: Sequence[Binding] = load_registry(registry_path, root_path)
     coverage, rows = load_ledger(ledger)
     rows_by_id: dict[str, ReviewedRow] = {row.id: row for row in rows}
-    previous = previous_ledger(_previous_rel(ledger, root_path), root_path)
+    previous = previous_ledger(_previous_rel(ledger, root_path, LEDGER_PATH), root_path)
+
+    # A ratification is a statement about a binding's MEANING, so establishing it needs the
+    # previous committed REGISTRY as well as the previous committed ledger. Without this the
+    # history test keyed on the binding NAME alone, and repointing an already-ratified id at a
+    # different source/target pair inherited its ratification silently (CR-03). `previous is None`
+    # (history unreadable) yields an EMPTY repointed set — the same degrade-to-no-check posture
+    # every other history-dependent rule in this package takes.
+    previous_registry = previous_document(
+        _previous_rel(Path(registry_path), root_path, REGISTRY_PATH), root_path
+    )
+    committed_identity = identity_digests(previous_registry)
+    repointed_ids = (
+        frozenset()
+        if previous_registry is None
+        else frozenset(
+            binding.id
+            for binding in bindings
+            if committed_identity.get(binding.id)
+            != identity_digest(binding.sources, binding.target)
+        )
+    )
 
     live_digests: dict[str, tuple[str, str]] = {}
     broken_reasons: dict[str, list[str]] = {}
@@ -306,7 +355,11 @@ def classify(
         broken_reasons[binding.id] = reasons
 
     coherence = check_coherence(
-        rows, previous, live_digests, {binding.id: binding.severity for binding in bindings}
+        rows,
+        previous,
+        live_digests,
+        {binding.id: binding.severity for binding in bindings},
+        repointed_ids,
     )
     blocking_by_id: dict[str, list[str]] = {}
     for finding in coherence:
@@ -347,8 +400,12 @@ def classify(
             )
         # 2. SUPPRESSED — a source is a contract currently reported drifted. Contract-drift is the
         #    LEADING gate; this binding's staleness is its downstream consequence, not a second
-        #    independent defect with a second remedy (D-13).
-        elif _sources_drifted(binding, root_path, drifted):
+        #    independent defect with a second remedy (D-13). The second half of the condition is
+        #    load-bearing and must not be simplified away: a binding carrying a blocking coherence
+        #    finding has an UNESTABLISHED ratification claim, which drift neither causes nor
+        #    excuses. Without it, evaluating drift before the FRESH guard means a self-blessed
+        #    binding never reaches the self-green closure at step 3 at all.
+        elif _sources_drifted(binding, root_path, drifted) and not blocking_by_id.get(binding.id):
             state = "SUPPRESSED"
             reasons.append("contract-drift leading")
         # 3. FRESH — digest equality is NECESSARY but NOT SUFFICIENT. An open ADR obligation and
@@ -394,20 +451,44 @@ def classify(
         )
 
     # D-13, second half: a suppressed binding must not contribute to exit 1, and that has to hold
-    # for its COHERENCE findings too — `stale-digest` for a binding whose contract is mid-drift is
+    # for its STALENESS findings too — `stale-digest` for a binding whose contract is mid-drift is
     # the downstream consequence of the leading gate's failure, not a second independent defect.
     # The finding is kept (the operator still sees why the binding is suppressed) but demoted to a
     # note, so exactly one gate reports the change: contract-drift.
+    #
+    # The demotion is RESTRICTED to `SUPPRESSIBLE_REASONS`. Demoting every fail-level finding for a
+    # suppressed binding also demoted the ratification-authority reasons, which turned drift into a
+    # laundering channel for a self-blessed row (see SUPPRESSIBLE_REASONS above). Together with the
+    # `not blocking_by_id` half of the SUPPRESSED branch this is belt-and-braces: neither the state
+    # nor the level can be reached by a binding whose ratification has never been established.
     suppressed_ids = {entry["id"] for entry in entries if entry["state"] == "SUPPRESSED"}
     for finding in findings:
-        if finding["binding_id"] in suppressed_ids and finding["level"] == LEVEL_FAIL:
+        if (
+            finding["binding_id"] in suppressed_ids
+            and finding["level"] == LEVEL_FAIL
+            and finding["reason"] in SUPPRESSIBLE_REASONS
+        ):
             finding["level"] = "note"
             finding["message"] += " (suppressed — contract-drift leading)"
 
     # ── the uncovered ratchet (read-only) ──────────────────────────────────────────────────────
     covered = {binding.target for binding in bindings}
     uncovered = [path for path in human_corpus(root_path) if path not in covered]
-    uncovered_max = coverage.get("uncovered_max")
+    # The ENFORCED ceiling is the PREVIOUS COMMITTED one, symmetric with `binding_min`
+    # (`ledger.py:435-439`): reading it from the working tree would let the same uncommitted edit
+    # that drops a document out of coverage also raise the bar it is about to breach. The
+    # working-tree value is used ONLY when there is no committed ledger to read — with no history
+    # there is no committed ceiling at all, so honouring the working-tree one can only ADD a
+    # constraint, never relax one (WR-01).
+    previous_coverage = (previous or {}).get("coverage")
+    committed_max = (
+        previous_coverage.get("uncovered_max") if isinstance(previous_coverage, dict) else None
+    )
+    uncovered_max = (
+        committed_max
+        if isinstance(committed_max, int) and not isinstance(committed_max, bool)
+        else coverage.get("uncovered_max")
+    )
     if uncovered_max is not None:
         if len(uncovered) > uncovered_max:
             ok = False
@@ -437,7 +518,9 @@ def classify(
     # The `binding_min` count ratchet is NOT evaluated here: `ledger.check_coherence` already
     # evaluates it against the PREVIOUS COMMITTED ledger, which is the authoritative threshold
     # (28-04) — reading it from the working tree would let the same edit that deletes a binding
-    # also lower the bar. Its findings are folded above; re-deriving it here would double-report.
+    # also lower the bar. `uncovered_max` above is read the SAME way for the same reason; the two
+    # ratchets are symmetric. Its findings are folded above; re-deriving it here would double-
+    # report.
     # It is NOT redundant with the uncovered ratchet: a binding whose target lies outside
     # HUMAN_CORPUS can be deleted without moving the uncovered count by a single unit, so that
     # deletion would otherwise be entirely unguarded (`binding_deleted_outside_corpus`).

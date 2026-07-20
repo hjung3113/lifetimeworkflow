@@ -88,6 +88,7 @@ def splice_managed_block(existing_text: str, block_body: str) -> str:
 HARNESS_SIGNATURES: tuple[str, ...] = (
     "tools.hooks.format_on_write",
     "tools.hooks.contract_guard",
+    "tools.hooks.ledger_guard",
     "tools.hooks.secret_scan",
     "tools.hooks.commit_gate",
     "tools.hooks.resume_gate",
@@ -136,6 +137,21 @@ HARNESS_HOOK_GROUPS: dict[str, list[dict]] = {
                 {
                     "type": "command",
                     "command": "uv run python -m tools.hooks.secret_scan",
+                    "timeout": 10,
+                }
+            ],
+        },
+        # ADR-0010 clause 3b layer 1 — the ordinary agent Write/Edit path for the human-review
+        # ledger. A THIRD deny domain, disjoint from contract_guard's constitution plane and
+        # secret_scan's *.env plane, with no token and no dev bypass. Deleting this group is what
+        # `test_ledger_guard_is_wired_into_pretooluse` exists to catch: without it the ADR's layer 1
+        # is inert data again.
+        {
+            "matcher": "Write|Edit",
+            "hooks": [
+                {
+                    "type": "command",
+                    "command": "uv run python -m tools.hooks.ledger_guard",
                     "timeout": 10,
                 }
             ],

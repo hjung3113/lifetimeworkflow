@@ -438,6 +438,55 @@ def test_uncovered_ratchet(
     assert (suggestion in messages) is expect_tighten, f"{name}: tighten suggestion mismatch"
 
 
+def test_uncovered_max_comes_from_the_committed_ledger(docs_repo: Path) -> None:
+    """WR-01 adversarial row: the SAME uncommitted edit must not be able to raise its own ceiling.
+
+    ``binding_min`` is read from the previous COMMITTED ledger precisely so "the same edit that
+    deletes a binding cannot also lower the bar" (``ledger.py:435-439``). ``uncovered_max`` was read
+    from the freshly-parsed WORKING-TREE ledger, so the mirror-image move was unguarded: drop a
+    document out of coverage and raise the ceiling in one uncommitted change. The two ratchets are
+    now symmetric.
+    """
+    _seed_corpus(docs_repo)
+    strict = _ledger_toml(coverage={"uncovered_max": 0})
+    _write(docs_repo, LED_REL, strict)
+    _commit(docs_repo, "commit the strict ratchet")
+
+    # Baseline: the committed ceiling of 0 is genuinely violated by the live uncovered count.
+    baseline = guard.classify(
+        registry_path=docs_repo / REG_REL,
+        ledger_path=docs_repo / LED_REL,
+        root=docs_repo,
+        drift_gate=_clean_gate,
+    )
+    assert baseline["uncovered"]["live"] > 0
+    assert baseline["ok"] is False
+
+    # THE BYPASS: raise the ceiling in the working tree only, changing nothing about coverage.
+    _write(docs_repo, LED_REL, _ledger_toml(coverage={"uncovered_max": 99}))
+    raised = guard.classify(
+        registry_path=docs_repo / REG_REL,
+        ledger_path=docs_repo / LED_REL,
+        root=docs_repo,
+        drift_gate=_clean_gate,
+    )
+
+    assert raised["uncovered"]["max"] == 0, "the enforced ceiling must be the COMMITTED one"
+    assert raised["ok"] is False, "a working-tree edit raised its own ratchet — self-blessing"
+
+
+def test_uncovered_max_falls_back_to_the_working_tree_without_history(docs_repo: Path) -> None:
+    """Non-degradation control: with no committed ledger there IS no committed ceiling, so the
+    working-tree value is the only one available — and honouring it can only ADD a constraint,
+    never relax one. Without this row the fix could degrade into "no ratchet unless committed",
+    which would silently disable the gate in a fresh checkout."""
+    _seed_corpus(docs_repo)
+    result = _ratchet_result(docs_repo, 0)
+
+    assert result["uncovered"]["max"] == 0
+    assert result["ok"] is False
+
+
 def test_uncovered_no_ledger_means_no_ratchet(docs_repo: Path) -> None:
     """``max is None`` (no ledger seeded yet) is not a failure — plan 28-07 seeds the threshold."""
     _seed_corpus(docs_repo)
@@ -625,6 +674,112 @@ def test_binding_deleted_outside_corpus(docs_repo: Path) -> None:
     assert any(finding["reason"] == "binding-count-regression" for finding in after["findings"])
 
 
+# ── CR-03: ratification is bound to the binding's MEANING, not to its NAME ─────────────────────
+
+
+def _ratify(repo: Path, *, binding_id: str, sources: tuple[str, ...], target: str) -> None:
+    """Write registry + matching ledger row for ``binding_id`` and COMMIT both — a ratification."""
+    _write(repo, REG_REL, _binding_toml(id=binding_id, sources=sources, target=target))
+    source_digest, target_digest = _digests(repo, sources, target)
+    _write(
+        repo,
+        LED_REL,
+        _ledger_toml(((binding_id, source_digest, target_digest, "reviewed-no-change"),)),
+    )
+    _commit(repo, f"ratify {binding_id}")
+
+
+def test_repointing_a_ratified_binding_is_not_fresh(docs_repo: Path) -> None:
+    """CR-03 adversarial row: a REPOINTED id must not inherit its earlier ratification.
+
+    A ledger row records no statement about WHAT was reviewed beyond the id, so a history test
+    keyed on the id ALONE carried the ratification of ``b1`` forward to whatever the registry later
+    decided ``b1`` means. A *renamed* id was caught — a new name is absent from history. A
+    *repointed* id was not: same name, different ``(sources, target)`` pair, zero findings, FRESH.
+
+    The registry is agent-writable by design (DOCSUP-07), so this was a one-edit laundering path
+    from an already-ratified name to an arbitrary new obligation.
+    """
+    _write(docs_repo, "src/a.py", "A = 1\n")
+    _write(docs_repo, "src/b.py", "B = 2\n")
+    _write(docs_repo, "docs/how-to/hard.md", "hard\n")
+    _write(docs_repo, "docs/how-to/easy.md", "easy\n")
+    _commit(docs_repo, "seed both pairs")
+    _ratify(docs_repo, binding_id="b1", sources=("src/a.py",), target="docs/how-to/hard.md")
+
+    baseline = guard.classify(
+        registry_path=docs_repo / REG_REL,
+        ledger_path=docs_repo / LED_REL,
+        root=docs_repo,
+        drift_gate=_clean_gate,
+    )
+    assert baseline["ok"] is True, (
+        "fixture sanity: the ratified binding is green before the repoint"
+    )
+    assert _state_of(baseline, "b1") == "FRESH"
+
+    # THE REPOINT: same id, a different source/target pair, with the ledger digests rewritten to
+    # the new pair's live values in the SAME uncommitted change.
+    _ratify_free_repoint = ("src/b.py",)
+    _write(
+        docs_repo,
+        REG_REL,
+        _binding_toml(id="b1", sources=_ratify_free_repoint, target="docs/how-to/easy.md"),
+    )
+    source_digest, target_digest = _digests(docs_repo, _ratify_free_repoint, "docs/how-to/easy.md")
+    _write(
+        docs_repo,
+        LED_REL,
+        _ledger_toml((("b1", source_digest, target_digest, "reviewed-no-change"),)),
+    )
+
+    repointed = guard.classify(
+        registry_path=docs_repo / REG_REL,
+        ledger_path=docs_repo / LED_REL,
+        root=docs_repo,
+        drift_gate=_clean_gate,
+    )
+
+    assert _state_of(repointed, "b1") != "FRESH", (
+        "a repointed binding inherited its earlier ratification"
+    )
+    assert _findings_for(repointed, "b1", "first_seen-unratified"), (
+        "a repoint is a NEW obligation and must report first_seen-unratified"
+    )
+    assert repointed["ok"] is False
+
+
+def test_reordering_selectors_is_not_a_repoint(docs_repo: Path) -> None:
+    """Non-degradation control: the identity digest sorts its sources, so a pure reordering of the
+    selector list is NOT a repoint. Without this row the fix could degrade into "any registry edit
+    de-ratifies everything", which passes the attack row while making the registry unusable."""
+    _write(docs_repo, "src/a.py", "A = 1\n")
+    _write(docs_repo, "src/b.py", "B = 2\n")
+    _write(docs_repo, "docs/how-to/hard.md", "hard\n")
+    _commit(docs_repo, "seed sources")
+    _ratify(
+        docs_repo,
+        binding_id="b1",
+        sources=("src/a.py", "src/b.py"),
+        target="docs/how-to/hard.md",
+    )
+
+    _write(
+        docs_repo,
+        REG_REL,
+        _binding_toml(id="b1", sources=("src/b.py", "src/a.py"), target="docs/how-to/hard.md"),
+    )
+    result = guard.classify(
+        registry_path=docs_repo / REG_REL,
+        ledger_path=docs_repo / LED_REL,
+        root=docs_repo,
+        drift_gate=_clean_gate,
+    )
+
+    assert _state_of(result, "b1") == "FRESH"
+    assert result["ok"] is True
+
+
 # ── SUPPRESSION_CASES (D-13) ────────────────────────────────────────────────────────────────────
 
 _CONTRACT_SOURCE = "contracts/sample/greeting.schema.json"
@@ -676,6 +831,86 @@ def test_undrifted_source_not_suppressed(docs_repo: Path) -> None:
     )
     assert _state_of(result, "greeting-doc") == "STALE_REQUIRED"
     assert result["ok"] is False
+
+
+def _setup_self_blessed_drifted_binding(docs_repo: Path) -> None:
+    """CR-01's exact bypass: a BRAND-NEW binding self-blessed in the same uncommitted change,
+    whose single source is a currently-drifted contract.
+
+    The previous committed ledger EXISTS but is empty, so ``previous`` parses (history is readable)
+    and ``previous_rows`` lacks the id — which is precisely the ``first_seen-unratified``
+    precondition. The row carries the binding's exact LIVE digests, so it is digest-consistent by
+    construction and only the history test can contradict it.
+    """
+    _write(docs_repo, _CONTRACT_SOURCE, '{"title": "greeting"}\n')
+    _write(docs_repo, _TARGET, "v1\n")
+    _write(docs_repo, LED_REL, "[coverage]\n")
+    _commit(docs_repo, "seed contract source, target, and an empty committed ledger")
+
+    source_digest, target_digest = _digests(docs_repo, (_CONTRACT_SOURCE,), _TARGET)
+    _write(
+        docs_repo,
+        REG_REL,
+        _binding_toml(id="newbinding", sources=(_CONTRACT_SOURCE,), target=_TARGET),
+    )
+    _write(
+        docs_repo,
+        LED_REL,
+        _ledger_toml((("newbinding", source_digest, target_digest, "reviewed-no-change"),)),
+    )
+
+
+def _findings_for(result: dict, binding_id: str, reason: str) -> list[dict]:
+    return [
+        finding
+        for finding in result["findings"]
+        if finding["binding_id"] == binding_id and finding["reason"] == reason
+    ]
+
+
+def test_self_blessed_binding_is_not_rescued_by_a_drifted_source(docs_repo: Path) -> None:
+    """CR-01 adversarial row: drift suppression must never demote a RATIFICATION-AUTHORITY finding.
+
+    Drift suppression exists so one change does not fail two gates with two different remedies
+    (D-13). The only finding that is genuinely DOWNSTREAM of contract drift is ``stale-digest``:
+    the source moved, so of course the reviewed digest no longer matches. ``first_seen-unratified``
+    is a different KIND of claim — it says nobody has ever ratified this binding — and a drifted
+    source has nothing to do with who ratified what.
+
+    Demoting it made the self-green attack succeed and the escape PERMANENT: the commit CI would
+    have failed is the commit that lands the self-authored row, and once landed the row is history,
+    so the next run reports FRESH unconditionally.
+
+    Both halves are asserted: the finding stays fail-level, AND the binding never reaches the
+    ``SUPPRESSED`` state at all, so no future reordering of the classifier can re-open the hole.
+    """
+    _setup_self_blessed_drifted_binding(docs_repo)
+
+    no_drift = guard.classify(
+        registry_path=docs_repo / REG_REL,
+        ledger_path=docs_repo / LED_REL,
+        root=docs_repo,
+        drift_gate=_clean_gate,
+    )
+    assert no_drift["ok"] is False, "fixture sanity: unratified is blocking when nothing drifted"
+    assert [f["level"] for f in _findings_for(no_drift, "newbinding", "first_seen-unratified")] == [
+        "fail"
+    ]
+
+    drifted = guard.classify(
+        registry_path=docs_repo / REG_REL,
+        ledger_path=docs_repo / LED_REL,
+        root=docs_repo,
+        drift_gate=_drifted_gate,
+    )
+
+    assert [f["level"] for f in _findings_for(drifted, "newbinding", "first_seen-unratified")] == [
+        "fail"
+    ], "drift demoted a ratification-authority finding — the self-green escape is open"
+    assert _state_of(drifted, "newbinding") != "SUPPRESSED", (
+        "a binding carrying a blocking coherence finding must never reach SUPPRESSED"
+    )
+    assert drifted["ok"] is False, "a self-blessed brand-new binding reported ok under drift"
 
 
 def test_drift_findings_not_restated(docs_repo: Path) -> None:
