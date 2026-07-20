@@ -67,7 +67,8 @@ class UnknownDispositionError(ValueError):
 
 
 class ConcurrentDriftError(ValueError):
-    """Raised when a ``create`` target now exists though the manifest recorded none at draft time."""
+    """Raised when a ``create`` target now exists though the manifest recorded none at draft
+    time."""
 
 
 def refuse_if_constitution(destination: str) -> None:
