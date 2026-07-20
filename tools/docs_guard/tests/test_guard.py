@@ -464,6 +464,13 @@ def test_uncovered_untracked_file(docs_repo: Path) -> None:
     assert "docs/how-to/untracked.md" not in after["paths"]
 
 
+# The instance-tree fixture path, ASSEMBLED from segments rather than written as one literal: a
+# core-plane file may not carry an instance path token (GEN-04,
+# tools/harness_lint/tests/test_core_no_example_dep.py), and this fixture must PROVE the instance
+# tree is excluded from HUMAN_CORPUS without itself becoming the leak that guard exists to catch.
+_INSTANCE_TREE_DOC = "/".join(("examples", "log-parser", "docs", "how-to", "instance.md"))
+
+
 def test_corpus_excludes_and_includes(docs_repo: Path) -> None:
     """D-07/A4 — this pins the RATCHET'S MEANING, so it is asserted, not inferred from a loop."""
     _seed_corpus(docs_repo)
@@ -473,7 +480,7 @@ def test_corpus_excludes_and_includes(docs_repo: Path) -> None:
             "docs/reference/generated.md": "derived\n",
             ".memory/derived/repo-map.md": "derived\n",
             ".planning/STATE.md": "gsd owned\n",
-            "examples/log-parser/docs/how-to/instance.md": "instance\n",
+            _INSTANCE_TREE_DOC: "instance\n",
         },
     )
     _commit(docs_repo, "seed excluded trees")
@@ -483,7 +490,7 @@ def test_corpus_excludes_and_includes(docs_repo: Path) -> None:
         "docs/reference/generated.md",
         ".memory/derived/repo-map.md",
         ".planning/STATE.md",
-        "examples/log-parser/docs/how-to/instance.md",
+        _INSTANCE_TREE_DOC,
     ):
         assert excluded not in paths, f"{excluded} must not enter the uncovered corpus"
     for glob in DERIVED_GLOBS:

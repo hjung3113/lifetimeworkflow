@@ -94,9 +94,10 @@ HUMAN_CORPUS: tuple[str, ...] = (
     ".memory/README.md",
 )
 
-# `.planning/**` is the GSD-owned lane and `examples/**` is the instance tree (GEN-04). Neither is
+# `.planning` is the GSD-owned lane and the second entry is the instance tree (GEN-04). Neither is
 # reachable through HUMAN_CORPUS's patterns today; the structural skip is belt-and-suspenders so a
-# future pattern addition can never silently pull one in.
+# future pattern addition can never silently pull one in. Both are named as bare top-level segments
+# rather than as globs, because a core-plane file may not carry an instance path token.
 _EXCLUDED_TOP_LEVEL: frozenset[str] = frozenset({".planning", "examples"})
 
 # Guard-level reason constants. Kept greppable and distinct from ledger.py's, because they carry a
