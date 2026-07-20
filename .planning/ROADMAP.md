@@ -618,7 +618,7 @@ Plans:
 
 **Wave 2** *(blocked on 27-01/27-02)*
 
-- [ ] 27-03-PLAN.md — apply.py: structural constitution refusal + atomic/collision-safe/idempotent apply + SC-2 (ADOPT-05)
+- [x] 27-03-PLAN.md — apply.py: structural constitution refusal + atomic/collision-safe/idempotent apply + SC-2 (ADOPT-05)
 - [ ] 27-04-PLAN.md — approval.py: refuse-by-default promotion + exact-equality invalidation + SC-1 (ADOPT-04, ADOPT-06)
 
 **Wave 3** *(blocked on 27-01/27-03/27-04)*
