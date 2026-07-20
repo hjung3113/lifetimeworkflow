@@ -102,6 +102,60 @@ def test_capture_round_trips_observed_statuses(
     assert capture(root, "fixture", command)["status"] == expected
 
 
+def test_sensitive_pattern_case_diversity_survives_ignorecase() -> None:
+    """CR-01, evidence-capture path: [A-Z]/[a-z] lookaheads immune to re.IGNORECASE.
+
+    Mirrors scan.py's sibling test with a byte-identical fixture literal so a future divergence
+    between the two consumers' behavior on the same input is itself a new defect this suite
+    would catch.
+    """
+    assign = "pass" + "word"
+    value_all_upper = "".join(["ABCDEFGHIJKLMNOPQRST"])
+    assert capture_module._sensitive_pattern().search(assign + ": " + value_all_upper) is None
+
+
+@pytest.mark.parametrize(
+    "fixture_value",
+    [
+        pytest.param(
+            "".join(["AbCdEfGhIjKlMnOpQrSt"]),
+            id="mixed_case_digit_less-red_before_task2-WR01_relaxation_proof",
+        ),
+        pytest.param(
+            "".join(["ABCDEFGHIJKLMNO", "12345"]),
+            id="uppercase_plus_digit-continuity_guard",
+        ),
+        pytest.param(
+            "".join(["abcdefghijklmno", "12345"]),
+            id="lowercase_plus_digit-continuity_guard",
+        ),
+    ],
+)
+def test_sensitive_pattern_two_of_three_classes_matches(fixture_value: str) -> None:
+    """SC-2 mirror: 2-of-3 charset-class disposition against the redaction-path consumer.
+
+    Mirrors scan.py's sibling test byte-for-byte; the mixed-case-digit-less row is expected to
+    FAIL (red) until Task 2 lands the fix.
+    """
+    sec = "se" + "cret"
+    assert capture_module._sensitive_pattern().search(sec + ": " + fixture_value), fixture_value
+
+
+@pytest.mark.parametrize(
+    "fixture_value",
+    [
+        "".join(["correcthorsebattery", "staple"]),
+        "9" * 22,
+        "".join(["ABCDEFGHIJKLMNOPQRST"]),
+    ],
+)
+def test_sensitive_pattern_single_class_digit_less_remains_excluded(fixture_value: str) -> None:
+    """SC-2 mirror: single-case-only and all-numeric digit-less values remain an accepted,
+    documented residual gap on the redaction-path consumer too."""
+    assign = "pass" + "word"
+    assert capture_module._sensitive_pattern().search(assign + ": " + fixture_value) is None
+
+
 def test_hash_tamper_and_missing_artifact_fail_validation(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

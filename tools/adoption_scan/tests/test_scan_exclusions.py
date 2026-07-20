@@ -113,6 +113,8 @@ def test_ci_yml_false_positive_closed(repo_root: Path) -> None:
     ci_yml = repo_root / ".github" / "workflows" / "ci.yml"
     text = ci_yml.read_text(encoding="utf-8")
 
+    # IN-02 (26.1-REVIEW.md): this is a hand-duplicated copy of the pre-26.1 pattern with no
+    # git-history link of its own; provenance is commit d6e9054 (26.1's tightening fix).
     old_pattern = re.compile(
         r"(?:api[_-]?key|secret|password|token)\s*[:=]\s*[^\s]+", re.IGNORECASE
     )
@@ -142,3 +144,73 @@ def test_ci_yml_false_positive_closed(repo_root: Path) -> None:
 def test_secret_shape_still_matches(fixture_value: str) -> None:
     """SC-2: every one of the 7 unchanged named secret shapes is still matched."""
     assert scan._secret_pattern().search(fixture_value), fixture_value
+
+
+def test_secret_patterns_1_case_diversity_survives_ignorecase() -> None:
+    """CR-01: [A-Z]/[a-z] lookaheads must not degrade to 'any letter' under re.IGNORECASE.
+
+    A single-case (all-uppercase), digit-less, 20-char value must NOT match secret_patterns[1]
+    in either live consumer function, both before and after Task 2's fix. This is a regression
+    guard: an unscoped 2-of-3 relaxation would incorrectly let a single letter alone satisfy the
+    disjunction under IGNORECASE if the (?-i:...) scoping is forgotten.
+    """
+    assign = "pass" + "word"
+    value_all_upper = "".join(["ABCDEFGHIJKLMNOPQRST"])  # single-case, digit-less, 20 chars
+    assert scan._secret_pattern().search(assign + ": " + value_all_upper) is None
+
+
+@pytest.mark.parametrize(
+    "fixture_value",
+    [
+        pytest.param(
+            "".join(["AbCdEfGhIjKlMnOpQrSt"]),
+            id="mixed_case_digit_less-red_before_task2-WR01_relaxation_proof",
+        ),
+        pytest.param(
+            "".join(["ABCDEFGHIJKLMNO", "12345"]),
+            id="uppercase_plus_digit-continuity_guard",
+        ),
+        pytest.param(
+            "".join(["abcdefghijklmno", "12345"]),
+            id="lowercase_plus_digit-continuity_guard",
+        ),
+    ],
+)
+def test_secret_patterns_1_two_of_three_classes_matches(fixture_value: str) -> None:
+    """SC-2: 2-of-3 charset-class disposition, proven against the live consumer function.
+
+    The mixed-case-digit-less row is the genuine red-before/green-after case: it does NOT match
+    the CURRENT (unedited) pattern (which requires a digit unconditionally), proving WR-01's
+    relaxation is not already accidentally true — this row is expected to FAIL until Task 2
+    lands the fix. The two digit-bearing rows already match under the current letter+digit
+    collapse and must continue to match after Task 2 (continuity guard).
+    """
+    sec = "se" + "cret"
+    assert scan._secret_pattern().search(sec + ": " + fixture_value), fixture_value
+
+
+@pytest.mark.parametrize(
+    "fixture_value",
+    [
+        "".join(["correcthorsebattery", "staple"]),  # all-lowercase digit-less, 25 chars
+        "9" * 22,  # all-numeric, no letters
+        "".join(["ABCDEFGHIJKLMNOPQRST"]),  # all-uppercase digit-less, 20 chars
+    ],
+)
+def test_secret_patterns_1_single_class_digit_less_remains_excluded(fixture_value: str) -> None:
+    """SC-2: single-case-only and all-numeric digit-less values remain an accepted, documented
+    residual gap — never matched, both before and after Task 2 (no transition expected)."""
+    assign = "pass" + "word"
+    assert scan._secret_pattern().search(assign + ": " + fixture_value) is None
+
+
+def test_secret_patterns_1_branch_attribution() -> None:
+    """SC-3/D-04: pin that the mixed-case-digit-less match comes from registry index 1, not one
+    of the other 7 dedicated-shape branches — a structural attribution check, not a substitute
+    for the live-consumer behavior assertions above."""
+    registry = json.loads(scan._GATE_REGISTRY_PATH.read_text(encoding="utf-8"))
+    branch_only = re.compile(registry["secret_patterns"][1], re.IGNORECASE)
+    sec = "se" + "cret"
+    fixture_value = sec + ": " + "".join(["ABCDEFGHIJKLMNO", "12345"])
+    assert scan._secret_pattern().search(fixture_value)
+    assert branch_only.search(fixture_value)
