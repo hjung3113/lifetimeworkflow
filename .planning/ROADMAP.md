@@ -643,8 +643,17 @@ Plans:
 
 **Out of scope (documented seam, not this phase):** `tools/hooks/secret_scan.py:44-47` still hardcodes its own pattern list rather than reading the contract — carried forward unchanged from 26.2's fence.
 
+**Plans**: 3 plans (2 waves)
+
 Plans:
-- [ ] TBD (run /gsd:plan-phase 27.1 to break down)
+**Wave 1** *(parallel — no file overlap)*
+
+- [ ] 27.1-01-PLAN.md — CR-01/CR-02/WR-01 + symlink-read defense: `refuse_unsafe_destination` choke point wired into `apply_disposition`, locked/symlink-safe `_apply_marker_merge` (ADOPT-05)
+- [ ] 27.1-02-PLAN.md — CR-03/WR-02/WR-04: `check_valid` wired into `_cmd_apply` (exit 4), `--repo-root` flag, apply-time manifest schema re-validation, `check_valid` never raises (ADOPT-05, ADOPT-06)
+
+**Wave 2** *(blocked on 27.1-01, 27.1-02)*
+
+- [ ] 27.1-03-PLAN.md — WR-03/SC-4: `manifest.schema.json` `destination`/`path` pattern constraint, hash rebaseline + both derived-plane artifacts, blocking human-ratification checkpoint, SC-5 seven-finding disposition table (ADOPT-05, ADOPT-06)
 
 ### Phase 28: Human-Docs Registry, Guard, Derived Queue *(v2.3 C)*
 
