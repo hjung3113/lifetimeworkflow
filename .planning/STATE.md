@@ -4,14 +4,14 @@ milestone: v2.3
 milestone_name: A)*
 status: executing
 stopped_at: Completed 26.2-01-PLAN.md
-last_updated: "2026-07-20T16:14:54.639Z"
+last_updated: "2026-07-20T16:23:12.560Z"
 last_activity: 2026-07-20
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 24
-  completed_plans: 21
-  percent: 88
+  completed_plans: 22
+  percent: 92
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 ## Current Position
 
 Phase: 27 (task-local-adoption-workflow-safe-application-v2-3-b) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-07-20
 
@@ -136,6 +136,7 @@ Last activity: 2026-07-20
 | Phase 27 P01 | 3min | 2 tasks | 8 files |
 | Phase 27-task-local-adoption-workflow-safe-application-v2-3-b P02 | 32min | 2 tasks | 6 files |
 | Phase 27-03 P03 | 4min | 2 tasks | 3 files |
+| Phase 27 P04 | 12min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -240,6 +241,7 @@ Recent decisions affecting current work:
 - [Phase 27-02]: A1 followed — new self-contained approval.schema.json (D-11), not an attestation.schema.json extension. — Binding tuple (draft_hash, task_revision, git_ref) + closed 6-value decisionKindEnum ratified as Plan 27-04/27-06's target contract; human-ratified via blocking checkpoint 2026-07-21.
 - [Phase 27-03]: apply.py refuse_if_constitution called first, unconditionally, in every apply_disposition branch — no cached per-batch check
 - [Phase 27-03]: create disposition's concurrent-drift check is existence-based, not hash-based: any existing target where the manifest recorded none is drift by definition
+- [Phase 27]: Reused GOLDEN_APPROVE_HUMAN verbatim rather than a new adoption-specific env var (RESEARCH-mandated precedent)
 
 ### Pending Todos
 
@@ -280,7 +282,7 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-20T16:13:36.828Z
+Last session: 2026-07-20T16:22:21.349Z
 Stopped at: Completed 26.2-01-PLAN.md
 Resume file: None
 
