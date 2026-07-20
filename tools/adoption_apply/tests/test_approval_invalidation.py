@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 
+from tools.adoption_apply import approval as approval_module
 from tools.adoption_apply import batch
 from tools.adoption_apply.approval import (
     AdoptionApprovalRefused,
@@ -237,10 +238,11 @@ def test_valid_false_on_missing_draft_artifact(
 # evidence for WR-06 comes from the invalid-JSON, non-object, and missing-key rows.
 #
 # A row is either raw bytes written verbatim, or a callable mutating the REAL promoted approval
-# document. The callable form matters for the missing-key and wrong-type rows: `check_valid`'s
-# comparison is a short-circuiting `and`, so a row that also perturbs `draft_hash` never reaches
-# `stored["task_revision"]` at all and would return False for the wrong reason. Mutating the real
-# document keeps every other axis matching, so each row isolates exactly its own key.
+# document (and, for the encoding rows, re-encoding it to bytes). The callable form matters for the
+# missing-key and wrong-type rows: mutating the real document keeps every other axis matching, so
+# each row isolates exactly its own key rather than returning False for some unrelated reason.
+# Since WR-04 the three subscripts are read eagerly into one tuple, so a missing key raises for
+# ITS OWN key rather than being masked by an earlier short-circuiting `and`.
 
 
 def _without(key: str):
@@ -330,6 +332,53 @@ def test_check_valid_never_raises_on_corrupt_approval(
         )
 
     assert check_valid(task_dir, batch_id, git_repo) is False, case_name
+
+
+def test_check_valid_lets_a_task_control_defect_surface(
+    task_dir: Path,
+    git_repo: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """WR-04: a `KeyError` from the CAS layer is a real defect, NOT a stale approval.
+
+    Reporting "this approval is stale, re-promote" for a `show()` that returned a state dict
+    without `"revision"` is untrue and unactionable. The corruption tuple is deliberately scoped to
+    the approval DOCUMENT; recomputations sit outside it and crash loudly.
+    """
+    monkeypatch.setenv(HUMAN_TOKEN_ENV, _HUMAN_VALUE)
+    batch_id = _seed_batch(task_dir, git_repo)
+    promote(
+        task_dir, batch_id, git_repo, approve=True, decisions=_DECISIONS, confirmation=_HUMAN_VALUE
+    )
+    assert check_valid(task_dir, batch_id, git_repo) is True
+
+    monkeypatch.setattr(approval_module, "show", lambda _task_dir: {"task_id": "T-broken"})
+    with pytest.raises(KeyError):
+        check_valid(task_dir, batch_id, git_repo)
+
+
+def test_check_valid_propagates_an_environment_fault(
+    task_dir: Path,
+    git_repo: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """WR-03: `check_valid`'s promise is bounded to the approval DOCUMENT.
+
+    An environment fault — here a `--repo-root` that is not a git repository — still propagates as
+    `AdoptionApprovalRefused`. This is a characterization test: it pins the behaviour the narrowed
+    docstring now states, replacing the old flat "Never raises".
+    """
+    monkeypatch.setenv(HUMAN_TOKEN_ENV, _HUMAN_VALUE)
+    batch_id = _seed_batch(task_dir, git_repo)
+    promote(
+        task_dir, batch_id, git_repo, approve=True, decisions=_DECISIONS, confirmation=_HUMAN_VALUE
+    )
+
+    non_repo = tmp_path / "not-a-repo"
+    non_repo.mkdir()
+    with pytest.raises(AdoptionApprovalRefused):
+        check_valid(task_dir, batch_id, non_repo)
 
 
 def test_sc1_full_resume_cycle(

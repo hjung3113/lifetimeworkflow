@@ -176,38 +176,20 @@ def check_valid(task_dir: Path, batch_id: str, repo_root: Path) -> bool:
     Every element is recomputed fresh at call time (T-27-04-03: no cached/stale validity result).
     No partial credit — any single mismatch returns ``False``.
 
-    Never raises: an unreadable, malformed, or structurally-wrong stored approval is treated as
-    invalid, extending WR-02's guarantee from the draft artifacts to the approval document itself
-    (WR-06).
+    Never raises **on a malformed approval document**: unreadable, undecodable, or
+    structurally-wrong stored approval bytes are treated as invalid, extending WR-02's guarantee
+    from the draft artifacts to the approval document itself (WR-06/CR-01). Environment faults are
+    deliberately NOT absorbed and still propagate (WR-03): ``AdoptionApprovalRefused`` when
+    ``repo_root``'s HEAD cannot be resolved, and ``TaskControlError`` on a missing or
+    schema-invalid ``state.json``. Reporting either of those as "your approval is stale" would be
+    untrue and unactionable — see WR-04 and the scoping of the ``except`` below.
     """
     path = _approval_path(task_dir, batch_id)
     if not path.is_file():
         return False
     batch_dir = _batch_dir(task_dir, batch_id)
-    try:
-        # CR-01: decode EXPLICITLY as UTF-8 rather than handing bytes to `json.loads`, which runs
-        # `json.detect_encoding` and silently accepts UTF-16/UTF-32 — an approval document in a
-        # non-UTF-8 encoding would then validate as current, which §4.3 byte hygiene does not
-        # sanction. The explicit decode also moves the failure of undecodable bytes onto a
-        # `UnicodeDecodeError` we name below, instead of one raised implicitly inside `json.loads`.
-        stored = json.loads(path.read_bytes().decode("utf-8"))
-        draft_hash = _recompute_draft_hash(batch_dir)
-        return (
-            stored["draft_hash"] == draft_hash
-            and stored["task_revision"] == _current_task_revision(task_dir)
-            and stored["git_ref"] == _current_git_ref(repo_root)
-        )
-    except (OSError, json.JSONDecodeError, UnicodeDecodeError, KeyError, TypeError) as exc:
-        # OSError: WR-02's original coverage — an incomplete batch directory (a
-        # missing draft artifact) is no partial credit, never an uncaught crash out of a validity
-        # check. WR-06 adds: JSONDecodeError for malformed approval bytes (it subclasses
-        # ValueError, not OSError, so it was genuinely uncovered), KeyError for a missing required
-        # key, and TypeError for valid JSON that is not an object, where ``stored["draft_hash"]``
-        # raises rather than returning a mismatch. CR-01 adds UnicodeDecodeError — also a
-        # ValueError subclass, named neither by JSONDecodeError nor by OSError — for bytes that
-        # are not decodable UTF-8 at all. ``FileNotFoundError`` is not listed: it is an ``OSError``
-        # subclass, so naming it was redundant.
-        #
+
+    def _unusable(exc: BaseException) -> None:
         # The diagnostic names the path and the exception class ONLY — never the file's contents or
         # the exception's message body, since a corrupted approval may hold arbitrary bytes (the
         # same no-content-leak rule test_marker_merge_refuses_symlink_read establishes).
@@ -215,4 +197,37 @@ def check_valid(task_dir: Path, batch_id: str, repo_root: Path) -> bool:
             f"approval.json unusable for batch '{batch_id}' at {path}: {type(exc).__name__}",
             file=sys.stderr,
         )
+
+    # WR-04: this `try` spans the approval DOCUMENT only — the parse and the three subscript reads.
+    # It deliberately does NOT span `_recompute_draft_hash`/`_current_task_revision`/
+    # `_current_git_ref`: `KeyError` and `TypeError` are broad enough that a genuine defect in the
+    # CAS layer (e.g. `show()` returning a state dict with no `"revision"`) would otherwise be
+    # swallowed and misreported to the operator as a stale approval.
+    try:
+        # CR-01: decode EXPLICITLY as UTF-8 rather than handing bytes to `json.loads`, which runs
+        # `json.detect_encoding` and silently accepts UTF-16/UTF-32 — an approval document in a
+        # non-UTF-8 encoding would then validate as current, which §4.3 byte hygiene does not
+        # sanction. The explicit decode also moves the failure of undecodable bytes onto a
+        # `UnicodeDecodeError` we name below, instead of one raised implicitly inside `json.loads`.
+        stored = json.loads(path.read_bytes().decode("utf-8"))
+        expected = (stored["draft_hash"], stored["task_revision"], stored["git_ref"])
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError, KeyError, TypeError) as exc:
+        # OSError: an unreadable approval file. WR-06 adds JSONDecodeError for malformed approval
+        # bytes (it subclasses ValueError, not OSError, so it was genuinely uncovered), KeyError
+        # for a missing required key, and TypeError for valid JSON that is not an object, where
+        # ``stored["draft_hash"]`` raises rather than returning a mismatch. CR-01 adds
+        # UnicodeDecodeError — also a ValueError subclass, named neither by JSONDecodeError nor by
+        # OSError — for bytes that are not decodable UTF-8 at all. ``FileNotFoundError`` is not
+        # listed: it is an ``OSError`` subclass, so naming it was redundant.
+        _unusable(exc)
         return False
+
+    try:
+        draft_hash = _recompute_draft_hash(batch_dir)
+    except OSError as exc:
+        # WR-02's original, intentional coverage: an incomplete batch directory (a missing draft
+        # artifact) is no partial credit, never an uncaught crash out of a validity check.
+        _unusable(exc)
+        return False
+
+    return expected == (draft_hash, _current_task_revision(task_dir), _current_git_ref(repo_root))
