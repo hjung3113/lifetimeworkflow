@@ -1,50 +1,58 @@
 {
   "version": "1.0",
-  "timestamp": "2026-07-18T00:00:00Z",
-  "phase": "milestone-boundary",
-  "phase_name": "v2.1 shipped; next milestone scoping deferred to next session",
+  "timestamp": "2026-07-20T19:33:26.240Z",
+  "phase": "27.1",
+  "phase_name": "Adoption Safety — path-normalization bypass, apply-mode confinement, unconsulted approval gate",
+  "phase_dir": ".planning/phases/27.1-adoption-safety-path-normalization-bypass-apply-mode-confine",
+  "plan": 3,
+  "task": 3,
+  "total_tasks": 3,
   "status": "paused",
-  "completed_this_session": [
-    {"id": 1, "name": "v2.1 (MEM2) milestone audit — refreshed to status: passed, 7/7 requirements"},
-    {"id": 2, "name": "Phase 16 (Local Memory Web UI, MEM2-07) — discuss(--auto) → UI-spec → research → pattern-map → plan(6 plans/5 waves) → execute → code-review(CR-01 + 3 warnings fixed) → verify. Browser round-trip 5/5 verified live via Orca CLI browser.", "status": "complete"},
-    {"id": 3, "name": "Phases 12/13/14 goal-verification — generated the missing VERIFICATION.md (12: 4/4, 13: 4/4, 14: 6/6, all passed). Closed the recurring 'has SUMMARY != verified' gap.", "status": "complete"},
-    {"id": 4, "name": "Nyquist backfill — Phases 13 & 14 VALIDATION.md finalized (status: final, nyquist_compliant: true). 13 got 2 new test files (7 tests); 14 was already covered (5/5).", "status": "complete"},
-    {"id": 5, "name": "Quick task 260716-16x (6 broken GSD hooks) — confirmed already fixed + committed (085064c); cleared from audit-open (stale global gsd-sdk needed a bare SUMMARY.md alias).", "status": "complete"},
-    {"id": 6, "name": "tools/memory_ui/README.md written", "status": "complete"},
-    {"id": 7, "name": "Milestone v2.1 archived (milestones/v2.1-{ROADMAP,REQUIREMENTS,MILESTONE-AUDIT}.md + v2.1-phases/12..16; REQUIREMENTS.md deleted; ROADMAP collapsed; MILESTONES/PROJECT/STATE updated). Commit 3b8a39e.", "status": "complete"},
-    {"id": 8, "name": "git tag v2.1 created + pushed; branch claude/data-pipeline-harness-8aypct pushed to origin (github.com/hjung3113/lifetimeworkflow).", "status": "complete"}
+  "completed_tasks": [
+    {"id": 1, "name": "Phase 26.2 — secret-pattern semantics (IGNORECASE collapse + digit-less)", "status": "done", "commit": "8ed5250"},
+    {"id": 2, "name": "Phase 27 — task-local adoption workflow (6 plans, 3 waves)", "status": "done_but_verification_failed", "commit": "1665063"},
+    {"id": 3, "name": "Phase 27.1 — adoption safety fixes (3 plans, 3 waves)", "status": "done", "commit": "302ce15"}
   ],
-  "milestone_state": {
-    "shipped": "v2.1 MEM2 — Process Memory & Provenance Reframe (2026-07-18)",
-    "tag": "v2.1 (pushed to origin)",
-    "full_suite": "690 passed / 0 failed",
-    "archived_milestones": ["v1.0 (phases 1-8, not formally milestone-closed)", "v2.0 (phases 9-11)", "v2.1 (phases 12-16)"],
-    "live_phases": ["17-constitution-gate-dev-enforce-decoupling (infra, complete, independent of MEM2)", "01-08 (v1.0, never formally archived)"]
-  },
-  "next_action": {
-    "command": "/gsd:new-milestone",
-    "version": "v2.2 (minor) or v3.0 (major) — user picks",
-    "theme": "harness hardening / gate-tightening PLUS additional features the user will specify next session",
-    "user_directive": "1번(하네스 하드닝) 포함 + 다른 기능도 추가 예정 — 다음 세션에서 스코핑",
-    "note": "new-milestone was entered this session but intentionally paused at the 'what to build next' gate; NO new-milestone artifacts (requirements/roadmap) were written. Re-run /gsd:new-milestone fresh next session and answer its questioning with the theme below + the user's additional features."
-  },
-  "candidate_requirements_for_hardening_theme": [
-    "CI-gate the provenance lint: there is NO .pre-commit-config.yaml and no dedicated CI step running `python -m tools.harness_lint.provenance` against the live .memory/agreements/ dir. tools/harness_lint/provenance.py is unit-tested + wired into /lint, but a malformed agreement committed without running /lint is not caught automatically. (v2.1 integration warning 1)",
-    "Fix check_agreement() body-shape gap: it validates frontmatter only (status/added/provenance). A valid-frontmatter/empty-body agreement passes lint but _render_agreement() silently returns None and drops the entry — fails silently. Add a body check (# Title line + non-empty rule line). (v2.1 integration warning 2)",
-    "Verify/harden the CI emit-drift gate against untracked files: 15-REVIEW.md CR-01 flagged bare `git diff --exit-code` being blind to untracked emitted artifacts. Phase 16-04 verified emit via a CI replica using `git add -A` + `git diff --cached`; confirm the ACTUAL .github/workflows/ci.yml emit-drift leg uses the untracked-safe idiom (the fix idiom already exists at ci.yml:206).",
-    "Reword the EXPECTED_COMMANDS mis-wording: MEM2-04 requirement text + ROADMAP Phase 15 SC1 name a constant `EXPECTED_COMMANDS` that has never existed in source (0 repo hits). Substance is satisfied by glob-driven test_commands.py discovery. Reword the docs so a future phase doesn't rediscover the ghost. (D-11)",
-    "(deferred, optional) MEM2-F1: per-instance agreement overlays for examples/* (like project.toml/ADR-0003 overlays) — v2.1 explicitly deferred; MVP was one global core channel.",
-    "+ ADDITIONAL FEATURES: the user will specify these next session — do NOT assume; ask in new-milestone questioning."
+  "remaining_tasks": [
+    {"id": 4, "name": "Phase 27.2 (NOT YET CREATED) — close WR-05, WR-06, WR-07 from 27.1-REVIEW.md", "status": "not_started"},
+    {"id": 5, "name": "Phase 28 — Human-Docs Registry, Guard, Derived Queue (v2.3 C)", "status": "not_started"},
+    {"id": 6, "name": "Phase 29 — Docs Drive Loop + Adoption Integration + Closeout", "status": "not_started"}
   ],
-  "required_reading_next_session": [
-    ".planning/PROJECT.md — Current State + Next Milestone (theme note)",
-    ".planning/MILESTONES.md — v2.1 accomplishments",
-    ".planning/milestones/v2.1-MILESTONE-AUDIT.md — the passed audit + tech_debt list (source of the hardening candidates)",
-    ".planning/milestones/v2.1-REQUIREMENTS.md — the v2 Requirements / Out of Scope (MEM2-F1)"
+  "blockers": [
+    {
+      "description": "WR-05: destination \".\" passes both the manifest.schema.json pattern AND refuse_unsafe_destination, then crashes apply_disposition with an unhandled IsADirectoryError (not in cli.py's except tuple). Contradicts 27.1's own 'clean refusal, never a traceback' goal.",
+      "type": "technical",
+      "workaround": "Fails closed — no unauthorized write. Reproduce: apply_disposition({'destination':'.','disposition':'create'}, tmpdir, payload=b'x')"
+    },
+    {
+      "description": "WR-06: approval.check_valid still raises uncaught (JSONDecodeError/KeyError) on a corrupted or incomplete approval.json. WR-02's fix only wrapped _recompute_draft_hash; the json.loads at approval.py:181 and the stored[...] key accesses are outside the try.",
+      "type": "technical",
+      "workaround": "Fails closed. Fix: widen the try to cover the read + key accesses."
+    },
+    {
+      "description": "WR-07: the WR-01 concurrency test would still pass if fcntl.flock() were deleted — it only asserts the .lock sidecar file exists, which open() alone creates. A test that cannot fail when the control regresses.",
+      "type": "technical",
+      "workaround": "None. This is the same defect class that produced both Phase 27 and 27.1 — highest-priority of the three despite lowest severity label."
+    }
   ],
-  "infrastructure_notes": [
-    ".claude/settings.local.json HARNESS_DEV_BYPASS may be set for the dev session (Phase-17 posture); constitution-plane writes (contracts/adr/golden) can land without the human token in-session — CODEOWNERS still gates PR merge. Phase 16 touched none of the constitution plane.",
-    "Untracked .mcp.json at repo root is pre-existing and intentionally left alone.",
-    "The running `gsd-sdk` is a stale npx-cached global (~/.npm/_npx/.../get-shit-done-cc); the repo's own .claude/get-shit-done is newer. Quirk: audit-open needs a bare SUMMARY.md (not just ${id}-SUMMARY.md) for quick tasks."
-  ]
+  "human_actions_pending": [
+    {
+      "action": "Decide whether to run Phase 27.2 (close WR-05/06/07) before Phase 28, or proceed to 28 and leave them open",
+      "context": "Orchestrator recommended 27.2 first — same file surface, small, no constitution-plane edit so no ratification needed. User chose to defer the decision to the next session.",
+      "blocking": false
+    }
+  ],
+  "decisions": [
+    {"decision": "secret_patterns[1] digit requirement relaxed to 2-of-3 charset classes", "rationale": "The evidence-redaction plaintext-leak harm outranks the false-positive cost; ci.yml red-green proof re-run to confirm 26.1's original false positive stays closed", "phase": "26.2"},
+    {"decision": "IGNORECASE collapse fixed with scoped (?-i:...) groups, consumers keep re.IGNORECASE", "rationale": "Repo targets Python >=3.11; fixes the pattern rather than every call site", "phase": "26.2"},
+    {"decision": "Adoption batch is purely additive evidence — no transitions.json edit", "rationale": "ADOPT-04..07 never mention phase-gating; transitions.json is constitution-plane, so adding a gate is a separate larger decision", "phase": "27"},
+    {"decision": "<batch-id> content-derived from (target_ref, discover-UTC-date)", "rationale": "Same-day re-discover against an unchanged ref resumes the same batch, satisfying SC-1's safe-resume", "phase": "27"},
+    {"decision": "approval.schema.json is a NEW self-contained contract, not an extension of attestation.schema.json", "rationale": "Attestation binds constraint-source files at SPEC time; approval binds a human promotion decision at REVIEW time — different vocabularies, no cross-file $ref", "phase": "27"},
+    {"decision": "New choke point refuse_unsafe_destination; refuse_if_constitution kept as a thin wrapper", "rationale": "Every write funnels through one guard; Phase 27's tests keep passing unmodified because they were insufficient, not wrong", "phase": "27.1"},
+    {"decision": "check_valid(repo_root=...) is the harness's own repo root, not the brownfield target", "rationale": "The approval's git_ref sits on the same plane as task_revision and draft_hash (all harness-side); a brownfield target may not be a git repo at all", "phase": "27.1"},
+    {"decision": "Case-insensitive constitution compare is always-on, never sys.platform-conditional", "rationale": "CI is Linux (case-sensitive), dev is macOS (case-insensitive); the guard must refuse identically on both", "phase": "27.1"}
+  ],
+  "uncommitted_files": [],
+  "next_action": "Decide Phase 27.2 (close WR-05/WR-06/WR-07) vs. proceeding to Phase 28. If 27.2: insert it in ROADMAP.md following the 26.2/27.1 precedent, then /gsd:plan-phase 27.2 --auto --chain. If 28: /gsd:plan-phase 28 --auto --chain.",
+  "context_notes": "Phase 27 is deliberately left as Executed-not-Complete with a failed verification on record — that is accurate history, not an oversight; do not retro-mark it complete. Its three security defects were closed by Phase 27.1, which passed 5/5. The through-line of this whole session: three separate phases (26.1->26.2, 27->27.1) shipped green while the changed control was wrong, every time because the tests only exercised the one input spelling that worked. WR-07 is that same defect still live. Treat 'would this test fail if the fix were reverted?' as the default question for any control-shaped change in this repo. Both constitution-plane commits this session (approval.schema.json, manifest.schema.json pattern) were human-ratified in-session, recorded distinctly from the HARNESS_DEV_BYPASS mechanical write."
 }
