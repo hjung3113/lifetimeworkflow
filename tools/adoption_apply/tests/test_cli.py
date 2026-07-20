@@ -582,6 +582,7 @@ def test_cli_apply_refuses_hostile_destination_cleanly(
     assert "SECRET-ORIGINAL" not in result.stderr
     assert result.stderr.strip()
     assert agents_md.is_symlink(), "the symlink itself must be untouched"
+    assert victim.read_text(encoding="utf-8") == "SECRET-ORIGINAL\n"
 
 
 # --- WR-05 (27.2-01): a directory-shaped destination refuses cleanly at the CLI boundary --------
@@ -639,4 +640,3 @@ def test_cli_apply_refuses_directory_shaped_destination(
 
     # The trailing-slash case must not have silently created a file where a directory was asked for.
     assert not (apply_target / "newdir").exists()
-    assert victim.read_text(encoding="utf-8") == "SECRET-ORIGINAL\n"

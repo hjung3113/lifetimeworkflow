@@ -115,11 +115,21 @@ def refuse_unsafe_destination(destination: str, target_root: str | Path) -> Path
     destination through ONE function, rather than trusting every call site to remember both
     ``refuse_if_constitution`` and ``refuse_if_outside_root`` independently.
 
+    Also closes WR-05 (a directory-shaped destination crashing the ``create`` branch with an
+    unhandled ``IsADirectoryError`` instead of refusing cleanly) — in all three of its classes:
+    a spelling that names a directory (``"a/"``, ``"a/b/."``), one that resolves to ``target_root``
+    itself, and one that resolves to an existing directory.
+
     1. Structural pre-check, before any filesystem call: reject an absolute ``destination`` or one
-       containing a literal ``..`` path segment (not a substring — ``foo/bar..json`` is fine).
+       containing a literal ``..`` path segment (not a substring — ``foo/bar..json`` is fine), or
+       one whose last raw segment is empty or ``.`` — i.e. a spelling that names a directory
+       rather than a file (WR-05).
     2. Resolve ``target_root / destination`` (``strict=False`` — the target need not exist yet).
     3. Confine via the existing, unchanged ``refuse_if_outside_root``.
-    4. Classify the resolved, target-root-relative path against ``CONSTITUTION_GLOBS`` — always
+    4. Reject a destination that resolves to ``target_root`` itself, or to an existing directory
+       (WR-05) — both before the ``relative_to`` classification below, whose ``"."`` result for a
+       root-equal path matches no constitution glob and is exactly what let ``"."`` through.
+    5. Classify the resolved, target-root-relative path against ``CONSTITUTION_GLOBS`` — always
        case-insensitively (lowering the candidate only, never the globs; RESEARCH verified
        ``Path.resolve()`` does not itself canonicalize case) — by reusing the unchanged, thin
        ``refuse_if_constitution`` wrapper (D-01).
@@ -133,9 +143,27 @@ def refuse_unsafe_destination(destination: str, target_root: str | Path) -> Path
             f"'{destination}' is absolute or contains a '..' path segment — refusing the write "
             "before any resolution or filesystem call."
         )
+    # WR-05, structural: the ONLY check that sees the trailing-slash class. `"newdir/"` resolves to
+    # `target_root/newdir` — neither root-equal nor an existing directory — so no resolve-based
+    # check can catch it, and a manifest asking for a directory would silently create a FILE.
+    if segments[-1] in ("", "."):
+        raise PathEscapeError(
+            f"'{destination}' names a directory, not a file (its last path segment is empty or "
+            "'.') — refusing the write before any resolution or filesystem call."
+        )
 
     target_path = (Path(target_root) / destination).resolve(strict=False)
     refuse_if_outside_root(target_path, target_root)
+
+    if target_path == Path(target_root).resolve():
+        raise PathEscapeError(
+            f"'{destination}' resolves to the target root itself — a destination must be a proper "
+            "descendant of it, not the root directory."
+        )
+    if target_path.is_dir():
+        raise PathEscapeError(
+            f"'{destination}' resolves to an existing directory — refusing the write."
+        )
 
     relative = target_path.relative_to(Path(target_root).resolve()).as_posix()
     refuse_if_constitution(relative.lower())

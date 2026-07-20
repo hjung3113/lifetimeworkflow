@@ -188,12 +188,18 @@ def _cmd_apply(args: argparse.Namespace) -> int:
         summary = apply_manifest(
             manifest, Path(args.target), payloads=payloads, block_bodies=block_bodies
         )
+    # WR-05: this tuple is a BACKSTOP, not the guard — a directory-shaped destination is refused by
+    # apply.refuse_unsafe_destination before any write. IsADirectoryError and CollisionError are
+    # named here as defense in depth so a write-side fault still maps to the documented exit 1
+    # rather than leaking a traceback.
     except (
         apply_module.ConstitutionRefusal,
         apply_module.ConcurrentDriftError,
         apply_module.UnknownDispositionError,
         apply_module.PathEscapeError,
         apply_module.SymlinkRefusal,
+        apply_module.CollisionError,
+        IsADirectoryError,
     ) as exc:
         print(f"tools.adoption_apply apply: {exc}", file=sys.stderr)
         return 1
