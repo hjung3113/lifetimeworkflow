@@ -118,7 +118,9 @@ def refuse_unsafe_destination(destination: str, target_root: str | Path) -> Path
     Also closes WR-05 (a directory-shaped destination crashing the ``create`` branch with an
     unhandled ``IsADirectoryError`` instead of refusing cleanly) — in all three of its classes:
     a spelling that names a directory (``"a/"``, ``"a/b/."``), one that resolves to ``target_root``
-    itself, and one that resolves to an existing directory.
+    itself, and one that resolves to an existing directory — and WR-02 (a destination whose parent
+    chain is an existing FILE, which crashed ``atomic_create``'s ``mkdir`` with a raw
+    ``FileExistsError``).
 
     1. Structural pre-check, before any filesystem call: reject an absolute ``destination`` or one
        containing a literal ``..`` path segment (not a substring — ``foo/bar..json`` is fine), or
@@ -128,8 +130,13 @@ def refuse_unsafe_destination(destination: str, target_root: str | Path) -> Path
     3. Confine via the existing, unchanged ``refuse_if_outside_root``.
     4. Reject a destination that resolves to ``target_root`` itself, or to an existing directory
        (WR-05) — both before the ``relative_to`` classification below, whose ``"."`` result for a
-       root-equal path matches no constitution glob and is exactly what let ``"."`` through.
-    5. Classify the resolved, target-root-relative path against ``CONSTITUTION_GLOBS`` — always
+       root-equal path matches no constitution glob and is exactly what let ``"."`` through. Note
+       that after step 1 the root-equality arm is reachable only via a **symlink** resolving to the
+       root; every plain spelling of the root is already stopped by step 1's last-segment check.
+    5. Reject a destination whose parent chain runs through an existing NON-directory (WR-02) —
+       ``AGENTS.md/evil.txt`` where ``AGENTS.md`` is a file passes every check above and would
+       otherwise surface as a raw ``FileExistsError`` from ``atomic_create``'s ``mkdir``.
+    6. Classify the resolved, target-root-relative path against ``CONSTITUTION_GLOBS`` — always
        case-insensitively (lowering the candidate only, never the globs; RESEARCH verified
        ``Path.resolve()`` does not itself canonicalize case) — by reusing the unchanged, thin
        ``refuse_if_constitution`` wrapper (D-01).
@@ -154,8 +161,9 @@ def refuse_unsafe_destination(destination: str, target_root: str | Path) -> Path
 
     target_path = (Path(target_root) / destination).resolve(strict=False)
     refuse_if_outside_root(target_path, target_root)
+    resolved_root = Path(target_root).resolve()
 
-    if target_path == Path(target_root).resolve():
+    if target_path == resolved_root:
         raise PathEscapeError(
             f"'{destination}' resolves to the target root itself — a destination must be a proper "
             "descendant of it, not the root directory."
@@ -165,7 +173,24 @@ def refuse_unsafe_destination(destination: str, target_root: str | Path) -> Path
             f"'{destination}' resolves to an existing directory — refusing the write."
         )
 
-    relative = target_path.relative_to(Path(target_root).resolve()).as_posix()
+    # WR-02: a destination whose parent chain runs THROUGH an existing non-directory — e.g.
+    # `AGENTS.md/evil.txt` where `AGENTS.md` is a file — is directory-shaped to none of the checks
+    # above (relative, no `..`, last segment `evil.txt`, not root-equal, and `is_dir()` is False
+    # precisely BECAUSE the parent is a file). It reached `atomic_create`, whose
+    # `parent.mkdir(parents=True)` raised a bare `FileExistsError` (`NotADirectoryError` on some
+    # platforms) that no caller named. Refuse it here instead, per D-01: unsafe destinations are
+    # decided at the choke point, before any filesystem write. The walk stops at the target root,
+    # which confinement has already established as an ancestor.
+    for ancestor in target_path.parents:
+        if ancestor == resolved_root:
+            break
+        if ancestor.exists() and not ancestor.is_dir():
+            raise PathEscapeError(
+                f"'{destination}' has an existing non-directory ancestor '{ancestor.name}' — "
+                "refusing the write."
+            )
+
+    relative = target_path.relative_to(resolved_root).as_posix()
     refuse_if_constitution(relative.lower())
 
     return target_path

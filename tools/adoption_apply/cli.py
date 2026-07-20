@@ -191,7 +191,9 @@ def _cmd_apply(args: argparse.Namespace) -> int:
     # WR-05: this tuple is a BACKSTOP, not the guard — a directory-shaped destination is refused by
     # apply.refuse_unsafe_destination before any write. IsADirectoryError and CollisionError are
     # named here as defense in depth so a write-side fault still maps to the documented exit 1
-    # rather than leaking a traceback.
+    # rather than leaking a traceback. WR-02 adds FileExistsError/NotADirectoryError for the same
+    # reason: they are the mkdir-side faults a destination with a non-directory ancestor produced.
+    # Both are now unreachable through the guard — they are backstop-only by construction.
     except (
         apply_module.ConstitutionRefusal,
         apply_module.ConcurrentDriftError,
@@ -200,6 +202,8 @@ def _cmd_apply(args: argparse.Namespace) -> int:
         apply_module.SymlinkRefusal,
         apply_module.CollisionError,
         IsADirectoryError,
+        FileExistsError,
+        NotADirectoryError,
     ) as exc:
         print(f"tools.adoption_apply apply: {exc}", file=sys.stderr)
         return 1

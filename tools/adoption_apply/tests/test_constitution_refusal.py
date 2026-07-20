@@ -236,6 +236,57 @@ def test_refuse_unsafe_destination_rejects_directory_shaped(
     assert expected_guard in message, f"{case_name}: refused by the wrong guard — {message}"
 
 
+# --- WR-02 (27.2 review) — a destination whose parent chain is an existing FILE ---------------
+#
+# `AGENTS.md/evil.txt` (with `AGENTS.md` an existing file) is not directory-shaped to ANY of the
+# checks above: it is relative, has no `..`, its last segment is `evil.txt`, it does not resolve
+# to the root, and `is_dir()` is False precisely because the parent is a file. It therefore passed
+# the whole choke point and blew up downstream in `atomic_create`'s `mkdir` with a raw
+# `FileExistsError` — not in the CLI's except tuple, so a traceback leaked.
+NON_DIRECTORY_ANCESTOR_DESTINATIONS = [
+    ("parent_is_file", "AGENTS.md/evil.txt"),
+    ("grandparent_is_file", "AGENTS.md/nested/evil.txt"),
+]
+
+
+@pytest.mark.parametrize(
+    ("case_name", "destination"),
+    NON_DIRECTORY_ANCESTOR_DESTINATIONS,
+    ids=[case_name for case_name, _ in NON_DIRECTORY_ANCESTOR_DESTINATIONS],
+)
+def test_refuse_unsafe_destination_rejects_non_directory_ancestor(tmp_path, case_name, destination):
+    """WR-02: refuse at the choke point (D-01), before any filesystem write is attempted."""
+    (tmp_path / "AGENTS.md").write_text("marker\n", encoding="utf-8")
+
+    with pytest.raises(apply.PathEscapeError) as excinfo:
+        apply.refuse_unsafe_destination(destination, tmp_path)
+
+    message = str(excinfo.value)
+    assert f"'{destination}'" in message, case_name
+    assert "non-directory ancestor" in message, f"{case_name}: refused by the wrong guard"
+
+
+def test_apply_disposition_refuses_non_directory_ancestor(tmp_path, monkeypatch):
+    """End-to-end: `PathEscapeError`, never a raw `FileExistsError`, and zero writes — the
+    existing marker file is left byte-identical."""
+    (tmp_path / "AGENTS.md").write_text("marker\n", encoding="utf-8")
+    open_spy = MagicMock(wraps=os.open)
+    link_spy = MagicMock(wraps=os.link)
+    replace_spy = MagicMock(wraps=os.replace)
+    monkeypatch.setattr(os, "open", open_spy)
+    monkeypatch.setattr(os, "link", link_spy)
+    monkeypatch.setattr(os, "replace", replace_spy)
+
+    record = {"destination": "AGENTS.md/evil.txt", "disposition": "create"}
+    with pytest.raises(apply.PathEscapeError):
+        apply.apply_disposition(record, tmp_path, payload=b"content")
+
+    assert open_spy.call_count == 0
+    assert link_spy.call_count == 0
+    assert replace_spy.call_count == 0
+    assert (tmp_path / "AGENTS.md").read_text(encoding="utf-8") == "marker\n"
+
+
 def test_refuse_unsafe_destination_still_allows_file_destinations(tmp_path):
     """D-03 negative control: the WR-05 guard must not over-refuse. A file inside an existing
     directory, a file whose parent chain does not exist yet, and a root-level file all stay
