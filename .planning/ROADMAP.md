@@ -613,7 +613,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 27-01-PLAN.md — tools/adoption_apply workspace scaffold + CAS-guarded batch layout (ADOPT-04)
+- [x] 27-01-PLAN.md — tools/adoption_apply workspace scaffold + CAS-guarded batch layout (ADOPT-04)
 - [ ] 27-02-PLAN.md — approval.schema.json contract + hash rebaseline + derived-plane regen (ADOPT-06, human-ratified checkpoint)
 
 **Wave 2** *(blocked on 27-01/27-02)*

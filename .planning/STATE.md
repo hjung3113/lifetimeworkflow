@@ -4,14 +4,14 @@ milestone: v2.3
 milestone_name: A)*
 status: executing
 stopped_at: Completed 26.2-01-PLAN.md
-last_updated: "2026-07-20T15:50:33.265Z"
-last_activity: 2026-07-20 -- Phase 27 planning complete
+last_updated: "2026-07-20T15:56:14.615Z"
+last_activity: 2026-07-20
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 24
-  completed_plans: 18
-  percent: 75
+  completed_plans: 19
+  percent: 79
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-18)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 26.2 — secret-pattern-semantics-ignorecase-collapse-digit-less-fals
+**Current focus:** Phase 27 — task-local-adoption-workflow-safe-application-v2-3-b
 
 ## Current Position
 
-Phase: 26.2 (secret-pattern-semantics-ignorecase-collapse-digit-less-fals) — EXECUTING
-Plan: 1 of 1
+Phase: 27 (task-local-adoption-workflow-safe-application-v2-3-b) — EXECUTING
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-07-20 -- Phase 27 planning complete
+Last activity: 2026-07-20
 
 ## Performance Metrics
 
@@ -133,6 +133,7 @@ Last activity: 2026-07-20 -- Phase 27 planning complete
 | Phase 26 P08 | 20min | 2 tasks | 5 files |
 | Phase 26.1 P01 | resumed-continuation | 3 tasks | 8 files |
 | Phase 26.2 P01 | 22min | 3 tasks | 6 files |
+| Phase 27 P01 | 3min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -233,6 +234,7 @@ Recent decisions affecting current work:
 - [Phase 26]: 26-09: plan.py::classify() now walks inventory["schema_surfaces"] per evidence pointer, emitting one contract-candidate proposal per schema file (WR-05, closing the last permanently-dead-code question/proposal kind in this phase's gap-closure round). detect_codeowners_surfaces() widened to a _CODEOWNERS_PATHS frozenset recognizing CODEOWNERS/.github/CODEOWNERS/docs/CODEOWNERS (WR-06), one surfaceRecord per matching path. Five new tests, including a live-repo-scan assertion against this checkout's own contracts/ tree. Phase 26 (deterministic-brownfield-inventory-mapping-v2-3-b) is now COMPLETE — 9/9 plans.
 - [Phase 26.1]: SC-4 constitution-plane secret_patterns[1] edit human-ratified via blocking checkpoint ("approved"/승인), distinct from HARNESS_DEV_BYPASS write setting
 - [Phase 26.2]: 26.2-01: secret_patterns[1] rewritten with (?-i:...)-scoped case lookaheads (CR-01) + length-floor + 2-of-3-charset disjunction (D-01, relaxed WR-01 fix); mixed-case digit-less values now match; single-case-only and all-numeric digit-less remain an accepted, documented residual gap. SC-1 ci.yml false-positive re-verified green. Human-ratified via blocking checkpoint (08b5d68), distinct from HARNESS_DEV_BYPASS.
+- [Phase ?]: D-01/D-02 upheld: batch.py content-derives <batch-id> from (target_ref, UTC date); zero transitions.json edit
 
 ### Pending Todos
 
@@ -273,7 +275,7 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-20T14:17:52.653Z
+Last session: 2026-07-20T15:55:26.411Z
 Stopped at: Completed 26.2-01-PLAN.md
 Resume file: None
 
