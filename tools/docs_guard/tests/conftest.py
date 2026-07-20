@@ -7,15 +7,25 @@ and a mocked git proves nothing about that plumbing. Same posture as
 
 Hermetic by construction: fixed argv + ``shell=False``, and identity is supplied per-invocation
 via ``-c user.email=... -c user.name=...`` so no global/user git config is read or written.
+
+Also does the import-path wiring every virtual uv member's test package needs: docs_guard is not
+pip-installed, so the repo root must be on ``sys.path`` for ``from tools.docs_guard import ...`` to
+resolve (mirrors ``tools/adoption_scan/tests/conftest.py``).
 """
 
 from __future__ import annotations
 
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
+
+# tests -> docs_guard -> tools -> repo root (parents[3]; mirrors adoption_scan/tests/conftest).
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 _IDENTITY = (
     "-c",
