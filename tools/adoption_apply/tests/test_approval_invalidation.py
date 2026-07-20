@@ -208,6 +208,27 @@ def test_invalidated_on_ref_change(
     assert check_valid(task_dir, batch_id, git_repo) is False
 
 
+def test_valid_false_on_missing_draft_artifact(
+    task_dir: Path, git_repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """WR-02: a batch missing one of its 3 draft artifacts returns False, never raises."""
+    monkeypatch.setenv(HUMAN_TOKEN_ENV, _HUMAN_VALUE)
+    batch_id = _seed_batch(task_dir, git_repo)
+    promote(
+        task_dir,
+        batch_id,
+        git_repo,
+        approve=True,
+        decisions=_DECISIONS,
+        confirmation=_HUMAN_VALUE,
+    )
+    assert check_valid(task_dir, batch_id, git_repo) is True
+
+    (batch._batch_dir(task_dir, batch_id) / "plan.json").unlink()
+
+    assert check_valid(task_dir, batch_id, git_repo) is False
+
+
 def test_sc1_full_resume_cycle(
     task_dir: Path, git_repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
