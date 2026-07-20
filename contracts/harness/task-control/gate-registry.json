@@ -9,7 +9,7 @@
   },
   "secret_patterns": [
     "AKIA[0-9A-Z]{16}",
-    "(?:api[_-]?key|secret|password|token)\\s*[:=]\\s*(?=[^\\s]{20,})(?=[^\\s]*[A-Z])(?=[^\\s]*[a-z])(?=[^\\s]*[0-9])[^\\s]{20,}",
+    "(?:api[_-]?key|secret|password|token)\\s*[:=]\\s*(?:(?=[^\\s]*(?-i:[A-Z]))(?=[^\\s]*(?-i:[a-z]))|(?=[^\\s]*(?-i:[A-Z]))(?=[^\\s]*[0-9])|(?=[^\\s]*(?-i:[a-z]))(?=[^\\s]*[0-9]))[^\\s]{20,}",
     "(?:ghp_|gho_|ghu_|ghs_|github_pat_)[A-Za-z0-9_-]+",
     "sk-[A-Za-z0-9_-]{16,}",
     "xox[bp]-[A-Za-z0-9-]+",
