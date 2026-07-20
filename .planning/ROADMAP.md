@@ -735,3 +735,23 @@ Plans:
 2. `/adopt`이 binding을 제안하되 스스로 review(green)할 수 없다.
 3. required seed 문서가 fresh이거나 정확히 dispositioned된다.
 4. 전체 `uv run pytest` + contract-drift + golden + workspace drift + stale-derived + lifecycle + GEN-04 twin + docs guard + emit-drift + 모델 식별자 lint + injector budget + `git diff --check`가 green이다.
+
+**Plans:** 5 plans (4 waves)
+Plans:
+
+**Wave 1** *(parallel — no `files_modified` overlap)*
+
+- [ ] 29-01-PLAN.md — `tools/docs_guard/exclusions.py`: one pure `exclusion_reason()` importing `CONSTITUTION_GLOBS` + `DERIVED_GLOBS`, with the RED-first adversarial spelling table and two monkeypatch deletion proofs (DOCSUP-06, SC-1)
+- [ ] 29-02-PLAN.md — DOCSUP-07 end to end against the shipped controls: one apply cycle applies a registry proposal and refuses the ledger before any write, and a registry-only or same-commit-blessed binding cannot classify FRESH; both mutation-proven (DOCSUP-07, SC-2)
+
+**Wave 2**
+
+- [ ] 29-03-PLAN.md — `/docs-update` + `docs-upkeep` authored under `harness/`, `EXPECTED_SKILLS` 12→13 and the command count 24→25 moved in the same change, emitted to both runtimes and verified with `git status --porcelain` (DOCSUP-06, SC-1)
+
+**Wave 3**
+
+- [ ] 29-04-PLAN.md — SC-3 closure: human-authored review ledger (blocking checkpoint), then one real drive-loop exercise on the stale `gate-model` prose with the 0→1→0 exit transition observed (DOCSUP-06, DOCSUP-07, SC-3)
+
+**Wave 4**
+
+- [ ] 29-05-PLAN.md — the SC-4 fan-in confirmed with actual numbers (zero new CI jobs) and `.planning/v2.3-MILESTONE-AUDIT.md` carrying every residual, nyquist gap and outstanding ratification (SC-4, closeout)
