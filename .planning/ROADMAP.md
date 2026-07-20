@@ -695,18 +695,19 @@ Plans:
 3. `BROKEN`·`STALE_REQUIRED` fail·`STALE_ADVISORY` warn·uncovered 비-회귀가 강제된다.
 4. 파생 큐가 결정론적으로 재생성되고 injector byte-identity + ~4,000자 예산 테스트가 green이며 `/docs-sync`·`/refresh-memory`·stale-derived 의미가 불변이다.
 
-**Plans:** 8 plans (5 waves)
+**Plans:** 9 plans (5 waves)
 Plans:
 
 **Wave 1** *(parallel — no `files_modified` overlap)*
 
 - [ ] 28-01-PLAN.md — constitution-plane atomic commit: `contracts/harness/docs/doc-dependencies.schema.json` + hash rebaseline + docs_sync + contracts_index + both syrupy snapshots + blocking human ratification (DOCSUP-01)
 - [ ] 28-02-PLAN.md — `tools/docs_guard/` uv member scaffold, the phase's frozen public interface, and `digest.py`'s interleaved path+per-file-digest algorithm proven against a RED ambiguity table (DOCSUP-02)
+- [ ] 28-09-PLAN.md — close the ledger write-side self-green hole: `REVIEW_LEDGER_GLOBS` + `ReviewLedgerRefusal` at the adoption-apply choke point AND a `path_deny_globs` deny for the ordinary agent write path, with the registry provably still writable (DOCSUP-02, DOCSUP-03)
 
 **Wave 2** *(parallel)*
 
 - [ ] 28-03-PLAN.md — `registry.py`: schema validation plus the five DOCSUP-01 rejections (path escape, duplicate id, empty required selector, derived/reference target, accepted-ADR policy), RED-confirmed against a shape-only validator (DOCSUP-01)
-- [ ] 28-04-PLAN.md — `ledger.py`: allowlisted committed shape, previous-committed retrieval, and the disposition-coherence rule that defeats the paste-the-live-digest attack; no writer anywhere in the module (DOCSUP-02, DOCSUP-03)
+- [ ] 28-04-PLAN.md — `ledger.py`: allowlisted committed shape, previous-committed retrieval, the disposition-coherence rule that defeats the paste-the-live-digest attack, the `first_seen-unratified` self-green closure, and the `binding_min` deletion ratchet; no writer anywhere in the module (DOCSUP-02, DOCSUP-03)
 
 **Wave 3**
 
@@ -719,7 +720,7 @@ Plans:
 
 **Wave 5**
 
-- [ ] 28-08-PLAN.md — ADR-0010 (`Status: proposed`) recording the obligation model, the phase-closing full gate fan-in, and one blocking human ratification covering both the ADR and the seeded dispositions (DOCSUP-01..05)
+- [ ] 28-08-PLAN.md — ADR-0010 (`Status: proposed`) recording the obligation model AND the docs-plane agent-authority boundary, the phase-closing full gate fan-in, and one blocking human ratification covering both the ADR and the seeded dispositions (DOCSUP-01..05)
 
 ### Phase 29: Docs Drive Loop + Adoption Integration + Closeout *(v2.3 C)*
 
