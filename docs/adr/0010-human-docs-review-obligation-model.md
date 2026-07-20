@@ -261,9 +261,20 @@ a report that teaches the wrong action is itself the defect.
 ### 9. Contract and golden stay leading (D-13)
 
 The guard reads `run_gate()` for **SUPPRESSION ONLY**. A binding whose source is a currently-drifted
-contract reports `SUPPRESSED (contract-drift leading)` rather than `STALE_REQUIRED`, and a suppressed
-binding's coherence findings are demoted to note level. The guard **never restates another gate's
-findings**. Without this, every contract change fails twice with two different remedies.
+contract reports `SUPPRESSED (contract-drift leading)` rather than `STALE_REQUIRED`, and its
+**staleness** finding is demoted to note level. The guard **never restates another gate's findings**.
+Without this, every contract change fails twice with two different remedies.
+
+**Suppression is scoped to what is genuinely downstream of drift, and that scope is part of the
+decision, not an implementation detail.** Only `stale-digest` may be demoted: the source moved, so
+of course the reviewed digest no longer matches. The ratification-authority findings —
+`first_seen-unratified`, `disposition-incoherent`, `unverified-disposition`, `unknown-binding`,
+`superseding-adr-required` — are **never** demoted, and a binding carrying any of them **never
+reaches the `SUPPRESSED` state at all**. They answer "who ratified what", a question a drifted
+source has no bearing on. A blanket demotion would make contract drift a laundering channel for
+clause 3b's self-blessed row, and the escape would be **permanent rather than one-cycle**: the
+commit the gate would have failed is the commit that lands the row into history, after which
+clause 4's history test reports it green unconditionally.
 
 ### 10. The derived queue's placement and ignore status (D-10)
 

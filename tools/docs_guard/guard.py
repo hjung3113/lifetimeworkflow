@@ -47,6 +47,7 @@ from tools.docs_guard.ledger import (
     REASON_FIRST_SEEN,
     REASON_INCOHERENT,
     REASON_OPEN_OBLIGATION,
+    REASON_STALE,
     REASON_UNKNOWN_BINDING,
     REASON_UNVERIFIED,
     Finding,
@@ -120,7 +121,21 @@ BLOCKING_REASONS: frozenset[str] = frozenset(
     }
 )
 
-__all__ = ["BLOCKING_REASONS", "HUMAN_CORPUS", "STATES", "classify"]
+# The ONLY reasons drift suppression may demote. `stale-digest` is the one finding that is
+# genuinely DOWNSTREAM of contract drift — the source moved, so of course the reviewed digest no
+# longer matches, and reporting that here would give one change two remedies (D-13).
+#
+# Everything in BLOCKING_REASONS is deliberately ABSENT. Those findings are about WHO RATIFIED
+# WHAT, not about whether a source moved: `first_seen-unratified` says nobody has ever ratified
+# this binding, `disposition-incoherent` says the claim contradicts history,
+# `unverified-disposition` says the claim cannot be checked at all, `unknown-binding` says the row
+# blesses something that does not exist, and `superseding-adr-required` is an open obligation. A
+# drifted source has no bearing on any of them, and demoting them let a brand-new self-blessed
+# binding report ok=True merely because one of its sources happened to be mid-drift — a PERMANENT
+# escape, because the commit that would have failed is the commit that lands the row into history.
+SUPPRESSIBLE_REASONS: frozenset[str] = frozenset({REASON_STALE})
+
+__all__ = ["BLOCKING_REASONS", "HUMAN_CORPUS", "STATES", "SUPPRESSIBLE_REASONS", "classify"]
 
 
 # ── corpus enumeration (P6 / Phase 26 CR-01) ──────────────────────────────────────────────────
@@ -347,8 +362,12 @@ def classify(
             )
         # 2. SUPPRESSED — a source is a contract currently reported drifted. Contract-drift is the
         #    LEADING gate; this binding's staleness is its downstream consequence, not a second
-        #    independent defect with a second remedy (D-13).
-        elif _sources_drifted(binding, root_path, drifted):
+        #    independent defect with a second remedy (D-13). The second half of the condition is
+        #    load-bearing and must not be simplified away: a binding carrying a blocking coherence
+        #    finding has an UNESTABLISHED ratification claim, which drift neither causes nor
+        #    excuses. Without it, evaluating drift before the FRESH guard means a self-blessed
+        #    binding never reaches the self-green closure at step 3 at all.
+        elif _sources_drifted(binding, root_path, drifted) and not blocking_by_id.get(binding.id):
             state = "SUPPRESSED"
             reasons.append("contract-drift leading")
         # 3. FRESH — digest equality is NECESSARY but NOT SUFFICIENT. An open ADR obligation and
@@ -394,13 +413,23 @@ def classify(
         )
 
     # D-13, second half: a suppressed binding must not contribute to exit 1, and that has to hold
-    # for its COHERENCE findings too — `stale-digest` for a binding whose contract is mid-drift is
+    # for its STALENESS findings too — `stale-digest` for a binding whose contract is mid-drift is
     # the downstream consequence of the leading gate's failure, not a second independent defect.
     # The finding is kept (the operator still sees why the binding is suppressed) but demoted to a
     # note, so exactly one gate reports the change: contract-drift.
+    #
+    # The demotion is RESTRICTED to `SUPPRESSIBLE_REASONS`. Demoting every fail-level finding for a
+    # suppressed binding also demoted the ratification-authority reasons, which turned drift into a
+    # laundering channel for a self-blessed row (see SUPPRESSIBLE_REASONS above). Together with the
+    # `not blocking_by_id` half of the SUPPRESSED branch this is belt-and-braces: neither the state
+    # nor the level can be reached by a binding whose ratification has never been established.
     suppressed_ids = {entry["id"] for entry in entries if entry["state"] == "SUPPRESSED"}
     for finding in findings:
-        if finding["binding_id"] in suppressed_ids and finding["level"] == LEVEL_FAIL:
+        if (
+            finding["binding_id"] in suppressed_ids
+            and finding["level"] == LEVEL_FAIL
+            and finding["reason"] in SUPPRESSIBLE_REASONS
+        ):
             finding["level"] = "note"
             finding["message"] += " (suppressed — contract-drift leading)"
 
