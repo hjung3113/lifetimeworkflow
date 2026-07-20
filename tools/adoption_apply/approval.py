@@ -185,20 +185,28 @@ def check_valid(task_dir: Path, batch_id: str, repo_root: Path) -> bool:
         return False
     batch_dir = _batch_dir(task_dir, batch_id)
     try:
-        stored = json.loads(path.read_bytes())
+        # CR-01: decode EXPLICITLY as UTF-8 rather than handing bytes to `json.loads`, which runs
+        # `json.detect_encoding` and silently accepts UTF-16/UTF-32 — an approval document in a
+        # non-UTF-8 encoding would then validate as current, which §4.3 byte hygiene does not
+        # sanction. The explicit decode also moves the failure of undecodable bytes onto a
+        # `UnicodeDecodeError` we name below, instead of one raised implicitly inside `json.loads`.
+        stored = json.loads(path.read_bytes().decode("utf-8"))
         draft_hash = _recompute_draft_hash(batch_dir)
         return (
             stored["draft_hash"] == draft_hash
             and stored["task_revision"] == _current_task_revision(task_dir)
             and stored["git_ref"] == _current_git_ref(repo_root)
         )
-    except (FileNotFoundError, OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
-        # FileNotFoundError/OSError: WR-02's original coverage — an incomplete batch directory (a
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError, KeyError, TypeError) as exc:
+        # OSError: WR-02's original coverage — an incomplete batch directory (a
         # missing draft artifact) is no partial credit, never an uncaught crash out of a validity
         # check. WR-06 adds: JSONDecodeError for malformed approval bytes (it subclasses
         # ValueError, not OSError, so it was genuinely uncovered), KeyError for a missing required
         # key, and TypeError for valid JSON that is not an object, where ``stored["draft_hash"]``
-        # raises rather than returning a mismatch.
+        # raises rather than returning a mismatch. CR-01 adds UnicodeDecodeError — also a
+        # ValueError subclass, named neither by JSONDecodeError nor by OSError — for bytes that
+        # are not decodable UTF-8 at all. ``FileNotFoundError`` is not listed: it is an ``OSError``
+        # subclass, so naming it was redundant.
         #
         # The diagnostic names the path and the exception class ONLY — never the file's contents or
         # the exception's message body, since a corrupted approval may hold arbitrary bytes (the

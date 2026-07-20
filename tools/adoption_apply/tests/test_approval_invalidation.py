@@ -257,9 +257,25 @@ def _with(key: str, value: object):
     return corrupt
 
 
+def _as_utf16(stored: dict) -> bytes:
+    """CR-01: an otherwise-VALID approval document written as UTF-16-with-BOM.
+
+    `json.loads(bytes)` sniffs the BOM via `json.detect_encoding` and decodes it happily, so
+    pre-fix this row returns True — a stored approval that is not UTF-8 is silently accepted,
+    which §4.3 byte hygiene does not sanction. The row is `bytes`-producing rather than
+    dict-producing, hence the widened callable contract below.
+    """
+    return json.dumps(stored).encode("utf-16")
+
+
 CORRUPT_APPROVAL_CASES: list[tuple[str, object]] = [
     # invalid JSON
     ("invalid_json", b"{not valid json"),
+    # bytes that are not decodable UTF-8 at all (CR-01): `json.loads` raises UnicodeDecodeError,
+    # which subclasses ValueError — neither JSONDecodeError nor OSError.
+    ("invalid_utf8", b'{"draft_hash": "\xc3\x28"}'),
+    # a well-formed, still-matching document in a non-UTF-8 encoding (CR-01)
+    ("valid_document_utf16", _as_utf16),
     # valid JSON that is not an object
     ("json_list", b"[1, 2, 3]"),
     ("json_string", b'"a bare string"'),
@@ -306,7 +322,12 @@ def test_check_valid_never_raises_on_corrupt_approval(
         approval_path.write_bytes(corruption)
     else:
         stored = json.loads(approval_path.read_bytes())
-        approval_path.write_bytes(json.dumps(corruption(stored)).encode("utf-8"))
+        # A callable row may yield either a perturbed document (re-encoded UTF-8) or raw bytes
+        # derived from the real document — the latter is how the encoding rows stay realistic.
+        produced = corruption(stored)
+        approval_path.write_bytes(
+            produced if isinstance(produced, bytes) else json.dumps(produced).encode("utf-8")
+        )
 
     assert check_valid(task_dir, batch_id, git_repo) is False, case_name
 
