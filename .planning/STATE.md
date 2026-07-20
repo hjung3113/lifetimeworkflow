@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: A)*
-status: executing
-stopped_at: Completed 27-05-PLAN.md
-last_updated: "2026-07-20T16:37:03.427Z"
+status: verifying
+stopped_at: Completed 27-06-PLAN.md
+last_updated: "2026-07-20T16:49:11.264Z"
 last_activity: 2026-07-20
 progress:
   total_phases: 8
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 24
-  completed_plans: 23
-  percent: 96
+  completed_plans: 24
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 
 Phase: 27 (task-local-adoption-workflow-safe-application-v2-3-b) — EXECUTING
 Plan: 6 of 6
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-20
 
 ## Performance Metrics
@@ -138,6 +138,7 @@ Last activity: 2026-07-20
 | Phase 27-03 P03 | 4min | 2 tasks | 3 files |
 | Phase 27 P04 | 12min | 2 tasks | 2 files |
 | Phase 27 P05 | 45min | 2 tasks | 17 files |
+| Phase 27 P06 | 55min | 3 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -244,6 +245,9 @@ Recent decisions affecting current work:
 - [Phase 27-03]: create disposition's concurrent-drift check is existence-based, not hash-based: any existing target where the manifest recorded none is drift by definition
 - [Phase 27]: Reused GOLDEN_APPROVE_HUMAN verbatim rather than a new adoption-specific env var (RESEARCH-mandated precedent)
 - [Phase ?]: polyglot-single and partial-collision-crlf are NEW static checked-in fixture trees; client-server extends tests/fixtures/workspace/{member-a,member-b} — 27-PATTERNS.md D-07 finding; SC-3/ADOPT-07 fixture-proof
+- [Phase 27]: cli.py apply sources create/marker-merge payload content from the harness checkout's own files at each destination (CR-01), never from the scanned target
+- [Phase 27]: Added JSON Schema validation of inventory/plan/manifest before writing in cli.py draft (Rule 2)
+- [Phase 27]: promote's --decisions flag is optional; a missing decisions list still refuses via approval.promote's own check
 
 ### Pending Todos
 
@@ -284,8 +288,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-20T16:37:03.420Z
-Stopped at: Completed 27-05-PLAN.md
+Last session: 2026-07-20T16:49:11.257Z
+Stopped at: Completed 27-06-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
