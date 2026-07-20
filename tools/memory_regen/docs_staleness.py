@@ -138,8 +138,25 @@ def render(queue_rows: list[tuple[str, str, str, str, str, str]]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def write_rows(
+    queue_path: str | Path, queue_rows: list[tuple[str, str, str, str, str, str]]
+) -> Path:
+    """Render ``queue_rows`` to ``queue_path`` (mkdir parents), returning the path.
+
+    Split out of :func:`write` so a caller that ALREADY holds the rows can publish them without
+    re-classifying. Classification is expensive (a ``git ls-files`` subprocess, a full corpus walk
+    and a whole contract-manifest rebuild) but, more importantly, it is a function of the tree at
+    the moment it runs: a second run can legitimately return a DIFFERENT answer, so anything
+    reported about the written file must be derived from the rows that were actually written.
+    """
+    out = Path(queue_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(render(queue_rows), encoding="utf-8")
+    return out
+
+
 def write(
-    queue_path: str | Path = QUEUE_PATH,
+    queue_path: str | Path | None = None,
     *,
     registry_path: str | Path = DEFAULT_REGISTRY_PATH,
     ledger_path: str | Path = DEFAULT_LEDGER_PATH,
@@ -147,29 +164,37 @@ def write(
     cfg: dict | None = None,
     drift_gate: Callable[[], dict] | None = None,
 ) -> Path:
-    """Regenerate the derived queue and write it (mkdir parents), returning the path."""
-    out = Path(queue_path)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(
-        render(
-            rows(
-                registry_path=registry_path,
-                ledger_path=ledger_path,
-                root=root,
-                cfg=cfg,
-                drift_gate=drift_gate,
-            )
+    """Regenerate the derived queue and write it (mkdir parents), returning the path.
+
+    ``queue_path=None`` resolves to :data:`QUEUE_PATH` at CALL time rather than binding it at
+    definition time, so the module constant stays the single source of the destination.
+    """
+    return write_rows(
+        QUEUE_PATH if queue_path is None else queue_path,
+        rows(
+            registry_path=registry_path,
+            ledger_path=ledger_path,
+            root=root,
+            cfg=cfg,
+            drift_gate=drift_gate,
         ),
-        encoding="utf-8",
     )
-    return out
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI: regenerate ``.memory/derived/docs-staleness.md`` (`python -m ...docs_staleness`)."""
+    """CLI: regenerate ``.memory/derived/docs-staleness.md`` (`python -m ...docs_staleness`).
+
+    Classifies EXACTLY ONCE and reports from the rows it wrote (WR-04). Computing the count a
+    second time would both double the cost and let the operator's number disagree with the file's.
+    """
     argv = sys.argv[1:] if argv is None else argv  # noqa: F841 (reserved for future flags)
-    out = write()
-    print(f"wrote {out.relative_to(_REPO_ROOT)} ({len(rows())} binding(s) needing review)")
+    queue_rows = rows()
+    out = write_rows(QUEUE_PATH, queue_rows)
+    try:
+        label: Path | str = out.relative_to(_REPO_ROOT)
+    except ValueError:
+        label = out
+    print(f"wrote {label} ({len(queue_rows)} binding(s) needing review)")
     return 0
 
 

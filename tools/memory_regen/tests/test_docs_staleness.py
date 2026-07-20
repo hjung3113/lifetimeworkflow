@@ -143,6 +143,42 @@ def test_queue_empty_when_nothing_stale(tmp_path: Path) -> None:
     assert text == docs_staleness.render([])
 
 
+# ---- main() reports the file it wrote, and classifies exactly once (WR-04) --------------------
+
+_ONE_ROW = [("alpha-required", "docs/how-to/alpha.md", "BROKEN", "required", "updated", "(none)")]
+
+
+def test_main_classifies_once_and_reports_what_it_wrote(monkeypatch, tmp_path, capsys) -> None:
+    """WR-04 adversarial row.
+
+    ``rows()`` walks the corpus, shells out to ``git ls-files`` and rebuilds the whole contract
+    manifest. ``main()`` calling it a SECOND time purely to print a count is not just double cost:
+    the second run re-reads the tree, so the number shown to the operator can disagree with the
+    number in the file that was just written. This stub makes the two runs disagree by
+    construction — first call one obligation, every later call none — so a ``main()`` that
+    classifies twice prints ``0`` over a file that says ``1``.
+    """
+    out = tmp_path / "derived" / "docs-staleness.md"
+    monkeypatch.setattr(docs_staleness, "QUEUE_PATH", out)
+    calls: list[int] = []
+
+    def counting_rows(**_kwargs):
+        calls.append(1)
+        return _ONE_ROW if len(calls) == 1 else []
+
+    monkeypatch.setattr(docs_staleness, "rows", counting_rows)
+
+    assert docs_staleness.main([]) == 0
+
+    assert len(calls) == 1, f"classification ran {len(calls)} time(s); main() must compute it once"
+    printed = capsys.readouterr().out
+    written = out.read_text(encoding="utf-8")
+    assert "1 binding(s) need review." in written
+    assert "(1 binding(s) needing review)" in printed, (
+        f"the printed count disagrees with the file that was written: {printed!r}"
+    )
+
+
 # ---- (b) pointer-only: never a prose excerpt, never a diff body -------------------------------
 
 
