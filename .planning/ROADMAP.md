@@ -741,12 +741,12 @@ Plans:
 
 **Wave 1** *(parallel — no `files_modified` overlap)*
 
-- [ ] 29-01-PLAN.md — `tools/docs_guard/exclusions.py`: one pure `exclusion_reason()` importing `CONSTITUTION_GLOBS` + `DERIVED_GLOBS`, with the RED-first adversarial spelling table and two monkeypatch deletion proofs (DOCSUP-06, SC-1)
-- [ ] 29-02-PLAN.md — DOCSUP-07 end to end against the shipped controls: one apply cycle applies a registry proposal and refuses the ledger before any write, and a registry-only or same-commit-blessed binding cannot classify FRESH; both mutation-proven (DOCSUP-07, SC-2)
+- [x] 29-01-PLAN.md — `tools/docs_guard/exclusions.py`: one pure `exclusion_reason()` importing `CONSTITUTION_GLOBS` + `DERIVED_GLOBS`, with the RED-first adversarial spelling table and two monkeypatch deletion proofs (DOCSUP-06, SC-1)
+- [x] 29-02-PLAN.md — DOCSUP-07 end to end against the shipped controls: one apply cycle applies a registry proposal and refuses the ledger before any write, and a registry-only or same-commit-blessed binding cannot classify FRESH; both mutation-proven (DOCSUP-07, SC-2)
 
 **Wave 2**
 
-- [ ] 29-03-PLAN.md — `/docs-update` + `docs-upkeep` authored under `harness/`, `EXPECTED_SKILLS` 12→13 and the command count 24→25 moved in the same change, emitted to both runtimes and verified with `git status --porcelain` (DOCSUP-06, SC-1)
+- [x] 29-03-PLAN.md — `/docs-update` + `docs-upkeep` authored under `harness/`, `EXPECTED_SKILLS` 12→13 and the command count 24→25 moved in the same change, emitted to both runtimes and verified with `git status --porcelain` (DOCSUP-06, SC-1)
 
 **Wave 3**
 
@@ -754,4 +754,15 @@ Plans:
 
 **Wave 4**
 
-- [ ] 29-05-PLAN.md — the SC-4 fan-in confirmed with actual numbers (zero new CI jobs) and `.planning/v2.3-MILESTONE-AUDIT.md` carrying every residual, nyquist gap and outstanding ratification (SC-4, closeout)
+- [x] 29-05-PLAN.md — the SC-4 fan-in confirmed with actual numbers (zero new CI jobs) and `.planning/v2.3-MILESTONE-AUDIT.md` carrying every residual, nyquist gap and outstanding ratification (SC-4, closeout)
+
+**Progress:** 4 of 5 plans landed; 29-04 is PARTIAL (tasks 1 and 3 executed, tasks 2 and 4 are
+`gate="blocking-human"`). SC-1 and SC-2 verified by gate tests; SC-3 partial (the bounded edit is
+visible to the gate — target digest moved `4568f3a9… → 8df85e6e…` — but the `0 → 1 → 0` transition
+is unobservable until the human authors the ledger); SC-4 run with actual numbers, recorded in
+`.planning/v2.3-MILESTONE-AUDIT.md` — **1473 passed**, drift/golden-root/workspace/stale-derived/
+emit-drift/GEN-04/model-id/injector all green, `docs-guard` exit 1 by design, and one NEW finding:
+`uv run pytest tools/lifecycle_eval` (the `lifecycle-eval` job's step 2) errors at collection.
+**Phase status: BLOCKED ON HUMAN** — five outstanding ratifications, RAT-1..RAT-5 in the audit.
+Phase 29 added ZERO CI jobs and ZERO `gate.needs` entries (D-11); `git diff --check` remains a
+verification command, never a job (D-12).

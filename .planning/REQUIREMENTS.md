@@ -87,5 +87,14 @@ Deferred to a later milestone:
 | DOCSUP-03 | Phase 28 | Complete |
 | DOCSUP-04 | Phase 28 | Complete |
 | DOCSUP-05 | Phase 28 | Complete |
-| DOCSUP-06 | Phase 29 | Pending |
-| DOCSUP-07 | Phase 29 | Pending |
+| DOCSUP-06 | Phase 29 | Machinery complete — BLOCKED on human ratification (RAT-1) |
+| DOCSUP-07 | Phase 29 | Machinery complete — BLOCKED on human ratification (RAT-1) |
+
+> **Why DOCSUP-06/07 are not `[x]`.** Both are built, emitted to both runtimes and gate-tested —
+> `exclusion_reason()` with per-class deletion proofs, `/docs-update` + `docs-upkeep` round-tripping
+> byte-identically (100 artifacts, porcelain empty), and 14 integration tests proving `/adopt` can
+> propose a binding and cannot make one green. What is missing is not code: `uv run python -m
+> tools.docs_guard` exits 1 with 6 × `broken-binding` because `docs/.docs-review-ledger.toml` does
+> not exist, and that file is human-only by construction (`tools/hooks/ledger_guard.py` honours
+> NEITHER `GOLDEN_APPROVE_HUMAN` NOR `HARNESS_DEV_BYPASS`). Marking them complete would be the
+> self-blessing the requirements exist to forbid. Evidence rows: `.planning/v2.3-MILESTONE-AUDIT.md`.

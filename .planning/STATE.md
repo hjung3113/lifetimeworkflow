@@ -3,15 +3,21 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: A)*
 status: blocked-on-human
-stopped_at: Completed 28-08-PLAN.md Tasks 1–2; Task 3 blocked on human ratification
+stopped_at: Completed 29-05-PLAN.md Tasks 1–2 (v2.3 milestone audit written); Task 3 blocked on human ratification
 last_updated: "2026-07-20T21:34:01.408Z"
 last_activity: 2026-07-21
 progress:
   total_phases: 10
-  completed_phases: 9
-  total_plans: 38
-  completed_plans: 38
-  percent: 100
+  completed_phases: 8
+  total_plans: 43
+  completed_plans: 42
+  percent: 98
+  counter_caveat: >-
+    These counters are a MECHANICAL count of SUMMARY files on disk and they OVERSTATE. Phases 28 and
+    29 are NOT closed while RAT-1..RAT-3 are outstanding, and 29-04 is PARTIAL (2 of its 4 tasks are
+    blocking-human). The authoritative record is the per-requirement evidence table in
+    .planning/v2.3-MILESTONE-AUDIT.md — never these percentages. The v2.1 audit recorded this exact
+    hazard about its own milestone_complete / 117% line.
 ---
 
 # Project State
@@ -21,17 +27,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-18)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 28 — human-docs-registry-guard-derived-queue (v2.3 C)
+**Current focus:** Phase 29 — docs drive loop + adoption integration + **v2.3 milestone closeout**
 
 ## Current Position
 
-Phase: 28 (human-docs-registry-guard-derived-queue-v2-3-c) — EXECUTING
-Plan: 9 of 9 (all plans landed; 28-08 Task 3 is a blocking human checkpoint)
-Status: Machinery complete and green. **Two human ratifications outstanding** — (1) author and
-commit `docs/.docs-review-ledger.toml` from the byte-exact proposal in `28-07-SUMMARY.md`, and
-(2) flip `docs/adr/0010-human-docs-review-obligation-model.md` from `proposed` to `accepted`.
-`python -m tools.docs_guard` exits 1 until (1) lands — that is the designed pre-ratification
-state, not a defect.
+Phase: 29 (docs-drive-loop-adoption-integration-closeout-v2-3-c) — CLOSING
+Plan: 5 of 5 (29-01/02/03/05 landed; 29-04 PARTIAL — tasks 2 and 4 are `gate="blocking-human"`)
+Status: **v2.3 milestone audit written** — `.planning/v2.3-MILESTONE-AUDIT.md`, status
+`blocked_on_human`, 19/21 requirements evidenced. All machinery for Themes A, B and C is built and
+observed green; the SC-4 fan-in was run with actual numbers (**1473 passed**, 8 snapshots).
+**Five human ratifications outstanding (RAT-1..RAT-5 in the audit)** — the ledger, ADR-0010, the
+eight seeded bindings, the Phase-28 `HARNESS_DEV_BYPASS` schema write, and the four ADRs unmerged
+to `main`. `python -m tools.docs_guard` exits 1 (6 × `broken-binding`) until RAT-1 lands — the
+designed pre-ratification state, not a defect.
+Two reds recorded verbatim rather than repaired: `uv run pytest tools/lifecycle_eval` errors at
+collection (NEW finding, `ModuleNotFoundError: No module named 'tools'`), and the example .NET
+golden is red on macOS only (`/var` vs `/private/var` tmp spelling; the job runs `ubuntu-latest`).
 Last activity: 2026-07-21
 
 ## Performance Metrics
@@ -301,32 +312,45 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-07-21
-Stopped at: Completed 28-08-PLAN.md Tasks 1–2; Task 3 blocked on human ratification
-Resume file: .planning/phases/28-human-docs-registry-guard-derived-queue-v2-3-c/28-08-SUMMARY.md
+Stopped at: Completed 29-05-PLAN.md Tasks 1–2; Task 3 blocked on human ratification
+Resume file: .planning/v2.3-MILESTONE-AUDIT.md
 
 ## Operator Next Steps
 
-**► NEXT — two human ratifications close Phase 28. Both are blocking; neither may be done by an agent.**
+**► NEXT — read `.planning/v2.3-MILESTONE-AUDIT.md`, then discharge RAT-1..RAT-5 in this order.
+None of them may be done by an agent.**
 
-1. **Author and commit `docs/.docs-review-ledger.toml`.** The byte-exact content is in
-   `.planning/phases/28-human-docs-registry-guard-derived-queue-v2-3-c/28-07-SUMMARY.md` under
-   *Proposed ledger (for human authorship)*, with a one-sentence justification per binding in the
-   table above it. Reject any binding whose sources do not genuinely determine its target, and
-   re-derive both ratchets if you do. All 16 digests in that proposal were re-verified unchanged
-   at the end of plan 28-08. An agent cannot write this file — it is denied at the permission layer
-   and refused at the adoption-apply choke point (plan 28-09).
+1. **RAT-1 — author and commit `docs/.docs-review-ledger.toml`.** Use the byte-exact content in
+   `.planning/phases/29-docs-drive-loop-adoption-integration-closeout-v2-3-c/29-04-SUMMARY.md`,
+   **not** 28-07's: 29-04's bounded `gate-model` prose fix moved that binding's target digest from
+   `4568f3a9…` to `8df85e6e…`, so author against the POST-edit tree. The summary gives two ordered
+   options — **A** is one round straight to exit 0; **B** is two rounds and observes the `0 → 1` leg
+   for real, which is what the plan intended. **RAT-3 is the review you perform while doing this**:
+   confirm each of the eight (sources, target) pairs is an obligation you accept before recording
+   its first `[[reviewed]]` row. A self-blessed row and an honest seed row are byte-identical; only
+   your commit separates them. An agent cannot write this file — `tools/hooks/ledger_guard.py`
+   denies it at PreToolUse and honours NEITHER `GOLDEN_APPROVE_HUMAN` NOR `HARNESS_DEV_BYPASS`, and
+   `refuse_unsafe_destination` refuses it on the adoption-apply path.
 
-2. **Flip `docs/adr/0010-human-docs-review-obligation-model.md`'s status line from `proposed` to
-   `accepted`**, record the date and deciders, and update its row in `docs/adr/README.md`. (Spelled
-   without the literal status-field syntax on purpose — `gsd-sdk query state.update-progress` scrapes
-   that pattern out of this file and overwrites the frontmatter `status:` key with it.) Read clause 3b (the
-   docs-plane agent-authority boundary) with particular care: ADRs here are append-only, so
-   Phase 29 cannot amend it — a second full ratification would be the only remedy.
+2. **RAT-2 — flip `docs/adr/0010-human-docs-review-obligation-model.md`'s status line from
+   `proposed` to `accepted`**, record the date and deciders, and update its row in
+   `docs/adr/README.md`. (Spelled without the literal status-field syntax on purpose — `gsd-sdk
+   query state.update-progress` scrapes that pattern out of this file and overwrites the frontmatter
+   `status:` key with it.) Read clause 3b with particular care: ADRs here are append-only.
 
-After (1), the seeded rows are amber (`first_seen-unratified`) for exactly one commit cycle by
-design; the ratification commit itself is what turns them green. Re-run `uv run python -m
-tools.docs_guard` after the FOLLOWING commit to confirm, and record the output in
-`28-07-SUMMARY.md`'s empty *Guard output — AFTER the human lands the ledger* section.
+3. **RAT-4 / RAT-5 — the provenance backlog.** The Phase-28 constitution-plane schema write
+   (`contracts/harness/docs/doc-dependencies.schema.json`, plan 28-01) landed via
+   `HARNESS_DEV_BYPASS` per ADR-0007, which is explicitly NOT a human ratification — it is recorded
+   as outstanding. And ADR-0004/0005/0006/0007 remain unmerged to `main` behind a CODEOWNERS gate
+   that structurally cannot fire on a solo-authored PR. The durable fix for both is repo-config:
+   flip the GitHub default branch back to `main`.
 
-Then: `/gsd:verify-phase 28`, and Phase 29 (`/docs-update` drive loop + adoption integration +
-v2.3 closeout) is ready to plan.
+After RAT-1, re-run `uv run python -m tools.docs_guard` on the FOLLOWING commit to confirm exit 0.
+
+Then: `/gsd:verify-phase 29`, and `/gsd:complete-milestone` — which moves committed history and is
+deliberately not automated inside plan 29-05.
+
+**Non-blocking, recommended before close:** give `tools/lifecycle_eval/tests/` a `conftest.py`
+matching its eighteen siblings (its CI step errors at collection today), and close 15-REVIEW CR-01
+by switching `emit-drift` off bare `git diff` onto the `git add -A` + `--cached` idiom that already
+exists at `ci.yml:238`.
