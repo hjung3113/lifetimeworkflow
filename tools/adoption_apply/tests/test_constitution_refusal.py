@@ -173,6 +173,84 @@ def test_apply_disposition_refuses_path_escape_destinations_end_to_end(tmp_path,
     assert replace_spy.call_count == 0
 
 
+# --- WR-05 (27.2-01) — directory-shaped destinations refuse, never IsADirectoryError -----------
+#
+# Three classes, grouped so a reader can see which check each row exercises:
+#   (a) resolves to target_root itself — caught by the resolve-equality check;
+#   (b) trailing-slash / trailing-dot spellings whose target does NOT exist yet — caught ONLY by
+#       the structural pre-check on the raw spelling: `(root / "newdir/").resolve()` is
+#       `root/newdir`, which is neither equal to the root nor an existing directory, so a manifest
+#       asking for a directory would silently create a FILE named `newdir`;
+#   (c) an existing directory — caught by the `is_dir()` check.
+# `src/` is created by the test itself; `a/`, `b/`, `newdir/` deliberately never exist.
+DIRECTORY_SHAPED_DESTINATIONS = [
+    # (a) resolves to the root itself
+    ("root_dot", "."),
+    ("root_dot_slash", "./"),
+    ("root_empty", ""),
+    # (b) trailing-slash / trailing-dot, target does not exist yet
+    ("trailing_slash_nonexistent", "a/"),
+    ("trailing_slash_newdir", "newdir/"),
+    ("trailing_dot_nonexistent", "a/b/."),
+    # (c) an existing directory
+    ("existing_dir", "src"),
+    ("existing_dir_dot_prefixed", "./src"),
+    ("existing_dir_trailing_slash", "src/"),
+]
+
+
+@pytest.mark.parametrize(
+    ("case_name", "destination"),
+    DIRECTORY_SHAPED_DESTINATIONS,
+    ids=[case_name for case_name, _ in DIRECTORY_SHAPED_DESTINATIONS],
+)
+def test_refuse_unsafe_destination_rejects_directory_shaped(tmp_path, case_name, destination):
+    """WR-05: a destination that names a directory is refused at the choke point (D-02:
+    `PathEscapeError`, the existing refusal exception — not a new one)."""
+    (tmp_path / "src").mkdir(exist_ok=True)
+
+    with pytest.raises(apply.PathEscapeError) as excinfo:
+        apply.refuse_unsafe_destination(destination, tmp_path)
+
+    assert f"'{destination}'" in str(excinfo.value), case_name
+
+
+def test_refuse_unsafe_destination_still_allows_file_destinations(tmp_path):
+    """D-03 negative control: the WR-05 guard must not over-refuse. A file inside an existing
+    directory, a file whose parent chain does not exist yet, and a root-level file all stay
+    allowed."""
+    (tmp_path / "src").mkdir(exist_ok=True)
+    root = Path(tmp_path).resolve()
+
+    for destination in ("src/widget.py", "a/b/c.txt", "AGENTS.md"):
+        result = apply.refuse_unsafe_destination(destination, tmp_path)
+        assert root in result.parents, destination
+
+
+@pytest.mark.parametrize("destination", [".", "newdir/"], ids=["root_dot", "trailing_slash_newdir"])
+def test_apply_disposition_refuses_directory_shaped_destination(tmp_path, monkeypatch, destination):
+    """End-to-end: `PathEscapeError`, never `IsADirectoryError`, and zero writes.
+
+    The `"newdir/"` row matters most — pre-fix it is not directory-shaped to any resolve-based
+    check, so `apply_disposition` silently creates a FILE named `newdir`.
+    """
+    open_spy = MagicMock(wraps=os.open)
+    link_spy = MagicMock(wraps=os.link)
+    replace_spy = MagicMock(wraps=os.replace)
+    monkeypatch.setattr(os, "open", open_spy)
+    monkeypatch.setattr(os, "link", link_spy)
+    monkeypatch.setattr(os, "replace", replace_spy)
+
+    record = {"destination": destination, "disposition": "create"}
+    with pytest.raises(apply.PathEscapeError):
+        apply.apply_disposition(record, tmp_path, payload=b"x")
+
+    assert open_spy.call_count == 0
+    assert link_spy.call_count == 0
+    assert replace_spy.call_count == 0
+    assert not (tmp_path / "newdir").exists()
+
+
 def test_symlink_into_contracts_is_refused(tmp_path, monkeypatch):
     """SC-1 symlink case: a symlink whose RESOLVED target lands inside `contracts/` is refused,
     proving the classification runs against the resolved path, not the raw destination string.

@@ -229,6 +229,88 @@ def test_valid_false_on_missing_draft_artifact(
     assert check_valid(task_dir, batch_id, git_repo) is False
 
 
+# --- WR-06 (27.2-01) — a corrupted approval.json is invalid, never a raised exception ----------
+#
+# D-05's four row classes: invalid JSON; valid JSON that is not an object; an object missing each
+# required key IN TURN; each required key present with the WRONG TYPE. The wrong-type rows may
+# already return False today by simple inequality — they are table-completeness rows; the RED
+# evidence for WR-06 comes from the invalid-JSON, non-object, and missing-key rows.
+#
+# A row is either raw bytes written verbatim, or a callable mutating the REAL promoted approval
+# document. The callable form matters for the missing-key and wrong-type rows: `check_valid`'s
+# comparison is a short-circuiting `and`, so a row that also perturbs `draft_hash` never reaches
+# `stored["task_revision"]` at all and would return False for the wrong reason. Mutating the real
+# document keeps every other axis matching, so each row isolates exactly its own key.
+
+
+def _without(key: str):
+    def corrupt(stored: dict) -> dict:
+        return {name: value for name, value in stored.items() if name != key}
+
+    return corrupt
+
+
+def _with(key: str, value: object):
+    def corrupt(stored: dict) -> dict:
+        return {**stored, key: value}
+
+    return corrupt
+
+
+CORRUPT_APPROVAL_CASES: list[tuple[str, object]] = [
+    # invalid JSON
+    ("invalid_json", b"{not valid json"),
+    # valid JSON that is not an object
+    ("json_list", b"[1, 2, 3]"),
+    ("json_string", b'"a bare string"'),
+    ("json_number", b"42"),
+    # object missing each required key in turn
+    ("missing_draft_hash", _without("draft_hash")),
+    ("missing_task_revision", _without("task_revision")),
+    ("missing_git_ref", _without("git_ref")),
+    # each required key present with the wrong type
+    ("draft_hash_wrong_type", _with("draft_hash", 12345)),
+    ("task_revision_wrong_type", _with("task_revision", "zero")),
+    ("git_ref_wrong_type", _with("git_ref", ["refs/heads/main"])),
+]
+
+
+@pytest.mark.parametrize(
+    ("case_name", "corruption"),
+    CORRUPT_APPROVAL_CASES,
+    ids=[case_name for case_name, _ in CORRUPT_APPROVAL_CASES],
+)
+def test_check_valid_never_raises_on_corrupt_approval(
+    task_dir: Path,
+    git_repo: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    case_name: str,
+    corruption: object,
+) -> None:
+    """WR-06: every corruption row returns False. Asserted on the return value directly — a
+    `pytest.raises` inversion would not distinguish "returned False" from "raised"."""
+    monkeypatch.setenv(HUMAN_TOKEN_ENV, _HUMAN_VALUE)
+    batch_id = _seed_batch(task_dir, git_repo)
+    promote(
+        task_dir,
+        batch_id,
+        git_repo,
+        approve=True,
+        decisions=_DECISIONS,
+        confirmation=_HUMAN_VALUE,
+    )
+    assert check_valid(task_dir, batch_id, git_repo) is True
+
+    approval_path = batch._batch_dir(task_dir, batch_id) / "approval.json"
+    if isinstance(corruption, bytes):
+        approval_path.write_bytes(corruption)
+    else:
+        stored = json.loads(approval_path.read_bytes())
+        approval_path.write_bytes(json.dumps(corruption(stored)).encode("utf-8"))
+
+    assert check_valid(task_dir, batch_id, git_repo) is False, case_name
+
+
 def test_sc1_full_resume_cycle(
     task_dir: Path, git_repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
