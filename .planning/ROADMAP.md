@@ -608,6 +608,24 @@ Plans:
 3. 3개 fixture(polyglot 단일·2-레포 client/server·partial/collision, 최소 하나 CRLF/BOM)가 통과한다.
 4. `/adopt` + `brownfield-adoption` skill이 두 런타임에 byte-identical 왕복(새 persona 없음, 모델 id 없음)한다.
 
+**Plans**: 6 plans (3 waves)
+
+Plans:
+**Wave 1**
+
+- [ ] 27-01-PLAN.md — tools/adoption_apply workspace scaffold + CAS-guarded batch layout (ADOPT-04)
+- [ ] 27-02-PLAN.md — approval.schema.json contract + hash rebaseline + derived-plane regen (ADOPT-06, human-ratified checkpoint)
+
+**Wave 2** *(blocked on 27-01/27-02)*
+
+- [ ] 27-03-PLAN.md — apply.py: structural constitution refusal + atomic/collision-safe/idempotent apply + SC-2 (ADOPT-05)
+- [ ] 27-04-PLAN.md — approval.py: refuse-by-default promotion + exact-equality invalidation + SC-1 (ADOPT-04, ADOPT-06)
+
+**Wave 3** *(blocked on 27-01/27-03/27-04)*
+
+- [ ] 27-05-PLAN.md — 3 domain-neutral fixtures (polyglot-single, client-server, partial-collision-crlf) + end-to-end proof (ADOPT-07, SC-3)
+- [ ] 27-06-PLAN.md — /adopt command + brownfield-adoption skill + emit round-trip + phase gate (ADOPT-07, SC-4)
+
 ### Phase 28: Human-Docs Registry, Guard, Derived Queue *(v2.3 C)*
 
 **Goal:** semantic 정확성을 주장하거나 derived 생성기와 경쟁하지 않고 사람-문서 review 의무를 정확히 탐지·surface한다.
