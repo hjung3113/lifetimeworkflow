@@ -148,3 +148,9 @@ None - no external service configuration required.
 ---
 *Phase: 27-task-local-adoption-workflow-safe-application-v2-3-b*
 *Completed: 2026-07-21*
+
+## Self-Check: PASSED
+
+All created files verified present on disk (cli.py, test_cli.py, adopt.md command, brownfield-adoption
+SKILL.md, all 4 emitted runtime copies, this SUMMARY.md). All 5 task/summary commit hashes
+(`aacae02`, `da8e427`, `754ea69`, `bf0c4c3`, `c2b2335`) verified present in `git log --oneline --all`.
