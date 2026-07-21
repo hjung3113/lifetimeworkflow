@@ -26,9 +26,17 @@ The constitution plane is the **single source of truth**. Its four members are:
 
 **These files are human-owned and CODEOWNERS-gated. Agents MUST NOT write to them.**
 Contract changes are ratified by humans and accompanied by the golden / contract-drift gates.
-This is a **declaration / marker** — the *runtime* enforcement that blocks agent writes to the
-constitution plane is the Phase-4 `contract-guard` hook, which is **NOT built in this phase**.
-Phase 2 establishes the boundary in prose; Phase 4 makes it non-bypassable.
+The membership above is **declared by** [ADR-0001](../docs/adr/0001-walking-skeleton-golden-core.md)
+§Decision, not by this file — this page restates it. The *runtime* enforcement is the
+`contract-guard` hook (`tools/hooks/contract_guard.py`), which **is built and live**: a
+PreToolUse(Write|Edit) onto any of the four members is denied unless a human `GOLDEN_APPROVE_HUMAN`
+token is set, and CODEOWNERS gates it again at merge. Phase 2 established the boundary in prose;
+Phase 4 made it non-bypassable.
+
+`docs/glossary.md` is a single FILE on the plane, not the `docs/` tree — the rest of `docs/` is
+agent-writable. Being gated does not remove it from the human-doc review corpus: ownership controls
+*who may edit*, a doc-dependency binding controls *when a human owes a review*, and the glossary
+carries both.
 
 ## (2) DERIVED plane — `.memory/derived/` — auto-regenerated, gitignored (D-04)
 
