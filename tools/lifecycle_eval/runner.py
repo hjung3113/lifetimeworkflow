@@ -12,6 +12,12 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from tools.discipline.check import (
+    load_declarations,
+    missing_disciplines,
+    record_path,
+    required_disciplines,
+)
 from tools.evidence.capture import add_finding, capture
 from tools.handoff.handoff import activate, generate
 from tools.risk_router.intake import create_packet
@@ -91,6 +97,46 @@ def _materialize_required_artifacts(packet: Path, lane: str, target: str) -> Non
             _artifact(packet, name)
 
 
+def _materialize_required_disciplines(packet: Path, lane: str, target: str) -> None:
+    """Write a well-formed discipline record for every discipline the lane owes at *target*.
+
+    The fixture exercises the lifecycle end to end, so it must satisfy the lane's METHOD obligations
+    the same way it satisfies its artifact obligations — otherwise every STRICT+ fixture stops at
+    the first discipline refusal.
+    """
+    declarations = load_declarations()
+    for identifier in required_disciplines(lane, target, declarations=declarations):
+        declaration = declarations[identifier]
+        record: dict[str, Any] = {
+            "discipline": identifier,
+            "skill": declaration.skill,
+            "task_id": packet.name,
+            "satisfied_at_phase": declaration.owed_by_phase,
+            "outputs": ["constraints.md"],
+        }
+        if declaration.min_experts is not None:
+            record["panel"] = {
+                "reviews": [
+                    {"expert": f"seat-{index}", "verdict": "pass", "finding_ids": []}
+                    for index in range(declaration.min_experts)
+                ]
+            }
+        path = record_path(packet, identifier)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(record, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _assert_missing_disciplines_reject(packet: Path, target: str) -> None:
+    """A declared discipline must REFUSE the transition before it is recorded."""
+    try:
+        transition(packet, target, show(packet)["revision"])
+    except TaskControlError as exc:
+        if "missing required disciplines" not in str(exc):
+            raise LifecycleEvalError(f"{target} rejected for the wrong reason: {exc}") from exc
+        return
+    raise LifecycleEvalError(f"{target} accepted an unsatisfied lane discipline")
+
+
 def _assert_missing_artifacts_reject(packet: Path, target: str) -> None:
     try:
         transition(packet, target, show(packet)["revision"])
@@ -168,6 +214,9 @@ def _exercise_fixture(fixture: dict[str, Any], decision: dict[str, Any], root_pa
         if missing_artifacts(packet, list(required)):
             _assert_missing_artifacts_reject(packet, target)
             _materialize_required_artifacts(packet, lane, target)
+        if missing_disciplines(packet, target):
+            _assert_missing_disciplines_reject(packet, target)
+            _materialize_required_disciplines(packet, lane, target)
         state = transition(packet, target, show(packet)["revision"])
         events.append({"event": f"transition:{state['phase']}", "user_visible": target == "VERIFY"})
         phase_gate(packet, state["revision"], repo_root=root)

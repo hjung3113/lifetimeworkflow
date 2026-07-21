@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 import tools.evidence.capture as capture_module
+from tools.discipline.check import load_declarations, record_path, required_disciplines
 from tools.evidence.capture import capture
 from tools.handoff.handoff import (
     HandoffError,
@@ -149,7 +150,34 @@ def _packet(
         ),
     )
     capture(packet, "tests", ["uv", "run", "pytest"], criterion_ids=["AC-01"])
+    _record_disciplines(packet, "STANDARD")
     return root, packet
+
+
+def _record_disciplines(packet: Path, lane: str) -> None:
+    """Discharge the lane's declared disciplines so these fixtures exercise HANDOFF, not LANE-01.
+
+    The discipline refusal itself is covered by tools/task_control/tests; here it would only stop
+    every fixture at its first transition.
+    """
+    declarations = load_declarations()
+    for identifier in required_disciplines(lane, "COMPLETE", declarations=declarations):
+        declaration = declarations[identifier]
+        record = {
+            "discipline": identifier,
+            "skill": declaration.skill,
+            "task_id": packet.name,
+            "satisfied_at_phase": declaration.owed_by_phase,
+            "outputs": ["constraints.md"],
+        }
+        if declaration.min_experts is not None:
+            record["panel"] = {
+                "reviews": [
+                    {"expert": f"seat-{index}", "verdict": "pass", "finding_ids": []}
+                    for index in range(declaration.min_experts)
+                ]
+            }
+        _write(record_path(packet, identifier), record)
 
 
 def _publish(root: Path, packet: Path) -> None:

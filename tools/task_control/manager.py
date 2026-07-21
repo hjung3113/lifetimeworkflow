@@ -20,6 +20,7 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
+from tools.discipline.check import missing_disciplines
 from tools.evidence.capture import EvidenceError, validate_evidence
 from tools.risk_router.router import REPO_ROOT as RISK_ROUTER_ROOT
 from tools.risk_router.router import decide, load_overlay, load_policy
@@ -78,7 +79,9 @@ def _canonical_bytes(value: dict[str, Any]) -> bytes:
 def _atomic_replace(path: Path, value: dict[str, Any]) -> None:
     """Durably replace *path* with a same-directory temporary file."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, temporary = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    descriptor, temporary = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
+    )
     try:
         with os.fdopen(descriptor, "wb") as handle:
             handle.write(_canonical_bytes(value))
@@ -103,7 +106,14 @@ def _atomic_replace(path: Path, value: dict[str, Any]) -> None:
         raise
 
 
-def _cas_write(task_dir: str | Path, expected_revision: int, next_state: dict[str, Any], *, lock_held: bool = False, allow_head_change: bool = False) -> dict[str, Any]:
+def _cas_write(
+    task_dir: str | Path,
+    expected_revision: int,
+    next_state: dict[str, Any],
+    *,
+    lock_held: bool = False,
+    allow_head_change: bool = False,
+) -> dict[str, Any]:
     """Compare current on-disk revision immediately before one atomic replace."""
     if type(expected_revision) is not int or expected_revision < 0:
         raise TaskControlError("expected revision must be a non-negative integer")
@@ -126,7 +136,9 @@ def _cas_write(task_dir: str | Path, expected_revision: int, next_state: dict[st
             fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
         current = _read_state(task_dir)
         if current["revision"] != expected_revision:
-            raise TaskControlError(f"stale writer: expected revision {expected_revision}, found {current['revision']}")
+            raise TaskControlError(
+                f"stale writer: expected revision {expected_revision}, found {current['revision']}"
+            )
         if next_state["revision"] != expected_revision + 1:
             raise TaskControlError("mutation must increment revision by exactly one")
         _validate_state(next_state)
@@ -150,7 +162,9 @@ def _cas_write(task_dir: str | Path, expected_revision: int, next_state: dict[st
 def _atomic_create(path: Path, value: dict[str, Any]) -> None:
     """Create *path* exactly once using a durable temp plus hard-link publication."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, temporary = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    descriptor, temporary = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
+    )
     try:
         with os.fdopen(descriptor, "wb") as handle:
             handle.write(_canonical_bytes(value))
@@ -212,7 +226,20 @@ def _required_artifacts(task_dir: str | Path) -> list[str]:
             raise TaskControlError("task overlay provenance does not match current overlay")
     current_hashes = decide(
         policy,
-        {"scores": {key: 0 for key in ("ambiguity", "change_scope", "data_security", "reversibility", "impact", "coordination", "context_pressure")}},
+        {
+            "scores": {
+                key: 0
+                for key in (
+                    "ambiguity",
+                    "change_scope",
+                    "data_security",
+                    "reversibility",
+                    "impact",
+                    "coordination",
+                    "context_pressure",
+                )
+            }
+        },
         overlay,
     )["policy_hashes"]
     if decision["policy_hashes"]["effective"] != current_hashes["effective"]:
@@ -223,13 +250,17 @@ def _required_artifacts(task_dir: str | Path) -> list[str]:
 def missing_artifacts(task_dir: str | Path, required: list[str] | None = None) -> list[str]:
     root = Path(task_dir)
     missing: list[str] = []
-    for artifact in (required if required is not None else _required_artifacts(root)):
+    for artifact in required if required is not None else _required_artifacts(root):
         if artifact == "task_packet":
-            present = all((root / name).is_file() for name in ("task.json", "state.json", "evidence.json"))
+            present = all(
+                (root / name).is_file() for name in ("task.json", "state.json", "evidence.json")
+            )
         else:
             # Every non-packet artifact must be completed in an immutable run-ID directory.
             artifact_root = root / "artifacts" / artifact
-            present = artifact_root.is_dir() and any(child.is_dir() and any(child.iterdir()) for child in artifact_root.iterdir())
+            present = artifact_root.is_dir() and any(
+                child.is_dir() and any(child.iterdir()) for child in artifact_root.iterdir()
+            )
         if not present:
             missing.append(artifact)
     return missing
@@ -239,13 +270,23 @@ def orphan_artifacts(task_dir: str | Path) -> list[str]:
     """List immutable artifact runs not referenced by evidence; they are never canonical evidence."""
     root = Path(task_dir)
     evidence = _json(root / "evidence.json")
-    referenced = {entry["artifact"]["path"] for entry in evidence.get("gate_runs", []) if isinstance(entry, dict) and isinstance(entry.get("artifact"), dict) and isinstance(entry["artifact"].get("path"), str)}
+    referenced = {
+        entry["artifact"]["path"]
+        for entry in evidence.get("gate_runs", [])
+        if isinstance(entry, dict)
+        and isinstance(entry.get("artifact"), dict)
+        and isinstance(entry["artifact"].get("path"), str)
+    }
     artifacts = root / "artifacts"
     if not artifacts.exists():
         return []
     # Only adapter-owned output.log files can become canonical run artifacts.
     # Auxiliary files are not evidence and must not make a valid capture orphaned.
-    found = sorted(path.relative_to(root).as_posix() for path in artifacts.rglob("output.log") if path.is_file())
+    found = sorted(
+        path.relative_to(root).as_posix()
+        for path in artifacts.rglob("output.log")
+        if path.is_file()
+    )
     return [path for path in found if path not in referenced]
 
 
@@ -255,7 +296,9 @@ def _evidence_covers_constraints(task_dir: str | Path) -> bool:
     _validate_document("evidence", evidence, EVIDENCE_SCHEMA)
     required = {item["id"] for item in task.get("constraints", [])}
     covered: set[str] = set()
-    findings = {item["id"]: set(item.get("constraint_ids", [])) for item in evidence.get("findings", [])}
+    findings = {
+        item["id"]: set(item.get("constraint_ids", [])) for item in evidence.get("findings", [])
+    }
     for run in evidence.get("gate_runs", []):
         if run.get("status") == "PASSED":
             for finding_id in run.get("finding_ids", []):
@@ -280,8 +323,7 @@ def _evidence_covers_criteria(task_dir: str | Path) -> bool:
 def _has_unresolved_major_finding(task_dir: str | Path) -> bool:
     evidence = _json(Path(task_dir) / "evidence.json")
     return any(
-        finding.get("severity") in {"blocker", "major"}
-        and finding.get("disposition") == "open"
+        finding.get("severity") in {"blocker", "major"} and finding.get("disposition") == "open"
         for finding in evidence.get("findings", [])
     )
 
@@ -294,30 +336,56 @@ def _constitution_diff_requires_approval(task_dir: str | Path) -> bool:
         raise TaskControlError("cannot locate repository for constitution-plane diff")
     try:
         changed = subprocess.run(
-            ["git", "-C", str(repository), "diff", "--name-only", state["baseline"]["commit"], state["current_ref"]],
-            text=True, capture_output=True, check=True,
+            [
+                "git",
+                "-C",
+                str(repository),
+                "diff",
+                "--name-only",
+                state["baseline"]["commit"],
+                state["current_ref"],
+            ],
+            text=True,
+            capture_output=True,
+            check=True,
         ).stdout.splitlines()
     except subprocess.CalledProcessError as exc:
         raise TaskControlError("cannot inspect constitution-plane diff") from exc
-    constitution_paths = sorted(path for path in changed if path == "golden" or path.startswith(("contracts/", "golden/", "docs/adr/", "glossary/")))
+    constitution_paths = sorted(
+        path
+        for path in changed
+        if path == "golden" or path.startswith(("contracts/", "golden/", "docs/adr/", "glossary/"))
+    )
     constitution = bool(constitution_paths)
     if not constitution:
         return False
     evidence = _json(root / "evidence.json")
     for run in evidence.get("gate_runs", []):
         reference = run.get("human_approval_ref")
-        if not isinstance(reference, str) or not re.fullmatch(r"approvals/[A-Za-z0-9_-]+\.json", reference):
+        if not isinstance(reference, str) or not re.fullmatch(
+            r"approvals/[A-Za-z0-9_-]+\.json", reference
+        ):
             continue
         # The approval is a human trust root only when it is already tracked by
         # HEAD. Read its committed bytes; a working-tree file is agent-writable.
-        committed = subprocess.run(["git", "-C", str(repository), "show", f"HEAD:{reference}"], capture_output=True, check=False)
+        committed = subprocess.run(
+            ["git", "-C", str(repository), "show", f"HEAD:{reference}"],
+            capture_output=True,
+            check=False,
+        )
         if committed.returncode != 0:
             continue
         try:
             approval = json.loads(committed.stdout.removeprefix(b"\xef\xbb\xbf"))
         except json.JSONDecodeError:
             continue
-        if isinstance(approval, dict) and set(approval) == {"approved_paths"} and isinstance(approval["approved_paths"], list) and all(isinstance(path, str) for path in approval["approved_paths"]) and sorted(set(approval["approved_paths"])) == constitution_paths:
+        if (
+            isinstance(approval, dict)
+            and set(approval) == {"approved_paths"}
+            and isinstance(approval["approved_paths"], list)
+            and all(isinstance(path, str) for path in approval["approved_paths"])
+            and sorted(set(approval["approved_paths"])) == constitution_paths
+        ):
             return False
     return True
 
@@ -330,13 +398,24 @@ def _evidence_matches_head(task_dir: str | Path) -> bool:
         return False
     try:
         relative = root.relative_to(repository).as_posix() + "/evidence.json"
-        head = subprocess.run(["git", "-C", str(repository), "show", f"HEAD:{relative}"], capture_output=True, check=False)
+        head = subprocess.run(
+            ["git", "-C", str(repository), "show", f"HEAD:{relative}"],
+            capture_output=True,
+            check=False,
+        )
     except (OSError, ValueError):
         return False
     return head.returncode == 0 and head.stdout == (root / "evidence.json").read_bytes()
 
 
-def transition(task_dir: str | Path, target: str, expected_revision: int, *, next_action: str | None = None, current_ref: str | None = None) -> dict[str, Any]:
+def transition(
+    task_dir: str | Path,
+    target: str,
+    expected_revision: int,
+    *,
+    next_action: str | None = None,
+    current_ref: str | None = None,
+) -> dict[str, Any]:
     state = _read_state(task_dir)
     if state["blockers"] and target != "BLOCKED":
         raise TaskControlError("unresolved blockers permit only BLOCKED transition")
@@ -353,13 +432,23 @@ def transition(task_dir: str | Path, target: str, expected_revision: int, *, nex
         missing = missing_artifacts(task_dir, required)
         if missing:
             raise TaskControlError(f"missing required artifacts: {', '.join(missing)}")
+    # A lane's declared discipline is a requirement, not advice: an unsatisfied one refuses the
+    # transition here, before any state is written.  Placed after the artifact check (a task
+    # missing its spec should hear about the spec first) and before the evidence check (the heavier
+    # one, which a discipline-less task would fail anyway).  Read from LIVE policy — see
+    # tools/discipline/check.py on why it is not carried in the frozen risk_decision.
+    missing_discipline = missing_disciplines(task_dir, target)
+    if missing_discipline:
+        raise TaskControlError(f"missing required disciplines: {', '.join(missing_discipline)}")
     if target in {"VERIFY", "COMPLETE"}:
         try:
             validate_evidence(task_dir)
         except EvidenceError as exc:
             raise TaskControlError(f"evidence.json: {exc}") from exc
         if not _evidence_covers_constraints(task_dir) or not _evidence_covers_criteria(task_dir):
-            raise TaskControlError("required evidence does not cover every constraint and criterion")
+            raise TaskControlError(
+                "required evidence does not cover every constraint and criterion"
+            )
     if target == "COMPLETE" and _has_unresolved_major_finding(task_dir):
         raise TaskControlError("unresolved blocker or major finding prevents COMPLETE")
     if target == "COMPLETE" and not _evidence_matches_head(task_dir):
@@ -367,7 +456,13 @@ def transition(task_dir: str | Path, target: str, expected_revision: int, *, nex
     if target == "COMPLETE" and _constitution_diff_requires_approval(task_dir):
         raise TaskControlError("constitution-plane diff requires human approval reference")
     next_state = dict(state)
-    next_state.update({"phase": target, "revision": expected_revision + 1, "transition": {"from": state["phase"], "to": target}})
+    next_state.update(
+        {
+            "phase": target,
+            "revision": expected_revision + 1,
+            "transition": {"from": state["phase"], "to": target},
+        }
+    )
     if next_action is not None:
         next_state["next_action"] = next_action
     if current_ref is not None:
@@ -385,7 +480,14 @@ def block(task_dir: str | Path, expected_revision: int, blocker: dict[str, Any])
     if any(item["id"] == blocker.get("id") for item in blockers):
         raise TaskControlError("duplicate blocker ID")
     blockers.append(blocker)
-    next_state.update({"phase": "BLOCKED", "revision": expected_revision + 1, "blockers": blockers, "transition": {"from": state["phase"], "to": "BLOCKED"}})
+    next_state.update(
+        {
+            "phase": "BLOCKED",
+            "revision": expected_revision + 1,
+            "blockers": blockers,
+            "transition": {"from": state["phase"], "to": "BLOCKED"},
+        }
+    )
     return _cas_write(task_dir, expected_revision, next_state)
 
 
@@ -413,7 +515,14 @@ def resume(
     if not is_transition_allowed(task.get("lane", ""), "BLOCKED", target):
         raise TaskControlError(f"illegal transition: BLOCKED -> {target}")
     next_state = dict(state)
-    next_state.update({"phase": target, "revision": expected_revision + 1, "blockers": remaining, "transition": {"from": "BLOCKED", "to": target}})
+    next_state.update(
+        {
+            "phase": target,
+            "revision": expected_revision + 1,
+            "blockers": remaining,
+            "transition": {"from": "BLOCKED", "to": target},
+        }
+    )
     return _cas_write(task_dir, expected_revision, next_state)
 
 
@@ -421,15 +530,28 @@ def validate(task_dir: str | Path) -> dict[str, Any]:
     state = _read_state(task_dir)
     missing = missing_artifacts(task_dir)
     root = Path(task_dir)
-    residues = sorted(path.name for path in root.iterdir() if path.name.endswith(".tmp") or path.name.endswith(".cas"))
-    return {"state": state, "missing_artifacts": missing, "orphan_artifacts": orphan_artifacts(task_dir), "write_residues": residues}
+    residues = sorted(
+        path.name
+        for path in root.iterdir()
+        if path.name.endswith(".tmp") or path.name.endswith(".cas")
+    )
+    return {
+        "state": state,
+        "missing_artifacts": missing,
+        "orphan_artifacts": orphan_artifacts(task_dir),
+        "write_residues": residues,
+    }
 
 
 def refresh_ref(task_dir: str | Path, expected_revision: int, current_ref: str) -> dict[str, Any]:
     """Atomically refresh the repository ref without bypassing revision CAS."""
     state = _read_state(task_dir)
     repository = next(
-        (parent for parent in (Path(task_dir).resolve(), *Path(task_dir).resolve().parents) if (parent / ".git").exists()),
+        (
+            parent
+            for parent in (Path(task_dir).resolve(), *Path(task_dir).resolve().parents)
+            if (parent / ".git").exists()
+        ),
         None,
     )
     if repository is None:
@@ -454,7 +576,11 @@ def attest(task_dir: str | Path, records: dict[str, Any]) -> dict[str, Any]:
     _validate_document("task", task, TASK_SCHEMA)
     by_id = {constraint["id"]: constraint for constraint in task["constraints"]}
     repository = next(
-        (ancestor for ancestor in root.parents if ancestor / ".workflow" / "tasks" / root.name == root),
+        (
+            ancestor
+            for ancestor in root.parents
+            if ancestor / ".workflow" / "tasks" / root.name == root
+        ),
         None,
     )
     if repository is None:
