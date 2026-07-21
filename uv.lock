@@ -5,8 +5,10 @@ requires-python = ">=3.11"
 [manifest]
 members = [
     "evidence-adapters",
+    "harness-capability",
     "harness-discipline",
     "harness-handoff",
+    "harness-skill-registry",
     "harness-task-control",
     "harness-task-packet",
     "lifecycle-eval",
@@ -170,6 +172,11 @@ version = "0.0.0"
 source = { virtual = "tools/evidence" }
 
 [[package]]
+name = "harness-capability"
+version = "0.0.0"
+source = { virtual = "tools/capability" }
+
+[[package]]
 name = "harness-discipline"
 version = "0.0.0"
 source = { virtual = "tools/discipline" }
@@ -184,6 +191,11 @@ requires-dist = [{ name = "jsonschema", specifier = "==4.26.0" }]
 name = "harness-handoff"
 version = "0.0.0"
 source = { virtual = "tools/handoff" }
+
+[[package]]
+name = "harness-skill-registry"
+version = "0.0.0"
+source = { virtual = "tools/skill_registry" }
 
 [[package]]
 name = "harness-task-control"

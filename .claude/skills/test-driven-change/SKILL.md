@@ -60,3 +60,10 @@ and the `uv` invocation rules, see `python-conventions`.
 
 Then record the discipline: `<task_dir>/discipline/test-driven-change.json`, naming the test files
 in `outputs`. `uv run python -m tools.discipline <task_dir>` reports what is still owed.
+
+The record must also name the `agent` that did the work. This discipline routes to the
+`implementation` capability (`harness/disciplines.toml`), and only a persona on that capability's
+allowlist (`harness/capabilities.toml`) discharges it — check with
+`uv run python -m tools.capability route implementation <agent>`, which exits 3 when refused. The
+declaration names a capability, never a persona, so who may serve it can change without editing
+this page.

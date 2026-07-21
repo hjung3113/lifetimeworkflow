@@ -1,9 +1,13 @@
-"""LANE-01/LANE-02: the declaration loader and the satisfied-vs-missing decision function.
+"""LANE-01/LANE-02/LANE-03: the declaration loader and the satisfied-vs-missing decision function.
 
 Every defect class asserts its SPECIFIC message, not merely that the defect list is non-empty — a
 checker that rejects everything for the wrong reason is indistinguishable from one that works, and
 the positive controls at the bottom are what keep the rule from degrading into "nothing is ever
 satisfied".
+
+The LANE-03 block at the bottom covers capability-neutral routing: a declaration names a capability,
+a record names the agent that served it, and an agent outside that capability's allowlist makes the
+record undischarged — which is what tools/task_control turns into a refused transition.
 """
 
 from __future__ import annotations
@@ -13,9 +17,11 @@ from pathlib import Path
 
 import pytest
 
+from tools.capability.registry import load_capabilities, providers_for
 from tools.discipline.check import (
     DEFAULT_DECLARATIONS,
     PHASE_ORDER,
+    Declaration,
     DisciplineError,
     load_declarations,
     missing_disciplines,
@@ -55,6 +61,18 @@ def _write_record(packet: Path, discipline: str, body: dict) -> None:
     path.write_text(json.dumps(body), encoding="utf-8")
 
 
+def _agent_for(discipline: str) -> str | None:
+    """The first allowlisted provider for whatever capability the declaration names (LANE-03).
+
+    Resolved from the registry rather than typed, so this helper never hardcodes a persona name —
+    which is the whole point of capability-neutral routing.
+    """
+    declaration = load_declarations()[discipline]
+    if declaration.capability is None:
+        return None
+    return providers_for(declaration.capability)[0]
+
+
 def _record(discipline: str, skill: str, phase: str, **extra) -> dict:
     body = {
         "discipline": discipline,
@@ -63,14 +81,28 @@ def _record(discipline: str, skill: str, phase: str, **extra) -> dict:
         "satisfied_at_phase": phase,
         "outputs": ["notes.md"],
     }
+    agent = _agent_for(discipline)
+    if agent is not None:
+        body["agent"] = agent
     body.update(extra)
     return body
 
 
-def _panel(experts: list[str], verdict: str = "pass", finding_ids: list[str] = ()) -> dict:
+def _panel(
+    experts: list[str],
+    verdict: str = "pass",
+    finding_ids: list[str] = (),
+    agent: str | None = None,
+) -> dict:
+    seat_agent = agent if agent is not None else _agent_for("adversarial-review-panel")
     return {
         "reviews": [
-            {"expert": expert, "verdict": verdict, "finding_ids": list(finding_ids)}
+            {
+                "expert": expert,
+                "verdict": verdict,
+                "finding_ids": list(finding_ids),
+                **({"agent": seat_agent} if seat_agent is not None else {}),
+            }
             for expert in experts
         ]
     }
@@ -216,15 +248,21 @@ def test_panel_with_duplicate_seats_is_not_a_panel(tmp_path: Path, declarations:
 
 def test_panel_citing_an_unknown_finding_is_invalid(tmp_path: Path, declarations: dict):
     packet = _packet(tmp_path, "STRICT", findings=["F-01"])
+    seat = _agent_for("adversarial-review-panel")
     record = _record(
         "adversarial-review-panel",
         "adversarial-review-panel",
         "REVIEW",
         panel={
             "reviews": [
-                {"expert": "contract", "verdict": "pass", "finding_ids": ["F-01"]},
-                {"expert": "security", "verdict": "concerns", "finding_ids": ["F-99"]},
-                {"expert": "rollback", "verdict": "pass", "finding_ids": []},
+                {"expert": "contract", "verdict": "pass", "finding_ids": ["F-01"], "agent": seat},
+                {
+                    "expert": "security",
+                    "verdict": "concerns",
+                    "finding_ids": ["F-99"],
+                    "agent": seat,
+                },
+                {"expert": "rollback", "verdict": "pass", "finding_ids": [], "agent": seat},
             ]
         },
     )
@@ -314,3 +352,98 @@ def test_a_record_from_another_task_does_not_discharge(
     assert missing_disciplines(packet, "EXECUTE", policy=policy, declarations=declarations) == [
         "clarify (record belongs to task task-9999)"
     ]
+
+
+# ── LANE-03: capability-neutral routing + the agent allowlist ──────────────────────────────────
+
+
+def test_every_declaration_names_a_declared_capability(declarations: dict):
+    """A declaration routes by CAPABILITY, never by a persona name."""
+    registry = load_capabilities()
+    for identifier, declaration in declarations.items():
+        assert declaration.capability is not None, f"{identifier} declares no capability"
+        assert declaration.capability in registry
+
+
+def test_a_declaration_naming_an_undeclared_capability_is_refused(tmp_path: Path):
+    """MUTATION: a typo'd capability is a loud load error, not a silently unenforced route."""
+    path = tmp_path / "disciplines.toml"
+    path.write_text(
+        'version = 1\n[discipline.x]\nskill = "x"\ncapability = "no-such-capability"\n'
+        'owed_by_phase = "EXECUTE"\noutputs_required = 0\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(DisciplineError, match="undeclared capability"):
+        load_declarations(path)
+
+
+def test_an_out_of_allowlist_agent_makes_the_record_invalid(tmp_path: Path, declarations: dict):
+    """THE LANE-03 defect: a record routed outside the capability's allowlist is not discharged."""
+    packet = _packet(tmp_path, "STRICT")
+    record = _record("clarify", "clarify", "CLARIFY", agent="code-reviewer")
+    defects = validate_record(record, declarations["clarify"], task_dir=packet)
+    assert defects == [
+        "agent code-reviewer is not allowed to serve capability implementation "
+        "(allowlist: python-engineer)"
+    ]
+
+
+def test_a_record_with_no_agent_is_not_discharged(tmp_path: Path, declarations: dict):
+    """An unrecorded route is a defect in its own right — silence is not a route."""
+    packet = _packet(tmp_path, "STRICT")
+    record = _record("clarify", "clarify", "CLARIFY")
+    del record["agent"]
+    assert validate_record(record, declarations["clarify"], task_dir=packet) == [
+        "capability implementation requires a named agent, none given"
+    ]
+
+
+def test_the_panel_allowlist_is_checked_per_seat(tmp_path: Path, declarations: dict):
+    """A panel routed three ways is three routing decisions; only the bad seat is named."""
+    packet = _packet(tmp_path, "STRICT")
+    good = providers_for("adversarial-review")[0]
+    record = _record(
+        "adversarial-review-panel",
+        "adversarial-review-panel",
+        "REVIEW",
+        panel={
+            "reviews": [
+                {"expert": "contract", "verdict": "pass", "finding_ids": [], "agent": good},
+                {
+                    "expert": "security",
+                    "verdict": "pass",
+                    "finding_ids": [],
+                    "agent": "python-engineer",
+                },
+                {"expert": "rollback", "verdict": "pass", "finding_ids": [], "agent": good},
+            ]
+        },
+    )
+    defects = validate_record(record, declarations["adversarial-review-panel"], task_dir=packet)
+    assert defects == [
+        "panel seat security: agent python-engineer is not allowed to serve capability "
+        "adversarial-review (allowlist: code-reviewer, explorer)"
+    ]
+
+
+def test_missing_disciplines_reports_the_routing_refusal(
+    tmp_path: Path, declarations: dict, policy: dict
+):
+    """The routing defect reaches the decision function, which is what task_control refuses on."""
+    packet = _packet(tmp_path, "STRICT")
+    _write_record(packet, "clarify", _record("clarify", "clarify", "CLARIFY", agent="curator"))
+    assert missing_disciplines(packet, "EXECUTE", policy=policy, declarations=declarations) == [
+        "clarify (agent curator is not allowed to serve capability implementation "
+        "(allowlist: python-engineer))"
+    ]
+
+
+def test_a_declaration_without_a_capability_imposes_no_routing(tmp_path: Path):
+    """The mechanism is opt-in BY DECLARATION: no capability, no routing requirement."""
+    packet = _packet(tmp_path, "STRICT")
+    neutral = Declaration(
+        id="clarify", skill="clarify", owed_by_phase="CLARIFY", outputs_required=1
+    )
+    record = _record("clarify", "clarify", "CLARIFY")
+    del record["agent"]
+    assert validate_record(record, neutral, task_dir=packet) == []

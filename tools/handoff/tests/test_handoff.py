@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 import tools.evidence.capture as capture_module
+from tools.capability.registry import providers_for
 from tools.discipline.check import load_declarations, record_path, required_disciplines
 from tools.evidence.capture import capture
 from tools.handoff.handoff import (
@@ -170,10 +171,21 @@ def _record_disciplines(packet: Path, lane: str) -> None:
             "satisfied_at_phase": declaration.owed_by_phase,
             "outputs": ["constraints.md"],
         }
+        # LANE-03: the agent comes from the capability's allowlist, not from a name typed here.
+        provider = (
+            providers_for(declaration.capability)[0] if declaration.capability is not None else None
+        )
+        if provider is not None:
+            record["agent"] = provider
         if declaration.min_experts is not None:
             record["panel"] = {
                 "reviews": [
-                    {"expert": f"seat-{index}", "verdict": "pass", "finding_ids": []}
+                    {
+                        "expert": f"seat-{index}",
+                        "verdict": "pass",
+                        "finding_ids": [],
+                        **({"agent": provider} if provider is not None else {}),
+                    }
                     for index in range(declaration.min_experts)
                 ]
             }
@@ -335,7 +347,11 @@ def test_resume_attestation_blocks_absent_and_stale_then_allows_a_real_process_r
     prefixed = subprocess.run(
         [sys.executable, "-m", "tools.hooks.resume_gate"],
         input=json.dumps(
-            {"tool_name": "Bash", "cwd": str(root), "tool_input": {"command": "command git commit -m x"}}
+            {
+                "tool_name": "Bash",
+                "cwd": str(root),
+                "tool_input": {"command": "command git commit -m x"},
+            }
         ),
         text=True,
         capture_output=True,
@@ -344,13 +360,18 @@ def test_resume_attestation_blocks_absent_and_stale_then_allows_a_real_process_r
     )
     assert json.loads(prefixed.stdout)["hookSpecificOutput"]["permissionDecision"] == "deny"
     for bypass in (
-        "env VAR=1 git commit -m x", "env -i VAR=\"a b\" git commit -m x",
-        "git -C . commit -m x", "git -C. commit -m x", "git -c core.filemode=false commit -m x",
+        "env VAR=1 git commit -m x",
+        'env -i VAR="a b" git commit -m x',
+        "git -C . commit -m x",
+        "git -C. commit -m x",
+        "git -c core.filemode=false commit -m x",
         "git --git-dir=.git --work-tree=. commit -m x",
     ):
         result = subprocess.run(
             [sys.executable, "-m", "tools.hooks.resume_gate"],
-            input=json.dumps({"tool_name": "Bash", "cwd": str(root), "tool_input": {"command": bypass}}),
+            input=json.dumps(
+                {"tool_name": "Bash", "cwd": str(root), "tool_input": {"command": bypass}}
+            ),
             text=True,
             capture_output=True,
             env=env,
@@ -425,17 +446,26 @@ def test_resume_transition_then_gated_checkpoint_commit_keeps_lifecycle_live(
     env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[3])}
 
     def gated(command: str, tool_name: str = "Bash") -> None:
-        event = json.dumps({"tool_name": tool_name, "cwd": str(root), "tool_input": {"command": command}})
+        event = json.dumps(
+            {"tool_name": tool_name, "cwd": str(root), "tool_input": {"command": command}}
+        )
         result = subprocess.run(
-            [sys.executable, "-m", "tools.hooks.resume_gate"], input=event, text=True,
-            capture_output=True, env=env, check=False,
+            [sys.executable, "-m", "tools.hooks.resume_gate"],
+            input=event,
+            text=True,
+            capture_output=True,
+            env=env,
+            check=False,
         )
         assert result.returncode == 0 and not result.stdout, result.stdout
 
     denied = subprocess.run(
         [sys.executable, "-m", "tools.hooks.resume_gate"],
         input=json.dumps({"tool_name": "Write", "cwd": str(root), "tool_input": {}}),
-        text=True, capture_output=True, env=env, check=False,
+        text=True,
+        capture_output=True,
+        env=env,
+        check=False,
     )
     assert json.loads(denied.stdout)["hookSpecificOutput"]["permissionDecision"] == "deny"
     assert resume(state_dir, root)["resume"]["task_id"] == "T-20260719000000-handoff"
@@ -446,14 +476,25 @@ def test_resume_transition_then_gated_checkpoint_commit_keeps_lifecycle_live(
     (root / "work.py").write_text("after transition\n", encoding="utf-8")
     gated("git add work.py .workflow/tasks/T-20260719000000-handoff/state.json")
     subprocess.run(
-        ["git", "-C", str(root), "add", "work.py", ".workflow/tasks/T-20260719000000-handoff/state.json"],
+        [
+            "git",
+            "-C",
+            str(root),
+            "add",
+            "work.py",
+            ".workflow/tasks/T-20260719000000-handoff/state.json",
+        ],
         check=True,
     )
     gated('git commit -m "checkpoint after transition"')
-    subprocess.run(["git", "-C", str(root), "commit", "-qm", "checkpoint after transition"], check=True)
+    subprocess.run(
+        ["git", "-C", str(root), "commit", "-qm", "checkpoint after transition"], check=True
+    )
 
 
-def test_pii_refusal_covers_required_read_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_pii_refusal_covers_required_read_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     _, packet = _packet(tmp_path, monkeypatch)
     task = json.loads((packet / "task.json").read_text(encoding="utf-8"))
     task["constraints"][0]["source_path"] = "alice@example.com.txt"

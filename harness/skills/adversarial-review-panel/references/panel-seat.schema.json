@@ -4,12 +4,16 @@
   "title": "Adversarial review panel seat return",
   "description": "What one seat of the review panel returns to the conductor. A frame, a verdict, and citation-bearing findings — never a file dump and never a summary of the diff.",
   "type": "object",
-  "required": ["expert", "frame", "verdict", "findings"],
+  "required": ["expert", "agent", "frame", "verdict", "findings"],
   "additionalProperties": false,
   "properties": {
     "expert": {
       "type": "string",
       "description": "The seat identifier. Must be distinct from every other seat in the same panel — three returns from one frame is one opinion, not a panel."
+    },
+    "agent": {
+      "type": "string",
+      "description": "The agent that filled this seat. Must be on the allowlist of the capability this discipline declares (harness/capabilities.toml); an out-of-allowlist agent invalidates the whole panel record."
     },
     "frame": {
       "type": "string",

@@ -12,6 +12,10 @@
 #
 # Fields
 #   skill            the authored procedure an agent follows to satisfy the discipline
+#   capability       (LANE-03) the KIND of agent the method needs, declared in
+#                    harness/capabilities.toml.  Never a persona name: the record names the agent
+#                    that carried the work out, and an agent outside that capability's allowlist
+#                    makes the record invalid, so the transition is refused.
 #   owed_by_phase    the discipline is owed when entering this phase OR any later one, in the
 #                    canonical phase order declared by the task-control transitions contract
 #   outputs_required the minimum number of repo-relative output paths the record must cite; every
@@ -23,11 +27,13 @@ version = 1
 
 [discipline.clarify]
 skill            = "clarify"
+capability       = "implementation"
 owed_by_phase    = "EXECUTE"
 outputs_required = 1
 
 [discipline.test-driven-change]
 skill            = "test-driven-change"
+capability       = "implementation"
 owed_by_phase    = "REVIEW"
 outputs_required = 1
 
@@ -37,6 +43,7 @@ outputs_required = 1
 # multi-expert review.
 [discipline.adversarial-review-panel]
 skill            = "adversarial-review-panel"
+capability       = "adversarial-review"
 owed_by_phase    = "VERIFY"
 outputs_required = 1
 min_experts      = 3
@@ -44,10 +51,12 @@ verdicts         = ["pass", "concerns", "block"]
 
 [discipline.diagnose]
 skill            = "diagnose"
+capability       = "implementation"
 owed_by_phase    = "EXECUTE"
 outputs_required = 1
 
 [discipline.domain-modeling]
 skill            = "domain-modeling"
+capability       = "implementation"
 owed_by_phase    = "PLAN"
 outputs_required = 1

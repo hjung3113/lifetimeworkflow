@@ -5,6 +5,9 @@ Three data sources, none of them constitution plane:
 * ``harness/risk-policy.toml`` — which lane owes which discipline (read LIVE, never from the task's
   frozen ``risk_decision``; the packet's ``policy_hashes.effective`` pin is what ties the two).
 * ``harness/disciplines.toml`` — what each discipline is and what discharges it.
+* ``harness/capabilities.toml`` — for a declaration that names a ``capability``, the ALLOWLIST of
+  agents that may serve it (LANE-03).  A record routed to an agent outside that allowlist is
+  DEFECTIVE, so the discipline counts as unsatisfied and the transition is refused.
 * ``<task_dir>/discipline/<id>.json`` — the task's own claim that it happened.
 
 Nothing here mutates a repository.  ``missing_disciplines`` is a pure decision function; the refusal
@@ -20,6 +23,7 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
+from tools.capability.registry import Capability, CapabilityError, load_capabilities, route_defects
 from tools.risk_router.router import RiskRouterError, load_policy
 from tools.task_packet.transitions import TRANSITIONS_PATH
 
@@ -29,13 +33,13 @@ RECORD_SCHEMA = Path(__file__).with_name("record.schema.json")
 RECORD_DIRNAME = "discipline"
 
 _DECLARATION_KEYS = frozenset(
-    {"skill", "owed_by_phase", "outputs_required", "min_experts", "verdicts"}
+    {"skill", "capability", "owed_by_phase", "outputs_required", "min_experts", "verdicts"}
 )
 _REQUIRED_DECLARATION_KEYS = frozenset({"skill", "owed_by_phase", "outputs_required"})
 
 
 class DisciplineError(ValueError):
-    """A malformed declaration, policy, or packet — never an unsatisfied discipline.
+    """A malformed declaration, policy, capability registry, or packet — never an unsatisfied one.
 
     An unsatisfied discipline is an ordinary result (a non-empty ``missing_disciplines`` list), not
     an exception: it is the expected state of a task that has not done the work yet.
@@ -71,6 +75,10 @@ class Declaration:
     outputs_required: int
     min_experts: int | None = None
     verdicts: tuple[str, ...] | None = None
+    # LANE-03: the KIND of agent the method needs.  ``None`` means the declaration predates
+    # capability routing and imposes no routing requirement — the mechanism stays opt-in by
+    # declaration, not by whether anyone remembered to check.
+    capability: str | None = None
 
 
 def _read_toml(path: Path) -> dict[str, Any]:
@@ -86,14 +94,26 @@ def _read_toml(path: Path) -> dict[str, Any]:
     return value
 
 
-def load_declarations(path: str | Path = DEFAULT_DECLARATIONS) -> dict[str, Declaration]:
-    """Load and fail-closed-validate every declared discipline."""
+def load_declarations(
+    path: str | Path = DEFAULT_DECLARATIONS,
+    *,
+    capabilities: dict[str, Capability] | None = None,
+) -> dict[str, Declaration]:
+    """Load and fail-closed-validate every declared discipline.
+
+    A declared ``capability`` is checked against the capability registry HERE, at load time, so a
+    typo is a loud malformed-declaration error rather than a route that silently permits nobody.
+    """
     raw = _read_toml(Path(path))
     if raw.get("version") != 1:
         raise DisciplineError("discipline declarations version must be 1")
     table = raw.get("discipline")
     if not isinstance(table, dict) or not table:
         raise DisciplineError("discipline declarations require a non-empty [discipline] table")
+    try:
+        registry = capabilities if capabilities is not None else load_capabilities()
+    except CapabilityError as exc:
+        raise DisciplineError(f"invalid capability registry: {exc}") from exc
     declarations: dict[str, Declaration] = {}
     for identifier, body in table.items():
         if not isinstance(body, dict):
@@ -123,6 +143,14 @@ def load_declarations(path: str | Path = DEFAULT_DECLARATIONS) -> dict[str, Decl
                 f"declaration for {identifier} has an invalid min_experts"
                 " (a panel needs at least 2 seats)"
             )
+        capability = body.get("capability")
+        if capability is not None:
+            if not isinstance(capability, str) or not capability:
+                raise DisciplineError(f"declaration for {identifier} has an invalid capability")
+            if capability not in registry:
+                raise DisciplineError(
+                    f"declaration for {identifier} names an undeclared capability: {capability}"
+                )
         verdicts = body.get("verdicts")
         if verdicts is not None and not (
             isinstance(verdicts, list)
@@ -137,6 +165,7 @@ def load_declarations(path: str | Path = DEFAULT_DECLARATIONS) -> dict[str, Decl
             outputs_required=outputs,
             min_experts=experts,
             verdicts=None if verdicts is None else tuple(verdicts),
+            capability=capability,
         )
     return declarations
 
@@ -222,18 +251,35 @@ def _finding_ids(task_dir: Path) -> set[str]:
     }
 
 
+def _routing_defect(
+    capability: str, agent: object, *, registry: dict[str, Capability] | None
+) -> list[str]:
+    """Routing defects for one claimed agent, phrased as record defects rather than raised.
+
+    A route to a non-string agent is treated as no agent at all: the point of the message is that
+    the routing claim was never legibly made.
+    """
+    named = agent if isinstance(agent, str) and agent else None
+    return route_defects(capability, named, registry=registry)
+
+
 def validate_record(
     record: dict[str, Any],
     declaration: Declaration,
     *,
     task_dir: str | Path,
     finding_ids: set[str] | None = None,
+    capabilities: dict[str, Capability] | None = None,
 ) -> list[str]:
     """Return every defect in *record*; an empty list means the discipline is discharged.
 
     The defects are what stop a record from being a rubber stamp: it must name the declared skill,
     have been satisfied no later than the phase it is owed by, cite outputs that actually EXIST, and
     — for a panel — carry distinct seats whose findings are real evidence findings.
+
+    LANE-03 adds routing: when the declaration names a ``capability``, the record must say which
+    AGENT carried the work out, and that agent must be on the capability's allowlist.  For a panel
+    the check is per SEAT, because a panel routed three ways is three routing decisions.
     """
     packet = Path(task_dir)
     schema = json.loads(RECORD_SCHEMA.read_text(encoding="utf-8"))
@@ -269,6 +315,12 @@ def validate_record(
         if not (root / output).exists():
             defects.append(f"record cites an output that does not exist: {output}")
 
+    # LANE-03 routing.  A panel routes per seat; every other discipline routes once, on the record.
+    if declaration.capability is not None and declaration.min_experts is None:
+        defects.extend(
+            _routing_defect(declaration.capability, record.get("agent"), registry=capabilities)
+        )
+
     if declaration.min_experts is not None:
         panel = record.get("panel")
         if not isinstance(panel, dict):
@@ -283,6 +335,13 @@ def validate_record(
                 )
             known = finding_ids if finding_ids is not None else _finding_ids(packet)
             for review in reviews:
+                if declaration.capability is not None:
+                    defects.extend(
+                        f"panel seat {review['expert']}: {message}"
+                        for message in _routing_defect(
+                            declaration.capability, review.get("agent"), registry=capabilities
+                        )
+                    )
                 if (
                     declaration.verdicts is not None
                     and review["verdict"] not in declaration.verdicts
@@ -306,6 +365,7 @@ def missing_disciplines(
     *,
     policy: dict[str, Any] | None = None,
     declarations: dict[str, Declaration] | None = None,
+    capabilities: dict[str, Capability] | None = None,
 ) -> list[str]:
     """Every discipline owed at *target_phase* that is not validly discharged by the packet."""
     packet = Path(task_dir)
@@ -313,7 +373,13 @@ def missing_disciplines(
     lane = task.get("lane")
     if not isinstance(lane, str):
         raise DisciplineError("task.json declares no lane")
-    declared = declarations if declarations is not None else load_declarations()
+    try:
+        registry = capabilities if capabilities is not None else load_capabilities()
+    except CapabilityError as exc:
+        raise DisciplineError(f"invalid capability registry: {exc}") from exc
+    declared = (
+        declarations if declarations is not None else load_declarations(capabilities=registry)
+    )
     owed = required_disciplines(lane, target_phase, policy=policy, declarations=declared)
     if not owed:
         return []
@@ -332,7 +398,13 @@ def missing_disciplines(
         if isinstance(record.get("task_id"), str) and record["task_id"] != task.get("task_id"):
             missing.append(f"{identifier} (record belongs to task {record['task_id']})")
             continue
-        defects = validate_record(record, declared[identifier], task_dir=packet, finding_ids=known)
+        defects = validate_record(
+            record,
+            declared[identifier],
+            task_dir=packet,
+            finding_ids=known,
+            capabilities=registry,
+        )
         if defects:
             missing.append(f"{identifier} ({defects[0]})")
     return missing

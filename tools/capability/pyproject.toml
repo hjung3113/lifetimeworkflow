@@ -1,0 +1,9 @@
+[project]
+name = "harness-capability"
+version = "0.0.0"
+description = "Capability registry: what kind of agent a method needs, and the allowlist of personas that may serve it."
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv]
+package = false

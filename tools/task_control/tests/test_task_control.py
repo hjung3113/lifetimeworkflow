@@ -13,6 +13,7 @@ import pytest
 
 import tools.discipline.check as check_module
 import tools.evidence.capture as capture_module
+from tools.capability.registry import providers_for
 from tools.discipline.__main__ import main as discipline_main
 from tools.discipline.check import load_declarations, record_path, required_disciplines
 from tools.evidence.capture import add_finding, capture
@@ -628,10 +629,22 @@ def write_discipline_record(task_dir: Path, identifier: str, **overrides: object
         "satisfied_at_phase": declaration.owed_by_phase,
         "outputs": ["constraints.md"],
     }
+    # LANE-03: resolve the agent from the DECLARED CAPABILITY's allowlist, so this helper stays
+    # capability-neutral — no persona name is hardcoded here either.
+    provider = (
+        providers_for(declaration.capability)[0] if declaration.capability is not None else None
+    )
+    if provider is not None:
+        body["agent"] = provider
     if declaration.min_experts is not None:
         body["panel"] = {
             "reviews": [
-                {"expert": name, "verdict": "pass", "finding_ids": []}
+                {
+                    "expert": name,
+                    "verdict": "pass",
+                    "finding_ids": [],
+                    **({"agent": provider} if provider is not None else {}),
+                }
                 for name in ("contract", "security", "rollback")[: declaration.min_experts]
             ]
         }
@@ -698,6 +711,68 @@ def test_three_identical_seats_do_not_satisfy_the_panel(tmp_path: Path) -> None:
     )
     with pytest.raises(TaskControlError, match="distinct expert seat"):
         transition(task_dir, "VERIFY", show(task_dir)["revision"])
+
+
+def test_verify_is_refused_when_a_panel_seat_routes_outside_the_allowlist(tmp_path: Path) -> None:
+    """LANE-03 THE DEMONSTRATION: an out-of-allowlist route REFUSES the transition.
+
+    The seat is otherwise perfect — distinct expert, declared verdict, real outputs. The only defect
+    is that the agent filling it is not on the `adversarial-review` allowlist, and that alone stops
+    the task leaving REVIEW. Swapping in an allowlisted provider lets the same transition through,
+    so the refusal is caused by the route and by nothing else.
+    """
+    _, task_dir = make_task(tmp_path, "STRICT")
+    for target in ("CLARIFY", "SPEC", "PLAN"):
+        transition(task_dir, target, show(task_dir)["revision"])
+    satisfy_target(task_dir, "STRICT", "EXECUTE")
+    transition(task_dir, "EXECUTE", show(task_dir)["revision"])
+    satisfy_target(task_dir, "STRICT", "REVIEW")
+    transition(task_dir, "REVIEW", show(task_dir)["revision"])
+    satisfy_artifacts(task_dir, "STRICT", "VERIFY")
+    allowed = providers_for("adversarial-review")[0]
+    seats = ("contract", "security", "rollback")
+
+    def _panel(agents: tuple[str, ...]) -> dict:
+        return {
+            "reviews": [
+                {"expert": expert, "verdict": "pass", "finding_ids": [], "agent": agent}
+                for expert, agent in zip(seats, agents, strict=True)
+            ]
+        }
+
+    # `python-engineer` is a real, declared persona — just not one allowed to review adversarially.
+    write_discipline_record(
+        task_dir,
+        "adversarial-review-panel",
+        panel=_panel((allowed, "python-engineer", allowed)),
+    )
+    before = show(task_dir)
+    with pytest.raises(
+        TaskControlError, match="not allowed to serve capability adversarial-review"
+    ):
+        transition(task_dir, "VERIFY", before["revision"])
+    after = show(task_dir)
+    assert (after["phase"], after["revision"]) == (before["phase"], before["revision"])
+
+    # POSITIVE CONTROL: only the route changes, and the same transition now succeeds.
+    write_discipline_record(
+        task_dir, "adversarial-review-panel", panel=_panel((allowed, allowed, allowed))
+    )
+    assert transition(task_dir, "VERIFY", before["revision"])["phase"] == "VERIFY"
+
+
+def test_an_unrouted_record_is_refused_like_an_absent_one(tmp_path: Path) -> None:
+    """LANE-03: a record that never says who did the work does not discharge the discipline."""
+    _, task_dir = make_task(tmp_path, "STANDARD")
+    for target in ("CLARIFY", "SPEC", "PLAN"):
+        transition(task_dir, target, show(task_dir)["revision"])
+    satisfy_artifacts(task_dir, "STANDARD", "EXECUTE")
+    path = write_discipline_record(task_dir, "clarify")
+    body = json.loads(path.read_text())
+    del body["agent"]
+    dump(path, body)
+    with pytest.raises(TaskControlError, match="requires a named agent, none given"):
+        transition(task_dir, "EXECUTE", show(task_dir)["revision"])
 
 
 def test_fast_owes_no_discipline_and_is_unaffected(tmp_path: Path) -> None:
