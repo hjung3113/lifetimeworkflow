@@ -200,6 +200,13 @@ jobs:
   # files) are machine-written derivatives; a divergence between source and committed output is a
   # gate FAIL. The full documented path set is diffed so later waves are already covered — paths
   # not yet emitted stay clean (empty diff), never a false positive.
+  #
+  # UNTRACKED-SAFE (15-REVIEW CR-01). Uses `git add -A` + `git diff --cached --exit-code`, the same
+  # idiom as stale-derived below, NOT bare `git diff`. Bare `git diff` sees tracked-file changes
+  # only, so a re-emit that produces a BRAND-NEW artifact — a newly added agent, command or skill —
+  # leaves it untracked and the gate passes green on a drifted tree. This is not hypothetical:
+  # plan 29-03 hit it live, with bare `git diff` reporting clean while four newly emitted files sat
+  # untracked. Staging first makes new files visible to `--cached`.
   emit-drift:
     runs-on: ubuntu-latest
     steps:
@@ -209,8 +216,20 @@ jobs:
         run: uv sync --all-packages
       - name: Re-emit the harness surface
         run: uv run python -m tools.harness_emit
-      - name: Fail on any hand-edited generated-artifact drift
-        run: git diff --exit-code -- .opencode opencode.json .claude/agents .claude/commands .claude/skills AGENTS.md CLAUDE.md .claude/settings.json
+      - name: Fail on any hand-edited generated-artifact drift (untracked-safe)
+        run: |
+          git add -A -- .opencode opencode.json .claude/agents .claude/commands .claude/skills AGENTS.md CLAUDE.md .claude/settings.json
+          if ! git diff --cached --exit-code -- .opencode opencode.json .claude/agents .claude/commands .claude/skills AGENTS.md CLAUDE.md .claude/settings.json; then
+            echo ''
+            echo 'FAIL: the emitted runtime surface is DRIFTED — a generated artifact differs from its re-emitted form.'
+            echo 'The .opencode/ and .claude/ trees are machine-written; never hand-edit them.'
+            echo 'Fix locally by editing the runtime-neutral source under harness/, then re-emit:'
+            echo ''
+            echo '    uv run python -m tools.harness_emit'
+            echo ''
+            echo 'then commit the regenerated artifacts.'
+            exit 1
+          fi
 
   # ── stale-derived ──────────────────────────────────────────────────────────────────────────
   # Committed-derived freshness gate (MAINT-02, D-07/D-08). A DISTINCT concern from emit-drift
