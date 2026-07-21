@@ -1,0 +1,131 @@
+{
+  "version": "v1",
+  "_note": "This file is a DECLARATION, not a control. Each record RESTATES a glob list that lives in the module named by owner_module/owner_constant; those modules remain the single source of truth, and NO hook imports this file. That direction is deliberate: a hook that read its globs from here would make the drift check comparing the two a tautology, proving only that a file equals itself. Nothing here gates a tool call. tools/hooks/commit_gate.py is deliberately absent from domains[]: it is a PreToolUse(Bash) gate that enumerates NO paths — it has no glob set to declare, so giving it a record would invent a path-deny domain that does not exist. Every domain's uncovered_tool_surfaces names Bash for the same honesty: a shell command can reach these paths without passing any of these gates, and that gap is recorded as data rather than left to prose.",
+  "domains": [
+    {
+      "id": "constitution",
+      "owner_module": "tools.hooks.contract_guard",
+      "owner_constant": "CONSTITUTION_GLOBS",
+      "globs": ["contracts/**", "docs/adr/**", "golden/**", "docs/glossary.md"],
+      "bypasses": ["GOLDEN_APPROVE_HUMAN", "HARNESS_DEV_BYPASS"],
+      "covered_tool_surfaces": ["Write", "Edit"],
+      "uncovered_tool_surfaces": ["Bash"],
+      "content_axis": {
+        "kind": "byte-hygiene",
+        "source": "tools.polyglot_lint.lint_bytes",
+        "location": "tools/hooks/contract_guard.py:94"
+      },
+      "runtime_adapters": [
+        {
+          "runtime": "claude",
+          "path": ".claude/settings.json",
+          "surfaces": ["Write|Edit"]
+        },
+        {
+          "runtime": "opencode",
+          "path": ".opencode/plugin/contract-guard.ts",
+          "surfaces": ["write", "edit"]
+        }
+      ],
+      "enforcement_sites": [
+        {
+          "layer": 1,
+          "location": "tools/hooks/contract_guard.py:decide",
+          "covers": "the ordinary agent Write/Edit tool path"
+        },
+        {
+          "layer": 2,
+          "location": "tools/adoption_apply/apply.py:113",
+          "covers": "the adoption-apply write path, which raises ConstitutionRefusal structurally and never consults a hook"
+        }
+      ],
+      "declared_by": "docs/adr/0001-walking-skeleton-golden-core.md"
+    },
+    {
+      "id": "secret",
+      "owner_module": "tools.hooks.secret_scan",
+      "owner_constant": "SECRET_PATH_GLOBS",
+      "globs": ["*.env", "**/*.env"],
+      "bypasses": [],
+      "covered_tool_surfaces": ["Read", "Write", "Edit"],
+      "uncovered_tool_surfaces": ["Bash"],
+      "content_axis": {
+        "kind": "regex-patterns",
+        "source": "hardcoded",
+        "location": "tools/hooks/secret_scan.py:44",
+        "carried_debt": "SEAL-04"
+      },
+      "runtime_adapters": [
+        {
+          "runtime": "claude",
+          "path": ".claude/settings.json",
+          "surfaces": ["Read|Write|Edit"]
+        },
+        {
+          "runtime": "opencode",
+          "path": ".opencode/plugin/secret-scan.ts",
+          "surfaces": ["read", "write", "edit"]
+        }
+      ],
+      "enforcement_sites": [
+        {
+          "layer": 1,
+          "location": "tools/hooks/secret_scan.py:decide",
+          "covers": "the ordinary agent Read/Write/Edit tool path; this domain has no layer beyond the hook"
+        }
+      ],
+      "declared_by": "harness/permission-matrix.json"
+    },
+    {
+      "id": "review-ledger",
+      "owner_module": "tools.hooks.ledger_guard",
+      "owner_constant": "REVIEW_LEDGER_GLOBS",
+      "globs": ["docs/.docs-review-ledger.toml"],
+      "bypasses": [],
+      "covered_tool_surfaces": ["Write", "Edit"],
+      "uncovered_tool_surfaces": ["Bash"],
+      "runtime_adapters": [
+        {
+          "runtime": "claude",
+          "path": ".claude/settings.json",
+          "surfaces": ["Write|Edit"]
+        },
+        {
+          "runtime": "opencode",
+          "path": ".opencode/plugin/ledger-guard.ts",
+          "surfaces": ["write", "edit"]
+        }
+      ],
+      "enforcement_sites": [
+        {
+          "layer": 1,
+          "location": "tools/hooks/ledger_guard.py:decide",
+          "covers": "the ordinary agent Write/Edit tool path"
+        },
+        {
+          "layer": 2,
+          "location": "tools/adoption_apply/apply.py:228",
+          "covers": "the adoption-apply write path, which raises ReviewLedgerRefusal — its own type, deliberately not a ConstitutionRefusal subclass"
+        },
+        {
+          "layer": 3,
+          "location": "tools/docs_guard/ledger.py:54",
+          "covers": "GREENNESS only: first_seen-unratified stops a slipped-through write from producing green, it does not stop the write"
+        }
+      ],
+      "declared_by": "docs/adr/0010-human-docs-review-obligation-model.md"
+    }
+  ],
+  "non_enforcing_glob_sets": [
+    {
+      "location": "tools/adoption_scan/scan.py:54",
+      "constant": "SECRET_PATH_GLOBS",
+      "reason": "A WIDER list sharing the name of the secret domain's constant, and not a fourth deny domain. scan.py is not a hook: this set decides which files a brownfield inventory EXCLUDES from its record, so a hit produces an omission rather than a refused tool call. Reading it as the secret domain would overstate what the gate denies by five patterns."
+    },
+    {
+      "location": "tools/adoption_scan/destinations.py:105",
+      "constant": "DERIVED_GLOBS",
+      "reason": "The committed-derived destination set, re-exported by tools/docs_guard/exclusions.py:43. It classifies a path as machine-regenerated — routing an adoption disposition to derived-regenerate and excluding a derived file from being a review-binding target — and denies no tool call. Its resolve_path(...) == 'deny' return is the resolver's verdict vocabulary, not an enforcement decision."
+    }
+  ]
+}
