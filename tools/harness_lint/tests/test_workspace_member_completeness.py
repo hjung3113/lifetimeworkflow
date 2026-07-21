@@ -5,7 +5,7 @@ This guard exists because the failure it prevents is not merely annoying — it 
 
 ``pyproject.toml`` declares ``members = ["libs/python", "tools/*"]``. uv requires every directory
 matched by that glob to contain a ``pyproject.toml``. The moment ``tools/<name>/`` exists without
-one, EVERY ``uv`` invocation in the repo fails at workspace resolution — not just the new package's::
+one, EVERY ``uv`` invocation in the repo fails at workspace resolution — not just the new one::
 
     error: Workspace member `.../tools/<name>` is missing a `pyproject.toml` (matches: `tools/*`)
 

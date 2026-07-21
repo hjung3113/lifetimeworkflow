@@ -20,10 +20,11 @@ one, every ``uv`` invocation in the repo fails at workspace resolution::
 
 ``uv run pytest`` is a ``uv`` invocation. So is every PreToolUse guard in this repo
 (``contract_guard``, ``secret_scan``, ``ledger_guard``, ``commit_gate``, ``resume_gate``), each
-invoked as ``uv run python -m tools.hooks.<name>``. When workspace resolution fails, the guards fail,
-and a failing PreToolUse guard DENIES its tool — correctly, since a guard that cannot run must not
-wave writes through. The result is that file-write and shell tools stop working at the same moment,
-including the ones that would create the missing file.
+invoked as ``uv run python -m tools.hooks.<name>``. When workspace resolution fails the guards
+fail, and a failing PreToolUse guard DENIES its tool — correctly, since a guard that cannot run
+must not
+wave writes through. The result is that file-write and shell tools stop working at the same
+moment, including the ones that would create the missing file.
 
 A pytest test for this condition therefore **cannot fire on the condition**: uv dies before pytest
 starts. Shipping one would be a claimed control that does not exist — the exact defect this
@@ -148,8 +149,8 @@ def main(argv: list[str] | None = None) -> int:
     print(
         "\nEvery `uv` call in this repo now fails, including `uv run pytest` and every PreToolUse\n"
         "guard hook — which means file-write and shell tools are denied too, and the repair is\n"
-        "locked behind the thing it repairs. Create the pyproject.toml from outside the agent tool\n"
-        "surface, or add the directory to [tool.uv.workspace] exclude.\n"
+        "locked behind the thing it repairs. Create the pyproject.toml from outside the agent\n"
+        "tool surface, or add the directory to [tool.uv.workspace] exclude.\n"
         "Rule: create tools/<name>/pyproject.toml in the SAME step that creates tools/<name>/.",
         file=sys.stderr,
     )
