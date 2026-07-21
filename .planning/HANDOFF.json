@@ -1,58 +1,47 @@
 {
   "version": "1.0",
-  "timestamp": "2026-07-20T19:33:26.240Z",
-  "phase": "27.1",
-  "phase_name": "Adoption Safety — path-normalization bypass, apply-mode confinement, unconsulted approval gate",
-  "phase_dir": ".planning/phases/27.1-adoption-safety-path-normalization-bypass-apply-mode-confine",
-  "plan": 3,
-  "task": 3,
-  "total_tasks": 3,
+  "timestamp": "2026-07-21T03:32:45.824Z",
+  "phase": "29",
+  "phase_name": "docs-drive-loop-adoption-integration-closeout-v2-3-c",
+  "phase_dir": ".planning/phases/29-docs-drive-loop-adoption-integration-closeout-v2-3-c",
+  "plan": 5,
+  "task": 5,
+  "total_tasks": 5,
   "status": "paused",
+  "milestone": "v2.3",
+  "milestone_status": "blocked_on_human",
   "completed_tasks": [
-    {"id": 1, "name": "Phase 26.2 — secret-pattern semantics (IGNORECASE collapse + digit-less)", "status": "done", "commit": "8ed5250"},
-    {"id": 2, "name": "Phase 27 — task-local adoption workflow (6 plans, 3 waves)", "status": "done_but_verification_failed", "commit": "1665063"},
-    {"id": 3, "name": "Phase 27.1 — adoption safety fixes (3 plans, 3 waves)", "status": "done", "commit": "302ce15"}
+    {"id": 1, "name": "Phase 27.2 — adoption apply robustness (WR-05/06/07)", "status": "done", "commit": "0d68d5d", "note": "verified 5/5"},
+    {"id": 2, "name": "Phase 28 — human-docs registry, guard, derived queue (9 plans)", "status": "done", "commit": "ba12684", "note": "verified 4/4, status human_needed"},
+    {"id": 3, "name": "Phase 28 review fixes — CR-01/02/03, WR-01..04, IN-01/IN-02", "status": "done", "commit": "24079bb", "note": "merged from gsd-reviewfix/28-50958; IN-03 accepted residual"},
+    {"id": 4, "name": "Phase 29 — /docs-update + docs-upkeep, exclusions, adoption integration", "status": "done", "commit": "db9612f", "note": "SC-1/SC-2 verified; SC-3 blocked on human ledger write"},
+    {"id": 5, "name": "v2.3 milestone audit", "status": "done", "commit": "1e1ef3b", "note": "status blocked_on_human; requirements 19/21, phases 7/10"},
+    {"id": 6, "name": "Quick task — the two CI reds the audit found", "status": "done", "commit": "7b6ead3", "note": "lifecycle_eval 3 passed; examples/log-parser 14 passed"}
   ],
   "remaining_tasks": [
-    {"id": 4, "name": "Phase 27.2 (NOT YET CREATED) — close WR-05, WR-06, WR-07 from 27.1-REVIEW.md", "status": "not_started"},
-    {"id": 5, "name": "Phase 28 — Human-Docs Registry, Guard, Derived Queue (v2.3 C)", "status": "not_started"},
-    {"id": 6, "name": "Phase 29 — Docs Drive Loop + Adoption Integration + Closeout", "status": "not_started"}
+    {"id": 7, "name": "VALIDATION.md gaps for phases 27.2 and 28", "status": "not_started", "why": "workflow.nyquist_validation is true; the audit records nyquist as partial solely because these two are absent"},
+    {"id": 8, "name": "Residual debt: IN-03, secret_scan.py:44-47, 27.2 AD-01/AD-02", "status": "not_started", "why": "each accepted-with-rationale, none silently dropped; secret_scan carried since 26.2"},
+    {"id": 9, "name": "Push 298 local commits", "status": "not_started", "why": "branch is 298 ahead of origin"}
   ],
   "blockers": [
-    {
-      "description": "WR-05: destination \".\" passes both the manifest.schema.json pattern AND refuse_unsafe_destination, then crashes apply_disposition with an unhandled IsADirectoryError (not in cli.py's except tuple). Contradicts 27.1's own 'clean refusal, never a traceback' goal.",
-      "type": "technical",
-      "workaround": "Fails closed — no unauthorized write. Reproduce: apply_disposition({'destination':'.','disposition':'create'}, tmpdir, payload=b'x')"
-    },
-    {
-      "description": "WR-06: approval.check_valid still raises uncaught (JSONDecodeError/KeyError) on a corrupted or incomplete approval.json. WR-02's fix only wrapped _recompute_draft_hash; the json.loads at approval.py:181 and the stored[...] key accesses are outside the try.",
-      "type": "technical",
-      "workaround": "Fails closed. Fix: widen the try to cover the read + key accesses."
-    },
-    {
-      "description": "WR-07: the WR-01 concurrency test would still pass if fcntl.flock() were deleted — it only asserts the .lock sidecar file exists, which open() alone creates. A test that cannot fail when the control regresses.",
-      "type": "technical",
-      "workaround": "None. This is the same defect class that produced both Phase 27 and 27.1 — highest-priority of the three despite lowest severity label."
-    }
+    {"description": "docs/.docs-review-ledger.toml does not exist, so `python -m tools.docs_guard` exits 1 with 6 broken-binding findings and the docs-guard CI job is red", "type": "human_action", "workaround": "none by design — three enforcement layers deny the agent write"},
+    {"description": "lifecycle-eval and golden CI reds", "type": "technical", "workaround": "RESOLVED 2026-07-21 in quick task 20260721-ci-red-lifecycle-eval-golden-tmp-path"}
   ],
   "human_actions_pending": [
-    {
-      "action": "Decide whether to run Phase 27.2 (close WR-05/06/07) before Phase 28, or proceed to 28 and leave them open",
-      "context": "Orchestrator recommended 27.2 first — same file surface, small, no constitution-plane edit so no ratification needed. User chose to defer the decision to the next session.",
-      "blocking": false
-    }
+    {"action": "Hand-author docs/.docs-review-ledger.toml from the byte-exact proposal in 29-04-SUMMARY.md, outside an agent session", "context": "RAT-1. Author against the POST-edit tree: 29-04's bounded gate-model prose fix moved that binding's target_digest from 4568f3a9 to 8df85e6e. 29-04-SUMMARY gives two options; verifier-29 RECOMMENDS Option B (two rounds), because Option A satisfies SC-3's literal text but never observes the gate transition on a real doc edit. Blocks DOCSUP-06, DOCSUP-07, the docs-guard CI job, and Phase 29 closure.", "blocking": true},
+    {"action": "Review ADR-0010 and flip Status: proposed -> accepted, filling Date and Deciders", "context": "RAT-2. Both fields are em-dashes today (docs/adr/0010-human-docs-review-obligation-model.md:5-7). Its clause 3b is the docs-plane agent-authority boundary Phase 29 depends on; ADRs are append-only, so this record is the one that must carry it.", "blocking": true},
+    {"action": "Ratify the eight seeded bindings' dispositions before their first [[reviewed]] rows", "context": "RAT-3. A self-blessed row and an honest seed row are byte-identical — only the human commit separates them.", "blocking": true},
+    {"action": "Ratify the Phase 28 constitution-plane schema write", "context": "RAT-4. contracts/harness/docs/doc-dependencies.schema.json (plan 28-01) landed via HARNESS_DEV_BYPASS per ADR-0007. That is NOT a human-ratified write and was never claimed as one.", "blocking": false},
+    {"action": "Merge ADR-0004/0005/0006/0007 to main", "context": "Standing item carried from STATE.md since 2026-07-16. CODEOWNERS cannot fire on a solo-authored PR; the durable fix is flipping the GitHub default branch back to main.", "blocking": false}
   ],
   "decisions": [
-    {"decision": "secret_patterns[1] digit requirement relaxed to 2-of-3 charset classes", "rationale": "The evidence-redaction plaintext-leak harm outranks the false-positive cost; ci.yml red-green proof re-run to confirm 26.1's original false positive stays closed", "phase": "26.2"},
-    {"decision": "IGNORECASE collapse fixed with scoped (?-i:...) groups, consumers keep re.IGNORECASE", "rationale": "Repo targets Python >=3.11; fixes the pattern rather than every call site", "phase": "26.2"},
-    {"decision": "Adoption batch is purely additive evidence — no transitions.json edit", "rationale": "ADOPT-04..07 never mention phase-gating; transitions.json is constitution-plane, so adding a gate is a separate larger decision", "phase": "27"},
-    {"decision": "<batch-id> content-derived from (target_ref, discover-UTC-date)", "rationale": "Same-day re-discover against an unchanged ref resumes the same batch, satisfying SC-1's safe-resume", "phase": "27"},
-    {"decision": "approval.schema.json is a NEW self-contained contract, not an extension of attestation.schema.json", "rationale": "Attestation binds constraint-source files at SPEC time; approval binds a human promotion decision at REVIEW time — different vocabularies, no cross-file $ref", "phase": "27"},
-    {"decision": "New choke point refuse_unsafe_destination; refuse_if_constitution kept as a thin wrapper", "rationale": "Every write funnels through one guard; Phase 27's tests keep passing unmodified because they were insufficient, not wrong", "phase": "27.1"},
-    {"decision": "check_valid(repo_root=...) is the harness's own repo root, not the brownfield target", "rationale": "The approval's git_ref sits on the same plane as task_revision and draft_hash (all harness-side); a brownfield target may not be a git repo at all", "phase": "27.1"},
-    {"decision": "Case-insensitive constitution compare is always-on, never sys.platform-conditional", "rationale": "CI is Linux (case-sensitive), dev is macOS (case-insensitive); the guard must refuse identically on both", "phase": "27.1"}
+    {"decision": "Inserted Phase 27.2 to close 27.1's three open findings before starting Phase 28", "rationale": "All three were write-path defects on the adoption spine that Phase 29 wires into a reviewed seeding loop; closing them first kept the spine trustworthy at the point the docs loop began depending on it.", "phase": "27.2"},
+    {"decision": "Registry data at docs/doc-dependencies.toml, its shape at contracts/harness/docs/doc-dependencies.schema.json", "rationale": "Forced, not preferential: contract_guard.py:44 denies agent writes under contracts/**, and DOCSUP-07 requires /adopt to PROPOSE registry rows. A registry on the constitution plane makes the downstream requirement unimplementable.", "phase": "28"},
+    {"decision": "CR-02 closed by building a real enforcer (tools/hooks/ledger_guard.py) rather than correcting ADR-0010 downward", "rationale": "The layer was buildable in the shape the other two domains already use and the emitter had the wiring seam. Deleting the claim would have left the write unobstructed and merely stopped saying so.", "phase": "28"},
+    {"decision": "CR-03 keyed the history test on (id, committed (sources,target) pair) instead of adding a binding_digest ledger column", "rationale": "Equivalent strength — both make a repoint amber for one cycle — but the ledger is hand-authored by a human, and a third derived digest per row buys nothing.", "phase": "28"},
+    {"decision": "The Phase 29 closeout did NOT repair the two CI reds it found", "rationale": "T-29-21: a closeout that repairs on the way past reports a state that never existed. They were repaired afterwards as their own quick task, with their own evidence.", "phase": "29"}
   ],
   "uncommitted_files": [],
-  "next_action": "Decide Phase 27.2 (close WR-05/WR-06/WR-07) vs. proceeding to Phase 28. If 27.2: insert it in ROADMAP.md following the 26.2/27.1 precedent, then /gsd:plan-phase 27.2 --auto --chain. If 28: /gsd:plan-phase 28 --auto --chain.",
-  "context_notes": "Phase 27 is deliberately left as Executed-not-Complete with a failed verification on record — that is accurate history, not an oversight; do not retro-mark it complete. Its three security defects were closed by Phase 27.1, which passed 5/5. The through-line of this whole session: three separate phases (26.1->26.2, 27->27.1) shipped green while the changed control was wrong, every time because the tests only exercised the one input spelling that worked. WR-07 is that same defect still live. Treat 'would this test fail if the fix were reverted?' as the default question for any control-shaped change in this repo. Both constitution-plane commits this session (approval.schema.json, manifest.schema.json pattern) were human-ratified in-session, recorded distinctly from the HARNESS_DEV_BYPASS mechanical write."
+  "next_action": "Author VALIDATION.md for phases 27.2 and 28 — the only reason .planning/v2.3-MILESTONE-AUDIT.md records nyquist as partial. Do not back-fill them as if they had existed; author them as dated, current documents, the way the v2.1 audit handled phases 13/14.",
+  "context_notes": "One recurring defect dominated this milestone and is the thing to carry forward: a control ships GREEN while being bypassable, because every test fixture used the one input spelling the control already handled. It recurred in 26, 27, 27.1, inside 27.2's own fix, and again in 28 (three Criticals). What actually caught it each time was adversarial mutation testing by the reviewer — delete the control, see whether anything reds — not the suite passing. The structural mitigation now in force: author the adversarial-input table BEFORE the fix, run the new test against pre-fix code, and confirm it fails FOR THE STATED REASON. Two execution traps also cost real time: (1) an inverted `! uv run pytest` gate exits 0 on a collection/import error and masquerades as RED — run RED selections plain and read the output, and note that passes reported alongside failures prove collection succeeded; (2) `git commit` publishes the ENTIRE shared index, not just what the preceding `git add` named, so with concurrent executors every commit must be `git commit -- <pathspec>` with `git diff --cached --name-only` inspected first. The milestone's machinery is complete and every gate is green; what remains is genuinely human, and the whole point of Phases 28-29 is that no agent can discharge it."
 }
