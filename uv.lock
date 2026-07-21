@@ -5,6 +5,7 @@ requires-python = ">=3.11"
 [manifest]
 members = [
     "evidence-adapters",
+    "harness-discipline",
     "harness-handoff",
     "harness-task-control",
     "harness-task-packet",
@@ -167,6 +168,17 @@ wheels = [
 name = "evidence-adapters"
 version = "0.0.0"
 source = { virtual = "tools/evidence" }
+
+[[package]]
+name = "harness-discipline"
+version = "0.0.0"
+source = { virtual = "tools/discipline" }
+dependencies = [
+    { name = "jsonschema" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "jsonschema", specifier = "==4.26.0" }]
 
 [[package]]
 name = "harness-handoff"
