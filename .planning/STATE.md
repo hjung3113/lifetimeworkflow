@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: A)*
-status: blocked-on-human
-stopped_at: Completed 29-05-PLAN.md Tasks 1–2 (v2.3 milestone audit written); Task 3 blocked on human ratification
-last_updated: "2026-07-20T21:34:01.408Z"
+status: ratifications-discharged-docs-guard-green
+stopped_at: "RAT-1/2/3 discharged by the human; docs-guard exit 1 -> 0, 8/8 bindings FRESH. Next: verify-phase 29, then complete-milestone"
+last_updated: "2026-07-22T01:40:00.000Z"
 last_activity: 2026-07-21
 progress:
   total_phases: 10
@@ -33,17 +33,37 @@ See: .planning/PROJECT.md (updated 2026-07-18)
 
 Phase: 29 (docs-drive-loop-adoption-integration-closeout-v2-3-c) — CLOSING
 Plan: 5 of 5 (29-01/02/03/05 landed; 29-04 PARTIAL — tasks 2 and 4 are `gate="blocking-human"`)
-Status: **v2.3 milestone audit written** — `.planning/v2.3-MILESTONE-AUDIT.md`, status
-`blocked_on_human`, 19/21 requirements evidenced. All machinery for Themes A, B and C is built and
-observed green; the SC-4 fan-in was run with actual numbers (**1473 passed**, 8 snapshots).
-**Five human ratifications outstanding (RAT-1..RAT-5 in the audit)** — the ledger, ADR-0010, the
-eight seeded bindings, the Phase-28 `HARNESS_DEV_BYPASS` schema write, and the four ADRs unmerged
-to `main`. `python -m tools.docs_guard` exits 1 (6 × `broken-binding`) until RAT-1 lands — the
-designed pre-ratification state, not a defect.
-Two reds recorded verbatim rather than repaired: `uv run pytest tools/lifecycle_eval` errors at
-collection (NEW finding, `ModuleNotFoundError: No module named 'tools'`), and the example .NET
-golden is red on macOS only (`/var` vs `/private/var` tmp spelling; the job runs `ubuntu-latest`).
-Last activity: 2026-07-21
+Status: **RAT-1/2/3 DISCHARGED 2026-07-22 — `docs-guard` is GREEN.** The human ratified ADR-0010
+(`ad4e339`) and authored the first `docs/.docs-review-ledger.toml` (`c32c08d`). `python -m
+tools.docs_guard` moved **exit 1 → exit 0**, all **8 bindings FRESH**, 7 uncovered
+(`uncovered_max = 7`). The last red gate of v2.3 is closed. `ledger_guard` re-verified AFTER the
+file existed: still DENY under `{}`, `GOLDEN_APPROVE_HUMAN`, `HARNESS_DEV_BYPASS`, and both — the
+gate holds post-ratification, which is the only test of it that matters.
+
+Preceded by a quick task (`20260722-glossary-constitution-plane-drift`) that had to land first:
+ADR-0001:48 declares a FOUR-member constitution plane and the Phase-4 stack enforced three, so
+`docs/glossary.md` was agent-writable while four documents said it was gated. Fixed the enforcement,
+never the ADR. Two Claude audits had recommended the OPPOSITE repair by citing ADR-0010 (then
+`proposed`) over ADR-0001 (`accepted`); an external audit caught the inversion. That repair moved
+four binding digests, so the ledger was authored against freshly re-derived values, not the stale
+`29-04-SUMMARY.md` proposal.
+
+`lifecycle-eval-shadow-metrics` classified **FRESH, not amber**, despite being repointed — because
+`first_seen-unratified` compares against the PREVIOUS COMMITTED ledger and this is the first. The
+repoint landing BEFORE the ledger is why there was no amber cycle; the plan's A→B→C→ADR→ledger
+ordering was chosen for exactly that.
+
+Machinery for Themes A, B and C: built, observed green. Gates at ratification: **1500 passed**,
+8 snapshots, contract-drift OK, emit round-trip clean, harness_lint 323 passed.
+
+**Still outstanding: RAT-4** (ratify the Phase-28 `HARNESS_DEV_BYPASS` schema write) and **RAT-5**
+(merge ADR-0004/0005/0006/0007 to `main`) — both non-blocking; the durable fix for RAT-5 is flipping
+the GitHub default branch back to `main`.
+Both earlier CI reds are repaired (quick task `20260721-ci-red-lifecycle-eval-golden-tmp-path`).
+Known non-gate red, NOT introduced here: `ruff check .` reports 617 pre-existing errors, ~180 of
+them in the vendored `docs/references/opencode-matt-workflows/**` tree that is missing from
+`extend-exclude`. Predates this work; recorded, not silently fixed.
+Last activity: 2026-07-22
 
 ## Performance Metrics
 
@@ -318,33 +338,41 @@ Resume file: .planning/v2.3-MILESTONE-AUDIT.md
 
 ## Operator Next Steps
 
-**► NEXT — read `.planning/v2.3-MILESTONE-AUDIT.md`, then discharge RAT-1..RAT-5 in this order.
-None of them may be done by an agent.**
+**► NEXT — RAT-1/2/3 are DONE. `docs-guard` is green. Two non-blocking ratifications remain.**
 
-1. **RAT-1 — author and commit `docs/.docs-review-ledger.toml`.** Use the byte-exact content in
-   `.planning/phases/29-docs-drive-loop-adoption-integration-closeout-v2-3-c/29-04-SUMMARY.md`,
-   **not** 28-07's: 29-04's bounded `gate-model` prose fix moved that binding's target digest from
-   `4568f3a9…` to `8df85e6e…`, so author against the POST-edit tree. The summary gives two ordered
-   options — **A** is one round straight to exit 0; **B** is two rounds and observes the `0 → 1` leg
-   for real, which is what the plan intended. **RAT-3 is the review you perform while doing this**:
-   confirm each of the eight (sources, target) pairs is an obligation you accept before recording
-   its first `[[reviewed]]` row. A self-blessed row and an honest seed row are byte-identical; only
-   your commit separates them. An agent cannot write this file — `tools/hooks/ledger_guard.py`
-   denies it at PreToolUse and honours NEITHER `GOLDEN_APPROVE_HUMAN` NOR `HARNESS_DEV_BYPASS`, and
-   `refuse_unsafe_destination` refuses it on the adoption-apply path.
+Discharged 2026-07-22, by the human, outside an agent session:
 
-2. **RAT-2 — flip `docs/adr/0010-human-docs-review-obligation-model.md`'s status line from
-   `proposed` to `accepted`**, record the date and deciders, and update its row in
-   `docs/adr/README.md`. (Spelled without the literal status-field syntax on purpose — `gsd-sdk
-   query state.update-progress` scrapes that pattern out of this file and overwrites the frontmatter
-   `status:` key with it.) Read clause 3b with particular care: ADRs here are append-only.
+- **RAT-2** — ADR-0010 ratified (`ad4e339`): status flipped from proposed to accepted, date and
+  deciders recorded. `registry._adr_status` now returns accepted.
+- **RAT-1 + RAT-3** — first `docs/.docs-review-ledger.toml` authored and committed (`c32c08d`),
+  which IS the ratification of the eight seeded bindings. `python -m tools.docs_guard`:
+  **exit 1 → exit 0**, 8/8 FRESH, 7 uncovered against `uncovered_max = 7`.
 
-3. **RAT-4 / RAT-5 — the provenance backlog.** The Phase-28 constitution-plane schema write
-   (`contracts/harness/docs/doc-dependencies.schema.json`, plan 28-01) landed via
-   `HARNESS_DEV_BYPASS` per ADR-0007, which is explicitly NOT a human ratification — it is recorded
-   as outstanding. And ADR-0004/0005/0006/0007 remain unmerged to `main` behind a CODEOWNERS gate
-   that structurally cannot fire on a solo-authored PR. The durable fix for both is repo-config:
-   flip the GitHub default branch back to `main`.
+Authored against digests re-derived at `27acf96`, NOT the `29-04-SUMMARY.md` proposal — the
+constitution-plane drift repair that had to land first moved four of the eight.
+
+`lifecycle-eval-shadow-metrics` came out FRESH rather than amber despite being repointed:
+`first_seen-unratified` compares against the previous COMMITTED ledger, and this is the first one.
+Repointing before the ledger existed is why no amber cycle occurred — the A→B→C→ADR→ledger ordering
+was chosen for that.
+
+Re-verified AFTER the ledger existed, which is the only meaningful test of the gate:
+`ledger_guard.decide()` still DENIES under `{}`, `GOLDEN_APPROVE_HUMAN`, `HARNESS_DEV_BYPASS`, and
+both together. No token opens that door, by design — unlike `contract_guard`, this domain has no
+opt-out at all.
+
+Still open, both NON-blocking and neither an agent's to do:
+
+1. **RAT-4 — ratify the Phase-28 constitution-plane schema write.**
+   `contracts/harness/docs/doc-dependencies.schema.json` (plan 28-01) landed via
+   `HARNESS_DEV_BYPASS` per ADR-0007, which is explicitly NOT a human ratification and was never
+   claimed as one.
+2. **RAT-5 — merge ADR-0004/0005/0006/0007 to `main`,** still behind a CODEOWNERS gate that
+   structurally cannot fire on a solo-authored PR. Durable fix is repo-config: flip the GitHub
+   default branch back to `main`.
+
+Then: `/gsd:verify-phase 29` (its VERIFICATION.md is the last missing one), and
+`/gsd:complete-milestone`.
 
 After RAT-1, re-run `uv run python -m tools.docs_guard` on the FOLLOWING commit to confirm exit 0.
 
