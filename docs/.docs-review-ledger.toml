@@ -1,0 +1,90 @@
+# Human review ledger (DOCSUP-02/03) — the committed baseline the docs-guard gate diffs against.
+#
+# HUMAN-AUTHORED ONLY. An agent may propose rows in docs/doc-dependencies.toml, but only a human
+# writes this file: the LEDGER, not the registry, is the greenness authority. A new [[binding]]
+# landed together with its own matching reviewed-no-change row is byte-identical to the self-green
+# attack, and authorship is the only fact that separates honest seeding from self-blessing —
+# [[reviewed]] carries no reviewer field, by design, so the committing hand is the whole record.
+#
+# WHY EVERY SEED ROW IS `reviewed-no-change` (or `REVIEWED_STILL_CURRENT`) AND NEVER `updated`:
+# `updated` is verified against the PREVIOUS COMMITTED ledger — it requires a target-digest delta
+# versus a row that already existed. This is the FIRST-EVER ledger, so there is no previous to have
+# been updated FROM: an `updated` row here would classify `unverified-disposition` and fail closed
+# for a required binding. Do not reach for `updated` when seeding new rows.
+#
+# The permitted shape is an ALLOWLIST enforced by tools/docs_guard/ledger.py: [coverage] takes only
+# uncovered_max + binding_min, and each [[reviewed]] row takes only id, source_digest,
+# target_digest, disposition. No timestamp, no reviewer identity, no prose, no model identifier —
+# any other key is rejected by name.
+#
+# Digests below were read live from `python -m tools.docs_guard` at commit 27acf96, AFTER the
+# constitution-plane drift repair. Four of the eight moved in that repair; an earlier proposal
+# (29-04-SUMMARY.md) is now stale and must not be used.
+
+[coverage]
+# Catches a human-authored document DRIFTING OUT of coverage. Set to the exact live uncovered
+# count. The guard never raises it.
+uncovered_max = 7
+# Catches a BINDING BEING DELETED — which uncovered_max cannot see when the deleted binding's
+# target lies outside D-07's human corpus. Set to the exact number of [[binding]] rows in the
+# registry. The guard never lowers it.
+binding_min = 8
+
+[[reviewed]]
+id            = "adoption-tooling-brownfield-skill"
+source_digest = "c8b6660d6cc62ee8cf2911c9702bb91f0d510edd1ced5309c26ca2420387e60d"
+target_digest = "93adbcbb852ac0710d64ab3b1aae9bf891958a13059997387e949fb9999105dd"
+disposition   = "reviewed-no-change"
+
+# ADR track (D-09): an accepted ADR is append-only, so `updated` would teach an in-place edit.
+# Verified 2026-07-19 and still byte-accurate against compile.py/query.py.
+[[reviewed]]
+id            = "contract-graph-adr-0009"
+source_digest = "c0c296ca89d742c0ba4822f9f91cde0d9381ed2840299a40b5946f895c2ea1da"
+target_digest = "e6865349a567349ab06568dd3fef158dd8b7d35fed9e14e4d8fd5cbe34979fae"
+disposition   = "REVIEWED_STILL_CURRENT"
+
+# Target was edited twice since seeding: 29-04's bounded prose fix, then the four-member plane
+# repair. The digest below is the POST-repair value.
+[[reviewed]]
+id            = "gate-model-permission-surface"
+source_digest = "a250a29e75ac806c01e762a5dc8ba63e2bb750075e7933369c67e31d074a7d8f"
+target_digest = "62f43f7682be73eaa8e414407ef72b3ec6071a05e6530e43d8ab50199932f4b0"
+disposition   = "reviewed-no-change"
+
+# Target corrected in the same repair: it named 1 of the 3 sanctioned instance-pointer exemptions.
+[[reviewed]]
+id            = "gen04-core-instance-split"
+source_digest = "7ff9c06392ec324c69c3a9e3f082e555e98fc39289e279fc4a693d5682e16725"
+target_digest = "515f5e481b15eb4dc68798707262f398499a91e5aa5842004648af6c3cf300a0"
+disposition   = "reviewed-no-change"
+
+# REPOINTED: sources gained tools/risk_router/router.py, the actual owner of the lane_override row.
+# Its identity_digest therefore changed. Expect ONE amber cycle after this commit — that is the
+# designed first_seen-unratified history test, not a regression. Do not move the ratchets to clear it.
+[[reviewed]]
+id            = "lifecycle-eval-shadow-metrics"
+source_digest = "8ed1f1b010e79a8d8b575611bd8ce7f7c9ef444c26cfe8f1cf20293bb588f1b9"
+target_digest = "d9ecd613c1c83ee2c00570bce81250cd3ea7de8376ee84f707331e0415653d20"
+disposition   = "reviewed-no-change"
+
+# Target's stale 'Phase-4 hook NOT built' sentence was corrected in the same repair; its plane
+# table was already correct and was left alone.
+[[reviewed]]
+id            = "memory-plane-declaration"
+source_digest = "f871029c2a8701bd3771e4fe7c6e0fe5e2a93d23555669ee6cdee4c80568ef82"
+target_digest = "b088ad8d0260e2d72c102dc2017adea713a41a6c67749d6a9c90c72628cfc741"
+disposition   = "reviewed-no-change"
+
+[[reviewed]]
+id            = "normalize-spec-glossary"
+source_digest = "ed9516d744be990bb2588e026344b73a94b6ee33ceb3c079844ddafde572f1ab"
+target_digest = "ee5bf1c58510a336c4a6640541100ff15cd932e7f09cad514096ec0a7a498803"
+disposition   = "reviewed-no-change"
+
+[[reviewed]]
+id            = "task-control-cli-howto"
+source_digest = "54e3b89ec1ed4d2d45d1523568d1a2fa260431a983ffe123a1259a8788dfd98f"
+target_digest = "fc10ff30f431f0305b924d4ee03ad2a059c646248d1b037b3aeae9958fe67588"
+disposition   = "reviewed-no-change"
+
