@@ -299,3 +299,102 @@ def test_overlay_relaxations_and_core_replacements_are_rejected(
     path.write_text("\n".join(lines), encoding="utf-8")
     with pytest.raises(RiskRouterError):
         load_overlay(path, core)
+
+
+# ── LANE-01/LANE-02: per-lane required_disciplines ────────────────────────────────────────────
+
+
+def _policy_text(strict_disciplines: str = '["clarify", "test-driven-change"]') -> str:
+    """A minimal but complete core policy, parameterised on STRICT's discipline list."""
+    return (
+        "version = 1\n\n"
+        "[cuts]\nFAST = [0, 4]\nSTANDARD = [5, 9]\nSTRICT = [10, 14]\nCONTROLLED = [15, 21]\n\n"
+        '[promotions]\npayment = "CONTROLLED"\n\n'
+        '[lanes.FAST]\nrequired_artifacts = ["task_packet"]\nrequired_gates = ["lint"]\n'
+        "required_disciplines = []\n\n"
+        '[lanes.STANDARD]\nrequired_artifacts = ["task_packet"]\nrequired_gates = ["lint"]\n'
+        'required_disciplines = ["clarify"]\n\n'
+        '[lanes.STRICT]\nrequired_artifacts = ["task_packet"]\nrequired_gates = ["lint"]\n'
+        f"required_disciplines = {strict_disciplines}\n\n"
+        '[lanes.CONTROLLED]\nrequired_artifacts = ["task_packet"]\nrequired_gates = ["lint"]\n'
+        'required_disciplines = ["clarify", "test-driven-change", "diagnose"]\n'
+    )
+
+
+def _write_policy(tmp_path: Path, text: str) -> Path:
+    path = tmp_path / "risk-policy.toml"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+def test_shipped_policy_declares_a_discipline_matrix(core: dict):
+    """Every lane carries the slot, FAST owes nothing, and STRICT+ owes the panel (LANE-02)."""
+    assert core["lanes"]["FAST"]["required_disciplines"] == []
+    assert "clarify" in core["lanes"]["STANDARD"]["required_disciplines"]
+    for lane in ("STRICT", "CONTROLLED"):
+        assert "adversarial-review-panel" in core["lanes"][lane]["required_disciplines"]
+
+
+def test_higher_lane_may_not_drop_a_lower_lane_discipline(tmp_path: Path):
+    path = _write_policy(tmp_path, _policy_text('["test-driven-change"]'))
+    with pytest.raises(RiskRouterError, match="required_disciplines"):
+        load_policy(path)
+
+
+def test_duplicate_discipline_is_rejected(tmp_path: Path):
+    path = _write_policy(tmp_path, _policy_text('["clarify", "clarify", "test-driven-change"]'))
+    with pytest.raises(RiskRouterError, match="required_disciplines"):
+        load_policy(path)
+
+
+def test_missing_discipline_slot_is_rejected(tmp_path: Path):
+    text = _policy_text().replace('required_disciplines = ["clarify", "test-driven-change"]\n', "")
+    with pytest.raises(RiskRouterError, match="required_disciplines"):
+        load_policy(_write_policy(tmp_path, text))
+
+
+def test_effective_hash_moves_with_a_discipline_change(tmp_path: Path):
+    """A discipline change must be detectable through the packet's policy pin."""
+    base = load_policy(_write_policy(tmp_path / "a", _policy_text()))
+    wider = load_policy(
+        _write_policy(tmp_path / "b", _policy_text('["clarify", "test-driven-change", "diagnose"]'))
+    )
+    assert (
+        decide(base, _payload(12))["policy_hashes"]["effective"]
+        != (decide(wider, _payload(12))["policy_hashes"]["effective"])
+    )
+
+
+def test_decision_record_keys_are_unchanged(core: dict):
+    """contracts/harness/task-control/task.schema.json pins risk_decision with
+    additionalProperties:false. The discipline requirement is read from LIVE POLICY, never carried
+    in the decision record — a key added here would make every new task.json schema-invalid."""
+    assert set(decide(core, _payload(12))) == {
+        "router_version",
+        "scores",
+        "total",
+        "score_lane",
+        "lane",
+        "promotion_reasons",
+        "human_override_audit",
+        "required_artifacts",
+        "required_gates",
+        "policy_hashes",
+        "overlay_provenance",
+    }
+
+
+def test_overlay_may_add_disciplines_but_never_remove_them(core: dict, tmp_path: Path):
+    path = tmp_path / "overlay.toml"
+    path.write_text('[lanes.FAST]\nrequired_disciplines_add = ["clarify"]\n', encoding="utf-8")
+    overlay = load_overlay(path, core)
+    decision = decide(core, _payload(12), overlay)
+    assert (
+        decision["policy_hashes"]["effective"]
+        != decide(core, _payload(12))["policy_hashes"]["effective"]
+    )
+    relaxation = tmp_path / "relax.toml"
+    relaxation.write_text("[lanes.STRICT]\nrequired_disciplines = []\n", encoding="utf-8")
+    with pytest.raises(RiskRouterError):
+        load_overlay(relaxation, core)

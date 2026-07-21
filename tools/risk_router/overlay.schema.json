@@ -28,7 +28,8 @@
       "additionalProperties": false,
       "properties": {
         "required_artifacts_add": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
-        "required_gates_add": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+        "required_gates_add": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "required_disciplines_add": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
       }
     }
   }

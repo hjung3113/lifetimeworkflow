@@ -19,18 +19,27 @@ constitution_plane_touch = "STRICT"
 golden_or_contract_mutation = "CONTROLLED"
 repeated_constraint_violation = "STRICT"
 
+# `required_disciplines` (LANE-01/LANE-02) names the METHOD a lane owes, by id.  What each id means
+# — its skill, the phase it is owed by, and what discharges it — is declared in
+# harness/disciplines.toml; whether it happened is decided by tools/discipline/check.py and refused
+# by tools/task_control.  Like the other two keys it is monotone: a higher lane may add an
+# obligation, never drop one.  FAST owes nothing, deliberately: FAST exists to be cheap.
 [lanes.FAST]
 required_artifacts = ["task_packet"]
 required_gates = ["lint", "test"]
+required_disciplines = []
 
 [lanes.STANDARD]
 required_artifacts = ["task_packet", "brief_spec"]
 required_gates = ["lint", "test", "review"]
+required_disciplines = ["clarify"]
 
 [lanes.STRICT]
 required_artifacts = ["task_packet", "brief_spec", "spec", "plan", "review_record"]
 required_gates = ["lint", "test", "review", "human_review"]
+required_disciplines = ["clarify", "test-driven-change", "adversarial-review-panel"]
 
 [lanes.CONTROLLED]
 required_artifacts = ["task_packet", "brief_spec", "spec", "plan", "review_record", "rollback_plan", "audit_evidence"]
 required_gates = ["lint", "test", "review", "human_review", "dry_run", "rollback_verified"]
+required_disciplines = ["clarify", "test-driven-change", "adversarial-review-panel", "diagnose", "domain-modeling"]

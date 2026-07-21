@@ -20,6 +20,10 @@ SCORE_FIELDS = (
     "coordination",
     "context_pressure",
 )
+# The per-lane requirement matrix.  `required_disciplines` (LANE-01/LANE-02) obeys the same
+# monotone-superset rule as the other two: a higher lane may add an obligation, never drop one.
+# It is deliberately absent from `decide()`'s return — see the note on `_effective_policy`.
+LANE_REQUIREMENT_KEYS = ("required_artifacts", "required_gates", "required_disciplines")
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_POLICY = REPO_ROOT / "harness" / "risk-policy.toml"
 OVERLAY_SCHEMA = Path(__file__).with_name("overlay.schema.json")
@@ -58,12 +62,20 @@ def _validate_core_policy(policy: dict[str, Any]) -> None:
     cuts = policy.get("cuts")
     promotions = policy.get("promotions")
     lanes = policy.get("lanes")
-    if not isinstance(cuts, dict) or not isinstance(promotions, dict) or not isinstance(lanes, dict):
+    if (
+        not isinstance(cuts, dict)
+        or not isinstance(promotions, dict)
+        or not isinstance(lanes, dict)
+    ):
         raise RiskRouterError("core policy requires cuts, promotions, and lanes tables")
     expected_start = 0
     for lane in LANES:
         interval = cuts.get(lane)
-        if not (isinstance(interval, list) and len(interval) == 2 and all(isinstance(n, int) for n in interval)):
+        if not (
+            isinstance(interval, list)
+            and len(interval) == 2
+            and all(isinstance(n, int) for n in interval)
+        ):
             raise RiskRouterError(f"invalid cut for {lane}")
         if interval[0] != expected_start or interval[1] < interval[0]:
             raise RiskRouterError("cuts must be contiguous and ordered")
@@ -71,9 +83,11 @@ def _validate_core_policy(policy: dict[str, Any]) -> None:
         lane_data = lanes.get(lane)
         if not isinstance(lane_data, dict):
             raise RiskRouterError(f"missing lane matrix for {lane}")
-        for key in ("required_artifacts", "required_gates"):
+        for key in LANE_REQUIREMENT_KEYS:
             values = lane_data.get(key)
-            if not (isinstance(values, list) and all(isinstance(item, str) and item for item in values)):
+            if not (
+                isinstance(values, list) and all(isinstance(item, str) and item for item in values)
+            ):
                 raise RiskRouterError(f"invalid {key} for {lane}")
             if len(values) != len(set(values)):
                 raise RiskRouterError(f"duplicate {key} for {lane}")
@@ -81,7 +95,9 @@ def _validate_core_policy(policy: dict[str, Any]) -> None:
             if lower_lane >= 0:
                 lower_values = lanes[LANES[lower_lane]][key]
                 if not set(values) >= set(lower_values):
-                    raise RiskRouterError(f"{key} for {lane} must include every lower-lane requirement")
+                    raise RiskRouterError(
+                        f"{key} for {lane} must include every lower-lane requirement"
+                    )
     if expected_start != 22:
         raise RiskRouterError("cuts must cover totals 0 through 21")
     for reason, lane in promotions.items():
@@ -119,7 +135,7 @@ def validate_overlay(core: dict[str, Any], overlay: dict[str, Any]) -> None:
         if reason in core_promotions:
             raise RiskRouterError(f"overlay must not replace core promotion predicate: {reason}")
     for lane, additions in overlay.get("lanes", {}).items():
-        for key in ("required_artifacts_add", "required_gates_add"):
+        for key in (f"{name}_add" for name in LANE_REQUIREMENT_KEYS):
             if key not in additions:
                 continue
             if not all(isinstance(value, str) and value for value in additions[key]):
@@ -159,11 +175,13 @@ def _effective_policy(core: dict[str, Any], overlay: dict[str, Any] | None) -> d
     effective = {
         "cuts": core["cuts"],
         "promotions": dict(core["promotions"]),
+        # `required_disciplines` is part of the EFFECTIVE policy, so a discipline change moves
+        # `policy_hashes.effective` and an overlay can raise it.  It is NOT part of `decide()`'s
+        # return: `risk_decision` in contracts/harness/task-control/task.schema.json is
+        # additionalProperties:false, so an extra key there would make every task.json invalid.
+        # Consumers read the requirement from live policy instead (tools/discipline/check.py).
         "lanes": {
-            lane: {
-                "required_artifacts": list(core["lanes"][lane]["required_artifacts"]),
-                "required_gates": list(core["lanes"][lane]["required_gates"]),
-            }
+            lane: {key: list(core["lanes"][lane][key]) for key in LANE_REQUIREMENT_KEYS}
             for lane in LANES
         },
     }
@@ -173,21 +191,24 @@ def _effective_policy(core: dict[str, Any], overlay: dict[str, Any] | None) -> d
         effective["promotions"][reason] = lane
     effective["promotions"].update(overlay.get("additional_promotions", {}))
     for lane, additions in overlay.get("lanes", {}).items():
-        for source, target in (("required_artifacts_add", "required_artifacts"), ("required_gates_add", "required_gates")):
+        for target in LANE_REQUIREMENT_KEYS:
+            source = f"{target}_add"
             for item in additions.get(source, []):
                 if item not in effective["lanes"][lane][target]:
                     effective["lanes"][lane][target].append(item)
     # Overlay additions at a lower lane are obligations, not exemptions for later escalation.
     for index, lane in enumerate(LANES[1:], start=1):
         lower = effective["lanes"][LANES[index - 1]]
-        for key in ("required_artifacts", "required_gates"):
+        for key in LANE_REQUIREMENT_KEYS:
             for item in lower[key]:
                 if item not in effective["lanes"][lane][key]:
                     effective["lanes"][lane][key].append(item)
     return effective
 
 
-def _validate_input(payload: object, known_reasons: set[str]) -> tuple[dict[str, int], list[str], str | None, str | None]:
+def _validate_input(
+    payload: object, known_reasons: set[str]
+) -> tuple[dict[str, int], list[str], str | None, str | None]:
     if not isinstance(payload, dict) or set(payload) - {"scores", "fact_flags", "human_override"}:
         raise RiskRouterError("input must contain only scores, fact_flags, and human_override")
     scores = payload.get("scores")
@@ -220,14 +241,20 @@ def _score_lane(total: int, cuts: dict[str, list[int]]) -> str:
     raise RiskRouterError("total is outside core cuts")
 
 
-def decide(core: dict[str, Any], payload: object, overlay: dict[str, Any] | None = None) -> dict[str, Any]:
+def decide(
+    core: dict[str, Any], payload: object, overlay: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Pure evaluator over already-validated policy and overlay data; it never reads files."""
     _validate_core_policy(core)
     effective = _effective_policy(core, overlay)
-    scores, triggered, override_lane, override_reason = _validate_input(payload, set(effective["promotions"]))
+    scores, triggered, override_lane, override_reason = _validate_input(
+        payload, set(effective["promotions"])
+    )
     total = sum(scores[axis] for axis in SCORE_FIELDS)
     score_lane = _score_lane(total, effective["cuts"])
-    promotions = [{"reason": reason, "minimum_lane": effective["promotions"][reason]} for reason in triggered]
+    promotions = [
+        {"reason": reason, "minimum_lane": effective["promotions"][reason]} for reason in triggered
+    ]
     lane = score_lane
     for promotion in promotions:
         if _lane_index(promotion["minimum_lane"]) > _lane_index(lane):
@@ -239,7 +266,13 @@ def decide(core: dict[str, Any], payload: object, overlay: dict[str, Any] | None
         human_override_audit = {"reason": override_reason, "lane": override_lane}
         if _lane_index(override_lane) > _lane_index(lane):
             lane = override_lane
-            promotions.append({"reason": override_reason, "minimum_lane": override_lane, "source": "human_override"})
+            promotions.append(
+                {
+                    "reason": override_reason,
+                    "minimum_lane": override_lane,
+                    "source": "human_override",
+                }
+            )
     core_hash = _canonical_hash(core)
     overlay_hash = _canonical_hash(overlay or {})
     return {
