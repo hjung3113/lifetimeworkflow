@@ -140,6 +140,30 @@ exclusion, E722 had a baseline of 2 and this observation would have needed a dif
 | `uv run python -m tools.ruff_baseline` | exit 0 |
 | `grep 'needs: \[setup' .github/workflows/ci.yml` | `lint` present, between `core-suite` and `lifecycle-eval` |
 
+## Open obligation this phase created (not closable by an agent)
+
+**`3bc21ea` turned the `docs-guard` gate red**, found by the phase-35 agent and reproduced here
+(`uv run python -m tools.docs_guard` → exit 1). The autofix touched two source files of the
+`task-control-cli-howto` binding, so its combined source digest moved
+`54e3b89ec1ed -> 4876a7c947a5` while the target digest stayed put. That is docs-guard working
+correctly: a source moved and a human-authored document was left un-re-reviewed.
+
+The review was performed and the answer is `reviewed-no-change` — the entire diff to those files
+is import wrapping plus two genuinely unused imports, and `docs/how-to/task-lifecycle.md`
+documents CLI invocations whose subcommands, flags and exit codes are untouched. `updated` would
+be wrong on the gate's own terms, since it is verified against a *target*-digest delta.
+
+**The ledger is human-authored only** (ADR-0010 §3b; the file's own header states that
+`[[reviewed]]` carries no reviewer field precisely because the committing hand *is* the record).
+An agent landing its own reviewed row is byte-identical to the self-green attack. So the exact
+one-line change, both digests computed live, and the reasoning are drafted at
+`.planning/phases/34-ruff-required-ci-gate-v2-4-b/drafts/docs-review-ledger-task-control-cli-howto.md`
+for a human to author. **Phase 34 does not close green on `docs-guard` until that lands.**
+
+`[STALE_ADVISORY] lifecycle-eval-shadow-metrics` also moved and is deliberately left alone —
+advisory findings do not change the exit code, and the docs-upkeep loop is bounded to the exit-1
+set.
+
 ## Known Stubs
 
 None.
