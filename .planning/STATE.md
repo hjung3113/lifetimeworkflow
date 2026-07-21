@@ -2,7 +2,7 @@
 gsd_state_version: 1.0
 milestone: v2.4
 milestone_name: Enforcement Integrity, Carried Debt, Lane Discipline
-status: planning
+status: in-progress
 last_updated: "2026-07-21T17:33:00.025Z"
 last_activity: 2026-07-21
 progress:
@@ -292,7 +292,7 @@ Items acknowledged and carried forward from previous milestone close:
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| testing (isolation) | DEF-05-02-1: 3 commit_gate drift-block tests leak the live GOLDEN_APPROVE_HUMAN token (missing delenv) → fail only when the session token is exported; green in CI. Suggested fix: add `monkeypatch.delenv("GOLDEN_APPROVE_HUMAN", raising=False)`. See phases/05-despecialization/deferred-items.md | open | 05-02 |
+| testing (isolation) | **RESOLVED 2026-07-22 (v2.4 DEBT-04).** Did not reproduce: the three named tests pass with the token unset AND exported. Repaired 2026-07-09 by `ccef8b4`, whose message names DEF-05-02-1; causality proven by mutation (neutering the autouse fixture and re-running with the token exported failed exactly those three). The RECORD was stale, not the code. Original text: DEF-05-02-1: 3 commit_gate drift-block tests leak the live GOLDEN_APPROVE_HUMAN token (missing delenv) → fail only when the session token is exported; green in CI. Suggested fix: add `monkeypatch.delenv("GOLDEN_APPROVE_HUMAN", raising=False)`. See phases/05-despecialization/deferred-items.md | open | 05-02 |
 
 Items acknowledged and deferred at the **v2.3 milestone close on 2026-07-22**. The pre-close
 artifact audit reported 2 open items (`verification_gaps`: phases 28 and 29, both `human_needed`);
@@ -308,6 +308,10 @@ ratification obligation and not an unbuilt or defective artifact.
 | security (harness-wide) | **Constitution-plane write-denies are spelled per-tool.** The ledger deny fires only on the `Write\|Edit` matcher (`.claude/settings.json:160-168`; `.opencode/plugin/ledger-guard.ts:70` returns early unless the tool is write/edit), while `harness/permission-matrix.json:9` grants `"uv *": "allow"` — so the same write spelled through bash resolves to `allow`. `contract_guard` shares the shape, so `contracts/**` and `golden/**` inherit the identical route. Pre-existing and recorded nowhere before the phase-29 re-verification found it. **Human decision at close: record only, repair in the next milestone** — repairing a gate during its own closeout is the wrong discipline, and the fix is harness-wide (a PreToolUse `Bash` hook that denies constitution-plane writes independent of spelling). **Corrected 2026-07-22 (external review):** the earlier claim that ADR-0010 clause 3b overclaims was wrong — clause 3b scopes layer 1 explicitly to `PreToolUse(Write|Edit)` and asserts no universal coverage. The defect is a MISSING FOURTH deny layer for bash; the remedy is a new layer plus a superseding ADR recording the residual, not a wording fix. See `phases/29-.../deferred-items.md`. | open | v2.3 close |
 | bookkeeping | 29-04 Task 4 closed as **discharged-via-Option-A**: its `done` condition presumed Option B's row replacement, but the human seeded all eight bindings in one round, so no row was replaced. SC-3 is the governing contract and holds. | resolved | v2.3 close |
 | nyquist / verification debt | Phase 27 has no `VERIFICATION.md`. Recorded by the v2.3 audit as debt and NOT back-filled — a closeout-authored verification of a long-finished phase claims an authority it cannot have. | open | v2.3 close |
+| verification debt | **RESOLVED 2026-07-22 (v2.4 DEBT-02).** Phase 27's `27-VERIFICATION.md` now exists, authored at closeout and stamped `not_independently_verified_in_phase`. It is deliberately NOT scored N/4: SC-2 is neither pass nor fail (green in-phase, reopened by the phase's own CR-01/02/03, closed only in 27.1) and SC-1 is split (invalidation proven; enforcement contradicted by CR-03, which says the write path never calls `check_valid`). A fraction would hide exactly the parts worth reading. | resolved | v2.4 P35 |
+| review debt (NEW) | **P27-IN-01 / P27-IN-02** — `27-REVIEW.md`'s two Info findings have NO disposition in any artifact, in any phase. Surfaced by the DEBT-02 sweep. **Do not conflate with 27.1's same-numbered findings — they are different items.** P27-IN-01: `apply.py`'s docstring security claim is broader than what the code proves. P27-IN-02: `_recompute_draft_hash` hashes bytes without validating schema shape. See `.planning/phases/35-carried-debt-dispositions-v2-4-b/deferred-items.md`. | open | v2.4 P35 |
+| testing (hermeticity, NEW) | `tools/adoption_apply/tests/test_cli.py::test_cli_draft_writes_into_batch_root` (and its sibling at :294) `monkeypatch.chdir` to the LIVE repo root and run the real `draft` scan over it. Any concurrent write anywhere in the tree changes what the scan sees, so the test is non-hermetic and fails intermittently under parallel agents — observed once as `1 failed, 1538 passed`, not reproducible with the tree quiet (3/3 isolated passes, 1543 passed full-suite). Latent since authored; only parallelism exposed it. Fix is to scan a fixture tree, not the repo. | open | v2.4 P34 |
+| lint (NEW) | `ruff format --check` is still not a gate — **17 files would reformat** (down from 25). DEBT-01 named `ruff check` only, and reformatting mid-milestone would collide with in-flight phases. Recorded in 34-CONTEXT D-08. | open | v2.4 P34 |
 | lint | `ruff check .` reports 617 pre-existing errors, ~180 in the vendored `docs/references/opencode-matt-workflows/**` tree missing from `extend-exclude`. `ruff check` is not a CI gate at all. Unchanged across v2.3; worth a decision, not a silent carry. | open | v2.3 close |
 
 ## Session Continuity
