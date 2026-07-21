@@ -28,6 +28,7 @@ members = [
     "logparser-memory-ui",
     "logparser-normalize",
     "logparser-polyglot-lint",
+    "logparser-ruff-baseline",
     "logparser-strangler-guard",
     "logparser-workspace-config",
     "risk-router",
@@ -394,6 +395,11 @@ source = { virtual = "libs/python" }
 name = "logparser-polyglot-lint"
 version = "0.0.0"
 source = { virtual = "tools/polyglot_lint" }
+
+[[package]]
+name = "logparser-ruff-baseline"
+version = "0.0.0"
+source = { virtual = "tools/ruff_baseline" }
 
 [[package]]
 name = "logparser-strangler-guard"

@@ -1,0 +1,14 @@
+[project]
+name = "logparser-ruff-baseline"
+version = "0.0.0"
+description = "DEBT-01 ratcheting ruff baseline — runs `ruff check` over the repo, compares per-rule finding counts against the committed baseline.json, and fails when any rule class grows or a rule code appears that the baseline does not know. Invoked by module path as `python -m tools.ruff_baseline`; the `lint` CI job is its only gate site."
+requires-python = ">=3.11"
+# Zero new external packages. ruff itself comes from the workspace root's dev dependency group
+# (`ruff~=0.15`) and is invoked as a subprocess through the CURRENT interpreter — never redeclare
+# it here and never add it as a runtime dependency: `uv sync --all-packages` must not move uv.lock.
+dependencies = []
+
+[tool.uv]
+# Virtual member: no build-system, nothing to package. Imported by module path from the shared uv
+# workspace environment. Mirrors tools/docs_guard, tools/harness_lint, tools/memory_regen.
+package = false
