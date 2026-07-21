@@ -122,17 +122,17 @@ that does not exist — worse than a missing layer, because it reads as covered.
   reads its patterns from the gate registry instead of hardcoding them; RAT-4 reaches a recorded
   disposition; the harness defines a portable ratification record that does not depend on a git host
   assigning a reviewer. (SEAL-04, SEAL-05)
-- [ ] **Phase 34: Ruff as a Required CI Gate** *(v2.4 B)* — vendored tree into `extend-exclude`, a
+- [x] **Phase 34: Ruff as a Required CI Gate** *(v2.4 B)* — vendored tree into `extend-exclude`, a
   ratcheting baseline for the genuine remainder, and the job made blocking. Owns its own phase
   because turning 617 findings into a gate is the risky one. (DEBT-01)
-- [ ] **Phase 35: Carried-Debt Dispositions** *(v2.4 B)* — phase-27 verification disposition (honest
+- [x] **Phase 35: Carried-Debt Dispositions** *(v2.4 B)* — phase-27 verification disposition (honest
   stamp or written off, never manufactured); compile-the-graph-once (28 IN-03) with a recorded
   decision on `impact.py`'s signature; `DEF-05-02-1` verified and closed. (DEBT-02, DEBT-03, DEBT-04)
-- [ ] **Phase 36: Discipline Skills + Adversarial Review Panel** *(v2.4 C)* — clarify/TDD/diagnose/
+- [x] **Phase 36: Discipline Skills + Adversarial Review Panel** *(v2.4 C)* — clarify/TDD/diagnose/
   domain-modeling skills wired into the task lifecycle so a lane's discipline is executable, and a
   STRICT+ adversarial multi-expert panel as a declared lane requirement, reusing the Phase-10 fan-out
   substrate. (LANE-01, LANE-02)
-- [ ] **Phase 37: Capability Routing + Registry Lock + Closeout** *(v2.4 C)* — specialist allowlist
+- [x] **Phase 37: Capability Routing + Registry Lock + Closeout** *(v2.4 C)* — specialist allowlist
   and capability-neutral routing, skill `registry.lock` + adapter CI, and the milestone closeout
   against the full gate fan-in. (LANE-03, LANE-04)
 
@@ -168,14 +168,14 @@ being a hard precondition. If 31 cannot pick a posture, stop rather than proceed
 | 27.2 Adoption Apply Robustness (INSERTED) | v2.3 | 2/2 | Complete | 2026-07-21 |
 | 28. Human-Docs Registry, Guard, Queue | v2.3 | 9/9 | Complete | 2026-07-21 |
 | 29. Docs Drive Loop + Closeout | v2.3 | 5/5 | Complete | 2026-07-22 |
-| 30. Deny-Domain Registry | v2.4 | 0/TBD | Not started | - |
-| 31. Threat Model + Posture ADR | v2.4 | 0/TBD | Not started | - |
-| 32. Implement the Posture | v2.4 | 0/TBD | Not started | - |
-| 33. Secret Scan + Ratification Record | v2.4 | 0/TBD | Not started | - |
-| 34. Ruff as a Required CI Gate | v2.4 | 0/TBD | Not started | - |
-| 35. Carried-Debt Dispositions | v2.4 | 0/TBD | Not started | - |
-| 36. Discipline Skills + Review Panel | v2.4 | 0/TBD | Not started | - |
-| 37. Capability Routing + Closeout | v2.4 | 0/TBD | Not started | - |
+| 30. Deny-Domain Registry | v2.4 | 1/4 planned | BLOCKED — human contract write | - |
+| 31. Threat Model + Posture ADR | v2.4 | 0/TBD | BLOCKED — depends on phase 30 | - |
+| 32. Implement the Posture | v2.4 | 0/TBD | BLOCKED — depends on phase 30 | - |
+| 33. Secret Scan + Ratification Record | v2.4 | 0/TBD | BLOCKED — depends on phase 30 | - |
+| 34. Ruff as a Required CI Gate | v2.4 | 3/3 | Complete | 2026-07-22 |
+| 35. Carried-Debt Dispositions | v2.4 | 3/3 | Complete | 2026-07-22 |
+| 36. Discipline Skills + Review Panel | v2.4 | 4/4 | Complete | 2026-07-22 |
+| 37. Capability Routing + Closeout | v2.4 | 2/2 | Complete | 2026-07-22 |
 
 Per-phase plan counts for v1.0–v2.2 are preserved in the milestone archives under
 `.planning/milestones/`; they are not restated here so this table stays a fixed size.
