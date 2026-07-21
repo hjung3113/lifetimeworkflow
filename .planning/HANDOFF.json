@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-07-21T03:32:45.824Z",
+  "timestamp": "2026-07-21T16:40:15.430Z",
   "phase": "29",
   "phase_name": "docs-drive-loop-adoption-integration-closeout-v2-3-c",
   "phase_dir": ".planning/phases/29-docs-drive-loop-adoption-integration-closeout-v2-3-c",
@@ -9,39 +9,113 @@
   "total_tasks": 5,
   "status": "paused",
   "milestone": "v2.3",
-  "milestone_status": "blocked_on_human",
+  "milestone_status": "ratifications_discharged_docs_guard_green",
   "completed_tasks": [
-    {"id": 1, "name": "Phase 27.2 — adoption apply robustness (WR-05/06/07)", "status": "done", "commit": "0d68d5d", "note": "verified 5/5"},
-    {"id": 2, "name": "Phase 28 — human-docs registry, guard, derived queue (9 plans)", "status": "done", "commit": "ba12684", "note": "verified 4/4, status human_needed"},
-    {"id": 3, "name": "Phase 28 review fixes — CR-01/02/03, WR-01..04, IN-01/IN-02", "status": "done", "commit": "24079bb", "note": "merged from gsd-reviewfix/28-50958; IN-03 accepted residual"},
-    {"id": 4, "name": "Phase 29 — /docs-update + docs-upkeep, exclusions, adoption integration", "status": "done", "commit": "db9612f", "note": "SC-1/SC-2 verified; SC-3 blocked on human ledger write"},
-    {"id": 5, "name": "v2.3 milestone audit", "status": "done", "commit": "1e1ef3b", "note": "status blocked_on_human; requirements 19/21, phases 7/10"},
-    {"id": 6, "name": "Quick task — the two CI reds the audit found", "status": "done", "commit": "7b6ead3", "note": "lifecycle_eval 3 passed; examples/log-parser 14 passed"}
+    {
+      "id": 1,
+      "name": "VALIDATION.md for phases 27.2 and 28 (the audit's only nyquist gap)",
+      "status": "done",
+      "commit": "150a28e",
+      "note": "both carry `authored: at-closeout` and say so in their own opening note; corrected in cd9f76a after a second artifact pass"
+    },
+    {
+      "id": 2,
+      "name": "emit-drift CI gate made untracked-safe (15-REVIEW CR-01)",
+      "status": "done",
+      "commit": "6448a26",
+      "note": "bare `git diff` was blind to a NEWLY emitted artifact; 29-03 hit it live with four untracked files. RED proven first: 2 of 7 failed for the stated reasons"
+    },
+    {
+      "id": 3,
+      "name": "Quick task 20260722-glossary-constitution-plane-drift (A/B/C)",
+      "status": "done",
+      "commit": "732a0d5, 6d74a50, 378f8ba, f98d63a, 27acf96",
+      "note": "ADR-0001:48 declares a FOUR-member constitution plane; Phase 4 enforced three. 1480 -> 1500 passed, 4 mutation proofs"
+    },
+    {
+      "id": 4,
+      "name": "RAT-2 — ADR-0010 ratified",
+      "status": "done",
+      "commit": "ad4e339",
+      "note": "BY THE HUMAN, outside an agent session. registry._adr_status now returns accepted"
+    },
+    {
+      "id": 5,
+      "name": "RAT-1 + RAT-3 — first docs/.docs-review-ledger.toml authored",
+      "status": "done",
+      "commit": "c32c08d",
+      "note": "BY THE HUMAN. docs_guard exit 1 -> 0, 8/8 FRESH. The last red gate of v2.3"
+    },
+    {
+      "id": 6,
+      "name": "RAT-5 repo-config half — default branch back to main + gate required on it",
+      "status": "done",
+      "commit": "f009306",
+      "note": "CODEOWNERS could never fire while the default branch was the feature branch"
+    }
   ],
   "remaining_tasks": [
-    {"id": 7, "name": "VALIDATION.md gaps for phases 27.2 and 28", "status": "not_started", "why": "workflow.nyquist_validation is true; the audit records nyquist as partial solely because these two are absent"},
-    {"id": 8, "name": "Residual debt: IN-03, secret_scan.py:44-47, 27.2 AD-01/AD-02", "status": "not_started", "why": "each accepted-with-rationale, none silently dropped; secret_scan carried since 26.2"},
-    {"id": 9, "name": "Push 298 local commits", "status": "not_started", "why": "branch is 298 ahead of origin"}
+    {
+      "id": 7,
+      "name": "/gsd:verify-phase 29",
+      "status": "not_started",
+      "why": "29-VERIFICATION.md is the last missing one. The audit's nyquist table lists 29 as `exists (VALIDATION) / MISSING (VERIFICATION)`"
+    },
+    {
+      "id": 8,
+      "name": "/gsd:complete-milestone",
+      "status": "not_started",
+      "why": "moves committed history; deliberately not automated inside plan 29-05"
+    },
+    {
+      "id": 9,
+      "name": "PR to main — discharges RAT-4 and the RAT-5 merge together",
+      "status": "not_started",
+      "why": "614 commits ahead of origin/main; 7 ADRs unmerged (0004-0010). 28-01-SUMMARY says the schema write's ratification is picked up BY the CODEOWNERS review, so RAT-4 is not a separate act"
+    },
+    {
+      "id": 10,
+      "name": "ruff: 617 pre-existing errors",
+      "status": "not_started",
+      "why": "NEW finding this session, predates the work (identical count at 39ae6ad). ~180 are in the vendored docs/references/opencode-matt-workflows/** tree missing from [tool.ruff] extend-exclude — that subset is a 5-minute fix. The rest are v2.2 tools/task_control + tools/evidence and deserve their own task"
+    }
   ],
-  "blockers": [
-    {"description": "docs/.docs-review-ledger.toml does not exist, so `python -m tools.docs_guard` exits 1 with 6 broken-binding findings and the docs-guard CI job is red", "type": "human_action", "workaround": "none by design — three enforcement layers deny the agent write"},
-    {"description": "lifecycle-eval and golden CI reds", "type": "technical", "workaround": "RESOLVED 2026-07-21 in quick task 20260721-ci-red-lifecycle-eval-golden-tmp-path"}
-  ],
+  "blockers": [],
   "human_actions_pending": [
-    {"action": "Hand-author docs/.docs-review-ledger.toml from the byte-exact proposal in 29-04-SUMMARY.md, outside an agent session", "context": "RAT-1. Author against the POST-edit tree: 29-04's bounded gate-model prose fix moved that binding's target_digest from 4568f3a9 to 8df85e6e. 29-04-SUMMARY gives two options; verifier-29 RECOMMENDS Option B (two rounds), because Option A satisfies SC-3's literal text but never observes the gate transition on a real doc edit. Blocks DOCSUP-06, DOCSUP-07, the docs-guard CI job, and Phase 29 closure.", "blocking": true},
-    {"action": "Review ADR-0010 and flip Status: proposed -> accepted, filling Date and Deciders", "context": "RAT-2. Both fields are em-dashes today (docs/adr/0010-human-docs-review-obligation-model.md:5-7). Its clause 3b is the docs-plane agent-authority boundary Phase 29 depends on; ADRs are append-only, so this record is the one that must carry it.", "blocking": true},
-    {"action": "Ratify the eight seeded bindings' dispositions before their first [[reviewed]] rows", "context": "RAT-3. A self-blessed row and an honest seed row are byte-identical — only the human commit separates them.", "blocking": true},
-    {"action": "Ratify the Phase 28 constitution-plane schema write", "context": "RAT-4. contracts/harness/docs/doc-dependencies.schema.json (plan 28-01) landed via HARNESS_DEV_BYPASS per ADR-0007. That is NOT a human-ratified write and was never claimed as one.", "blocking": false},
-    {"action": "Merge ADR-0004/0005/0006/0007 to main", "context": "Standing item carried from STATE.md since 2026-07-16. CODEOWNERS cannot fire on a solo-authored PR; the durable fix is flipping the GitHub default branch back to main.", "blocking": false}
+    {
+      "action": "Review and merge the PR to main once it is opened",
+      "context": "RAT-4 + RAT-5. Not blocking anything in-session. Note that `gate` is now a REQUIRED status check on main and `strict: true`, so the PR must be up to date; enforce_admins is false so the owner is never locked out",
+      "blocking": false
+    }
   ],
   "decisions": [
-    {"decision": "Inserted Phase 27.2 to close 27.1's three open findings before starting Phase 28", "rationale": "All three were write-path defects on the adoption spine that Phase 29 wires into a reviewed seeding loop; closing them first kept the spine trustworthy at the point the docs loop began depending on it.", "phase": "27.2"},
-    {"decision": "Registry data at docs/doc-dependencies.toml, its shape at contracts/harness/docs/doc-dependencies.schema.json", "rationale": "Forced, not preferential: contract_guard.py:44 denies agent writes under contracts/**, and DOCSUP-07 requires /adopt to PROPOSE registry rows. A registry on the constitution plane makes the downstream requirement unimplementable.", "phase": "28"},
-    {"decision": "CR-02 closed by building a real enforcer (tools/hooks/ledger_guard.py) rather than correcting ADR-0010 downward", "rationale": "The layer was buildable in the shape the other two domains already use and the emitter had the wiring seam. Deleting the claim would have left the write unobstructed and merely stopped saying so.", "phase": "28"},
-    {"decision": "CR-03 keyed the history test on (id, committed (sources,target) pair) instead of adding a binding_digest ledger column", "rationale": "Equivalent strength — both make a repoint amber for one cycle — but the ledger is hand-authored by a human, and a third derived digest per row buys nothing.", "phase": "28"},
-    {"decision": "The Phase 29 closeout did NOT repair the two CI reds it found", "rationale": "T-29-21: a closeout that repairs on the way past reports a state that never existed. They were repaired afterwards as their own quick task, with their own evidence.", "phase": "29"}
+    {
+      "decision": "docs/glossary.md stays constitution-plane; the ENFORCEMENT was brought up to ADR-0001, not the other way round",
+      "rationale": "ADR-0001:48 is accepted and unsuperseded. Two Claude audits recommended the opposite repair by citing ADR-0010, which was still Status: proposed. An unratified record cannot override a ratified one. codex sol (medium) caught the inversion",
+      "phase": "quick/20260722"
+    },
+    {
+      "decision": "Constitution ownership and review obligation are ORTHOGONAL and this is now written into three surfaces",
+      "rationale": "Ownership controls WHO MAY EDIT; a binding controls WHEN A HUMAN OWES A REVIEW. contract-graph-adr-0009 already pairs a docs/adr/** target the same way — a counterexample that was in the same registry and had already been read when the wrong recommendation was made",
+      "phase": "quick/20260722"
+    },
+    {
+      "decision": "The glossary is a LITERAL path everywhere, never docs/**",
+      "rationale": "A broad glob would deny the whole human-doc tree and still satisfy every glossary row. Negative controls in three modules go red if someone 'fixes' it that way",
+      "phase": "quick/20260722"
+    },
+    {
+      "decision": "Did NOT enable 'Require review from Code Owners' on main; required the `gate` status check instead",
+      "rationale": "Solo repo: the sole code owner is also the PR author, GitHub forbids self-approval, and it would need an admin waiver per merge. .github/CODEOWNERS:14-19 recorded that trap. The machine half is enforceable without ceremony; the human half is already enforced in-session by the ledger/contract/golden hooks",
+      "phase": "RAT-5"
+    },
+    {
+      "decision": "Refused to author the ledger or ratify ADR-0010, three times, including via bash and via delegating to another agent",
+      "rationale": "bash WOULD have worked — the hooks bind tool calls, not shells. That is exactly why the rule is about holding it rather than being stopped by it. ledger_guard honours NO token, unlike contract_guard which has HARNESS_DEV_BYPASS; Phase 28 removed that door deliberately. A self-blessed row and an honest seed row are byte-identical, so the committing hand is the only record",
+      "phase": "RAT-1"
+    }
   ],
   "uncommitted_files": [],
-  "next_action": "Author VALIDATION.md for phases 27.2 and 28 — the only reason .planning/v2.3-MILESTONE-AUDIT.md records nyquist as partial. Do not back-fill them as if they had existed; author them as dated, current documents, the way the v2.1 audit handled phases 13/14.",
-  "context_notes": "One recurring defect dominated this milestone and is the thing to carry forward: a control ships GREEN while being bypassable, because every test fixture used the one input spelling the control already handled. It recurred in 26, 27, 27.1, inside 27.2's own fix, and again in 28 (three Criticals). What actually caught it each time was adversarial mutation testing by the reviewer — delete the control, see whether anything reds — not the suite passing. The structural mitigation now in force: author the adversarial-input table BEFORE the fix, run the new test against pre-fix code, and confirm it fails FOR THE STATED REASON. Two execution traps also cost real time: (1) an inverted `! uv run pytest` gate exits 0 on a collection/import error and masquerades as RED — run RED selections plain and read the output, and note that passes reported alongside failures prove collection succeeded; (2) `git commit` publishes the ENTIRE shared index, not just what the preceding `git add` named, so with concurrent executors every commit must be `git commit -- <pathspec>` with `git diff --cached --name-only` inspected first. The milestone's machinery is complete and every gate is green; what remains is genuinely human, and the whole point of Phases 28-29 is that no agent can discharge it."
+  "next_action": "Run /gsd:verify-phase 29. Its VERIFICATION.md is the last missing nyquist artifact; the audit lists 29 as VALIDATION-present / VERIFICATION-missing. Then /gsd:complete-milestone, then open the PR to main.",
+  "context_notes": "The defect that dominated this session is the one this repo keeps rediscovering, but in a new shape: not a control that ships green while bypassable, but a control that was never built while four documents said it was. docs/glossary.md was agent-writable for two weeks. The tell was that the DOCUMENTS were right and the CODE was wrong — the opposite of the usual direction, which is why two audits nearly repaired it backwards by deleting the true sentence. Check ADR status fields before citing one as authority: accepted beats proposed, and I used a proposed record as if it were binding. Second lesson, on delegation: I spawned parallel extraction agents, got impatient when they were slow, read the artifacts myself by grep, and committed. That direct read was wrong in three places and the late-arriving delegate caught all three — all three errors made a phase look greener than it was. Grep summaries of PLAN files miss `<task type=\"checkpoint:human-verify\">` declarations. Read task type declarations directly or wait for the delegate. Third: terra's plan ordered A->B->C->ADR->ledger and I did not know why until the end — repointing a binding BEFORE the first ledger exists avoids the amber cycle entirely, because first_seen-unratified compares against the previous COMMITTED ledger and there was none. Trust a plan's ordering even when its reason is not stated. Mechanical: `git commit -- <paths>` puts -m BEFORE the -- or git reads the message as a pathspec; I gave the user a broken command from this exact mistake."
 }
