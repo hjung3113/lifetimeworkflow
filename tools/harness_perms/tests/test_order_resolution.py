@@ -112,6 +112,8 @@ def test_git_push_asks_and_rm_rf_denies(matrix: dict) -> None:
         "contracts/log-specs/eqp.schema.json",
         "docs/adr/0007-decision.md",
         "golden/repr-only/expected/baseline.verified.tsv",
+        # The fourth constitution member (ADR-0001:48) — a literal file, not a tree.
+        "docs/glossary.md",
         "config/prod.env",
         "components/collector/.env",
     ],

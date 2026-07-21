@@ -72,6 +72,20 @@ EXCLUSION_CASES: list[tuple[str, str, object]] = [
     ),
     # --- class 2: golden (constitution plane) ---
     ("golden-plain", "golden/harness/baseline.verified.tsv", exclusions.REASON_CONSTITUTION),
+    # --- class 2b: docs/glossary.md — the FOURTH constitution member (ADR-0001:48) ---
+    # A literal file rather than a tree, so it gets the same CR-01 spelling sweep: a classifier that
+    # only handles the one spelling the fix was written against is the defect this file exists for.
+    # It is simultaneously a HUMAN_CORPUS member and a review-binding target
+    # (`normalize-spec-glossary`) — constitution ownership and review obligation are orthogonal, so
+    # being excluded from DRAFTING here does not remove it from the corpus.
+    ("glossary-plain", "docs/glossary.md", exclusions.REASON_CONSTITUTION),
+    ("glossary-dot-slash", "./docs/glossary.md", exclusions.REASON_CONSTITUTION),
+    ("glossary-upper", "DOCS/GLOSSARY.md", exclusions.REASON_CONSTITUTION),
+    (
+        "glossary-dotdot-reentrant",
+        "docs/how-to/../glossary.md",
+        exclusions.REASON_CONSTITUTION,
+    ),
     # --- class 3: accepted ADR — a DISTINCT reason, asserted below to differ from class 1/2 ---
     (
         "adr-plain",
@@ -96,7 +110,7 @@ EXCLUSION_CASES: list[tuple[str, str, object]] = [
     ("allowed-harness-source", "harness/skills/brownfield-adoption/SKILL.md", None),
 ]
 
-_CONSTITUTION_ROWS = ("contracts-", "golden-")
+_CONSTITUTION_ROWS = ("contracts-", "golden-", "glossary-")
 _DERIVED_ROWS = ("derived-",)
 _ADR_ROWS = ("adr-",)
 
