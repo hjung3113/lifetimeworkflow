@@ -17,13 +17,30 @@
   `resolve_bash(..., "uv run python -c \"open('docs/.docs-review-ledger.toml','w')...\"")`
   resolves to **`allow`** — the same write, spelled through bash, is not denied. `contract_guard`
   shares the shape, so `contracts/**` and `golden/**` inherit the identical route.
-  **Scope of the overclaim:** SC-2 is unaffected (it is about `/adopt`, which refuses in code) and
-  SC-3 is unaffected (the gate itself is green and was observed moving). What is overclaimed is
-  ADR-0010 clause 3b's *universal* phrasing and the prior 29-VERIFICATION.md line "no agent action
-  can satisfy SC-3" — both are true of `Write`/`Edit`, not of every tool.
+  **Scope of the finding:** SC-2 is unaffected (it is about `/adopt`, which refuses in code) and
+  SC-3 is unaffected (the gate itself is green and was observed moving). The one statement that IS
+  overclaimed is the prior 29-VERIFICATION.md line "no agent action can satisfy SC-3" — true of
+  `Write`/`Edit`, not of every tool.
+
+  **CORRECTION (2026-07-22, external review by codex sol).** This entry originally also accused
+  ADR-0010 clause 3b of "universal phrasing". That accusation was WRONG and is withdrawn. Clause 3b
+  names the surface each of its three layers covers and scopes layer 1 explicitly to
+  `PreToolUse(Write|Edit)` (`docs/adr/0010-human-docs-review-obligation-model.md:144-152`); it makes
+  no universal claim, and it even records the principle this finding rests on — "a layer that is
+  only a data row is a claimed control that does not exist". The defect is therefore a **missing
+  FOURTH deny layer for the bash surface**, and the remedy is a new layer plus a superseding ADR
+  that states the residual, NOT a correction to clause 3b's wording.
   **Disposition (human, 2026-07-22): record only; repair in the next milestone.** Repairing a gate
   during its own closeout is the wrong discipline, and the fix is harness-wide (a PreToolUse `Bash`
   hook that denies constitution-plane writes independent of spelling), not phase-29-shaped. Route to
-  the v2.3 milestone audit's `tech_debt` and carry the ADR-0010 clause-3b wording correction with
-  it — the clause should say which tool surfaces it binds, or the enforcement should become
-  spelling-independent.
+  the v2.3 milestone audit's `tech_debt`. Per the correction above, the paired ADR work is a
+  SUPERSEDING ADR that records the newly covered surface and the residual — not an edit to, or a
+  reproach of, clause 3b.
+
+  **Sol's caution on the remedy (2026-07-22), carried into v2.4 planning.** "A Bash hook cannot
+  generally resolve the effective write target" of arbitrary shell — interpreters, build tools,
+  subprocesses, symlinks and generated scripts all defeat static command-text inference. So
+  "spelling-independent" must NOT be adopted as an acceptance criterion without first choosing an
+  enforceable posture: filesystem-level enforcement, a constrained command allowlist, protected
+  command wrappers, or an explicitly documented residual boundary. Otherwise the negative-control
+  suite proves only the spellings its authors happened to remember.

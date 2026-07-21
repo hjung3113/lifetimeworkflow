@@ -82,8 +82,10 @@ Known deferred items at close: 8 (see STATE.md Deferred Items). The load-bearing
   matcher, but `bash."uv *"` is an unprompted `allow`, so the same write spelled through bash
   resolves to `allow`. `contract_guard` shares the shape, so `contracts/**` and `golden/**` inherit
   it. Found by the phase-29 re-verification and recorded nowhere before that. Human decision at
-  close: record now, repair next milestone — with ADR-0010 clause 3b's universal phrasing corrected
-  alongside it.
+  close: record now, repair next milestone. **Corrected 2026-07-22 by external review:** the claim
+  above that ADR-0010 clause 3b "overclaims" was wrong. Clause 3b enumerates the surface each of its
+  three layers covers and explicitly scopes layer 1 to `PreToolUse(Write|Edit)`; it never asserts
+  universal coverage. The defect is a MISSING FOURTH LAYER for the bash surface, not ADR phrasing.
 - **Phase 27 has no VERIFICATION.md.** Recorded as debt and deliberately NOT back-filled: a
   closeout-authored verification of a long-finished phase claims an authority it cannot have.
 - **`ruff check .` is not a CI gate** and reports 617 pre-existing errors, ~180 of them in the

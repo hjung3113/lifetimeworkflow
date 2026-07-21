@@ -105,7 +105,10 @@ Run `/gsd:new-milestone` to scope it. Items already known to be waiting, carried
   constitution write; four ADRs unmerged to `main`). Neither blocks mechanically.
 - **Constitution-plane write-denies are spelled per-tool** — the deny fires on `Write|Edit` while
   `bash."uv *"` is an unprompted `allow`, and `contract_guard` shares the shape. Decided at the v2.3
-  close: record now, repair here, together with the ADR-0010 clause 3b wording correction.
+  close: record now, repair here. **Correction (2026-07-22, external review):** the earlier framing
+  that ADR-0010 clause 3b "overclaims" was WRONG. Clause 3b names the surface each of its three
+  layers covers — layer 1 is explicitly `PreToolUse(Write|Edit)` — so it claims no universal
+  coverage. What is missing is a FOURTH layer for the bash surface, not a wording fix.
 - **`ruff check` is not a CI gate**, and carries 617 pre-existing errors.
 - **`examples/**` instance-local docs-registry overlay** — the seam left deliberately open by
   28-CONTEXT D-14.
