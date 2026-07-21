@@ -19,7 +19,7 @@ Roadmap: `.planning/ROADMAP.md:125-127`.
 ratcheting per-rule baseline held by a tested tool under `tools/`; a blocking `lint` job in
 `ci.yml` wired into `gate.needs`; a recorded fail→pass observation of the gate.
 
-**OUT of scope:** fixing the 403 genuine findings (the requirement says *held*, not fixed);
+**OUT of scope:** fixing the 400 genuine findings (the requirement says *held*, not fixed);
 `ruff format --check` (25 files would reformat — carried, see D-08); widening or narrowing
 `[tool.ruff.lint] select`; a pre-commit mirror (no `.pre-commit-config.yaml` exists).
 
@@ -36,9 +36,9 @@ decision that supersedes an existing one. `drafts/` is therefore expected to sta
 
 | # | Grey area | Decision | Rationale |
 |---|---|---|---|
-| D-01 | Which number is true — 617 (docs) or something else | **620**, measured with `--no-cache`. The docs' 617 is a **stale-cache artifact**; two runs of the identical warm-cache command disagreed by 3 during research. | `34-RESEARCH.md` §1. Reproduced ×3 cold, stable. |
-| D-02 | Cache handling in the gate | The tool always passes `--no-cache`. | A gate whose verdict depends on `.ruff_cache/` state goes green locally (warm) and red in CI (always cold) for the same code. Non-negotiable; without it the ratchet is noise. |
-| D-03 | How the tool reads ruff | `[sys.executable, "-m", "ruff", ...]` with `--output-format=json`, `cwd=REPO_ROOT`. | `python -m ruff` cannot pick up an ambient ruff off `PATH`. JSON gives `code` per diagnostic; `--statistics` is a right-aligned text table and disagreed with JSON on a warm cache. Ruff exit 1 = findings, 2 = usage error — the tool must not read 2 as "clean". |
+| D-01 | Which number is true — 617 (docs) or something else | **617** total, of which **193** (not the requirement's "~180") is the vendored tree. An earlier reading of a 617-vs-620 discrepancy as a stale cache was **wrong and is retracted**: a sibling phase committed `8cb8458` to this branch mid-measurement. | `34-RESEARCH.md` §1.0. |
+| D-02 | Cache handling in the gate | The tool always passes `--no-cache`. | Kept even after D-01's retraction: CI is always cold and local is usually warm, and a ~1s cost buys one fewer variable that can differ between the two places the gate runs. |
+| D-03 | How the tool reads ruff | `[sys.executable, "-m", "ruff", ...]` with `--output-format=json`, `cwd=REPO_ROOT`. | `python -m ruff` cannot pick up an ambient ruff off `PATH`. JSON gives `code` per diagnostic; `--statistics` is a right-aligned text table that would have to be parsed. Ruff exit 1 = findings, 2 = usage error — the tool must not read 2 as "clean". |
 | D-04 | Baseline keying | **Per-rule totals, repo-wide.** Not per-(file, rule). | Per-(file, rule) reads every file rename as an increase, which forces a `--update` that can raise counts — the escape hatch that makes a ratchet decorative. Per-rule is rename-proof, which lets `--update` be structurally incapable of raising a count. Recorded limit: a one-for-one same-rule swap between two files passes. |
 | D-05 | New rule codes | A code absent from the baseline is baseline **0** → fails on first appearance. | A ruff bump that adds an `E`/`F`/`I`/`UP`/`B` check must be a visible decision, not a silent absorption. |
 | D-06 | `--update` semantics | Rewrites the baseline, but **refuses with exit 3 if any rule's count would increase**. | Mirrors the repo's existing posture: `tools/docs_guard` never raises its own `uncovered_max`/`binding_min` either. Growing the baseline requires hand-editing a committed JSON file — visible in review. |
@@ -75,8 +75,10 @@ decision that supersedes an existing one. `drafts/` is therefore expected to sta
 <specifics>
 ## Specific Ideas
 
-- Record the real numbers everywhere: 620 → 427 (−193 vendored) → 403 (−24 safe fixes). Never
-  restate 617 or "~180" without marking them as the disproven figures they are.
+- Record the real numbers everywhere: 617 → 424 (−193 vendored) → 400 (−24 safe fixes). The
+  requirement's "~180 vendored" is disproven — it is 193.
+- The branch is SHARED with in-flight phases 30–35. Generate the baseline immediately before
+  committing it, and re-verify it at phase close.
 - The RED evidence is the deliverable, not a formality. `34-03-SUMMARY.md` carries both verbatim
   runs.
 - Every commit atomic; the autofix commit is its own so a merge conflict with phases 30–33 is
@@ -88,7 +90,7 @@ decision that supersedes an existing one. `drafts/` is therefore expected to sta
 ## Deferred Ideas
 
 - `ruff format --check` as a gate (D-08) — 25 files, needs its own decision.
-- Reducing the 403: E501×277 dominates and is a reflow of most long lines under `tools/`.
+- Reducing the 400: E501×274 dominates and is a reflow of most long lines under `tools/`.
 - Promoting the ratchet to a bare `ruff check .` once the baseline reaches zero.
 - A pre-commit mirror — nothing to mirror into today.
 

@@ -1,38 +1,46 @@
 # Phase 34 Research — Ruff as a Required CI Gate (DEBT-01)
 
 **Researched:** 2026-07-22
-**Confidence:** HIGH on every number below — each was reproduced in this repo at `f6ae4bd`, not
-carried over from a planning document.
+**Confidence:** HIGH on every number below — each was reproduced in this repo at `8cb8458`, not
+carried over from a planning document. See §1.0 for one reading that was wrong and is retracted.
 
 ---
 
-## 1. Measurement — the planning docs were wrong, and wrong for an instructive reason
+## 1. Measurement — and a correction to an earlier reading of it
 
-`.planning/REQUIREMENTS.md:53-56` and `.planning/research/v2.4-scoping-FINAL.md:85-87` both state
-**617** findings and **~180** in the vendored tree. Both numbers are hearsay. Reproduced:
+`.planning/REQUIREMENTS.md:53-56` and `.planning/research/v2.4-scoping-FINAL.md:85-87` state
+**617** findings and **~180** in the vendored tree. The 617 reproduces exactly; the ~180 does not
+— the vendored tree owns **193**.
 
-| Invocation | Findings |
-|---|---|
-| `uv run ruff check . --statistics` (warm `.ruff_cache`) | **617** |
-| `uv run ruff check . --no-cache --statistics` | **620** |
-| `uv run ruff check . --no-cache --output-format=json` (three consecutive runs) | **620, 620, 620** |
+### 1.0 A correction, recorded rather than quietly fixed
 
-**The 617 in the planning docs is a stale-cache artifact.** Ruff's on-disk cache
-(`.ruff_cache/`, gitignored) served three findings' worth of stale results. Two consecutive runs of
-the same command in the same tree disagreed by 3 during this research, and only `--no-cache` was
-reproducible across runs.
+An earlier draft of this section claimed the repo's ruff cache was serving stale results, because
+runs minutes apart returned 617 and then 620. That claim was **wrong** and is retracted. The cause
+was a **concurrent agent committing to this same branch**: commit `8cb8458`
+(*perf(docs-guard): compile the contract graph once per report*) landed mid-measurement and moved
+three `E501` findings in `tools/docs_guard/impact.py` / `test_impact.py`. Warm and cold runs at
+the same commit agree exactly (both `Found 424 errors.` after the exclusion, verified).
 
-**Consequence for the design (load-bearing):** the gate MUST pass `--no-cache`. A ratcheting
-baseline compared against a cache-dependent count is a gate that can go green or red on cache
-state rather than on code, and would produce exactly the "it passes locally, fails in CI" failure
-that discredits a new gate in its first week. CI is always cold, local is usually warm — the two
-would systematically disagree.
+Two things follow, and both are kept:
 
-### 1.1 Full breakdown (`--no-cache`, 620 total)
+1. **The gate still passes `--no-cache`.** Not because the cache was caught misbehaving — it was
+   not — but because CI is always cold and local is usually warm, and removing the cache as a
+   variable costs nothing at this repo's size (a full cold run is ~1s). A gate should have one
+   fewer thing that can differ between the two places it runs.
+2. **The baseline is a moving target while sibling phases are in flight.** Phases 30–35 commit to
+   this branch. This is not a defect of the design: a sibling commit that *removes* findings
+   lowers a count, which the ratchet accepts, and one that *adds* findings is exactly what the
+   ratchet exists to catch. But the recorded baseline must be generated immediately before it is
+   committed, and re-verified at phase close.
+
+All numbers below are measured at `8cb8458`+ with ruff **0.15.20**, `--no-cache`, and are stable
+across three consecutive runs.
+
+### 1.1 Full breakdown (617 total)
 
 | Rule | Count | Fixable |
 |---|---:|---|
-| E501 line-too-long | 307 | no |
+| E501 line-too-long | 304 | no |
 | E702 multiple-statements-on-one-line-semicolon | 202 | no |
 | E701 multiple-statements-on-one-line-colon | 65 | no |
 | I001 unsorted-imports | 22 | **safe fix** |
@@ -47,6 +55,9 @@ would systematically disagree.
 | UP034 extraneous-parentheses | 1 | **safe fix** |
 
 ### 1.2 By directory (top buckets, full tree)
+
+Measured before commit `8cb8458` landed, so `tools/docs_guard` is 3 higher here than it is now;
+the shape is what matters.
 
 | Path bucket | Findings |
 |---|---:|
@@ -73,12 +84,12 @@ disappear entirely once it is excluded.
 
 | State | Total | Composition |
 |---|---:|---|
-| today | 620 | — |
-| after `extend-exclude` of the vendored tree | **427** | −193 |
-| after the 24 safe autofixes | **403** | −24 (I001 15, F401 6, UP017 2, UP034 1) |
+| today | 617 | — |
+| after `extend-exclude` of the vendored tree | **424** | −193 |
+| after the 24 safe autofixes | **400** | −24 (I001 15, F401 6, UP017 2, UP034 1) |
 
-403 is the genuine remainder the baseline must hold:
-`E501 277, E702 102, E701 20, B007 1, B904 1, B905 1, F841 1`.
+400 is the genuine remainder the baseline must hold:
+`E501 274, E702 102, E701 20, B007 1, B904 1, B905 1, F841 1`.
 
 ---
 
@@ -167,10 +178,11 @@ in review — the same posture the repo already takes with `uncovered_max` in th
 - `python -m ruff` rather than a bare `ruff` on `PATH`: the ruff wheel ships `ruff/__main__.py`,
   so this resolves through the same interpreter the workspace already selected and cannot pick up
   a different ruff from the ambient environment.
-- `--no-cache`: §1, non-negotiable.
+- `--no-cache`: §1.0 — CI is always cold, local usually warm; removing the cache as a variable
+  costs ~1s and removes a class of "green here, red there".
 - JSON, not `--statistics`: parsing a table of right-aligned integers is fragile, and JSON gives
-  the per-diagnostic `code` directly. Note the two disagree — `--statistics`/text reported 617
-  against JSON's 620 on a warm cache and both report 620 cold; JSON is what the tool reads.
+  the per-diagnostic `code` directly. `--statistics` and JSON agree on totals at a fixed commit;
+  JSON is preferred because it needs no parsing of a right-aligned text table.
 - Ruff exits **1** when findings exist and **2** on a usage/internal error. The tool must
   distinguish these: exit 2 is a broken invocation and must not be reported as "0 findings".
 - `code` can be `null` in ruff's JSON (syntax errors). Bucket those under an explicit key rather
@@ -246,7 +258,7 @@ run, which only shows the passing half.
   formatted. DEBT-01 names `ruff check` only. Adding a format gate means either reformatting 25
   files (a large mechanical diff that would collide with in-flight phases 30–33) or a second
   ratchet. Recorded as carried debt, not silently skipped.
-- Fixing the 403 genuine findings. E501×277 in particular is a reflow of nearly every long line in
+- Fixing the 400 genuine findings. E501×274 in particular is a reflow of nearly every long line in
   `tools/`; the requirement explicitly says the remainder is *held*, not fixed.
 - `E722`, `E401` — both vanish with the vendored exclusion; nothing to do.
 - A pre-commit mirror of the ratchet. No `.pre-commit-config.yaml` exists to mirror into.
@@ -257,7 +269,7 @@ run, which only shows the passing half.
 
 | # | Risk | Mitigation |
 |---|---|---|
-| R-1 | Cache-dependent counts make the gate flaky | `--no-cache`, proven reproducible ×3 (§1) |
+| R-1 | The baseline is stale by the time it merges, because sibling phases 30–35 commit to this branch | Generate the baseline immediately before committing it and re-verify at phase close. A sibling that removes findings only shrinks a count (accepted); a sibling that adds them is what the ratchet is for (§1.0) |
 | R-2 | A ruff minor bump changes counts and reds the gate | Intended (§4.2). The baseline records the ruff version it was generated under, printed on mismatch so the operator sees *why* the numbers moved |
 | R-3 | `--update` used to paper over a regression | Structurally refused (§4.3) |
 | R-4 | The safe autofixes change behaviour | Only ruff-classified **safe** fixes are applied (`--fix`, never `--unsafe-fixes`); the full 1500-test suite must stay green across that commit, and the 3 hidden unsafe fixes are deliberately left |
