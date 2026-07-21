@@ -1,7 +1,7 @@
 """HOOK-04 contract-guard — PreToolUse(Write|Edit) gate for the constitution plane.
 
 "Machines gate, humans ratify" as a runtime fact (Pitfall P8/P11). Two composed deny paths on
-the CONSTITUTION plane (``contracts/**`` · ``docs/adr/**`` · ``golden/**``):
+the CONSTITUTION plane (``contracts/**`` · ``docs/adr/**`` · ``golden/**`` · ``docs/glossary.md``):
 
 1. **Access control** — a write to the constitution plane is DENIED unless a human-authorized
    ``GOLDEN_APPROVE_HUMAN`` token is present in env (agents are instructed never to fabricate it).
@@ -40,7 +40,17 @@ from tools.polyglot_lint import lint_bytes
 # CONSTITUTION-ONLY subset — the human-owned, CODEOWNERS-gated plane. Deliberately EXCLUDES *.env
 # (secret_scan's SECRET_PATH_GLOBS domain) so the two gates are provably non-overlapping (W-1).
 # Fed to the reused CONFIG-02 resolver (D-02) — no new glob matcher.
-CONSTITUTION_GLOBS = ["contracts/**", "docs/adr/**", "golden/**"]
+#
+# The four members are DECLARED by `docs/adr/0001-walking-skeleton-golden-core.md:48` (accepted,
+# unsuperseded). This list implements that decision; it does not define it. Adding or removing a
+# member therefore requires a superseding ADR, never an edit here alone —
+# `test_every_declared_plane_member_is_independently_enforced` pins the set for that reason.
+#
+# `docs/glossary.md` is a LITERAL file, not a tree: the plane is the glossary itself, not `docs/`.
+# It is also a HUMAN_CORPUS member with a review binding (`normalize-spec-glossary`), which is not a
+# contradiction — constitution ownership controls WHO MAY EDIT, a review binding controls WHEN A
+# HUMAN OWES A REVIEW. `contract-graph-adr-0009` already pairs a `docs/adr/**` target the same way.
+CONSTITUTION_GLOBS = ["contracts/**", "docs/adr/**", "golden/**", "docs/glossary.md"]
 
 # Human confirmation token; a NON-EMPTY value == human-authorized session. Reuses the existing
 # GOLDEN_APPROVE_HUMAN precedent (tools/golden_runner/approve.py) — agents must not fabricate it.
@@ -76,8 +86,9 @@ def decide(file_path: str, content: str, approved: bool) -> dict | None:
     if not approved:
         return emit_deny(
             f"contract-guard: '{file_path}' is on the constitution plane "
-            "(contracts/ · docs/adr/ · golden/); it is CODEOWNERS-gated and may only be changed "
-            "via /golden-approve with a human GOLDEN_APPROVE_HUMAN token. Refusing the write."
+            "(contracts/ · docs/adr/ · golden/ · docs/glossary.md); it is CODEOWNERS-gated and may "
+            "only be changed via /golden-approve with a human GOLDEN_APPROVE_HUMAN token. "
+            "Refusing the write."
         )
 
     violations = lint_bytes(content.encode("utf-8"))

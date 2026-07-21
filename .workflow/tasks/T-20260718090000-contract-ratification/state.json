@@ -1,0 +1,14 @@
+{
+  "task_id": "T-20260718090000-contract-ratification",
+  "phase": "INTAKE",
+  "revision": 0,
+  "baseline": {
+    "repo_root": ".",
+    "commit": "71456f772b26430a1fdeb02819f9f1822a01f2b7"
+  },
+  "current_ref": "71456f772b26430a1fdeb02819f9f1822a01f2b7",
+  "completed_items": [],
+  "next_action": "Validate the ratification fixtures.",
+  "blockers": [],
+  "transition": null
+}

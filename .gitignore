@@ -11,8 +11,10 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
-# Golden machine-proposed baselines (transient; promoted to .verified only by /golden-approve, P9)
-golden/**/baseline.received.tsv
+# Golden machine-proposed baselines (transient; promoted to .verified only by /golden-approve, P9).
+# Unanchored `**/` so an INSTANCE's own golden tree (examples/<name>/golden/) is covered too — the
+# root-anchored form left the instance's .received untracked and dirtied the working tree.
+**/golden/**/baseline.received.tsv
 
 # Two-plane memory: DERIVED plane is machine-regenerated every session (D-03/D-04).
 # STATE plane (.memory/state/**) and .memory/README.md stay TRACKED (small state survives sessions).

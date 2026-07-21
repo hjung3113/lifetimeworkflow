@@ -1,58 +1,121 @@
 {
   "version": "1.0",
-  "timestamp": "2026-07-15T15:44:42.742Z",
-  "phase": "14",
-  "phase_name": "Write Path + Anti-Churn Guard (v2.1 C)",
-  "phase_dir": ".planning/phases/14-... (not yet created)",
-  "plan": null,
-  "task": null,
-  "total_tasks": null,
-  "status": "between_phases",
+  "timestamp": "2026-07-21T16:40:15.430Z",
+  "phase": "29",
+  "phase_name": "docs-drive-loop-adoption-integration-closeout-v2-3-c",
+  "phase_dir": ".planning/phases/29-docs-drive-loop-adoption-integration-closeout-v2-3-c",
+  "plan": 5,
+  "task": 5,
+  "total_tasks": 5,
+  "status": "paused",
+  "milestone": "v2.3",
+  "milestone_status": "ratifications_discharged_docs_guard_green",
   "completed_tasks": [
-    {"id": "13-01", "name": "State stamp + tight progress + /checkpoint write path (MEM2-05)", "status": "done", "commit": "120d4bd"},
-    {"id": "13-02", "name": "Determinism safety net — byte-identity, snapshot, no-wall-clock (MEM2-02 SC2)", "status": "done", "commit": "8d71722"},
-    {"id": "13-03", "name": "Injector reframe — agreements at priority-0, data-scoped banner, verbatim stamp", "status": "done", "commit": "a315911"},
-    {"id": "13-04", "name": "Re-enable injection — rm .memory/.inject-disabled, strip stale surfaces", "status": "done", "commit": "58f5965"},
-    {"id": "13-merge", "name": "FF-merge phase13-codex + record completion", "status": "done", "commit": "e601ddb"}
+    {
+      "id": 1,
+      "name": "VALIDATION.md for phases 27.2 and 28 (the audit's only nyquist gap)",
+      "status": "done",
+      "commit": "150a28e",
+      "note": "both carry `authored: at-closeout` and say so in their own opening note; corrected in cd9f76a after a second artifact pass"
+    },
+    {
+      "id": 2,
+      "name": "emit-drift CI gate made untracked-safe (15-REVIEW CR-01)",
+      "status": "done",
+      "commit": "6448a26",
+      "note": "bare `git diff` was blind to a NEWLY emitted artifact; 29-03 hit it live with four untracked files. RED proven first: 2 of 7 failed for the stated reasons"
+    },
+    {
+      "id": 3,
+      "name": "Quick task 20260722-glossary-constitution-plane-drift (A/B/C)",
+      "status": "done",
+      "commit": "732a0d5, 6d74a50, 378f8ba, f98d63a, 27acf96",
+      "note": "ADR-0001:48 declares a FOUR-member constitution plane; Phase 4 enforced three. 1480 -> 1500 passed, 4 mutation proofs"
+    },
+    {
+      "id": 4,
+      "name": "RAT-2 — ADR-0010 ratified",
+      "status": "done",
+      "commit": "ad4e339",
+      "note": "BY THE HUMAN, outside an agent session. registry._adr_status now returns accepted"
+    },
+    {
+      "id": 5,
+      "name": "RAT-1 + RAT-3 — first docs/.docs-review-ledger.toml authored",
+      "status": "done",
+      "commit": "c32c08d",
+      "note": "BY THE HUMAN. docs_guard exit 1 -> 0, 8/8 FRESH. The last red gate of v2.3"
+    },
+    {
+      "id": 6,
+      "name": "RAT-5 repo-config half — default branch back to main + gate required on it",
+      "status": "done",
+      "commit": "f009306",
+      "note": "CODEOWNERS could never fire while the default branch was the feature branch"
+    }
   ],
   "remaining_tasks": [
-    {"id": "14", "name": "Phase 14 — Write Path + Anti-Churn Guard (MEM2-04): /agree write path + provenance/anti-invent lint", "status": "not_started"},
-    {"id": "15", "name": "Phase 15 — Emit Round-Trip + Gates (MEM2-06 emit). OWNS the currently-red harness_emit snapshot.", "status": "not_started"},
-    {"id": "16", "name": "Phase 16 — Local Memory Web UI (MEM2-07)", "status": "not_started"}
+    {
+      "id": 7,
+      "name": "/gsd:verify-phase 29",
+      "status": "not_started",
+      "why": "29-VERIFICATION.md is the last missing one. The audit's nyquist table lists 29 as `exists (VALIDATION) / MISSING (VERIFICATION)`"
+    },
+    {
+      "id": 8,
+      "name": "/gsd:complete-milestone",
+      "status": "not_started",
+      "why": "moves committed history; deliberately not automated inside plan 29-05"
+    },
+    {
+      "id": 9,
+      "name": "PR to main — discharges RAT-4 and the RAT-5 merge together",
+      "status": "not_started",
+      "why": "614 commits ahead of origin/main; 7 ADRs unmerged (0004-0010). 28-01-SUMMARY says the schema write's ratification is picked up BY the CODEOWNERS review, so RAT-4 is not a separate act"
+    },
+    {
+      "id": 10,
+      "name": "ruff: 617 pre-existing errors",
+      "status": "not_started",
+      "why": "NEW finding this session, predates the work (identical count at 39ae6ad). ~180 are in the vendored docs/references/opencode-matt-workflows/** tree missing from [tool.ruff] extend-exclude — that subset is a 5-minute fix. The rest are v2.2 tools/task_control + tools/evidence and deserve their own task"
+    }
   ],
   "blockers": [],
   "human_actions_pending": [
     {
-      "action": "Open a PR and let CODEOWNERS review the constitution-plane changes (ADR-0006, ADR-0007)",
-      "context": "Carried over from the Phase 12/17 handoff and STILL NOT DONE. Three phases of work (12, 17, 13) now sit on top of these two ADRs. The runtime hooks allowed the writes via raw-shell/dev-bypass, but CODEOWNERS at PR merge is the real ratification for docs/adr/. Use /gsd:ship or /gsd:pr-branch.",
-      "blocking": false
-    },
-    {
-      "action": "Push the branch — 13 commits are unpushed on claude/data-pipeline-harness-8aypct",
-      "context": "Phase 13's 9 execution commits plus the planning/state commits are local-only. Prior phases were pushed; this one is not.",
-      "blocking": false
-    },
-    {
-      "action": "Optionally enable HARNESS_DEV_BYPASS in .claude/settings.local.json",
-      "context": "Phase 17 shipped the flag; setting {\"env\":{\"HARNESS_DEV_BYPASS\":\"1\"}} lets the dev agent land future constitution writes in-session (CODEOWNERS still gates merge). Still not enabled.",
+      "action": "Review and merge the PR to main once it is opened",
+      "context": "RAT-4 + RAT-5. Not blocking anything in-session. Note that `gate` is now a REQUIRED status check on main and `strict: true`, so the PR must be up to date; enforce_admins is false so the owner is never locked out",
       "blocking": false
     }
   ],
   "decisions": [
-    {"decision": "Agreements-block cap N=6 entries / M=700 chars, as named module constants", "rationale": "Ratified open-Q4. Measured, not estimated: base 3216 after the SC1 rewording leaves 784 of the 4000 budget; header 76 + 6x97 = 658 <= 700 -> total 3917, repo-map survives. M=800 -> 4017 -> repo-map evicted every session. 700 is the arithmetic knee. Named constants make re-ratification a one-line edit. Recorded as D-01/D-02/D-03 in 13-CONTEXT.md.", "phase": "13"},
-    {"decision": "Overflow degrades whole-block -> pointer, with NO count interpolated", "rationale": "A varying count in the pointer text would churn bytes and weaken the byte-identity guarantee. D-03.", "phase": "13"},
-    {"decision": "Re-enable injection in Phase 13 (rm .memory/.inject-disabled) after the reframe went green", "rationale": "No Success Criterion mandated it, but both the flag file and activeContext.md:12-13 named Phase 13 as the re-enable trigger. Operator ratified. D-20.", "phase": "13"},
-    {"decision": "All four T-13-01 mitigations adopted: scope-limiting header, title+rule-only render, fail-closed status filter, no-secrets README line", "rationale": "Phase 13 converts .memory/agreements/ (committed-but-writable, NOT path-denied per Q1) into an executable priority-0 directive channel. Genuine prompt-injection surface. The durable provenance lint is Phase 14's job. D-15..D-19.", "phase": "13"},
-    {"decision": "Built the determinism net BEFORE the reframe rather than assuming it existed", "rationale": "inject.py:20-22 CLAIMED delete+regen byte-identity but no test asserted it. SC2 said determinism was 'preserved' — it could not be preserved, only built. 13-02 landed it in Wave 1. D-07.", "phase": "13"},
-    {"decision": "Execution delegated to Codex (gpt-5.6-terra, medium) in Orca worktree phase13-codex; Claude orchestrated/verified/merged", "rationale": "User's standing workflow preference (memory execute-via-codex-orca). Terra ran clean this time — no MCP stall. FF-merged at 9b93d28, worktree removed.", "phase": "13"},
-    {"decision": "Updated memory execute-via-codex-orca: luna -> terra", "rationale": "The memory said luna but the Phase 17 handoff recorded the user flagging luna as too expensive and switching to terra. Memory was never updated, causing a recurring conflict. Reconfirmed with the user at Phase 13 and fixed, plus recorded the MCP-stall failure mode.", "phase": "13"},
-    {"decision": "Skipped the gsd-pattern-mapper (workflow §7.8)", "rationale": "Optional and non-blocking. The research already delivered what it produces — closest analogs with citations (test_docs_sync_determinism.py:43, _confine, frontmatter.py:40). Running it would duplicate work.", "phase": "13"},
-    {"decision": "Skipped the UI-SPEC gate (workflow §5.6)", "rationale": "The workflow's crude grep matched 'ui' inside the word 'guidelines'. Phase 13 is inject.py plumbing with zero frontend; the memory web UI is Phase 16. Generating a UI design contract would have been nonsense.", "phase": "13"}
+    {
+      "decision": "docs/glossary.md stays constitution-plane; the ENFORCEMENT was brought up to ADR-0001, not the other way round",
+      "rationale": "ADR-0001:48 is accepted and unsuperseded. Two Claude audits recommended the opposite repair by citing ADR-0010, which was still Status: proposed. An unratified record cannot override a ratified one. codex sol (medium) caught the inversion",
+      "phase": "quick/20260722"
+    },
+    {
+      "decision": "Constitution ownership and review obligation are ORTHOGONAL and this is now written into three surfaces",
+      "rationale": "Ownership controls WHO MAY EDIT; a binding controls WHEN A HUMAN OWES A REVIEW. contract-graph-adr-0009 already pairs a docs/adr/** target the same way — a counterexample that was in the same registry and had already been read when the wrong recommendation was made",
+      "phase": "quick/20260722"
+    },
+    {
+      "decision": "The glossary is a LITERAL path everywhere, never docs/**",
+      "rationale": "A broad glob would deny the whole human-doc tree and still satisfy every glossary row. Negative controls in three modules go red if someone 'fixes' it that way",
+      "phase": "quick/20260722"
+    },
+    {
+      "decision": "Did NOT enable 'Require review from Code Owners' on main; required the `gate` status check instead",
+      "rationale": "Solo repo: the sole code owner is also the PR author, GitHub forbids self-approval, and it would need an admin waiver per merge. .github/CODEOWNERS:14-19 recorded that trap. The machine half is enforceable without ceremony; the human half is already enforced in-session by the ledger/contract/golden hooks",
+      "phase": "RAT-5"
+    },
+    {
+      "decision": "Refused to author the ledger or ratify ADR-0010, three times, including via bash and via delegating to another agent",
+      "rationale": "bash WOULD have worked — the hooks bind tool calls, not shells. That is exactly why the rule is about holding it rather than being stopped by it. ledger_guard honours NO token, unlike contract_guard which has HARNESS_DEV_BYPASS; Phase 28 removed that door deliberately. A self-blessed row and an honest seed row are byte-identical, so the committing hand is the only record",
+      "phase": "RAT-1"
+    }
   ],
-  "uncommitted_files": [
-    ".planning/config.json (pre-existing, modified before this session)",
-    ".mcp.json (untracked, pre-existing)"
-  ],
-  "next_action": "/gsd:plan-phase 14 (Write Path + Anti-Churn Guard, MEM2-04 — the /agree write half + the provenance/anti-invent lint that is T-13-01's durable mitigation; dependency-locked 13->14). Alternatively open the PR for ADR-0006/0007 CODEOWNERS review first — that action has now been deferred across three phases.",
-  "context_notes": "Clean stop BETWEEN phases — nothing is mid-edit. Phase 13 (v2.1 B) is COMPLETE and FF-merged at 9b93d28; STATE.md recorded at e601ddb. SessionStart injection is LIVE again for the first time since the MEM2 upgrade began. Verified end-to-end beyond the suite, not just by tests: delete+regen byte-identical (sha d0cd72ad...), payload 3016/4000 chars, zero wall-clock in inject.py, banner reads data-scoped ('which artifact wins a contradiction'), pointer reworded to a progress log with a verbatim [updated: ...] stamp. A SECRET-CANARY planted in a fixture agreement's provenance field did NOT reach the payload, confirming D-16/T-13-01 works. Gate: tools/memory_regen + tools/harness_lint = 313 passed. CRITICAL FOR THE RESUMING AGENT: tools/harness_emit is EXACTLY 1 failed / 46 passed and that is CORRECT — see the blocking constraint in .continue-here.md. The v2.1 MEM2 chain resumes at Phase 14 (14->15->16, dependency-locked)."
+  "uncommitted_files": [],
+  "next_action": "Run /gsd:verify-phase 29. Its VERIFICATION.md is the last missing nyquist artifact; the audit lists 29 as VALIDATION-present / VERIFICATION-missing. Then /gsd:complete-milestone, then open the PR to main.",
+  "context_notes": "The defect that dominated this session is the one this repo keeps rediscovering, but in a new shape: not a control that ships green while bypassable, but a control that was never built while four documents said it was. docs/glossary.md was agent-writable for two weeks. The tell was that the DOCUMENTS were right and the CODE was wrong — the opposite of the usual direction, which is why two audits nearly repaired it backwards by deleting the true sentence. Check ADR status fields before citing one as authority: accepted beats proposed, and I used a proposed record as if it were binding. Second lesson, on delegation: I spawned parallel extraction agents, got impatient when they were slow, read the artifacts myself by grep, and committed. That direct read was wrong in three places and the late-arriving delegate caught all three — all three errors made a phase look greener than it was. Grep summaries of PLAN files miss `<task type=\"checkpoint:human-verify\">` declarations. Read task type declarations directly or wait for the delegate. Third: terra's plan ordered A->B->C->ADR->ledger and I did not know why until the end — repointing a binding BEFORE the first ledger exists avoids the amber cycle entirely, because first_seen-unratified compares against the previous COMMITTED ledger and there was none. Trust a plan's ordering even when its reason is not stated. Mechanical: `git commit -- <paths>` puts -m BEFORE the -- or git reads the message as a pathspec; I gave the user a broken command from this exact mistake."
 }

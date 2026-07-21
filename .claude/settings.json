@@ -146,7 +146,66 @@
             "timeout": 120
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python -m tools.hooks.resume_gate",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python -m tools.hooks.ledger_guard",
+            "timeout": 10
+          }
+        ]
       }
     ]
+  },
+  "skillOverrides": {
+    "graphify": "name-only",
+    "gsd:add-tests": "name-only",
+    "gsd:audit-fix": "name-only",
+    "gsd:autonomous": "name-only",
+    "gsd:docs-update": "name-only",
+    "gsd:explore": "name-only",
+    "gsd:extract-learnings": "name-only",
+    "gsd:fast": "name-only",
+    "gsd:forensics": "name-only",
+    "gsd:graphify": "name-only",
+    "gsd:health": "name-only",
+    "gsd:import": "name-only",
+    "gsd:inbox": "name-only",
+    "gsd:map-codebase": "name-only",
+    "gsd:milestone-summary": "name-only",
+    "gsd:mvp-phase": "name-only",
+    "gsd:ns-context": "name-only",
+    "gsd:ns-ideate": "name-only",
+    "gsd:ns-manage": "name-only",
+    "gsd:ns-project": "name-only",
+    "gsd:ns-review": "name-only",
+    "gsd:ns-workflow": "name-only",
+    "gsd-context": "name-only",
+    "gsd-ideate": "name-only",
+    "gsd-manage": "name-only",
+    "gsd-project": "name-only",
+    "gsd-quality": "name-only",
+    "gsd-workflow": "name-only",
+    "gsd:plan-review-convergence": "name-only",
+    "gsd:profile-user": "name-only",
+    "gsd:review-backlog": "name-only",
+    "gsd:stats": "name-only",
+    "gsd:thread": "name-only",
+    "gsd:ultraplan-phase": "name-only",
+    "gsd:undo": "name-only",
+    "gsd:workspace": "name-only",
+    "gsd:workstreams": "name-only"
   }
 }

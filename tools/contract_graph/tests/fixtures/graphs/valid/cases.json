@@ -1,0 +1,85 @@
+[
+  {
+    "name": "shared-contract-fanout",
+    "records": [
+      {
+        "id": "fanout-edge",
+        "contract": "shared-contract",
+        "authority": "hub",
+        "dependents": ["leaf-alpha", "leaf-beta", "leaf-gamma"],
+        "kind": "data-edge"
+      }
+    ]
+  },
+  {
+    "name": "request-response-split",
+    "records": [
+      {
+        "id": "req-flow",
+        "contract": "request-contract",
+        "authority": "client",
+        "dependents": ["server"],
+        "kind": "request-edge"
+      },
+      {
+        "id": "resp-flow",
+        "contract": "response-contract",
+        "authority": "server",
+        "dependents": ["client"],
+        "kind": "response-edge"
+      }
+    ]
+  },
+  {
+    "name": "event-fanout",
+    "records": [
+      {
+        "id": "event-one",
+        "contract": "event-signal",
+        "authority": "publisher",
+        "dependents": ["subscriber-one"],
+        "kind": "event-edge"
+      },
+      {
+        "id": "event-two",
+        "contract": "event-signal",
+        "authority": "publisher",
+        "dependents": ["subscriber-two"],
+        "kind": "event-edge"
+      },
+      {
+        "id": "event-three",
+        "contract": "event-signal",
+        "authority": "publisher",
+        "dependents": ["subscriber-three"],
+        "kind": "event-edge"
+      }
+    ]
+  },
+  {
+    "name": "legal-cycle",
+    "records": [
+      {
+        "id": "cycle-ab",
+        "contract": "contract-ab",
+        "authority": "node-a",
+        "dependents": ["node-b"],
+        "kind": "data-edge"
+      },
+      {
+        "id": "cycle-bc",
+        "contract": "contract-bc",
+        "authority": "node-b",
+        "dependents": ["node-c"],
+        "kind": "data-edge"
+      },
+      {
+        "id": "cycle-ca",
+        "contract": "contract-ca",
+        "authority": "node-c",
+        "dependents": ["node-a"],
+        "kind": "data-edge"
+      }
+    ]
+  }
+]

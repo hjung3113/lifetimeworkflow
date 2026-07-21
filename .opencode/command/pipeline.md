@@ -82,6 +82,39 @@ per-component agents). For every component:
 The generic core default carries no derived instance agents, so on the core config every stage is
 reported as an unbound gap by design — the concrete owners come from the instance overlay.
 
+## 5. Render the general (branching / cyclic) graph as an indented tree
+
+Steps 2–3 are the render for a topology that IS a single chain — every stage has fan-out and fan-in
+of exactly 1. Their example blocks above are the canonical linear output and are **unchanged**. When
+the declared topology is **non-linear** (a stage fans out to several dependents, several stages fan
+in to one, disconnected sub-graphs, or a legal cycle), render an **additional** view: the compiled
+contract graph as an **indented tree** (D-01).
+
+```python
+from tools.contract_graph import compile_graph
+
+graph = compile_graph()          # or compile_graph(load_project("<instance>/project.toml"))
+adjacency = graph["adjacency"]   # authority -> sorted[dependents]
+```
+
+Render rules:
+
+1. **Roots.** Start at each **authority with no incoming edge** (an authority that never appears as
+   another authority's dependent), in sorted order. For a fully cyclic graph that has **no** such
+   root, start at the lexicographically-first authority so the render is still deterministic.
+2. **Indent one level per hop.** Print each node, then recurse into its sorted `adjacency` dependents
+   one indentation level deeper — authority above, dependents nested beneath it.
+3. **Cycle marker (never recurse twice).** Track the visited set on the current root-to-node PATH
+   only (path-local, not a single global set — a global set would collapse legal diamonds/fan-in by
+   printing a shared dependent just once). If a dependent is already on the current path, print it as
+   a terminal `(cycle -> <node>)` marker **instead of** recursing into it again, so a legal cycle
+   terminates rather than looping. (This is the render's own path-local rule; it is stricter than
+   `tools.contract_graph.query.transitive`, which uses a global visited set because it only collects
+   the reachable id set, not a tree.)
+
+This tree view is the human-facing surface for branch/fan-in/cycle topologies; the linear
+stage-list/edge-chain steps 2–3 remain the render whenever the graph is a single chain.
+
 ## Notes
 
 - **No execution.** This is a render of declared config; it never spawns a stage or runs any

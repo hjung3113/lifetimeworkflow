@@ -13,7 +13,13 @@ without that ordering hazard (mirrors tools/harness_config).
 
 from __future__ import annotations
 
-__all__ = ["edges", "load_workspace", "members", "split_endpoint"]
+__all__ = [
+    "contract_graph_relationships",
+    "edges",
+    "load_workspace",
+    "members",
+    "split_endpoint",
+]
 
 
 def __getattr__(name: str):  # PEP 562 — lazy re-export from the loader submodule.

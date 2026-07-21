@@ -18,6 +18,11 @@
 # harness overrides `root` (and the [[languages]] tables) from its own copy of this file.
 root = ""
 
+# TCP-05 risk-policy overlay slot.  A downstream instance may point this at its own
+# declarative TOML overlay; the core does not discover or reference instance paths.
+# An empty value means the runtime-neutral core policy is effective by itself.
+risk_overlay = ""
+
 [[languages]]
 id = "dotnet"
 bash_scope = "dotnet *"                      # matches permission-matrix.json bash allow-scope
@@ -74,3 +79,21 @@ edges = [
   { from = "source", to = "sink", contract = "greeting" },
 ]
 # END PIPE-01 topology
+
+# BEGIN CONTRACT-GRAPH topology-relationships
+# TOPO-02 contract-relationship DATA slot — the additive coexistence seam between the legacy linear
+# [pipeline] model and the general authority/dependent relationship vocabulary (contracts/harness/
+# topology/relationship.schema.json). Pure DATA, no enforcement (mirrors the [[languages]] +
+# [pipeline] posture above). The generic-default topology declares NO explicit records: the current
+# linear source→sink/greeting edge is LOWERED on demand by effective_relationships(), so this table
+# stays empty until a downstream project opts in with its own [[contract_graph.relationships]] rows.
+#
+# Each explicit record (when present) mirrors the schema fields 1:1: id, contract, authority,
+# dependents (+ optional kind/labels). No graph resolution / endpoint existence check lives here —
+# that is the Phase-25 compiler's job.
+#
+# Consumers:
+#   * tools/harness_config/loader.py — contract_graph_relationships() (raw passthrough) +
+#     effective_relationships() (deterministic legacy-edge lowering + union) helpers.
+[contract_graph]
+# END CONTRACT-GRAPH topology-relationships

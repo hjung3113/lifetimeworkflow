@@ -1,0 +1,4 @@
+[project]
+name = "widget-target"
+version = "0.0.0"
+description = "SC-3 fixture 1 target — polyglot-single (domain-neutral)."

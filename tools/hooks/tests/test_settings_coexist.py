@@ -75,7 +75,7 @@ def test_all_eleven_gsd_guards_survive() -> None:
         )
 
 
-# --- the four new gates are wired under the correct event array + matcher (T-04-18) --------------
+# --- harness gates are wired under the correct event array + matcher ------------------------------
 
 # (event, command-substring, expected-matcher) for each appended Phase-4 gate.
 _NEW_GATES = [
@@ -83,10 +83,13 @@ _NEW_GATES = [
     ("PreToolUse", "tools.hooks.secret_scan", "Read|Write|Edit"),
     ("PreToolUse", "tools.hooks.commit_gate", "Bash"),
     ("PostToolUse", "tools.hooks.format_on_write", "Write|Edit"),
+    ("PreToolUse", "tools.hooks.resume_gate", "Write|Edit|Bash"),
+    # ADR-0010 clause 3b layer 1 — the human-review ledger deny on the ordinary tool path.
+    ("PreToolUse", "tools.hooks.ledger_guard", "Write|Edit"),
 ]
 
 
-def test_four_new_gates_registered_with_expected_matcher() -> None:
+def test_harness_gates_registered_with_expected_matcher() -> None:
     hooks = _load()["hooks"]
     for event, needle, matcher in _NEW_GATES:
         slots = _slots_with_command(hooks, event, needle)
@@ -109,7 +112,7 @@ def test_commit_gate_runs_from_hook() -> None:
 
 
 def test_expected_slot_counts() -> None:
-    """7 PreToolUse (4 GSD + 3 new) and 4 PostToolUse (3 GSD + 1 new) after the append."""
+    """9 PreToolUse (4 GSD + 5 harness) and 4 PostToolUse (3 GSD + 1 harness)."""
     hooks = _load()["hooks"]
-    assert len(hooks["PreToolUse"]) == 7, "expected 7 PreToolUse slots (4 GSD + 3 new gates)"
+    assert len(hooks["PreToolUse"]) == 9, "expected 9 PreToolUse slots (4 GSD + 5 harness gates)"
     assert len(hooks["PostToolUse"]) == 4, "expected 4 PostToolUse slots (3 GSD + 1 new gate)"

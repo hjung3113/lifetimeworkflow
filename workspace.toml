@@ -37,3 +37,18 @@ root = "tests/fixtures/workspace/member-b"
 edges = [
   { from = "member-a:emit", to = "member-b:ingest", contract = "greeting" },
 ]
+
+# BEGIN CONTRACT-GRAPH topology-relationships
+# TOPO-02 contract-relationship DATA slot — the additive coexistence seam raised to the workspace
+# level (mirror harness/project.toml). Pure DATA, no enforcement. The generic-default workspace
+# declares NO explicit records: the current cross-repo member-a:emit→member-b:ingest/greeting edge
+# is LOWERED on demand by effective_relationships() (raw repo:stage endpoint strings pass through
+# verbatim — no split_endpoint interpretation, that is Phase 25), so this table stays empty until a
+# downstream workspace opts in with its own [[contract_graph.relationships]] rows.
+#
+# Consumers:
+#   * tools/workspace_config/loader.py — contract_graph_relationships() raw passthrough accessor.
+#   * tools/harness_config/loader.py — effective_relationships() lowers this manifest's pipeline
+#     edges + unions explicit records (cfg-agnostic across project and workspace configs).
+[contract_graph]
+# END CONTRACT-GRAPH topology-relationships

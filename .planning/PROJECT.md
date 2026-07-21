@@ -12,22 +12,44 @@
 
 > **v2.0 Long-Horizon — ✅ SHIPPED 2026-07-14:** All 3 phases (9 α, 10 β, 11 γ) shipped and verified; 11/11 requirements validated; milestone audit passed (integration 12/12, 568 tests green). Archived to `.planning/milestones/v2.0-*`. See `## Requirements → Validated`.
 
-## Current Milestone: v2.1 MEM2 — Process Memory & Provenance Reframe
+> **v2.1 MEM2 — Process Memory & Provenance Reframe — ✅ SHIPPED 2026-07-18:** All 5 phases (12–16) shipped and verified; 7/7 requirements (MEM2-01..07) validated; milestone audit passed (integration 6/6, browser round-trip 5/5, 690 tests green). Archived to `.planning/milestones/v2.1-*`. See `## Requirements → Validated`.
 
-**Goal:** 하네스에 사용자 방법론 피드백을 담는 **durable·authoritative 프로세스-메모리 채널**을 부여하고, SessionStart provenance 문구를 재구성해 "provisional/verify"가 *데이터 권위(data authority)* 에만 스코프되게 한다 — contract-first provenance 규칙은 그대로 두면서, 에이전트가 근거 있는 작업을 반사적으로 self-cancel하지 않고 **자신 있게 실행**하도록.
+## Current State
 
-**Target features (phases 12+, 넘버링 연속; §7 operator refinements가 authoritative):**
-- **PROCESS 채널 (MEM2-01)** — **가이드라인 1개당 파일 1개** `.memory/agreements/<slug>.md`(제목 + 한 줄 규칙 + provenance 스탬프 + status). committed·user-authored·curated(피드백 시 추가 / 명시적 은퇴). §7b.
-- **Injector 재구성 (MEM2-02)** — 단일 배너를 (a) full-body **working-agreements 지시문** 블록(신규 priority-0, never-dropped, Q4 캡)과 (b) **데이터-스코프** provenance 배너로 분리; activeContext 포인터 재문구. determinism(`inject.py:20-22`) + char budget(`inject.py:105`) 보존.
-- **Distrust 문구 재구성 (MEM2-03)** — echo되는 모든 곳(`.memory/README.md`, state 파일들, `two-plane-memory/SKILL.md`, `AGENTS.md`)에서 *데이터 권위*로 재문구 — behavior 지시가 아니라.
-- **Sanctioned write path (MEM2-04)** — 전용 **`/agree`** 커맨드(명시적 사용자 피드백에만 append/retire) + `tools/harness_lint` provenance/anti-invent 가드(모든 엔트리가 origin 스탬프를 갖고, 에이전트가 자가발명 못 하게).
-- **Progress staleness 가드 (MEM2-05)** — `/checkpoint`가 `updated:` 스탬프 기록; `assemble()`가 verbatim 노출; **agent-side** freshness 판단(assemble 안에 wall-clock 없음; 고정 임계 없음).
-- **ADR + emit 왕복 (MEM2-06)** — 모델 변경을 **ADR-0006**(append-only, 사람-게이트 경로)로 기록; 모든 신규/변경 agent/skill/command를 Phase-7 emitter로 두 런타임에 왕복(모델 id 없음), GEN-04 green.
-- **로컬 메모리 웹 UI (MEM2-07, §7d)** — 메모리 항목(progress + per-guideline agreements)을 보기/편집/은퇴하는 경량 로컬 툴, **pointer-aware** 참조 무결성(파생 pointer-index로 "무엇이 이 항목을 가리키는가" 표면화, 편집/은퇴 시 참조 정합 유지). 외부 네트워크·auth 없음.
+**v2.3 shipped 2026-07-22** — the harness's topology is no longer assumed linear (an authority-centred
+contract-relationship *graph*, with the legacy `[pipeline]` slot lowered into it additively rather
+than migrated), it can be *adopted into* an existing brownfield repo through a deterministic
+inventory → plan → manifest → refuse-by-default apply path carried as an ordinary `.workflow/tasks/`
+task, and human review of human-written prose is now an enforceable dated obligation rather than a
+hope — a registry + committed ledger + a guard that fails on BROKEN/STALE_REQUIRED. Ratified as
+ADR-0009 and ADR-0010.
 
-**Kickoff decisions (2026-07-14):** Q1=committed-but-writable(`.memory/agreements/`, provenance-lint가 가드) · Q2=전용 `/agree` 커맨드 · Q3=per-guideline 파일(§7b) · Q4=캡(N entries / M chars, overflow는 pointer로 강등) · Q5=retire=per-file status 플립(§7b) · Q6=agent-side, 고정 임계 없음(stamp verbatim + 세션 날짜로 에이전트 판단).
+v1.0 (1–8) + v2.0 (9–11) + v2.1 (12–17) + v2.3 (24–29) are archived under `.planning/milestones/`;
+v2.2 (18–23) is recorded in `MILESTONES.md` with its phase dirs left in place. **No milestone is
+currently in progress** — run `/gsd:new-milestone` to scope the next one.
 
-**Key context:** §7 operator refinements가 §2/§5를 supersede — progress는 tiny by design(완료 이력은 git 커밋이 log, §7a), 가이드라인은 파일 1개당 essence만(§7b), PROCESS 채널은 project decisions가 아니라 *working-style/methodology* 전용이며 ADR/Key-Decisions를 **링크**하되 재진술 금지(§7c). 기존 기계 **재사용**(재구축 금지): `tools/memory_regen`(`inject.py`/`assemble()`), `/checkpoint`, `tools/harness_lint`, Phase-7 emitter(`tools/harness_emit`), `adr` skill + CODEOWNERS 경로. 비협상: 헌법 평면(contracts/adr/golden) 사람 재가 유지(machines gate, humans ratify), 신규 채널은 derived가 아니라 committed human-authored tier(state/처럼) — 재생성 안 함, GEN-04 core→example 무의존 유지.
+Two provenance obligations stay open across the boundary (RAT-4, RAT-5) plus one recorded
+harness-wide finding: constitution-plane write-denies are spelled per *tool*, so a write through
+`bash."uv *"` is not denied the way the same write through `Write`/`Edit` is. All three are carried
+in `STATE.md` under *Deferred Items*, with the third deliberately scheduled for repair in the next
+milestone rather than during its own closeout.
+
+## Shipped Milestone: v2.3 Contract Graph, Brownfield Adoption, Living Docs
+
+> ✅ **SHIPPED 2026-07-22.** 10 phases (24, 25, 26, 26.1, 26.2, 27, 27.1, 27.2, 28, 29), 43 plans,
+> 58 tasks, 310 commits over 3 days. All 21 requirements (TOPO-01..07, ADOPT-01..07, DOCSUP-01..07)
+> validated; 16/16 fan-in gates exit 0. Archived to `.planning/milestones/v2.3-*`.
+
+**Goal:** 선형 파이프라인 슬롯을 임의의 프로젝트 간 계약 관계를 담는 결정론적 **권위-중심 contract-relationship graph**로 일반화하고, 그 그래프를 (B) 기존 레포에 하네스를 **도입(brownfield adoption)**하고 (C) 사람이 작성한 문서의 **drift를 탐지·갱신**하는 두 워크플로의 어휘로 사용한다 — 데이터 형상·결정론적 분석기·얇은 워크플로만 추가하고 두 번째 프레임워크/엔진/권위 평면은 만들지 않는다.
+
+**Target features (6 phases, 계속 번호 24–29):**
+- **A. Contract-Relationship Graph** *(TOPO-01..07, phases 24–25)* — `contracts/harness/topology/` 아래 사람 승인 관계 record 스키마 + 추가형 `[[contract_graph.relationships]]` TOML 슬롯 + 레거시 `[pipeline]` **lowering**(추가형 union, 마이그레이션 아님) + 도메인 중립 컴파일러·consistency 게이트 + affected-set 질의 + `/pipeline`·`pipeline-map`·orchestrator 일반화.
+- **B. Brownfield Adoption** *(ADOPT-01..07, phases 26–27)* — 결정론적 read-only inventory → evidence 분류(observed/inferred/unknown) 매핑 → destination/disposition manifest → adoption을 `.workflow/tasks/` 작업으로(v2.2 CAS/evidence/HANDOFF 재사용, 새 `.workflow/adoption/` 평면 없음) + 구조적 헌법-쓰기 거부 + 해시 결합 사람 ratification + `/adopt` skill·command + 3개 fixture.
+- **C. Living Docs** *(DOCSUP-01..07, phases 28–29)* — 중앙 `docs/doc-dependencies.toml` + review ledger + FRESH/BROKEN/STALE_REQUIRED/STALE_ADVISORY/UNCOVERED 게이트 + 파생 staleness 큐·SessionStart pointer + `/docs-update` drive loop(ADR/reference/derived 제외).
+
+**Key context (ratified design):** 설계는 sol-vs-fable 토론 패널로 scoping — 독립 제안 → 교차 반박 → codex sol이 병합 FINAL authored, 사람 승인. 원본: `.planning/research/v2.3-scoping-FINAL.md`. 확정 결정: `TOPO-*`(GEN-04 가드와의 충돌 회피, `GEN-*` 아님) · 추가형 lowering(identical-or-fail 마이그레이션 아님) · task-plane adoption(sibling 평면 아님) · 중앙 registry(per-doc frontmatter 아님) · required/advisory staleness 심각도. DAG `24→25→28→29` + `24→26→27→29`. 3개 open-Q 기본값 채택: 슬롯명 `[[contract_graph.relationships]]`; required-staleness 바인딩 = 루트 README·AGENTS·task-lifecycle how-to·template-and-instances explanation·adoption runbook(나머지 advisory); ADR 번호는 구현 시 할당(topology 모델에 ADR-0009 예약). 헌법 제약 전면 준수: contract-first / machines-gate-humans-ratify / GEN-04 / 모델 식별자 미포함 / harness-emit 왕복 / two-plane / 단일 orchestrator / reuse-not-reimplement.
+
+**OUT of scope:** version/semver 호환 엔진, impact-driven task-evidence 정책(별도 ADR로 연기), topology runtime/broker, 두 번째 orchestrator, autonomous contract 추출, accepted-ADR 편집, TCP-F01..F05·signed external attestation·STRICT rollback.
 
 ## Requirements
 
@@ -37,17 +59,22 @@
 - ✓ **Context-economy fan-out/synthesize (v2.0 β)** — 팬아웃→요약회수→합성 skill/command + citation-bearing 반환 계약 + delegate-vs-inline 컨텍스트-예산 배선. *(v2.0, Phase 10)*
 - ✓ **Multi-repo workspace (v2.0 γ)** — `workspace.toml` 매니페스트(project.toml 슬롯 한 단계 상향) + repo-scoped β 팬아웃 + 크로스-레포 contract drift/golden 게이트 + repo:stage 파이프라인 edge + core→workspace-member GEN-04 가드. *(v2.0, Phase 11)*
 
+- ✓ **ADR-0006 + emit 왕복 (v2.1 MEM2-06)** — 사람-게이트 append-only ADR-0006 + `/agree`·갱신 skill·`AGENTS.md` managed block을 Phase-7 emitter로 두 런타임(`.opencode/` + `.claude/`)에 왕복. emit-drift clean, 모델 id 없음(placeholder tier만), GEN-04 green. *(v2.1, ADR=Phase 12 / emit=Phase 15)*
+
+- ✓ **PROCESS 메모리 채널 (v2.1 MEM2-01)** — committed·human-authored `.memory/agreements/<slug>.md` per-guideline 티어(§7b), provenance 스탬프가 찍힌 엔트리; ADR/Key-Decisions를 링크하되 재진술 금지(§7c). *(v2.1, Phase 12)*
+- ✓ **Injector provenance 재구성 (v2.1 MEM2-02)** — priority-0 full-body working-agreements 지시문 + data-scoped 배너; determinism(바이트 동일) + ~4000-char budget 보존. *(v2.1, Phase 13)*
+- ✓ **Distrust 문구 재구성 (v2.1 MEM2-03)** — echo되는 5개 표면 전부 data-authority로; 'confirm before trusting' 잔여 없음. *(v2.1, Phase 12)*
+- ✓ **`/agree` write path + anti-churn 가드 (v2.1 MEM2-04)** — 명시적 사용자 피드백 전용 append/retire + `tools/harness_lint` provenance/anti-invent 가드. *(v2.1, Phase 14)*
+- ✓ **Progress staleness 가드 (v2.1 MEM2-05)** — `/checkpoint` `updated:` stamp + agent-side freshness(verbatim, `assemble()` 내 wall-clock 없음). *(v2.1, Phase 13)*
+- ✓ **로컬 메모리 웹 UI (v2.1 MEM2-07)** — 127.0.0.1-only 무-네트워크 툴 + DERIVED pointer-index + surface-and-confirm 참조 무결성, 브라우저 왕복 검증 5/5. *(v2.1, Phase 16)*
+
+- ✓ **Adaptive Task Control Plane (v2.2, TCP-01..18)** — 기계 판독 task packet(`.workflow/tasks/`) + 결정론적 7축 위험 라우터(FAST/STANDARD/STRICT/CONTROLLED) + 원자적 상태 관리자(flock+revision CAS) + fail-closed `/phase-gate` + forgery-detecting evidence adapters + immutable HANDOFF·gated fresh-session resume + 사람 승인 lifecycle fixtures + ADR-0008. 904 tests green, origin 푸시. *(v2.2, phases 18–23)*
+
+- ✓ **Contract-Relationship Graph (v2.3 A, TOPO-01..07)** — 사람 승인 relationship record 스키마 + 추가형 `[[contract_graph.relationships]]` 슬롯 + 레거시 `[pipeline]` 추가형 lowering(마이그레이션 아님, 기존 선형 config 바이트 불변) + 도메인 중립 `compile_graph()` + 안정 진단 슬러그 3종 + cycle-safe `direct`/`reverse`/`transitive`(ids + 연결 경로) + `/pipeline`·`pipeline-map`·orchestrator 일반화(새 command·persona 0개, 선형 렌더 바이트 동일) + ADR-0009. *(v2.3, phases 24–25)*
+- ✓ **Brownfield Adoption (v2.3 B, ADOPT-01..07)** — read-only 결정론적 inventory → evidence 분류(observed/inferred/unknown) plan → destination/disposition manifest → refuse-by-default apply를 `.workflow/tasks/` 작업으로(v2.2 CAS/evidence/HANDOFF 재사용, 새 권위 평면 없음) + `(draft_hash, task_revision, git_ref)` 결합 promotion(입력 변경 시 승인 무효) + 구조적 헌법-쓰기 거부 + `/adopt`·`brownfield-adoption` + 3개 도메인 중립 fixture 트리(하나는 CRLF/BOM dirty). *(v2.3, phases 26–27.2)*
+- ✓ **Living Docs (v2.3 C, DOCSUP-01..07)** — `docs/doc-dependencies.toml` registry + committed review ledger(binding id·정확한 digest·disposition만 — 시간·사람·prose·모델 id 없음) + FRESH/BROKEN/STALE_REQUIRED/STALE_ADVISORY/UNCOVERED 게이트 + uncovered 비-회귀 + 파생 staleness 큐·조건부 SessionStart pointer + `/docs-update` drive loop(accepted ADR·`docs/reference/**`·`.memory/derived/**`·contracts·golden 구조적 제외) + ADR-0010. 사람이 세션 밖에서 최초 ledger를 authored(`c32c08d`)하고 ADR-0010을 ratify(`ad4e339`)한 뒤 `docs_guard` exit 1 → 0, 8/8 FRESH. *(v2.3, phases 28–29)*
+
 ### Active
-
-<!-- 하네스 산출물. 모두 검증 전까지 가설. v2.1 MEM2 — 상세 REQ-ID는 REQUIREMENTS.md. -->
-
-- [ ] **PROCESS 메모리 채널 (v2.1 MEM2-01)** — per-guideline `.memory/agreements/<slug>.md`, committed·curated.
-- [ ] **Injector provenance 재구성 (v2.1 MEM2-02)** — full-body working-agreements 지시문 + data-scoped 배너, determinism+budget 보존.
-- [ ] **Distrust 문구 재구성 (v2.1 MEM2-03)** — echo되는 모든 곳에서 data-authority로.
-- [ ] **`/agree` write path + anti-churn 가드 (v2.1 MEM2-04)** — 전용 커맨드 + harness_lint provenance 가드.
-- [ ] **Progress staleness 가드 (v2.1 MEM2-05)** — `updated:` stamp + agent-side freshness 판단.
-- [ ] **ADR-0006 + emit 왕복 (v2.1 MEM2-06)** — 사람-게이트 ADR, 두 런타임 emit, 모델 id 없음, GEN-04 green.
-- [ ] **로컬 메모리 웹 UI (v2.1 MEM2-07)** — pointer-aware 참조 무결성 툴.
 
 <!-- v1.0 하네스 표면 (shipped in phases 1–8) -->
 
@@ -100,6 +127,12 @@
 | **[ADR-0002] 범용 템플릿으로 재정의, 로그파서는 examples/로 강등** | 실제 구현 방향이 크게 바뀜 — 도메인 고정 하네스는 부채. durable 아키텍처(Phase 1–4)는 재사용 가치가 있으므로 도메인·언어 슬롯화 | ✅ Accepted 2026-07-08 |
 | **[ADR-0002] 언어를 하드코딩 대신 설정 슬롯화(.NET+Python은 예시 인스턴스)** | 폴리글랏 기계는 가치, 특정 두 언어 고정은 아님 | ✅ Accepted 2026-07-08 |
 | **[ADR-0002] 도메인 이동은 새 Phase 5로, ADR+해시 재베이스라인 동반** | contracts/는 헌법 평면 — 라이브 drift/contract-guard 게이트가 방어, 의도된 헌법 변경으로 처리 | ✅ Accepted 2026-07-08 |
+| **[ADR-0009] 관계 그래프는 record 모델 + 추가형 lowering (마이그레이션 아님)** | 기존 선형 `[pipeline]` config를 바이트 불변으로 두면서 일반 그래프를 얻는 유일한 방법. identical-or-fail 마이그레이션은 세 개의 살아있는 config를 전부 흔든다 | ✅ Accepted 2026-07-19 |
+| **[ADR-0009] conductor는 새 command·persona 없이 기존 3개 표면을 일반화** | 두 번째 orchestrator/router는 하네스가 명시적으로 금지하는 것. 선형 렌더를 하드코딩 리터럴 회귀 테스트로 바이트 고정해 일반화 비용을 0으로 증명 | ✅ Accepted 2026-07-19 |
+| **[v2.3 B] adoption은 `.workflow/tasks/` 위의 평범한 작업, sibling 권위 평면 아님** | v2.2 CAS·evidence·HANDOFF를 재사용하면 새 상태 기계가 필요 없다. `.workflow/adoption/` 평면은 두 번째 진실 원천이 되었을 것 | ✅ Accepted 2026-07-20 |
+| **[ADR-0010] 사람-docs review 의무 모델 — 해시는 review 부채를 증명하지 prose 정확성을 증명하지 않는다** | semantic 문서 oracle이나 LLM-only freshness 게이트는 CI에서 모델을 돌려야 하고 검증 불가능한 green을 만든다. digest는 "사람이 이 (sources,target) 쌍을 봤다"만 기록 | ✅ Accepted 2026-07-22 |
+| **[v2.3 C] ledger는 사람만 쓴다 — agent 우회 경로를 약화하지 않고 layer 1을 실제로 구현** | self-blessed row와 정직한 seed row는 바이트 동일하다. 오직 사람의 커밋만 둘을 가른다. `ledger_guard`는 `GOLDEN_APPROVE_HUMAN`도 `HARNESS_DEV_BYPASS`도 인정하지 않는다 | ✅ Accepted 2026-07-22 |
+| **[v2.3 closeout] 헌법 평면 drift는 enforcement를 고치지 ADR을 고치지 않는다** | ADR-0001은 4-member 평면을 선언했고 Phase-4 스택은 3개만 강제했다. 내부 감사 두 건이 `proposed` ADR-0010을 `accepted` ADR-0001보다 우선해 인용하며 정반대 수리를 권고했고, 외부 감사가 그 역전을 잡았다 | ✅ Accepted 2026-07-22 |
 
 ## Evolution
 
@@ -119,4 +152,11 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-14 — milestone v2.1 (MEM2 — Process Memory & Provenance Reframe) started. Goal: durable authoritative process-memory channel + data-scoped provenance reframe. 7 requirements (MEM2-01..07); kickoff decisions Q1–Q6 recorded above. v1.0 (phases 1–8) + v2.0 (phases 9–11) archived. Design source: `.planning/MEMORY-UPGRADE-PROPOSAL.md` (§7 operator refinements authoritative).*
+*Last updated: 2026-07-22 after the v2.3 milestone. Shipped 10 phases / 43 plans / 58 tasks over 3 days and 310 commits; 21/21 requirements validated; 16/16 fan-in gates exit 0. Closed with 8 acknowledged deferred items (see `STATE.md`), of which the load-bearing three are RAT-4, RAT-5, and the per-tool spelling of the constitution-plane write-denies. No milestone is in progress — next step is `/gsd:new-milestone`.*
+
+<details>
+<summary>Previous footer — v2.3 start (2026-07-19)</summary>
+
+*2026-07-19 — milestone v2.3 (Contract Graph, Brownfield Adoption, Living Docs) started via `/gsd:new-milestone`. Design scoped by a sol-vs-fable debate panel (independent proposals → cross-rebuttal → codex sol merged FINAL), human-approved (`.planning/research/v2.3-scoping-FINAL.md`); all 3 themes in one milestone, 21 requirements (TOPO/ADOPT/DOCSUP), phases 24–29. Requirements + roadmap derived directly from the approved design; research skipped (design complete). Prior milestone v2.2 (Adaptive Task Control Plane, phases 18–23) shipped + pushed (recorded in MILESTONES.md this session; formal `/gsd:complete-milestone` archive of phase dirs deferred — new numbering 24+ avoids collision).*
+
+</details>

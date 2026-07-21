@@ -1,0 +1,31 @@
+[
+  {
+    "name": "source-to-single-sink",
+    "record": {
+      "id": "topo/greeting/source-sink",
+      "contract": "greeting",
+      "authority": "source",
+      "dependents": ["sink"],
+      "kind": "data-edge"
+    }
+  },
+  {
+    "name": "authority-to-many-dependents-with-labels",
+    "record": {
+      "id": "topo/greeting/fan-out",
+      "contract": "greeting",
+      "authority": "source",
+      "dependents": ["sink", "widget", "mirror"],
+      "labels": ["primary", "derived"]
+    }
+  },
+  {
+    "name": "minimal-required-only",
+    "record": {
+      "id": "topo/greeting/minimal",
+      "contract": "greeting",
+      "authority": "source",
+      "dependents": ["sink"]
+    }
+  }
+]

@@ -4,9 +4,18 @@ requires-python = ">=3.11"
 
 [manifest]
 members = [
+    "evidence-adapters",
+    "harness-handoff",
+    "harness-task-control",
+    "harness-task-packet",
+    "lifecycle-eval",
+    "logparser-adoption-apply",
+    "logparser-adoption-scan",
     "logparser-agree",
     "logparser-contract-drift",
+    "logparser-contract-graph",
     "logparser-contract-hash",
+    "logparser-docs-guard",
     "logparser-docs-sync",
     "logparser-golden-runner",
     "logparser-harness",
@@ -16,10 +25,12 @@ members = [
     "logparser-harness-perms",
     "logparser-hooks",
     "logparser-memory-regen",
+    "logparser-memory-ui",
     "logparser-normalize",
     "logparser-polyglot-lint",
     "logparser-strangler-guard",
     "logparser-workspace-config",
+    "risk-router",
 ]
 
 [[package]]
@@ -152,6 +163,38 @@ wheels = [
 ]
 
 [[package]]
+name = "evidence-adapters"
+version = "0.0.0"
+source = { virtual = "tools/evidence" }
+
+[[package]]
+name = "harness-handoff"
+version = "0.0.0"
+source = { virtual = "tools/handoff" }
+
+[[package]]
+name = "harness-task-control"
+version = "0.0.0"
+source = { virtual = "tools/task_control" }
+dependencies = [
+    { name = "jsonschema" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "jsonschema", specifier = "==4.26.0" }]
+
+[[package]]
+name = "harness-task-packet"
+version = "0.0.0"
+source = { virtual = "tools/task_packet" }
+dependencies = [
+    { name = "jsonschema" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "jsonschema", specifier = "==4.26.0" }]
+
+[[package]]
 name = "idna"
 version = "3.18"
 source = { registry = "https://pypi.org/simple" }
@@ -197,6 +240,21 @@ wheels = [
 ]
 
 [[package]]
+name = "lifecycle-eval"
+version = "0.0.0"
+source = { virtual = "tools/lifecycle_eval" }
+
+[[package]]
+name = "logparser-adoption-apply"
+version = "0.0.0"
+source = { virtual = "tools/adoption_apply" }
+
+[[package]]
+name = "logparser-adoption-scan"
+version = "0.0.0"
+source = { virtual = "tools/adoption_scan" }
+
+[[package]]
 name = "logparser-agree"
 version = "0.0.0"
 source = { virtual = "tools/agree" }
@@ -213,6 +271,11 @@ dependencies = [
 requires-dist = [{ name = "rfc8785", specifier = "==0.1.4" }]
 
 [[package]]
+name = "logparser-contract-graph"
+version = "0.0.0"
+source = { virtual = "tools/contract_graph" }
+
+[[package]]
 name = "logparser-contract-hash"
 version = "0.0.0"
 source = { virtual = "tools/contract_hash" }
@@ -222,6 +285,11 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [{ name = "rfc8785", specifier = "==0.1.4" }]
+
+[[package]]
+name = "logparser-docs-guard"
+version = "0.0.0"
+source = { virtual = "tools/docs_guard" }
 
 [[package]]
 name = "logparser-docs-sync"
@@ -311,6 +379,11 @@ requires-dist = [
     { name = "tree-sitter-c-sharp", specifier = "==0.23.5" },
     { name = "tree-sitter-python", specifier = "==0.25.0" },
 ]
+
+[[package]]
+name = "logparser-memory-ui"
+version = "0.0.0"
+source = { virtual = "tools/memory_ui" }
 
 [[package]]
 name = "logparser-normalize"
@@ -544,6 +617,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/ef/2f/fa1d2e740c490191b
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4d/78/119878110660b2ad709888c8a1614fce7e2fab39080ab960656dc8605bf6/rfc8785-0.1.4-py3-none-any.whl", hash = "sha256:520d690b448ecf0703691c76e1a34a24ddcd4fc5bc41d589cb7c58ec651bcd48", size = 9240, upload-time = "2024-09-27T16:33:29.683Z" },
 ]
+
+[[package]]
+name = "risk-router"
+version = "0.0.0"
+source = { virtual = "tools/risk_router" }
 
 [[package]]
 name = "rpds-py"

@@ -1,6 +1,215 @@
 # serializer version: 1
 # name: test_render_matches_committed_snapshot
   '''
+  ===== approval =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # Brownfield adoption promotion approval record
+  
+  > DERIVED reference — regenerated from `contracts/harness/adoption/approval.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  ADOPT-06 approval record: a human's promotion decision on proposed contract/golden/adr/relationship-authority/conflict/unknown items, bound to an exact (draft_hash, task_revision, git_ref) tuple so ANY change to the draft content, the task's CAS revision, or the git ref invalidates the approval. Deliberately a NEW, self-contained schema (D-11, no cross-file $ref) — NOT an extension of attestation.schema.json, whose constraints[] shape is a structurally different constraint-source binding vocabulary.
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | approved_at | string | yes |  | ISO-8601 UTC timestamp of the human ratification. |
+  | batch_id | string | yes |  | Identifies the adoption batch this approval decides over. |
+  | decisions | array | yes |  | One decision per reviewed item; a promotion with zero decisions is meaningless. |
+  | draft_hash | string | yes |  | SHA-256 of the draft content this approval was reviewed against; any draft change invalidates the approval. |
+  | git_ref | string | yes |  | The git commit the approval was reviewed against; any ref change invalidates the approval. |
+  | task_revision | integer | yes |  | The task's CAS revision at approval time; any later revision invalidates the approval. |
+  
+  ===== inventory =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # Brownfield adoption inventory
+  
+  > DERIVED reference — regenerated from `contracts/harness/adoption/inventory.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  ADOPT-01 deterministic, read-only, size-capped inventory of a scanned brownfield target: enumerated included/excluded files, language/manifest/documentation/CI/test/schema/CODEOWNERS surface detection, and candidate process boundaries, each evidence-classified observed/inferred/unknown with evidence pointers into already-hashed included files. Self-contained Draft 2020-12 (D-11) — no cross-file $ref; duplicates evidenceRef/classification also carried by plan.schema.json and manifest.schema.json. Excluded entries structurally carry no content hash or excerpt (D-10). `schema_surfaces` and `codeowners_surfaces` are REQUIRED as of this revision — Plan 26-05's detect.py wiring populates both on every scan.py run, closing the staged-optional window opened by Plan 26-04.
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | candidate_process_boundaries | array | yes |  |  |
+  | ci_surfaces | array | yes |  |  |
+  | codeowners_surfaces | array | yes |  |  |
+  | documentation_surfaces | array | yes |  |  |
+  | enumeration_mode | string | yes | git, builtin | Which enumeration path this run took (D-09) — self-describing so a run states whether git ls-files or the builtin denylist walk produced the result. |
+  | excluded | array | yes |  |  |
+  | included | array | yes |  |  |
+  | languages | array | yes |  |  |
+  | manifests | array | yes |  |  |
+  | max_file_bytes | integer | yes |  | The size cap used for this run — self-describing per the size-capped exclusion rule. |
+  | schema_surfaces | array | yes |  |  |
+  | target_ref | string | yes |  | The scanned target's git ref, or the literal "unknown" when the target has no git — a fact about the INPUT, never a clock (no-timestamp determinism rule). |
+  | test_surfaces | array | yes |  |  |
+  
+  ===== manifest =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # Brownfield adoption disposition manifest
+  
+  > DERIVED reference — regenerated from `contracts/harness/adoption/manifest.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  ADOPT-03 complete destination/disposition manifest for a brownfield target: exactly one of create/preserve/conflict/marker-merge/derived-regenerate/human-ratification-required assigned to every harness destination (D-03/D-04 total rule chain), plus a separate excluded[] array recording GSD-owned lanes by reason so "excluded" is distinguishable from "missed". Self-contained Draft 2020-12 — no cross-file $ref (D-11).
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | dispositions | array | yes |  |  |
+  | excluded | array | yes |  |  |
+  | target_ref | string | yes |  | Ties this manifest to the same scan as the inventory's target_ref (same shape: a git ref, or the literal "unknown"). |
+  
+  ===== plan =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # Brownfield adoption mapping plan
+  
+  > DERIVED reference — regenerated from `contracts/harness/adoption/plan.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  ADOPT-02 evidence-separated mapping plan for a brownfield target: proposed members/components/relationships/contract-candidates/test-commands/docs-destinations/agents-boundaries/codeowners, each classified observed/inferred/unknown with evidence; unresolved ownership stays a question, never invented authority. Relationship candidates duplicate the Phase-24 contracts/harness/topology/relationship.schema.json shape (D-11, not $ref'd). Self-contained Draft 2020-12 — no cross-file $ref.
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | proposals | array | yes |  |  |
+  | questions | array | yes |  |  |
+  | relationships | array | yes |  |  |
+  | target_ref | string | yes |  | Ties this plan to the same scan as the inventory's target_ref (same shape: a git ref, or the literal "unknown"). |
+  
+  ===== doc-dependencies =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # Human-docs dependency registry
+  
+  > DERIVED reference — regenerated from `contracts/harness/docs/doc-dependencies.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  DOCSUP-01 shape contract for the PARSED form of docs/doc-dependencies.toml — the registry of source-set -> human-authored-doc review obligations. Constrains SHAPE ONLY. The five DOCSUP-01 semantic rejections (path escape, duplicate id across rows, empty selector on a required binding, derived/reference target, accepted-ADR edit policy) are NOT expressible in JSON Schema — they need cross-row uniqueness, a live filesystem, and glob-set membership — and are enforced by tools.docs_guard.registry, which is the registry's ONLY validator (the registry is TOML, so /contract-check's check-jsonschema step does not cover it). Self-contained Draft 2020-12 — no cross-file $ref.
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | binding | array | no |  | The [[binding]] rows. Absent or empty is a shape-valid registry. |
+  
+  ===== attestation =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # Task context attestation contract
+  
+  > DERIVED reference — regenerated from `contracts/harness/task-control/attestation.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | constraints | array | yes |  |  |
+  
+  ===== evidence =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # Task packet evidence contract
+  
+  > DERIVED reference — regenerated from `contracts/harness/task-control/evidence.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  Index of immutable gate artifacts and criterion/finding trace references.
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | findings | array | yes |  |  |
+  | gate_runs | array | yes |  |  |
+  | redaction_report | object | no |  |  |
+  | task_id | ref | yes |  |  |
+  
+  ===== handoff =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # Task packet handoff contract
+  
+  > DERIVED reference — regenerated from `contracts/harness/task-control/handoff.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  Immutable resume snapshot tied to one state revision.
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | artifact_refs | array | yes |  |  |
+  | baseline | object | yes |  |  |
+  | changed_paths | array | yes |  |  |
+  | critical_constraint_ids | array | yes |  |  |
+  | critical_constraint_refs | array | yes |  |  |
+  | current_ref | ref | yes |  |  |
+  | decisions | array | yes |  |  |
+  | evidence_ids | array | yes |  |  |
+  | evidence_ref | ref | yes |  |  |
+  | finding_ids | array | yes |  |  |
+  | goal | string | yes |  |  |
+  | lane | ref | yes |  |  |
+  | next_action | string | yes |  |  |
+  | non_goals | array | yes |  |  |
+  | phase | ref | yes |  |  |
+  | required_read_paths | array | yes |  |  |
+  | state_ref | ref | yes |  |  |
+  | state_revision | integer | yes |  |  |
+  | stop_condition | string\|null | yes |  | Exact task-specific boundary when ratified; null means the task supplied none. |
+  | task_id | ref | yes |  |  |
+  | unresolved_items | array | yes |  |  |
+  
+  ===== state =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # Task packet state contract
+  
+  > DERIVED reference — regenerated from `contracts/harness/task-control/state.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  Current revision and repository context for a task packet.
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | baseline | object | yes |  |  |
+  | blockers | array | yes |  |  |
+  | completed_items | array | yes |  |  |
+  | current_ref | ref | yes |  |  |
+  | evidence_integrity | object | no |  |  |
+  | next_action | string | yes |  |  |
+  | phase | ref | yes |  |  |
+  | revision | integer | yes |  |  |
+  | task_id | ref | yes |  |  |
+  | transition | — | yes |  |  |
+  
+  ===== task =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # Task packet task contract
+  
+  > DERIVED reference — regenerated from `contracts/harness/task-control/task.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  Human-ratified shape for immutable task intent and routing inputs.
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | acceptance_criteria | array | yes |  |  |
+  | constraints | array | yes |  |  |
+  | decision_refs | array | yes |  |  |
+  | goal | string | yes |  |  |
+  | lane | ref | yes |  |  |
+  | non_goals | array | yes |  |  |
+  | risk_decision | object | yes |  | Canonical router output captured at deterministic intake. |
+  | risk_inputs | object | yes |  |  |
+  | stop_condition | string | no |  | Human-ratified task-specific boundary that a fresh session must restore exactly. |
+  | task_id | ref | yes |  |  |
+  
+  ===== relationship =====
+  <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
+  
+  # Contract relationship record
+  
+  > DERIVED reference — regenerated from `contracts/harness/topology/relationship.schema.json` by `python -m tools.docs_sync`. Do not hand-edit; change the contract and re-run `/docs-sync`.
+  
+  Human-ratified Draft 2020-12 shape for ONE contract-relationship record: an authority endpoint and one-or-more dependent endpoints for a tracked contract. Validates a single record's shape and cardinality ONLY (exactly one authority, at least one dependent) — endpoints are bare stable-id strings; no graph-wide resolution, no cross-record uniqueness, no endpoint-existence checks (those belong to the Phase 25 compiler).
+  
+  | Property | Type | Required | Enum / Const | Description |
+  | --- | --- | --- | --- | --- |
+  | authority | string | yes |  | Exactly ONE authority endpoint (a bare stable-id string, not an array). |
+  | contract | string | yes |  | Stable reference to the tracked contract this relationship is about. |
+  | dependents | array | yes |  | One-or-more dependent endpoints (bare stable-id strings). |
+  | id | string | yes |  | Stable record id for this relationship. |
+  | kind | string | no |  | Optional explanatory relationship kind. |
+  | labels | array | no |  | Optional explanatory labels. |
+  
   ===== format-conventions =====
   <!-- DERIVED — do not hand-edit — generated from contracts/ by tools.docs_sync -->
   

@@ -53,7 +53,8 @@
     "websearch": "ask"
   },
   "plugin": [
-    "harness/plugins/session-inject.ts"
+    "harness/plugins/session-inject.ts",
+    "harness/plugins/resume-gate.ts"
   ],
   "small_model": "provider/explorer-tier"
 }

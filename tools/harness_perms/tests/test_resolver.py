@@ -68,5 +68,17 @@ def test_contracts_denied(matrix: dict) -> None:
     assert resolve_path(matrix["path_deny_globs"], "contracts/log-specs/x.schema.json") == "deny"
 
 
+def test_glossary_denied(matrix: dict) -> None:
+    # The fourth constitution member declared by ADR-0001:48. The matrix carries it as a LITERAL
+    # path, so a broad `docs/**` rewrite would be caught by test_neighbouring_docs_allowed below.
+    assert resolve_path(matrix["path_deny_globs"], "docs/glossary.md") == "deny"
+
+
+def test_neighbouring_docs_allowed(matrix: dict) -> None:
+    # Negative control: the plane gained one file, not the docs tree.
+    for path in ("docs/how-to/task-lifecycle.md", "docs/tutorials/README.md", "docs/glossary-x.md"):
+        assert resolve_path(matrix["path_deny_globs"], path) == "allow", path
+
+
 def test_source_path_allowed(matrix: dict) -> None:
     assert resolve_path(matrix["path_deny_globs"], "libs/python/foo.py") == "allow"

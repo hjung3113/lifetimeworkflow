@@ -1,6 +1,6 @@
 """EMIT-02 command coexistence — the harness command surface must never collide with GSD (T-07-02).
 
-The emitter writes its 19 harness commands as TOP-LEVEL ``.claude/commands/*.md`` (Claude) and
+The emitter writes its 20 harness commands as TOP-LEVEL ``.claude/commands/*.md`` (Claude) and
 ``.opencode/command/*.md`` (opencode). GSD owns the ``.claude/commands/gsd/**`` subtree; the two
 sets must be provably DISJOINT — a harness command must never land under ``gsd/`` and a seeded
 ``gsd/`` fixture must survive an emit byte-for-byte and never be enumerated by the ownership
@@ -36,12 +36,16 @@ def _claude_commands(tmp_path: Path, written: list[Path]) -> list[Path]:
     return [p for p in written if commands_dir in p.parents and p.suffix == ".md"]
 
 
-def test_all_20_commands_emit_to_both_trees(tmp_path: Path) -> None:
-    """20 commands land in .opencode/command/*.md AND .claude/commands/*.md (top-level).
+def test_all_25_commands_emit_to_both_trees(tmp_path: Path) -> None:
+    """25 commands land in .opencode/command/*.md AND .claude/commands/*.md (top-level).
 
     Phase 9 adds /refresh-memory (the curator's local derived-freshness macro), taking the count
     from 17 → 18; Phase 10 adds /fan-out-synthesize (the context-economy fan-out entry point),
-    taking it 18 → 19; Phase 14 adds /agree (the agreements write path, MEM2-04), taking it 19 → 20.
+    taking it 18 → 19; Phase 14 adds /agree (the agreements write path, MEM2-04), taking it 19 → 20;
+    Phase 19 adds /intake (the deterministic task-control entry point), taking it 20 → 21;
+    Phase 20 adds /phase-gate, taking it 21 → 22; Phase 22 adds /handoff, taking it 22 → 23.
+    Phase 27 adds `/adopt` (the brownfield-adoption composition entry point), taking it 23 → 24.
+    Phase 29 adds `/docs-update` (the bounded human-doc review loop, DOCSUP-06), taking it 24 → 25.
 
     This count tracks the runtime-neutral SOURCE (``harness/commands/*.md``), NOT the committed
     ``.opencode/`` / ``.claude/`` trees: ``_emit`` projects into ``tmp_path``. So authoring a new
@@ -58,8 +62,8 @@ def test_all_20_commands_emit_to_both_trees(tmp_path: Path) -> None:
         if (tmp_path / ".opencode" / "command") in p.parents and p.suffix == ".md"
     ]
     claude_cmds = _claude_commands(tmp_path, written)
-    assert len(opencode_cmds) == 20, f"expected 20 opencode commands, got {len(opencode_cmds)}"
-    assert len(claude_cmds) == 20, f"expected 20 Claude commands, got {len(claude_cmds)}"
+    assert len(opencode_cmds) == 25, f"expected 25 opencode commands, got {len(opencode_cmds)}"
+    assert len(claude_cmds) == 25, f"expected 25 Claude commands, got {len(claude_cmds)}"
 
 
 def test_harness_commands_are_top_level_never_under_gsd(tmp_path: Path) -> None:
@@ -165,6 +169,26 @@ _SEED_SETTINGS = {
                         "type": "command",
                         "command": "uv run python -m tools.hooks.commit_gate --from-hook",
                         "timeout": 120,
+                    }
+                ],
+            },
+            {
+                "matcher": "Write|Edit|Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "uv run python -m tools.hooks.resume_gate",
+                        "timeout": 15,
+                    }
+                ],
+            },
+            {
+                "matcher": "Write|Edit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "uv run python -m tools.hooks.ledger_guard",
+                        "timeout": 10,
                     }
                 ],
             },

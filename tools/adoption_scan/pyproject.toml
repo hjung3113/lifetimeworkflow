@@ -1,0 +1,15 @@
+[project]
+name = "logparser-adoption-scan"
+version = "0.0.0"
+description = "ADOPT-01/02/03 deterministic brownfield inventory + mapping — read-only, confined, size-capped scan of a target tree (enumeration, exclusion classification, language/manifest/surface detection). Zero new external deps; invoked by module path as `python -m tools.adoption_scan.scan` from a caller (Plan 03 adds the `python -m tools.adoption_scan` CLI)."
+requires-python = ">=3.11"
+# Zero new external packages. All stdlib (pathlib, hashlib, json, subprocess, re, functools).
+# jsonschema (schema-conformance tests) and pytest come from the workspace root runtime/dev
+# groups; nothing declared here, so `uv sync --all-packages` must not mutate uv.lock.
+dependencies = []
+
+[tool.uv]
+# Virtual member: no build-system, nothing to package. Imported by module path from the shared
+# uv workspace environment (`python -m tools.adoption_scan...`); no wheel is built. Mirrors
+# tools/contract_hash, tools/docs_sync, tools/memory_regen.
+package = false

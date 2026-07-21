@@ -1,0 +1,250 @@
+"""detect.py — language/manifest/documentation/CI/test-surface/candidate-process-boundary
+detection feeding :func:`tools.adoption_scan.scan.build_inventory` (ADOPT-01).
+
+Every detection rule is EXTENSION/FILENAME/STRUCTURE-based only — no tree-sitter, no symbol
+parsing (26-RESEARCH.md: D-02's conservative bias makes symbol-level inference ``unknown`` anyway).
+Operates purely on the ``included`` list already assembled by ``scan.py`` (each entry already
+carries ``path``/``size``/``sha256``) — no filesystem access here, so detection can never diverge
+from what was actually hashed as an evidence pointer.
+
+D-02 evidence classification ladder, enforced structurally by every function below:
+- ``observed`` — direct evidence only: a file/extension is literally present (languages,
+  manifests, documentation/CI/test surfaces when the recognized path exists).
+- ``inferred`` — strong *structural* signals only: a directory containing a recognized manifest is
+  a candidate component root. ``candidate_process_boundaries`` is ALWAYS ``inferred`` — component
+  existence is inherently inferred (never ``observed``), per D-02.
+
+Ownership/authority classification (who OWNS a component, contract, or CODEOWNERS path) is out of
+scope here — that evidence ladder step belongs to Plan 03's ``plan.py``.
+"""
+
+from __future__ import annotations
+
+from pathlib import PurePosixPath
+
+# Extension -> language slug (observed on extension presence, D-02).
+_LANGUAGE_BY_EXTENSION: dict[str, str] = {
+    ".py": "python",
+    ".pyi": "python",
+    ".cs": "csharp",
+    ".ts": "typescript",
+    ".tsx": "typescript",
+    ".js": "javascript",
+    ".jsx": "javascript",
+    ".go": "go",
+    ".rs": "rust",
+    ".sh": "shell",
+    ".rb": "ruby",
+    ".java": "java",
+}
+
+# Manifest filename -> kind (observed on literal file existence, D-02).
+_MANIFEST_KIND_BY_NAME: dict[str, str] = {
+    "pyproject.toml": "pyproject.toml",
+    "package.json": "package.json",
+    "go.mod": "go.mod",
+    "Cargo.toml": "Cargo.toml",
+}
+
+# WR-06 (26-REVIEW.md): all three GitHub-honored CODEOWNERS locations — a repo may place the
+# file at the root, under .github/, or under docs/, and GitHub resolves whichever is present.
+_CODEOWNERS_PATHS: frozenset[str] = frozenset(
+    {"CODEOWNERS", ".github/CODEOWNERS", "docs/CODEOWNERS"}
+)
+
+
+def _evidence(entries: list[dict]) -> list[dict]:
+    """Build a sorted evidenceRef list from already-hashed ``included`` entries."""
+    return [
+        {"path": entry["path"], "sha256": entry["sha256"], "size": entry["size"]}
+        for entry in sorted(entries, key=lambda item: item["path"])
+    ]
+
+
+def _surface(
+    target: str, entries: list[dict], classification: str, rationale: str | None = None
+) -> dict:
+    record = {
+        "target": target,
+        "classification": classification,
+        "evidence": _evidence(entries),
+    }
+    if rationale is not None:
+        record["rationale"] = rationale
+    return record
+
+
+def detect_languages(included: list[dict]) -> list[dict]:
+    """One ``languageRecord`` per distinct extension found among ``included`` entries.
+
+    ``classification: "observed"`` — extension presence is direct evidence (D-02).
+    """
+    by_language: dict[str, list[dict]] = {}
+    for entry in included:
+        suffix = PurePosixPath(entry["path"]).suffix.lower()
+        language = _LANGUAGE_BY_EXTENSION.get(suffix)
+        if language is None:
+            continue
+        by_language.setdefault(language, []).append(entry)
+
+    return [
+        {
+            "name": language,
+            "classification": "observed",
+            "evidence": _evidence(by_language[language]),
+        }
+        for language in sorted(by_language)
+    ]
+
+
+def detect_manifests(included: list[dict]) -> list[dict]:
+    """One ``manifestRecord`` per recognized manifest file present in ``included``.
+
+    ``classification: "observed"`` — literal file existence (D-02).
+    """
+    records: list[dict] = []
+    for entry in sorted(included, key=lambda item: item["path"]):
+        name = PurePosixPath(entry["path"]).name
+        kind = _MANIFEST_KIND_BY_NAME.get(name)
+        if kind is None and name.endswith(".csproj"):
+            kind = "*.csproj"
+        if kind is None:
+            continue
+        records.append(
+            {
+                "path": entry["path"],
+                "kind": kind,
+                "classification": "observed",
+                "evidence": _evidence([entry]),
+            }
+        )
+    return records
+
+
+def detect_documentation_surfaces(included: list[dict]) -> list[dict]:
+    """``surfaceRecord``s for recognized documentation surfaces (ADR / README / AGENTS.md).
+
+    ``classification: "observed"`` when the recognized path exists (D-02).
+
+    WR-01 (26-REVIEW.md): every distinct ``AGENTS.md`` path (root AND every nested one) gets its
+    OWN ``surfaceRecord`` with ``target`` set to that file's actual path — never lumped into one
+    fixed-literal-target record. Nearest-wins ``AGENTS.md`` semantics are inherently per-directory
+    (a root ``AGENTS.md`` and e.g. ``libs/python/AGENTS.md`` are different boundaries with
+    potentially different answers), so each needs its own proposal/question downstream in
+    ``plan.py``. README stays coarse-grained (one record for all README/README.md files) — an
+    intentional, narrower design choice noted in the review as acceptable.
+    """
+    records: list[dict] = []
+
+    adr_entries = [
+        entry for entry in included if PurePosixPath(entry["path"]).parts[:2] == ("docs", "adr")
+    ]
+    if adr_entries:
+        records.append(_surface("docs/adr", adr_entries, "observed"))
+
+    readme_entries = [
+        entry for entry in included if PurePosixPath(entry["path"]).name in {"README", "README.md"}
+    ]
+    if readme_entries:
+        records.append(_surface("README", readme_entries, "observed"))
+
+    agents_entries = [
+        entry for entry in included if PurePosixPath(entry["path"]).name == "AGENTS.md"
+    ]
+    for entry in sorted(agents_entries, key=lambda item: item["path"]):
+        records.append(_surface(entry["path"], [entry], "observed"))
+
+    return sorted(records, key=lambda record: record["target"])
+
+
+def detect_ci_surfaces(included: list[dict]) -> list[dict]:
+    """``surfaceRecord``s for CI surfaces (``.github/workflows/*.yml``).
+
+    ``classification: "observed"`` when the recognized path exists (D-02).
+    """
+    ci_entries = [
+        entry
+        for entry in included
+        if PurePosixPath(entry["path"]).parts[:2] == (".github", "workflows")
+    ]
+    if not ci_entries:
+        return []
+    return [_surface(".github/workflows", ci_entries, "observed")]
+
+
+def detect_test_surfaces(included: list[dict]) -> list[dict]:
+    """``surfaceRecord``s for test surfaces (a ``tests/`` dir containing ``test_*.py``).
+
+    ``classification: "observed"`` when the recognized path exists (D-02).
+    """
+    test_entries = [
+        entry
+        for entry in included
+        if PurePosixPath(entry["path"]).parts[:1] == ("tests",)
+        and PurePosixPath(entry["path"]).name.startswith("test_")
+    ]
+    if not test_entries:
+        return []
+    return [_surface("tests", test_entries, "observed")]
+
+
+def detect_schema_surfaces(included: list[dict]) -> list[dict]:
+    """``surfaceRecord``s for schema surfaces (``contracts/**/*.schema.json`` ONLY).
+
+    ``classification: "observed"`` when a matching path exists (D-02). Deliberately scoped to
+    files whose first path segment is ``contracts`` AND whose name ends ``.schema.json`` — NOT
+    every ``*.schema.json`` anywhere in the tree, since this repo alone has schema-named files
+    under ``harness/``, ``tools/``, the domain-instance directory, ``.claude/skills/``, and
+    ``tests/fixtures/`` that must never match.
+    """
+    schema_entries = [
+        entry
+        for entry in included
+        if PurePosixPath(entry["path"]).parts[:1] == ("contracts",)
+        and PurePosixPath(entry["path"]).name.endswith(".schema.json")
+    ]
+    if not schema_entries:
+        return []
+    return [_surface("contracts/**/*.schema.json", schema_entries, "observed")]
+
+
+def detect_codeowners_surfaces(included: list[dict]) -> list[dict]:
+    """``surfaceRecord``s for a CODEOWNERS surface, recognizing all three GitHub-honored
+    locations: ``CODEOWNERS`` (root), ``.github/CODEOWNERS``, and ``docs/CODEOWNERS``.
+
+    ``classification: "observed"`` when a literal path exists (D-02) — only the file's
+    EXISTENCE and path are recorded, never its ownership-mapping content interpreted as
+    authority, at any of the three locations. One ``surfaceRecord`` PER distinct CODEOWNERS
+    path found (mirrors :func:`detect_documentation_surfaces`'s per-nested-AGENTS.md
+    precedent) — never lumped into a single fixed-literal-target record.
+    """
+    matches: dict[str, dict] = {}
+    for entry in included:
+        path = entry["path"]
+        if path in _CODEOWNERS_PATHS:
+            matches[path] = entry
+
+    records = [_surface(path, [entry], "observed") for path, entry in matches.items()]
+    return sorted(records, key=lambda record: record["target"])
+
+
+def detect_candidate_process_boundaries(included: list[dict]) -> list[dict]:
+    """``surfaceRecord``s for candidate component/process boundaries.
+
+    A directory containing a recognized manifest is a candidate component root.
+    ``classification: "inferred"`` ALWAYS — component/member existence is inherently inferred
+    (D-02); never ``observed`` for a candidate process boundary.
+    """
+    manifests = detect_manifests(included)
+    records: list[dict] = []
+    for manifest in sorted(manifests, key=lambda item: item["path"]):
+        directory = str(PurePosixPath(manifest["path"]).parent)
+        records.append(
+            {
+                "target": directory,
+                "classification": "inferred",
+                "evidence": manifest["evidence"],
+                "rationale": "manifest-directory",
+            }
+        )
+    return records

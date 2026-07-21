@@ -159,13 +159,21 @@ internal static class Program
     /// <summary>
     /// True when <paramref name="fullPath"/> resolves under the current working directory
     /// (the repo/workspace root the runner spawns from) or the system temp area.
+    ///
+    /// Both sides are reduced to their REAL path first, so the decision is made on the canonical
+    /// path rather than on a spelling of it. On macOS <c>/var</c> is a symlink to
+    /// <c>/private/var</c>, so pytest's tmp dir and <see cref="Path.GetTempPath"/> are two
+    /// spellings of one directory and a raw comparison falsely trips. Canonicalizing does not
+    /// relax the guard — the comparison stays Ordinal, and a genuine escape (e.g. ../../etc/passwd)
+    /// still lands outside every root and is refused.
     /// </summary>
     private static bool IsConfined(string fullPath)
     {
+        var realPath = RealPath(fullPath);
         var roots = new[]
         {
-            Path.GetFullPath(Directory.GetCurrentDirectory()),
-            Path.GetFullPath(Path.GetTempPath()),
+            RealPath(Directory.GetCurrentDirectory()),
+            RealPath(Path.GetTempPath()),
         };
 
         foreach (var root in roots)
@@ -173,13 +181,64 @@ internal static class Program
             var normalizedRoot = root.EndsWith(Path.DirectorySeparatorChar)
                 ? root
                 : root + Path.DirectorySeparatorChar;
-            if (fullPath.Equals(root, StringComparison.Ordinal) ||
-                fullPath.StartsWith(normalizedRoot, StringComparison.Ordinal))
+            if (realPath.Equals(root, StringComparison.Ordinal) ||
+                realPath.StartsWith(normalizedRoot, StringComparison.Ordinal))
             {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Resolve <paramref name="path"/> to its real path by following any symlinked component,
+    /// walking root → leaf. Components that do not exist yet (the <c>--out</c> file, its parent)
+    /// are simply appended — a not-yet-created path still gets its existing ancestors canonicalized.
+    /// Any failure degrades to the plain full path, which is the strict (never more permissive)
+    /// answer.
+    /// </summary>
+    private static string RealPath(string path)
+    {
+        var full = Path.GetFullPath(path);
+        try
+        {
+            var root = Path.GetPathRoot(full);
+            if (string.IsNullOrEmpty(root))
+            {
+                return full;
+            }
+
+            var current = root;
+            var segments = full[root.Length..]
+                .Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var segment in segments)
+            {
+                current = Path.Combine(current, segment);
+
+                // returnFinalTarget: true collapses a symlink chain in one call; null = not a link.
+                var target = Directory.Exists(current)
+                    ? Directory.ResolveLinkTarget(current, returnFinalTarget: true)
+                    : File.Exists(current)
+                        ? File.ResolveLinkTarget(current, returnFinalTarget: true)
+                        : null;
+
+                if (target is not null)
+                {
+                    // A link target may be relative to the link's own directory.
+                    current = Path.IsPathRooted(target.FullName)
+                        ? target.FullName
+                        : Path.GetFullPath(
+                            Path.Combine(Path.GetDirectoryName(current) ?? root, target.FullName));
+                }
+            }
+
+            return Path.GetFullPath(current);
+        }
+        catch (Exception)
+        {
+            return full;
+        }
     }
 }

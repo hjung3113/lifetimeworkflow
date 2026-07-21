@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harness.local/contracts/harness/adoption/inventory.schema.json",
+  "title": "Brownfield adoption inventory",
+  "description": "ADOPT-01 deterministic, read-only, size-capped inventory of a scanned brownfield target: enumerated included/excluded files, language/manifest/documentation/CI/test/schema/CODEOWNERS surface detection, and candidate process boundaries, each evidence-classified observed/inferred/unknown with evidence pointers into already-hashed included files. Self-contained Draft 2020-12 (D-11) — no cross-file $ref; duplicates evidenceRef/classification also carried by plan.schema.json and manifest.schema.json. Excluded entries structurally carry no content hash or excerpt (D-10). `schema_surfaces` and `codeowners_surfaces` are REQUIRED as of this revision — Plan 26-05's detect.py wiring populates both on every scan.py run, closing the staged-optional window opened by Plan 26-04.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "target_ref",
+    "enumeration_mode",
+    "max_file_bytes",
+    "included",
+    "excluded",
+    "languages",
+    "manifests",
+    "documentation_surfaces",
+    "ci_surfaces",
+    "test_surfaces",
+    "candidate_process_boundaries",
+    "schema_surfaces",
+    "codeowners_surfaces"
+  ],
+  "properties": {
+    "target_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The scanned target's git ref, or the literal \"unknown\" when the target has no git — a fact about the INPUT, never a clock (no-timestamp determinism rule)."
+    },
+    "enumeration_mode": {
+      "type": "string",
+      "enum": ["git", "builtin"],
+      "description": "Which enumeration path this run took (D-09) — self-describing so a run states whether git ls-files or the builtin denylist walk produced the result."
+    },
+    "max_file_bytes": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The size cap used for this run — self-describing per the size-capped exclusion rule."
+    },
+    "included": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/includedEntry" }
+    },
+    "excluded": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/excludedEntry" }
+    },
+    "languages": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/languageRecord" }
+    },
+    "manifests": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/manifestRecord" }
+    },
+    "documentation_surfaces": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/surfaceRecord" }
+    },
+    "ci_surfaces": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/surfaceRecord" }
+    },
+    "test_surfaces": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/surfaceRecord" }
+    },
+    "candidate_process_boundaries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/surfaceRecord" }
+    },
+    "schema_surfaces": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/surfaceRecord" }
+    },
+    "codeowners_surfaces": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/surfaceRecord" }
+    }
+  },
+  "$defs": {
+    "includedEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "size", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repo-relative POSIX path of the included file."
+        },
+        "size": { "type": "integer", "minimum": 0 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "excludedEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "size", "excluded"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repo-relative POSIX path of the excluded file."
+        },
+        "size": { "type": "integer", "minimum": 0 },
+        "excluded": {
+          "type": "string",
+          "enum": [
+            "secret-path",
+            "secret-content",
+            "binary",
+            "vendored",
+            "generated",
+            "source-dump",
+            "size-capped",
+            "symlink-escape"
+          ],
+          "description": "D-10: exclusion reason. Deliberately no sibling sha256 property anywhere in this def — a secret-flagged exclusion cannot structurally carry a content hash or excerpt."
+        }
+      }
+    },
+    "evidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repo-relative POSIX path pointing INTO an already-hashed includedEntry."
+        },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "size": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "classification": {
+      "type": "string",
+      "enum": ["observed", "inferred", "unknown"],
+      "description": "D-02 evidence classification ladder: observed on direct evidence only, inferred on strong structural signals only, everything else unknown."
+    },
+    "languageRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "classification", "evidence"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "classification": { "$ref": "#/$defs/classification" },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/evidenceRef" }
+        }
+      }
+    },
+    "manifestRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "kind", "classification", "evidence"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Manifest kind, e.g. pyproject.toml / package.json / *.csproj / go.mod / Cargo.toml."
+        },
+        "classification": { "$ref": "#/$defs/classification" },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/evidenceRef" }
+        }
+      }
+    },
+    "surfaceRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "classification", "evidence"],
+      "properties": {
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A repo-relative path or a destination label."
+        },
+        "classification": { "$ref": "#/$defs/classification" },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/evidenceRef" },
+          "description": "A surface with no evidence is never emitted by any detector; evidence is always non-empty."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Optional: the structural rule id that produced an inferred classification (D-02)."
+        }
+      }
+    }
+  }
+}

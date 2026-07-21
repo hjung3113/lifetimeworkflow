@@ -8,9 +8,9 @@
 // │ when the opencode surface lands (Phase 3 CONFIG / after an opencode install).               │
 // │                                                                                             │
 // │ It deliberately consumes the SAME single injection contract as the Claude hook (D-01):      │
-// │   `python -m tools.memory_regen.inject`  →  the capped, banner-first, priority-truncated,    │
+// │   `python -m tools.memory_regen.inject`  →  the capped, directive-first, priority-truncated, │
 // │   pointer-only payload from tools/memory_regen/inject.py::assemble(). Same payload, same     │
-// │   ~1k-token cap, same provisional banner — the ONLY difference is the runtime envelope.      │
+// │   ~1k-token cap, same data-provenance banner — the ONLY difference is the runtime envelope.  │
 // │                                                                                             │
 // │ Confidence (02-RESEARCH A2): opencode hook names (`event` session.created +                 │
 // │ `chat.system.transform` vs `experimental.chat.system.transform`) are MEDIUM — re-verify at  │
@@ -33,7 +33,7 @@ function assemblePayload(cwd: string): string {
 
 function regenerateDerivedPlane(cwd: string): void {
   // Best-effort — a missing Wave-2 generator must never break session start (|| true parity).
-  for (const mod of ["tools.memory_regen.repo_map", "tools.memory_regen.contracts_index"]) {
+  for (const mod of ["tools.memory_regen.repo_map", "tools.memory_regen.contracts_index", "tools.memory_regen.pointer_index"]) {
     try {
       execFileSync("uv", ["run", "python", "-m", mod], { cwd, stdio: "ignore" });
     } catch {

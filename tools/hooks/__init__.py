@@ -1,4 +1,4 @@
-"""Phase-4 runtime gate package (HOOK-01..05).
+"""Runtime gate package (HOOK-01..05 plus the resume-attestation gate).
 
 Hosts the shared Claude hook-stdin adapter (``_stdin``) and the gate modules that import it
 (``secret_scan`` here; contract-guard / boundary / stop gates in plans 03-05). Public API::

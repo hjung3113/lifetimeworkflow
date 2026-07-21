@@ -265,3 +265,117 @@ def test_main_dev_bypass_source_path_no_note(monkeypatch: pytest.MonkeyPatch) ->
     )
     assert out.strip() == ""
     assert err.strip() == ""
+
+
+# --- docs/glossary.md: the FOURTH constitution member (ADR-0001) --------------------------------
+#
+# `docs/adr/0001-walking-skeleton-golden-core.md:48` — accepted, unsuperseded — declares the
+# constitution plane as `contracts/`, `golden/`, `docs/adr/` AND `docs/glossary.md`. The Phase-4
+# gate shipped with only three; the glossary was agent-writable in every session until this fix.
+#
+# Every row below names the LITERAL `docs/glossary.md`. A `docs/*.md` shaped fixture is forbidden
+# here: it would pass against a broad glob that also swallowed the how-to and explanation trees,
+# proving nothing about the one authoritative file. This is the repo's recurring defect — a control
+# ships GREEN because the fixture used the one spelling the control already handled — so the glob
+# and the fixture are deliberately the same literal string.
+
+
+def test_unapproved_glossary_write_denied() -> None:
+    out = decide("docs/glossary.md", "# Glossary\n", approved=False)
+    assert out is not None, "docs/glossary.md is constitution plane per ADR-0001:48"
+    assert out["hookSpecificOutput"]["permissionDecision"] == "deny"
+    reason = out["hookSpecificOutput"]["permissionDecisionReason"]
+    assert "golden-approve" in reason
+    assert "CODEOWNERS" in reason
+
+
+def test_unapproved_absolute_glossary_write_denied() -> None:
+    # Claude sends an absolute path; the gate must still match after repo-relative normalization,
+    # or the glossary is silently ungated in real sessions exactly as it was before this fix.
+    abs_path = str(_REPO_ROOT / "docs" / "glossary.md")
+    out = decide(abs_path, "# Glossary\n", approved=False)
+    assert out is not None
+    assert out["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+def test_approved_glossary_write_allowed() -> None:
+    # A human token bypasses access control on the glossary exactly as on the other three members.
+    assert decide("docs/glossary.md", "# Glossary\n", approved=True) is None
+
+
+def test_approved_glossary_with_bom_still_denied() -> None:
+    # Byte hygiene applies to the whole plane: an approved glossary write with a BOM is still denied
+    # for the polyglot reason, not the approval reason.
+    out = decide("docs/glossary.md", BOM_CONTENT, approved=True)
+    assert out is not None
+    assert out["hookSpecificOutput"]["permissionDecision"] == "deny"
+    reason = out["hookSpecificOutput"]["permissionDecisionReason"]
+    assert "R1-BOM" in reason or "§4.3" in reason
+
+
+def test_approved_glossary_with_crlf_still_denied() -> None:
+    out = decide("docs/glossary.md", CRLF_CONTENT, approved=True)
+    assert out is not None
+    assert out["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+def test_neighbouring_docs_paths_are_not_constitution() -> None:
+    # The negative control that keeps the fix honest: the plane gained ONE literal file, not the
+    # docs tree. If someone "fixes" this with `docs/**` or `docs/*.md`, these rows go red.
+    for path in (
+        "docs/how-to/task-lifecycle.md",
+        "docs/explanation/template-and-instances.md",
+        "docs/tutorials/README.md",
+        "docs/glossary-notes.md",
+        "docs/reference/doc-dependencies.md",
+    ):
+        assert decide(path, "# doc\n", approved=False) is None, (
+            f"{path} is human-authored docs, NOT constitution plane"
+        )
+
+
+def test_main_glossary_denies(monkeypatch: pytest.MonkeyPatch) -> None:
+    out = _run_main(monkeypatch, _write("docs/glossary.md", "# Glossary\n"), token=None)
+    assert json.loads(out)["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+def test_main_dev_bypass_allows_glossary(monkeypatch: pytest.MonkeyPatch) -> None:
+    # ADR-0007: the dev bypass covers the whole constitution plane, so it must reach the glossary
+    # too — otherwise the fourth member behaves differently from the other three.
+    out, err = _run_main_io(
+        monkeypatch, _write("docs/glossary.md", "# Glossary\n"), token=None, dev="1"
+    )
+    assert out.strip() == ""
+    assert err.strip() != ""
+
+
+def test_every_declared_plane_member_is_independently_enforced() -> None:
+    # Mutation proof, in-suite: deleting ANY single member from CONSTITUTION_GLOBS must make its own
+    # path allowed. Without this, a member can be dropped while the suite stays green because some
+    # other member's row still covers the "constitution is enforced" claim.
+    import tools.hooks.contract_guard as cg
+
+    probes = {
+        "contracts/**": "contracts/x.schema.json",
+        "docs/adr/**": "docs/adr/0002-foo.md",
+        "golden/**": "golden/case/expected/x.tsv",
+        "docs/glossary.md": "docs/glossary.md",
+    }
+    assert set(cg.CONSTITUTION_GLOBS) == set(probes), (
+        "CONSTITUTION_GLOBS changed — ADR-0001:48 declares exactly these four members; "
+        "adding or removing one requires a superseding ADR, and this table must move with it"
+    )
+    original = list(cg.CONSTITUTION_GLOBS)
+    try:
+        for glob, probe in probes.items():
+            cg.CONSTITUTION_GLOBS[:] = [g for g in original if g != glob]
+            assert decide(probe, "x\n", approved=False) is None, (
+                f"deleting {glob!r} did not stop denying {probe!r} — another glob is covering it, "
+                "so this member is not independently enforced"
+            )
+            cg.CONSTITUTION_GLOBS[:] = original
+            assert decide(probe, "x\n", approved=False) is not None, (
+                f"restoring {glob!r} did not re-deny {probe!r}"
+            )
+    finally:
+        cg.CONSTITUTION_GLOBS[:] = original

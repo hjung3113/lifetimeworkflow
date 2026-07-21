@@ -32,7 +32,7 @@ from tools.workspace_config import edges, load_workspace, members, split_endpoin
 
 
 def load_baseline(baseline_path: str | Path = MANIFEST_PATH) -> dict[str, str]:
-    """Load the committed per-schema JCS SHA-256 baseline manifest."""
+    """Load the committed per-contract JCS SHA-256 baseline manifest."""
     return json.loads(Path(baseline_path).read_text(encoding="utf-8"))
 
 
@@ -193,13 +193,20 @@ def run_gate(
         # ``base`` is the ``contracts_dir`` parent — the member root for a workspace member — so the
         # baseline ``git show`` resolves ``rel`` (a member-root-relative manifest key) against the
         # correct tree, not the top-level repo root (CR-01).
-        old = _git_show(rel, cwd=base)
-        new_path = base / rel
-        try:
-            new = json.loads(new_path.read_bytes())
-        except (OSError, json.JSONDecodeError):
-            new = None
-        cls = classify(old, new) if isinstance(old, dict) and isinstance(new, dict) else "unknown"
+        if not rel.endswith(".schema.json"):
+            # Ratified data contracts carry executable policy, not schema compatibility shape.
+            # Any byte-semantic change therefore requires the conservative human-gated path.
+            cls = "breaking"
+        else:
+            old = _git_show(rel, cwd=base)
+            new_path = base / rel
+            try:
+                new = json.loads(new_path.read_bytes())
+            except (OSError, json.JSONDecodeError):
+                new = None
+            cls = (
+                classify(old, new) if isinstance(old, dict) and isinstance(new, dict) else "unknown"
+            )
         drifted.append((rel, "changed", cls))
     for rel in delta["added"]:
         drifted.append((rel, "added", "non-breaking"))  # a new schema is purely additive

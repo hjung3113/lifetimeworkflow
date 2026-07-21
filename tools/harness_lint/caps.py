@@ -125,6 +125,8 @@ _XML_CHARS = ("<", ">")
 # two-plane-memory. Phase 8 (Pipeline Topology) adds one topology-trace skill: pipeline-map.
 # Phase 10 (Context-Economy) adds two skills: fan-out-synthesize (the fan-out substrate) and
 # context-budget (the delegate-vs-inline heuristic that routes into it).
+# Phase 29 (Docs Drive Loop) adds one skill: docs-upkeep (the human-doc review-obligation runbook
+# behind /docs-update — disjoint from data-contracts, two-plane-memory and gate-model, DOCSUP-06).
 # No more, no fewer (anti-sprawl).
 EXPECTED_SKILLS = frozenset(
     {
@@ -139,5 +141,7 @@ EXPECTED_SKILLS = frozenset(
         "pipeline-map",
         "fan-out-synthesize",
         "context-budget",
+        "brownfield-adoption",
+        "docs-upkeep",
     }
 )

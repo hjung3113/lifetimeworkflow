@@ -1,0 +1,109 @@
+# Human-docs dependency registry (DOCSUP-01).
+#
+# Each [[binding]] declares: "when THESE sources change, THAT human-authored document owes a
+# review." The registry is agent-writable by design — an agent may PROPOSE a row here — but the
+# review ledger (docs/.docs-review-ledger.toml) is human-authored only, because the ledger, not the
+# registry, is the greenness authority. That asymmetry is the whole point of the split.
+#
+# Validated ONLY by tools.docs_guard.registry against
+# contracts/harness/docs/doc-dependencies.schema.json: this is a .toml instance under docs/, so
+# /contract-check's schema/instance pairing does not cover it (D-16 / A7).
+#
+# Pairing rule: a binding whose sources do not genuinely determine its target is noise that trains
+# reviewers to rubber-stamp. Every row below names source files the target document describes
+# directly — literal CLI invocations, a named module, or a declared rule set.
+#
+# GEN-04: no instance-tree selector or target may appear in this CORE registry — the core depends on
+# no instance. An instance-local overlay is the D-14 seam and is deliberately not built yet.
+#
+# severity: `required` fails the guard when stale; `advisory` warns on stderr and never flips the
+# exit code.
+
+# ── required ──────────────────────────────────────────────────────────────────────────────────
+
+[[binding]]
+id           = "task-control-cli-howto"
+sources      = [
+  "tools/task_control/__main__.py",
+  "tools/task_control/phase_gate.py",
+  "tools/risk_router/intake.py",
+]
+target       = "docs/how-to/task-lifecycle.md"
+severity     = "required"
+dispositions = ["updated", "reviewed-no-change"]
+
+[[binding]]
+id           = "adoption-tooling-brownfield-skill"
+sources      = [
+  "tools/adoption_scan/destinations.py",
+  "tools/adoption_apply/apply.py",
+  "tools/adoption_apply/approval.py",
+]
+target       = "harness/skills/brownfield-adoption/SKILL.md"
+severity     = "required"
+dispositions = ["updated", "reviewed-no-change"]
+
+[[binding]]
+id           = "gen04-core-instance-split"
+sources      = [
+  "tools/harness_lint/tests/test_core_no_example_dep.py",
+  "harness/project.toml",
+]
+target       = "docs/explanation/template-and-instances.md"
+severity     = "required"
+dispositions = ["updated", "reviewed-no-change"]
+
+[[binding]]
+id           = "memory-plane-declaration"
+sources      = ["tools/hooks/contract_guard.py"]
+target       = ".memory/README.md"
+severity     = "required"
+dispositions = ["updated", "reviewed-no-change"]
+
+[[binding]]
+id           = "gate-model-permission-surface"
+sources      = [
+  "harness/permission-matrix.json",
+  "tools/harness_perms/resolver.py",
+]
+target       = "harness/skills/gate-model/SKILL.md"
+severity     = "required"
+dispositions = ["updated", "reviewed-no-change"]
+
+# The ADR track. A docs/adr/** target is FORCED to exactly this disposition pair (D-09): an accepted
+# ADR is append-only, so `updated` would have the report teach an in-place edit, and
+# SUPERSEDING_ADR_REQUIRED is an open obligation discharged by landing a NEW superseding ADR.
+[[binding]]
+id           = "contract-graph-adr-0009"
+sources      = [
+  "tools/contract_graph/compile.py",
+  "tools/contract_graph/query.py",
+]
+target       = "docs/adr/0009-contract-relationship-graph-model.md"
+severity     = "required"
+dispositions = ["REVIEWED_STILL_CURRENT", "SUPERSEDING_ADR_REQUIRED"]
+
+# ── advisory ──────────────────────────────────────────────────────────────────────────────────
+
+[[binding]]
+id           = "normalize-spec-glossary"
+sources      = ["libs/normalize-spec.md"]
+target       = "docs/glossary.md"
+severity     = "advisory"
+dispositions = ["updated", "reviewed-no-change"]
+
+# The target defines five shadow metrics. Four are determined by the eval runner, but
+# `lane_override` ("count and direction of a recorded human lane override, keyed by task and policy
+# hash") has zero occurrence there — it is `risk_router/router.py` that validates `human_override`
+# as {lane, reason} and preserves the override audit alongside the policy hash. Binding only the
+# runner left that row unwatched: the source could not falsify the definition it supposedly owned.
+# Both sources are named so every row in the target has something that can go stale under it.
+[[binding]]
+id           = "lifecycle-eval-shadow-metrics"
+sources      = [
+  "tools/lifecycle_eval/runner.py",
+  "tools/risk_router/router.py",
+]
+target       = "docs/explanation/task-lifecycle-shadow-metrics.md"
+severity     = "advisory"
+dispositions = ["updated", "reviewed-no-change"]
