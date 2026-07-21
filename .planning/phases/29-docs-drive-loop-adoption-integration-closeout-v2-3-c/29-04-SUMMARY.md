@@ -322,9 +322,21 @@ message states that docs-guard is RED at this commit by design.
 
 ---
 
-## Task 4 — BLOCKED-ON-HUMAN (`checkpoint:human-verify`, `gate="blocking-human"`)
+## Task 4 — DISCHARGED-VIA-OPTION-A (closed 2026-07-22 at phase-29 re-verification)
 
-Not attempted.
+Not attempted by the agent session (`checkpoint:human-verify`, `gate="blocking-human"`).
+
+**Disposition: discharged in outcome, not in letter.** Task 4's `done` condition was written as "a
+human has *replaced* the `gate-model-permission-surface` row" — that wording presumes **Option B**
+below. The human took **Option A**: all eight bindings were seeded in one authoring round
+(`c32c08d`), so no row was ever replaced and no `updated` disposition exists. The ledger header
+states why an `updated` disposition would have been wrong in a first-ever ledger — `first_seen-
+unratified` compares against the *previous committed* ledger, and there was none.
+
+The governing contract is **SC-3**, and SC-3 holds: `uv run python -m tools.docs_guard` exits 0 with
+8/8 bindings FRESH, `uncovered_max = 7`. Phase-29 re-verification additionally observed the drive
+loop moving green → red → green for real, in a throwaway worktree, which is the substance Option B
+was intended to buy. Closed on that basis; Task 2 was already cleanly discharged.
 
 ---
 
