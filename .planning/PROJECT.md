@@ -16,9 +16,29 @@
 
 ## Current State
 
-**v2.1 MEM2 shipped 2026-07-18** — the harness now carries a durable, authoritative PROCESS-memory channel (`.memory/agreements/`) with a data-scoped provenance reframe, a sanctioned `/agree` write path backed by a provenance/anti-invent guard, and a local, no-network pointer-aware memory web UI. v1.0 (phases 1–8) + v2.0 (phases 9–11) + v2.1 (phases 12–16) archived under `.planning/milestones/`. Phase 17 (Constitution-Gate Dev/Enforce Decoupling — infra, independent of the v2.1 MEM2 chain) remains live in the roadmap.
+**v2.3 shipped 2026-07-22** — the harness's topology is no longer assumed linear (an authority-centred
+contract-relationship *graph*, with the legacy `[pipeline]` slot lowered into it additively rather
+than migrated), it can be *adopted into* an existing brownfield repo through a deterministic
+inventory → plan → manifest → refuse-by-default apply path carried as an ordinary `.workflow/tasks/`
+task, and human review of human-written prose is now an enforceable dated obligation rather than a
+hope — a registry + committed ledger + a guard that fails on BROKEN/STALE_REQUIRED. Ratified as
+ADR-0009 and ADR-0010.
 
-## Current Milestone: v2.3 Contract Graph, Brownfield Adoption, Living Docs
+v1.0 (1–8) + v2.0 (9–11) + v2.1 (12–17) + v2.3 (24–29) are archived under `.planning/milestones/`;
+v2.2 (18–23) is recorded in `MILESTONES.md` with its phase dirs left in place. **No milestone is
+currently in progress** — run `/gsd:new-milestone` to scope the next one.
+
+Two provenance obligations stay open across the boundary (RAT-4, RAT-5) plus one recorded
+harness-wide finding: constitution-plane write-denies are spelled per *tool*, so a write through
+`bash."uv *"` is not denied the way the same write through `Write`/`Edit` is. All three are carried
+in `STATE.md` under *Deferred Items*, with the third deliberately scheduled for repair in the next
+milestone rather than during its own closeout.
+
+## Shipped Milestone: v2.3 Contract Graph, Brownfield Adoption, Living Docs
+
+> ✅ **SHIPPED 2026-07-22.** 10 phases (24, 25, 26, 26.1, 26.2, 27, 27.1, 27.2, 28, 29), 43 plans,
+> 58 tasks, 310 commits over 3 days. All 21 requirements (TOPO-01..07, ADOPT-01..07, DOCSUP-01..07)
+> validated; 16/16 fan-in gates exit 0. Archived to `.planning/milestones/v2.3-*`.
 
 **Goal:** 선형 파이프라인 슬롯을 임의의 프로젝트 간 계약 관계를 담는 결정론적 **권위-중심 contract-relationship graph**로 일반화하고, 그 그래프를 (B) 기존 레포에 하네스를 **도입(brownfield adoption)**하고 (C) 사람이 작성한 문서의 **drift를 탐지·갱신**하는 두 워크플로의 어휘로 사용한다 — 데이터 형상·결정론적 분석기·얇은 워크플로만 추가하고 두 번째 프레임워크/엔진/권위 평면은 만들지 않는다.
 
@@ -49,6 +69,10 @@
 - ✓ **로컬 메모리 웹 UI (v2.1 MEM2-07)** — 127.0.0.1-only 무-네트워크 툴 + DERIVED pointer-index + surface-and-confirm 참조 무결성, 브라우저 왕복 검증 5/5. *(v2.1, Phase 16)*
 
 - ✓ **Adaptive Task Control Plane (v2.2, TCP-01..18)** — 기계 판독 task packet(`.workflow/tasks/`) + 결정론적 7축 위험 라우터(FAST/STANDARD/STRICT/CONTROLLED) + 원자적 상태 관리자(flock+revision CAS) + fail-closed `/phase-gate` + forgery-detecting evidence adapters + immutable HANDOFF·gated fresh-session resume + 사람 승인 lifecycle fixtures + ADR-0008. 904 tests green, origin 푸시. *(v2.2, phases 18–23)*
+
+- ✓ **Contract-Relationship Graph (v2.3 A, TOPO-01..07)** — 사람 승인 relationship record 스키마 + 추가형 `[[contract_graph.relationships]]` 슬롯 + 레거시 `[pipeline]` 추가형 lowering(마이그레이션 아님, 기존 선형 config 바이트 불변) + 도메인 중립 `compile_graph()` + 안정 진단 슬러그 3종 + cycle-safe `direct`/`reverse`/`transitive`(ids + 연결 경로) + `/pipeline`·`pipeline-map`·orchestrator 일반화(새 command·persona 0개, 선형 렌더 바이트 동일) + ADR-0009. *(v2.3, phases 24–25)*
+- ✓ **Brownfield Adoption (v2.3 B, ADOPT-01..07)** — read-only 결정론적 inventory → evidence 분류(observed/inferred/unknown) plan → destination/disposition manifest → refuse-by-default apply를 `.workflow/tasks/` 작업으로(v2.2 CAS/evidence/HANDOFF 재사용, 새 권위 평면 없음) + `(draft_hash, task_revision, git_ref)` 결합 promotion(입력 변경 시 승인 무효) + 구조적 헌법-쓰기 거부 + `/adopt`·`brownfield-adoption` + 3개 도메인 중립 fixture 트리(하나는 CRLF/BOM dirty). *(v2.3, phases 26–27.2)*
+- ✓ **Living Docs (v2.3 C, DOCSUP-01..07)** — `docs/doc-dependencies.toml` registry + committed review ledger(binding id·정확한 digest·disposition만 — 시간·사람·prose·모델 id 없음) + FRESH/BROKEN/STALE_REQUIRED/STALE_ADVISORY/UNCOVERED 게이트 + uncovered 비-회귀 + 파생 staleness 큐·조건부 SessionStart pointer + `/docs-update` drive loop(accepted ADR·`docs/reference/**`·`.memory/derived/**`·contracts·golden 구조적 제외) + ADR-0010. 사람이 세션 밖에서 최초 ledger를 authored(`c32c08d`)하고 ADR-0010을 ratify(`ad4e339`)한 뒤 `docs_guard` exit 1 → 0, 8/8 FRESH. *(v2.3, phases 28–29)*
 
 ### Active
 
@@ -103,6 +127,12 @@
 | **[ADR-0002] 범용 템플릿으로 재정의, 로그파서는 examples/로 강등** | 실제 구현 방향이 크게 바뀜 — 도메인 고정 하네스는 부채. durable 아키텍처(Phase 1–4)는 재사용 가치가 있으므로 도메인·언어 슬롯화 | ✅ Accepted 2026-07-08 |
 | **[ADR-0002] 언어를 하드코딩 대신 설정 슬롯화(.NET+Python은 예시 인스턴스)** | 폴리글랏 기계는 가치, 특정 두 언어 고정은 아님 | ✅ Accepted 2026-07-08 |
 | **[ADR-0002] 도메인 이동은 새 Phase 5로, ADR+해시 재베이스라인 동반** | contracts/는 헌법 평면 — 라이브 drift/contract-guard 게이트가 방어, 의도된 헌법 변경으로 처리 | ✅ Accepted 2026-07-08 |
+| **[ADR-0009] 관계 그래프는 record 모델 + 추가형 lowering (마이그레이션 아님)** | 기존 선형 `[pipeline]` config를 바이트 불변으로 두면서 일반 그래프를 얻는 유일한 방법. identical-or-fail 마이그레이션은 세 개의 살아있는 config를 전부 흔든다 | ✅ Accepted 2026-07-19 |
+| **[ADR-0009] conductor는 새 command·persona 없이 기존 3개 표면을 일반화** | 두 번째 orchestrator/router는 하네스가 명시적으로 금지하는 것. 선형 렌더를 하드코딩 리터럴 회귀 테스트로 바이트 고정해 일반화 비용을 0으로 증명 | ✅ Accepted 2026-07-19 |
+| **[v2.3 B] adoption은 `.workflow/tasks/` 위의 평범한 작업, sibling 권위 평면 아님** | v2.2 CAS·evidence·HANDOFF를 재사용하면 새 상태 기계가 필요 없다. `.workflow/adoption/` 평면은 두 번째 진실 원천이 되었을 것 | ✅ Accepted 2026-07-20 |
+| **[ADR-0010] 사람-docs review 의무 모델 — 해시는 review 부채를 증명하지 prose 정확성을 증명하지 않는다** | semantic 문서 oracle이나 LLM-only freshness 게이트는 CI에서 모델을 돌려야 하고 검증 불가능한 green을 만든다. digest는 "사람이 이 (sources,target) 쌍을 봤다"만 기록 | ✅ Accepted 2026-07-22 |
+| **[v2.3 C] ledger는 사람만 쓴다 — agent 우회 경로를 약화하지 않고 layer 1을 실제로 구현** | self-blessed row와 정직한 seed row는 바이트 동일하다. 오직 사람의 커밋만 둘을 가른다. `ledger_guard`는 `GOLDEN_APPROVE_HUMAN`도 `HARNESS_DEV_BYPASS`도 인정하지 않는다 | ✅ Accepted 2026-07-22 |
+| **[v2.3 closeout] 헌법 평면 drift는 enforcement를 고치지 ADR을 고치지 않는다** | ADR-0001은 4-member 평면을 선언했고 Phase-4 스택은 3개만 강제했다. 내부 감사 두 건이 `proposed` ADR-0010을 `accepted` ADR-0001보다 우선해 인용하며 정반대 수리를 권고했고, 외부 감사가 그 역전을 잡았다 | ✅ Accepted 2026-07-22 |
 
 ## Evolution
 
@@ -122,4 +152,11 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-19 — milestone v2.3 (Contract Graph, Brownfield Adoption, Living Docs) started via `/gsd:new-milestone`. Design scoped by a sol-vs-fable debate panel (independent proposals → cross-rebuttal → codex sol merged FINAL), human-approved (`.planning/research/v2.3-scoping-FINAL.md`); all 3 themes in one milestone, 21 requirements (TOPO/ADOPT/DOCSUP), phases 24–29. Requirements + roadmap derived directly from the approved design; research skipped (design complete). Prior milestone v2.2 (Adaptive Task Control Plane, phases 18–23) shipped + pushed (recorded in MILESTONES.md this session; formal `/gsd:complete-milestone` archive of phase dirs deferred — new numbering 24+ avoids collision).*
+*Last updated: 2026-07-22 after the v2.3 milestone. Shipped 10 phases / 43 plans / 58 tasks over 3 days and 310 commits; 21/21 requirements validated; 16/16 fan-in gates exit 0. Closed with 8 acknowledged deferred items (see `STATE.md`), of which the load-bearing three are RAT-4, RAT-5, and the per-tool spelling of the constitution-plane write-denies. No milestone is in progress — next step is `/gsd:new-milestone`.*
+
+<details>
+<summary>Previous footer — v2.3 start (2026-07-19)</summary>
+
+*2026-07-19 — milestone v2.3 (Contract Graph, Brownfield Adoption, Living Docs) started via `/gsd:new-milestone`. Design scoped by a sol-vs-fable debate panel (independent proposals → cross-rebuttal → codex sol merged FINAL), human-approved (`.planning/research/v2.3-scoping-FINAL.md`); all 3 themes in one milestone, 21 requirements (TOPO/ADOPT/DOCSUP), phases 24–29. Requirements + roadmap derived directly from the approved design; research skipped (design complete). Prior milestone v2.2 (Adaptive Task Control Plane, phases 18–23) shipped + pushed (recorded in MILESTONES.md this session; formal `/gsd:complete-milestone` archive of phase dirs deferred — new numbering 24+ avoids collision).*
+
+</details>

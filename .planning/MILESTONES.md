@@ -1,5 +1,96 @@
 # Milestones
 
+## v2.3 Contract Graph, Brownfield Adoption, Living Docs (Shipped: 2026-07-22)
+
+**Phases completed:** 10 phases (24, 25, 26, 26.1, 26.2, 27, 27.1, 27.2, 28, 29), 43 plans, 58 tasks
+
+**Timeline:** 2026-07-19 → 2026-07-22 (3 days, 310 commits)
+
+**Delivered:** Three orthogonal themes on top of the v2.2 task-control plane — a general contract
+*graph* replacing the linear pipeline assumption, a deterministic brownfield *adoption* path that
+can propose but never self-bless, and a *living-docs* gate that makes human review of prose an
+enforceable, dated obligation instead of a hope.
+
+**Key accomplishments:**
+
+- **Theme A — contract graph.** A ratified Draft 2020-12 relationship record, an additive
+  `[[contract_graph.relationships]]` TOML slot in both the project and workspace loaders, and a
+  single deterministic lowering that folds every legacy `[pipeline].edges` entry into the graph and
+  fails on duplicate-id / duplicate-semantic-edge / contradiction — with the three existing linear
+  configs left byte-unchanged. Over it: a domain-neutral `compile_graph()` with three stable
+  diagnostic slugs and cycle-safe `direct`/`reverse`/`transitive` queries returning ids *and* the
+  connecting paths. The three EXISTING conductor surfaces (`/pipeline`, `pipeline-map`,
+  `orchestrator`) were generalized to consume it — no new command, no new persona — with the linear
+  render held byte-identical by a hardcoded literal-text regression. Ratified as ADR-0009.
+
+- **Theme B — brownfield adoption.** A read-only deterministic inventory → evidence-classified
+  (observed/inferred/unknown) plan → complete destination manifest → refuse-by-default apply,
+  carried as an ordinary `.workflow/tasks/` task that reuses the v2.2 CAS, evidence and HANDOFF
+  machinery rather than inventing an adoption authority plane. Promotion is bound to a fresh
+  `(draft_hash, task_revision, git_ref)` triple, so any input change invalidates the approval.
+  Shipped as one `/adopt` command plus a `brownfield-adoption` skill, proven by three checked-in
+  domain-neutral fixture trees (polyglot-single, client-server, partial-collision) driven end to end,
+  one of them deliberately CRLF/BOM-dirty.
+
+- **Theme C — living documentation.** `docs/doc-dependencies.toml` binds stable source selectors to
+  human-authored targets; a committed ledger records only binding id, exact reviewed digest and
+  disposition — no timestamps, no human names, no prose copies, no model identifiers. The guard
+  classifies FRESH / BROKEN / STALE_REQUIRED / STALE_ADVISORY / UNCOVERED, fails on the first two,
+  warns on the third, and enforces uncovered-count non-regression. A derived staleness queue and a
+  conditional one-line SessionStart pointer surface it without hand-editing anything. The
+  `/docs-update` drive loop structurally excludes accepted ADRs, `docs/reference/**`,
+  `.memory/derived/**`, contracts and goldens. Ratified as ADR-0010.
+
+- **The human ratification actually happened, and the gate held afterwards.** The first
+  `docs/.docs-review-ledger.toml` was hand-authored by the human outside an agent session
+  (`c32c08d`) and ADR-0010 was accepted (`ad4e339`); `docs_guard` moved exit 1 → exit 0 with 8/8
+  bindings FRESH. `ledger_guard.decide()` was then re-verified *after* the ledger existed and still
+  DENYs under `{}`, `GOLDEN_APPROVE_HUMAN`, `HARNESS_DEV_BYPASS`, and both together — which is the
+  only test of that gate that means anything. Phase-29 verification additionally drove the loop
+  green → red → green in a throwaway worktree rather than trusting the green.
+
+- **Four inserted phases closing adversarial-review findings, none deferred quietly.** 26.1
+  tightened the generic secret pattern that was excluding this repo's own `ci.yml`; 26.2 then found
+  that 26.1's charset-diversity requirement was *inert* under `re.IGNORECASE` and that its new digit
+  requirement had opened a false-negative seam feeding the evidence-redaction path — the opposite
+  direction of risk, and the more dangerous one. 27.1 and 27.2 closed path-normalization and
+  confinement bypasses on the apply path and replaced a concurrency test that could not fail.
+
+- **A constitution-plane drift repair that the gate itself caught.** ADR-0001 declares a FOUR-member
+  constitution plane; the Phase-4 stack enforced three, leaving `docs/glossary.md` agent-writable
+  while four documents said it was gated. The enforcement was fixed, never the ADR. Two internal
+  audits had recommended the *opposite* repair by citing a then-`proposed` ADR-0010 over an
+  `accepted` ADR-0001; an external audit caught the inversion. The lesson is recorded rather than
+  smoothed over: check an ADR's Status before citing it.
+
+**Gates at close:** 16/16 fan-in gates exit 0 — pytest 1500 passed / 8 snapshots, harness_lint 323,
+docs_guard unit 252, cross-repo 31, golden 17, GEN-04 42, lifecycle-eval 20/20 fixtures, emit
+round-trip 100 artifacts with an empty porcelain, contract-drift clean.
+
+### Known Gaps
+
+Known deferred items at close: 8 (see STATE.md Deferred Items). The load-bearing ones:
+
+- **RAT-4** — the Phase-28 constitution-plane schema write landed via `HARNESS_DEV_BYPASS` per
+  ADR-0007. A dev bypass is explicitly not a human ratification. Blocks nothing mechanically; it is
+  an unclosed provenance obligation, and CODEOWNERS at PR merge is the real gate.
+- **RAT-5** — ADR-0004/0005/0006/0007 remain unmerged to `main`. The durable repo-config half landed
+  (`f009306` restored `main` as the default branch and made the CI gate required on it); the merge
+  itself is outstanding. Structural, not neglect: a solo-authored PR cannot fire a CODEOWNERS gate
+  whose sole owner is the author.
+- **Constitution-plane write-denies are spelled per-tool.** The deny fires on the `Write|Edit`
+  matcher, but `bash."uv *"` is an unprompted `allow`, so the same write spelled through bash
+  resolves to `allow`. `contract_guard` shares the shape, so `contracts/**` and `golden/**` inherit
+  it. Found by the phase-29 re-verification and recorded nowhere before that. Human decision at
+  close: record now, repair next milestone — with ADR-0010 clause 3b's universal phrasing corrected
+  alongside it.
+- **Phase 27 has no VERIFICATION.md.** Recorded as debt and deliberately NOT back-filled: a
+  closeout-authored verification of a long-finished phase claims an authority it cannot have.
+- **`ruff check .` is not a CI gate** and reports 617 pre-existing errors, ~180 of them in the
+  vendored `docs/references/opencode-matt-workflows/**` tree missing from `extend-exclude`.
+
+---
+
 ## v2.2 Adaptive Task Control Plane (Shipped: 2026-07-19)
 
 **Phases completed:** 6 phases (18–23), 21 plans

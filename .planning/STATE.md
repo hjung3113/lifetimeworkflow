@@ -1,69 +1,34 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.3
-milestone_name: A)*
-status: ratifications-discharged-docs-guard-green
-stopped_at: "RAT-1/2/3 discharged by the human; docs-guard exit 1 -> 0, 8/8 bindings FRESH. Next: verify-phase 29, then complete-milestone"
-last_updated: "2026-07-22T01:40:00.000Z"
-last_activity: 2026-07-21
+milestone_name: Contract Graph, Brownfield Adoption, Living Docs
+status: Awaiting next milestone
+stopped_at: "v2.3 archived. Open: RAT-4, RAT-5, and the per-tool spelling of the constitution-plane write-denies (all non-blocking, in Deferred Items). Next: /gsd:new-milestone."
+last_updated: "2026-07-22T02:10:00.000Z"
+last_activity: 2026-07-22 — Milestone v2.3 completed and archived
 progress:
   total_phases: 10
-  completed_phases: 8
+  completed_phases: 10
   total_plans: 43
-  completed_plans: 42
-  percent: 98
-  counter_caveat: >-
-    These counters are a MECHANICAL count of SUMMARY files on disk and they OVERSTATE. Phases 28 and
-    29 are NOT closed while RAT-1..RAT-3 are outstanding, and 29-04 is PARTIAL (2 of its 4 tasks are
-    blocking-human). The authoritative record is the per-requirement evidence table in
-    .planning/v2.3-MILESTONE-AUDIT.md — never these percentages. The v2.1 audit recorded this exact
-    hazard about its own milestone_complete / 117% line.
+  completed_plans: 43
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-07-18)
+See: .planning/PROJECT.md (updated 2026-07-22)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 29 — docs drive loop + adoption integration + **v2.3 milestone closeout**
+**Current focus:** None — v2.3 shipped 2026-07-22. Next milestone not yet scoped (`/gsd:new-milestone`).
 
 ## Current Position
 
-Phase: 29 (docs-drive-loop-adoption-integration-closeout-v2-3-c) — CLOSING
-Plan: 5 of 5 (29-01/02/03/05 landed; 29-04 PARTIAL — tasks 2 and 4 are `gate="blocking-human"`)
-Status: **RAT-1/2/3 DISCHARGED 2026-07-22 — `docs-guard` is GREEN.** The human ratified ADR-0010
-(`ad4e339`) and authored the first `docs/.docs-review-ledger.toml` (`c32c08d`). `python -m
-tools.docs_guard` moved **exit 1 → exit 0**, all **8 bindings FRESH**, 7 uncovered
-(`uncovered_max = 7`). The last red gate of v2.3 is closed. `ledger_guard` re-verified AFTER the
-file existed: still DENY under `{}`, `GOLDEN_APPROVE_HUMAN`, `HARNESS_DEV_BYPASS`, and both — the
-gate holds post-ratification, which is the only test of it that matters.
-
-Preceded by a quick task (`20260722-glossary-constitution-plane-drift`) that had to land first:
-ADR-0001:48 declares a FOUR-member constitution plane and the Phase-4 stack enforced three, so
-`docs/glossary.md` was agent-writable while four documents said it was gated. Fixed the enforcement,
-never the ADR. Two Claude audits had recommended the OPPOSITE repair by citing ADR-0010 (then
-`proposed`) over ADR-0001 (`accepted`); an external audit caught the inversion. That repair moved
-four binding digests, so the ledger was authored against freshly re-derived values, not the stale
-`29-04-SUMMARY.md` proposal.
-
-`lifecycle-eval-shadow-metrics` classified **FRESH, not amber**, despite being repointed — because
-`first_seen-unratified` compares against the PREVIOUS COMMITTED ledger and this is the first. The
-repoint landing BEFORE the ledger is why there was no amber cycle; the plan's A→B→C→ADR→ledger
-ordering was chosen for exactly that.
-
-Machinery for Themes A, B and C: built, observed green. Gates at ratification: **1500 passed**,
-8 snapshots, contract-drift OK, emit round-trip clean, harness_lint 323 passed.
-
-**Still outstanding: RAT-4** (ratify the Phase-28 `HARNESS_DEV_BYPASS` schema write) and **RAT-5**
-(merge ADR-0004/0005/0006/0007 to `main`) — both non-blocking; the durable fix for RAT-5 is flipping
-the GitHub default branch back to `main`.
-Both earlier CI reds are repaired (quick task `20260721-ci-red-lifecycle-eval-golden-tmp-path`).
-Known non-gate red, NOT introduced here: `ruff check .` reports 617 pre-existing errors, ~180 of
-them in the vendored `docs/references/opencode-matt-workflows/**` tree that is missing from
-`extend-exclude`. Predates this work; recorded, not silently fixed.
-Last activity: 2026-07-22
+Phase: Milestone v2.3 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-07-22 — Milestone v2.3 completed and archived
 
 ## Performance Metrics
 
@@ -330,6 +295,22 @@ Items acknowledged and carried forward from previous milestone close:
 |----------|------|--------|-------------|
 | testing (isolation) | DEF-05-02-1: 3 commit_gate drift-block tests leak the live GOLDEN_APPROVE_HUMAN token (missing delenv) → fail only when the session token is exported; green in CI. Suggested fix: add `monkeypatch.delenv("GOLDEN_APPROVE_HUMAN", raising=False)`. See phases/05-despecialization/deferred-items.md | open | 05-02 |
 
+Items acknowledged and deferred at the **v2.3 milestone close on 2026-07-22**. The pre-close
+artifact audit reported 2 open items (`verification_gaps`: phases 28 and 29, both `human_needed`);
+both were acknowledged rather than resolved, because in both cases the "gap" is a human
+ratification obligation and not an unbuilt or defective artifact.
+
+| Category | Item | Status | Deferred At |
+|----------|------|--------|-------------|
+| verification gap | Phase 28 `28-VERIFICATION.md` is `human_needed`. Its blocking item was RAT-2, discharged 2026-07-22 (`ad4e339`). What remains under it is RAT-4 below. | acknowledged | v2.3 close |
+| verification gap | Phase 29 `29-VERIFICATION.md` is `human_needed` at score 4/4 — the status is driven by the two decisions below, both of which the human answered at close, not by any failed criterion. 16/16 fan-in gates exit 0. | acknowledged | v2.3 close |
+| ratification | **RAT-4** — the Phase-28 constitution-plane schema write (`contracts/harness/docs/doc-dependencies.schema.json`, plan 28-01, plus the WR-02 pattern rebaseline) landed via `HARNESS_DEV_BYPASS` per ADR-0007. A dev bypass is explicitly NOT a human ratification. Blocks nothing mechanically; it is an unclosed provenance obligation. CODEOWNERS at PR merge is the real gate. | open | v2.3 close |
+| ratification | **RAT-5** — ADR-0004/0005/0006/0007 unmerged to `main`. The durable repo-config fix landed (`f009306` restored `main` as the default branch and made the CI gate required on it), so the remaining half is the merge itself. Structural, not neglect: a solo-authored PR cannot fire a CODEOWNERS gate whose sole owner is the author. | open | v2.3 close |
+| security (harness-wide) | **Constitution-plane write-denies are spelled per-tool.** The ledger deny fires only on the `Write\|Edit` matcher (`.claude/settings.json:160-168`; `.opencode/plugin/ledger-guard.ts:70` returns early unless the tool is write/edit), while `harness/permission-matrix.json:9` grants `"uv *": "allow"` — so the same write spelled through bash resolves to `allow`. `contract_guard` shares the shape, so `contracts/**` and `golden/**` inherit the identical route. Pre-existing and recorded nowhere before the phase-29 re-verification found it. **Human decision at close: record only, repair in the next milestone** — repairing a gate during its own closeout is the wrong discipline, and the fix is harness-wide (a PreToolUse `Bash` hook that denies constitution-plane writes independent of spelling). Carry the ADR-0010 clause-3b wording correction with it. See `phases/29-.../deferred-items.md`. | open | v2.3 close |
+| bookkeeping | 29-04 Task 4 closed as **discharged-via-Option-A**: its `done` condition presumed Option B's row replacement, but the human seeded all eight bindings in one round, so no row was replaced. SC-3 is the governing contract and holds. | resolved | v2.3 close |
+| nyquist / verification debt | Phase 27 has no `VERIFICATION.md`. Recorded by the v2.3 audit as debt and NOT back-filled — a closeout-authored verification of a long-finished phase claims an authority it cannot have. | open | v2.3 close |
+| lint | `ruff check .` reports 617 pre-existing errors, ~180 in the vendored `docs/references/opencode-matt-workflows/**` tree missing from `extend-exclude`. `ruff check` is not a CI gate at all. Unchanged across v2.3; worth a decision, not a silent carry. | open | v2.3 close |
+
 ## Session Continuity
 
 Last session: 2026-07-21
@@ -338,64 +319,4 @@ Resume file: .planning/v2.3-MILESTONE-AUDIT.md
 
 ## Operator Next Steps
 
-**► NEXT — RAT-1/2/3 are DONE. `docs-guard` is green. Two non-blocking ratifications remain.**
-
-Discharged 2026-07-22, by the human, outside an agent session:
-
-- **RAT-2** — ADR-0010 ratified (`ad4e339`): status flipped from proposed to accepted, date and
-  deciders recorded. `registry._adr_status` now returns accepted.
-- **RAT-1 + RAT-3** — first `docs/.docs-review-ledger.toml` authored and committed (`c32c08d`),
-  which IS the ratification of the eight seeded bindings. `python -m tools.docs_guard`:
-  **exit 1 → exit 0**, 8/8 FRESH, 7 uncovered against `uncovered_max = 7`.
-
-Authored against digests re-derived at `27acf96`, NOT the `29-04-SUMMARY.md` proposal — the
-constitution-plane drift repair that had to land first moved four of the eight.
-
-`lifecycle-eval-shadow-metrics` came out FRESH rather than amber despite being repointed:
-`first_seen-unratified` compares against the previous COMMITTED ledger, and this is the first one.
-Repointing before the ledger existed is why no amber cycle occurred — the A→B→C→ADR→ledger ordering
-was chosen for that.
-
-Re-verified AFTER the ledger existed, which is the only meaningful test of the gate:
-`ledger_guard.decide()` still DENIES under `{}`, `GOLDEN_APPROVE_HUMAN`, `HARNESS_DEV_BYPASS`, and
-both together. No token opens that door, by design — unlike `contract_guard`, this domain has no
-opt-out at all.
-
-Still open, both NON-blocking and neither an agent's to do:
-
-**RAT-5 — repo-config half DONE 2026-07-22.** The GitHub default branch is back to `main`
-(`origin/HEAD` re-synced), so CODEOWNERS can finally fire on a PR. Branch protection now exists on
-`main` with `gate` as a REQUIRED status check, `strict: true` (PR must be up to date), force-push
-and deletion blocked, `enforce_admins: false`.
-
-Deliberately did NOT enable "Require review from Code Owners": in a solo repo the sole code owner is
-also the PR author, GitHub forbids self-approval, and it would need an admin waiver on every merge.
-`.github/CODEOWNERS:14-19` records that constraint. Requiring the `gate` check instead enforces the
-machine half with no self-approval trap — the human half is already enforced in-session by the
-ledger / contract / golden hooks. That is "machines gate, humans ratify" as repo config.
-
-**Still open:**
-
-1. **RAT-4 — ratify the Phase-28 constitution-plane schema write.**
-   `contracts/harness/docs/doc-dependencies.schema.json` (plan 28-01) landed via
-   `HARNESS_DEV_BYPASS` per ADR-0007, which is explicitly NOT a human ratification and was never
-   claimed as one. `28-01-SUMMARY.md` says it must be picked up by the CODEOWNERS review — so it is
-   discharged BY the PR below, not as a separate act.
-2. **RAT-5 — the merge itself.** The branch is **614 commits ahead of `origin/main`** and **7 ADRs
-   are unmerged** (0004-0010; the audit said 0004-0007, written before 0008/0009/0010 landed).
-   `main` carries only 0001/0002/0003 + README. Deferred until after
-   `/gsd:verify-phase 29` + `/gsd:complete-milestone`, so the PR does not carry a milestone that is
-   still missing its own verification report.
-
-Then: `/gsd:verify-phase 29` (its VERIFICATION.md is the last missing one), and
-`/gsd:complete-milestone`.
-
-After RAT-1, re-run `uv run python -m tools.docs_guard` on the FOLLOWING commit to confirm exit 0.
-
-Then: `/gsd:verify-phase 29`, and `/gsd:complete-milestone` — which moves committed history and is
-deliberately not automated inside plan 29-05.
-
-**Non-blocking, recommended before close:** give `tools/lifecycle_eval/tests/` a `conftest.py`
-matching its eighteen siblings (its CI step errors at collection today), and close 15-REVIEW CR-01
-by switching `emit-drift` off bare `git diff` onto the `git add -A` + `--cached` idiom that already
-exists at `ci.yml:238`.
+- Start the next milestone with /gsd-new-milestone
