@@ -363,13 +363,29 @@ opt-out at all.
 
 Still open, both NON-blocking and neither an agent's to do:
 
+**RAT-5 — repo-config half DONE 2026-07-22.** The GitHub default branch is back to `main`
+(`origin/HEAD` re-synced), so CODEOWNERS can finally fire on a PR. Branch protection now exists on
+`main` with `gate` as a REQUIRED status check, `strict: true` (PR must be up to date), force-push
+and deletion blocked, `enforce_admins: false`.
+
+Deliberately did NOT enable "Require review from Code Owners": in a solo repo the sole code owner is
+also the PR author, GitHub forbids self-approval, and it would need an admin waiver on every merge.
+`.github/CODEOWNERS:14-19` records that constraint. Requiring the `gate` check instead enforces the
+machine half with no self-approval trap — the human half is already enforced in-session by the
+ledger / contract / golden hooks. That is "machines gate, humans ratify" as repo config.
+
+**Still open:**
+
 1. **RAT-4 — ratify the Phase-28 constitution-plane schema write.**
    `contracts/harness/docs/doc-dependencies.schema.json` (plan 28-01) landed via
    `HARNESS_DEV_BYPASS` per ADR-0007, which is explicitly NOT a human ratification and was never
-   claimed as one.
-2. **RAT-5 — merge ADR-0004/0005/0006/0007 to `main`,** still behind a CODEOWNERS gate that
-   structurally cannot fire on a solo-authored PR. Durable fix is repo-config: flip the GitHub
-   default branch back to `main`.
+   claimed as one. `28-01-SUMMARY.md` says it must be picked up by the CODEOWNERS review — so it is
+   discharged BY the PR below, not as a separate act.
+2. **RAT-5 — the merge itself.** The branch is **614 commits ahead of `origin/main`** and **7 ADRs
+   are unmerged** (0004-0010; the audit said 0004-0007, written before 0008/0009/0010 landed).
+   `main` carries only 0001/0002/0003 + README. Deferred until after
+   `/gsd:verify-phase 29` + `/gsd:complete-milestone`, so the PR does not carry a milestone that is
+   still missing its own verification report.
 
 Then: `/gsd:verify-phase 29` (its VERIFICATION.md is the last missing one), and
 `/gsd:complete-milestone`.
