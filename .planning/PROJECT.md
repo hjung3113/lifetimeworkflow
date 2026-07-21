@@ -34,6 +34,42 @@ harness-wide finding: constitution-plane write-denies are spelled per *tool*, so
 in `STATE.md` under *Deferred Items*, with the third deliberately scheduled for repair in the next
 milestone rather than during its own closeout.
 
+## Current Milestone: v2.4 Enforcement Integrity, Carried Debt, Lane Discipline
+
+**Goal:** close the gap between what this harness *declares* and what it *enforces*, discharge the
+debt carried across three milestones, and finish the task-lifecycle discipline left unbuilt by v2.2
+— so that every control the documentation claims exists actually fires, and every carried item
+reaches a recorded disposition instead of a fourth carry.
+
+**Target features (8 phases, 계속 번호 30–37):**
+- **A. Gate Integrity** *(SEAL-01..05, phases 30–33)* — a deny-domain REGISTRY (constitution /
+  secret / review-ledger declared separately with owner, bypass semantics, covered tool surfaces and
+  runtime adapters, plus per-domain drift tests) → a ratified threat model and **chosen enforcement
+  posture** for the uncovered bash surface → implementation of that posture in both runtimes with
+  live negative controls → `secret_scan` reading its patterns from the contract, RAT-4's disposition
+  and a portable ratification record.
+- **B. Carried Debt** *(DEBT-01..04, phases 34–35)* — `ruff check` becomes a required CI gate with a
+  ratcheting baseline; phase-27 verification disposition; compile-the-graph-once (28 IN-03);
+  `DEF-05-02-1` verified and closed.
+- **C. Lane Discipline** *(LANE-01..04, phases 36–37)* — the v2.2 TCP-F carry: discipline skills
+  wired into the task lifecycle, a STRICT+ adversarial review panel as a declared lane requirement,
+  specialist allowlist + capability-neutral routing, and skill `registry.lock` + adapter CI.
+
+**Key context (ratified design):** `.planning/research/v2.4-scoping-FINAL.md`. Scoped by one codex
+sol review pass (low effort, read-only, line-cited) over a Claude-authored draft — NOT the full
+sol-vs-fable debate panel used for v2.2/v2.3, by explicit instruction. The review corrected three
+claims this repo had made about itself, most importantly withdrawing the v2.3 close's accusation
+that ADR-0010 clause 3b "overclaims" (it does not; it scopes layer 1 explicitly to
+`PreToolUse(Write|Edit)`, so the defect is a MISSING FOURTH LAYER — corrected by `455b366`).
+**Recorded deviation:** the reviewer advised cutting Themes C *and* D and shipping five phases; the
+human kept C and cut D, accepting the stated sizing risk.
+
+**OUT of scope (Theme D, carried explicitly to the next milestone):** impact-driven task-evidence
+policy (EVOL-01, needs its own ADR); contract versioning/compatibility engine (EVOL-02); `examples/**`
+instance-local docs-registry overlay (EVOL-03); TCP-F05 signed external attestation + STRICT
+rollback. Also out: repairing GitHub's trust model (branch protection, reviewer eligibility) — the
+harness may define a portable ratification record, not fix CODEOWNERS for a solo owner.
+
 ## Shipped Milestone: v2.3 Contract Graph, Brownfield Adoption, Living Docs
 
 > ✅ **SHIPPED 2026-07-22.** 10 phases (24, 25, 26, 26.1, 26.2, 27, 27.1, 27.2, 28, 29), 43 plans,

@@ -21,7 +21,7 @@ file keeps only the milestone-level index so it stays constant-size as milestone
 - ✅ **v2.1 MEM2 — Process Memory & Provenance Reframe** — Phases 12–17 (shipped 2026-07-18)
 - ✅ **v2.2 Adaptive Task Control Plane** — Phases 18–23 (shipped 2026-07-19)
 - ✅ **v2.3 Contract Graph, Brownfield Adoption, Living Docs** — Phases 24–29 (shipped 2026-07-22)
-- 📋 **Next milestone** — not yet scoped (`/gsd:new-milestone`)
+- 🚧 **v2.4 Enforcement Integrity, Carried Debt, Lane Discipline** — Phases 30–37 (in progress)
 
 ## Phases
 
@@ -96,24 +96,59 @@ Full detail: `.planning/milestones/v2.3-ROADMAP.md`. Audit: `.planning/milestone
 
 </details>
 
-### 📋 Next Milestone — not yet scoped
+### 🚧 v2.4 Enforcement Integrity, Carried Debt, Lane Discipline (Phases 30–37) — IN PROGRESS
 
-Run `/gsd:new-milestone` to scope it. Items already known to be waiting, carried in
-`.planning/STATE.md` under *Deferred Items*:
+Design: `.planning/research/v2.4-scoping-FINAL.md` (Claude draft + one codex-sol review pass,
+human-approved). Requirements: `.planning/REQUIREMENTS.md`.
 
-- **RAT-4 / RAT-5** — two open provenance obligations (the Phase-28 `HARNESS_DEV_BYPASS`
-  constitution write; four ADRs unmerged to `main`). Neither blocks mechanically.
-- **Constitution-plane write-denies are spelled per-tool** — the deny fires on `Write|Edit` while
-  `bash."uv *"` is an unprompted `allow`, and `contract_guard` shares the shape. Decided at the v2.3
-  close: record now, repair here. **Correction (2026-07-22, external review):** the earlier framing
-  that ADR-0010 clause 3b "overclaims" was WRONG. Clause 3b names the surface each of its three
-  layers covers — layer 1 is explicitly `PreToolUse(Write|Edit)` — so it claims no universal
-  coverage. What is missing is a FOURTH layer for the bash surface, not a wording fix.
-- **`ruff check` is not a CI gate**, and carries 617 pre-existing errors.
-- **`examples/**` instance-local docs-registry overlay** — the seam left deliberately open by
-  28-CONTEXT D-14.
-- **Deferred requirement sets** — TCP-F01..F05 (v2.2 carry), impact-driven task-evidence policy,
-  a contract versioning/compatibility engine, signed external evidence attestation, STRICT rollback.
+**Goal:** close the gap between what this harness *declares* and what it *enforces*, discharge the
+debt carried across three milestones, and finish the task-lifecycle discipline left unbuilt by v2.2.
+Thesis, quoting ADR-0010 back at the harness: *a layer that is only a data row is a claimed control
+that does not exist — worse than a missing layer, because it reads as covered.*
+
+- [ ] **Phase 30: Deny-Domain Registry** *(v2.4 A)* — declare every path-deny domain
+  (`contract_guard` constitution, `secret_scan` secret paths, `ledger_guard` review ledger) with its
+  owner, bypass semantics, covered tool surfaces and runtime adapters; a `harness_lint` drift test
+  fails when a hook's live constant disagrees with its declaration. The domains stay **distinct** —
+  this is an inventory, not a merge. (SEAL-01)
+- [ ] **Phase 31: Threat Model + Posture ADR** *(v2.4 A)* — a ratified ADR choosing the enforcement
+  posture for the uncovered bash surface (filesystem-level / constrained allowlist / protected
+  wrappers / documented residual) and stating what stays uncovered. Ratified BEFORE enforcement is
+  written. (SEAL-02)
+- [ ] **Phase 32: Implement the Posture** *(v2.4 A)* — the chosen posture in both runtimes with
+  per-class deletion proofs and live negative controls, plus a superseding ADR recording the newly
+  covered surface. Acceptance is written against the declared posture, never "all spellings". (SEAL-03)
+- [ ] **Phase 33: Contract-Driven Secret Scan + Ratification Record** *(v2.4 A)* — `secret_scan`
+  reads its patterns from the gate registry instead of hardcoding them; RAT-4 reaches a recorded
+  disposition; the harness defines a portable ratification record that does not depend on a git host
+  assigning a reviewer. (SEAL-04, SEAL-05)
+- [ ] **Phase 34: Ruff as a Required CI Gate** *(v2.4 B)* — vendored tree into `extend-exclude`, a
+  ratcheting baseline for the genuine remainder, and the job made blocking. Owns its own phase
+  because turning 617 findings into a gate is the risky one. (DEBT-01)
+- [ ] **Phase 35: Carried-Debt Dispositions** *(v2.4 B)* — phase-27 verification disposition (honest
+  stamp or written off, never manufactured); compile-the-graph-once (28 IN-03) with a recorded
+  decision on `impact.py`'s signature; `DEF-05-02-1` verified and closed. (DEBT-02, DEBT-03, DEBT-04)
+- [ ] **Phase 36: Discipline Skills + Adversarial Review Panel** *(v2.4 C)* — clarify/TDD/diagnose/
+  domain-modeling skills wired into the task lifecycle so a lane's discipline is executable, and a
+  STRICT+ adversarial multi-expert panel as a declared lane requirement, reusing the Phase-10 fan-out
+  substrate. (LANE-01, LANE-02)
+- [ ] **Phase 37: Capability Routing + Registry Lock + Closeout** *(v2.4 C)* — specialist allowlist
+  and capability-neutral routing, skill `registry.lock` + adapter CI, and the milestone closeout
+  against the full gate fan-in. (LANE-03, LANE-04)
+
+**DAG:** `30 → 31 → 32` is a hard chain — the registry must exist before the posture can be reasoned
+about, and the posture must be ratified before enforcement is written. `33` depends on 30 only.
+`34`, `35` and `36 → 37` are otherwise parallel.
+
+**Recorded deviation:** the review advised five phases (cut Themes C and D); the human kept C and cut
+D. The named failure mode — phase 32 expanding without bound — is mitigated by phase 31's posture ADR
+being a hard precondition. If 31 cannot pick a posture, stop rather than proceed.
+
+### 📋 Carried to a later milestone
+
+- **EVOL-01** impact-driven task-evidence policy (needs its own ADR) · **EVOL-02** contract
+  versioning/compatibility engine · **EVOL-03** `examples/**` instance-local docs-registry overlay ·
+  **TCP-F05** signed external attestation + STRICT rollback (needs a breaking ADR).
 
 ## Progress
 
@@ -133,6 +168,14 @@ Run `/gsd:new-milestone` to scope it. Items already known to be waiting, carried
 | 27.2 Adoption Apply Robustness (INSERTED) | v2.3 | 2/2 | Complete | 2026-07-21 |
 | 28. Human-Docs Registry, Guard, Queue | v2.3 | 9/9 | Complete | 2026-07-21 |
 | 29. Docs Drive Loop + Closeout | v2.3 | 5/5 | Complete | 2026-07-22 |
+| 30. Deny-Domain Registry | v2.4 | 0/TBD | Not started | - |
+| 31. Threat Model + Posture ADR | v2.4 | 0/TBD | Not started | - |
+| 32. Implement the Posture | v2.4 | 0/TBD | Not started | - |
+| 33. Secret Scan + Ratification Record | v2.4 | 0/TBD | Not started | - |
+| 34. Ruff as a Required CI Gate | v2.4 | 0/TBD | Not started | - |
+| 35. Carried-Debt Dispositions | v2.4 | 0/TBD | Not started | - |
+| 36. Discipline Skills + Review Panel | v2.4 | 0/TBD | Not started | - |
+| 37. Capability Routing + Closeout | v2.4 | 0/TBD | Not started | - |
 
 Per-phase plan counts for v1.0–v2.2 are preserved in the milestone archives under
 `.planning/milestones/`; they are not restated here so this table stays a fixed size.
