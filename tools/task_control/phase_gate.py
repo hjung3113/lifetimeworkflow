@@ -2,12 +2,20 @@
 
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
-from typing import Any
 
-from tools.task_control.manager import ATTESTATION_SCHEMA, TaskControlError, _json, _required_artifacts, _validate_document, missing_artifacts, orphan_artifacts, sha256, show
+from tools.task_control.manager import (
+    ATTESTATION_SCHEMA,
+    TaskControlError,
+    _json,
+    _required_artifacts,
+    _validate_document,
+    missing_artifacts,
+    orphan_artifacts,
+    sha256,
+    show,
+)
 from tools.task_packet.transitions import required_artifacts_for_phase
 
 

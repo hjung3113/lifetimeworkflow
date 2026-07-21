@@ -10,9 +10,8 @@ Parsing is delegated to the shared ``parse_frontmatter`` (Plan 02) — no per-te
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import json
+from pathlib import Path
 
 import pytest
 

@@ -7,23 +7,23 @@ must exist before a state transition can rely on them.
 
 from __future__ import annotations
 
+import fcntl
 import hashlib
 import json
 import os
 import re
-import tempfile
-import fcntl
 import subprocess
+import tempfile
 from contextlib import nullcontext
 from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft202012Validator
 
+from tools.evidence.capture import EvidenceError, validate_evidence
 from tools.risk_router.router import REPO_ROOT as RISK_ROUTER_ROOT
 from tools.risk_router.router import decide, load_overlay, load_policy
 from tools.task_packet.transitions import is_transition_allowed, required_artifacts_for_phase
-from tools.evidence.capture import EvidenceError, validate_evidence
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 STATE_SCHEMA = REPO_ROOT / "contracts/harness/task-control/state.schema.json"

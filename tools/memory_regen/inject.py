@@ -8,18 +8,20 @@ agreements are absent the directive is omitted and the banner leads again.
 
 from __future__ import annotations
 
-import sys
 import json
+import sys
 from pathlib import Path
 
 from tools.contract_drift.drift import run_gate
-from tools.harness_lint import parse_frontmatter
-from tools.harness_lint.agreements import iter_agreement_files, load_agreement
 from tools.handoff.handoff import (
     HandoffError,
     packet_root_from_handoff,
+)
+from tools.handoff.handoff import (
     validate as validate_handoff,
 )
+from tools.harness_lint import parse_frontmatter
+from tools.harness_lint.agreements import iter_agreement_files, load_agreement
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 DERIVED_DIR = _REPO_ROOT / ".memory" / "derived"

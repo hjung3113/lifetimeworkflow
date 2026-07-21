@@ -11,11 +11,21 @@ from pathlib import Path
 
 import pytest
 
-from tools.risk_router.intake import create_packet
 import tools.evidence.capture as capture_module
 from tools.evidence.capture import add_finding, capture
+from tools.risk_router.intake import create_packet
 from tools.risk_router.router import decide, load_policy
-from tools.task_control.manager import TaskControlError, attest, block, create, missing_artifacts, orphan_artifacts, refresh_ref, resume, show, transition, validate
+from tools.task_control.manager import (
+    TaskControlError,
+    attest,
+    block,
+    create,
+    orphan_artifacts,
+    refresh_ref,
+    show,
+    transition,
+    validate,
+)
 from tools.task_control.phase_gate import phase_gate
 from tools.task_packet.transitions import ALLOWED_TRANSITIONS, PHASES, required_artifacts_for_phase
 
@@ -112,7 +122,7 @@ def test_every_transition_edge_succeeds_and_every_non_edge_fails(tmp_path: Path,
             assert block(task_dir, show(task_dir)["revision"], {"id": "B-01", "summary": "wait", "constraint_ids": ["C-01"]})["phase"] == target
         else:
             assert transition(task_dir, target, show(task_dir)["revision"])["phase"] == target
-    for index, (source, target) in enumerate(sorted((pair for source in PHASES for target in PHASES if (pair := (source, target)) not in ALLOWED_TRANSITIONS[lane]))):
+    for index, (source, target) in enumerate(sorted(pair for source in PHASES for target in PHASES if (pair := (source, target)) not in ALLOWED_TRANSITIONS[lane])):
         root, task_dir = make_task(tmp_path / f"{lane}-nonedge-{index}", lane)
         state = show(task_dir); state.update({"phase": source, "revision": 1, "transition": {"from": "INTAKE", "to": source}}); dump(task_dir / "state.json", state)
         before = (task_dir / "state.json").read_bytes()

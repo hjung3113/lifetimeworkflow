@@ -3,20 +3,20 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import hashlib
 import json
 import os
 import subprocess
 import sys
 import tempfile
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft202012Validator
 
 from tools.evidence.capture import EvidenceError, _refuse_if_sensitive, validate_evidence
-from tools.task_control.manager import TaskControlError, _json, _validate_document, sha256, show
+from tools.task_control.manager import TaskControlError, _validate_document, sha256, show
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 HANDOFF_SCHEMA = REPO_ROOT / "contracts/harness/task-control/handoff.schema.json"
@@ -442,7 +442,7 @@ def resume(state_dir: str | Path, repo_root: str | Path | None = None) -> dict[s
         "handoff_path": str(pointer["handoff_path"]),
         "handoff_sha256": sha256(handoff_path),
         "state_sha256": sha256(packet / "state.json"),
-        "attested_at": datetime.now(timezone.utc)
+        "attested_at": datetime.now(UTC)
         .replace(microsecond=0)
         .isoformat()
         .replace("+00:00", "Z"),
@@ -548,7 +548,7 @@ def refresh_resume_attestation(
             "state_revision": next_state["revision"],
             "head": current_head,
             "state_sha256": sha256(packet / "state.json"),
-            "attested_at": datetime.now(timezone.utc)
+            "attested_at": datetime.now(UTC)
             .replace(microsecond=0)
             .isoformat()
             .replace("+00:00", "Z"),

@@ -41,10 +41,13 @@ from tools.adoption_apply.apply import apply_manifest, refuse_if_outside_root
 from tools.adoption_apply.approval import (
     AdoptionApprovalRefused,
     check_valid,
+)
+from tools.adoption_apply.approval import (
     promote as approval_promote,
 )
 from tools.adoption_apply.batch import create_or_resume_batch
-from tools.adoption_scan import destinations, plan as plan_mod, scan
+from tools.adoption_scan import destinations, scan
+from tools.adoption_scan import plan as plan_mod
 
 # cli.py -> adoption_apply -> tools -> repo root (parents[2]) — same depth as adoption_scan/cli.py.
 _REPO_ROOT = Path(__file__).resolve().parents[2]

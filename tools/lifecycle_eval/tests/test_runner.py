@@ -5,7 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from tools.lifecycle_eval.runner import FIXTURES, LifecycleEvalError, evaluate, load_fixtures, verify_negative_fixtures
+from tools.lifecycle_eval.runner import (
+    FIXTURES,
+    LifecycleEvalError,
+    evaluate,
+    load_fixtures,
+    verify_negative_fixtures,
+)
 
 NEGATIVE_FIXTURES = FIXTURES.with_name("negative-fixtures.json")
 

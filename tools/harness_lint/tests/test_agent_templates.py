@@ -19,9 +19,9 @@ import pytest
 
 from tools.harness_lint import parse_frontmatter
 from tools.harness_lint.tests.test_agents import (
+    _AGENTS_DIR,
     ALLOWED_PERMISSION_KEYS,
     VALID_MODES,
-    _AGENTS_DIR,
 )
 
 # The fill-in-the-blanks persona templates live one level below the core personas.

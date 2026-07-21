@@ -8,7 +8,17 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from tools.task_control.manager import TaskControlError, attest, block, create, refresh_ref, resume, show, transition, validate
+from tools.task_control.manager import (
+    TaskControlError,
+    attest,
+    block,
+    create,
+    refresh_ref,
+    resume,
+    show,
+    transition,
+    validate,
+)
 from tools.task_control.phase_gate import phase_gate
 
 

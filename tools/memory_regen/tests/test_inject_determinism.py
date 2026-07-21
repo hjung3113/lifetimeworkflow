@@ -11,7 +11,6 @@ import re
 from pathlib import Path
 
 from tools.memory_regen import inject
-
 from tools.memory_regen.tests.conftest import _AGREEMENTS_CREATION_ORDER
 
 

@@ -16,7 +16,14 @@ from tools.evidence.capture import add_finding, capture
 from tools.handoff.handoff import activate, generate
 from tools.risk_router.intake import create_packet
 from tools.risk_router.router import LANES, decide, load_policy
-from tools.task_control.manager import TaskControlError, attest, missing_artifacts, refresh_ref, show, transition
+from tools.task_control.manager import (
+    TaskControlError,
+    attest,
+    missing_artifacts,
+    refresh_ref,
+    show,
+    transition,
+)
 from tools.task_control.phase_gate import phase_gate
 from tools.task_packet.transitions import required_artifacts_for_phase
 

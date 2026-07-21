@@ -13,7 +13,14 @@ import dataclasses
 
 import pytest
 
-from tools.hooks._stdin import DEV_BYPASS_ENV, Event, dev_bypassed, emit_block, emit_deny, parse_event
+from tools.hooks._stdin import (
+    DEV_BYPASS_ENV,
+    Event,
+    dev_bypassed,
+    emit_block,
+    emit_deny,
+    parse_event,
+)
 
 
 def test_dev_bypassed_for_nonblank_value(monkeypatch: pytest.MonkeyPatch) -> None:

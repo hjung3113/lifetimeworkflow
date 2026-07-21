@@ -17,8 +17,8 @@ import json
 from pathlib import Path
 
 import pytest
-
 from normalize.core import normalize_cell, normalize_tsv
+
 from tools.polyglot_lint import lint
 
 _FIXTURES = Path(__file__).resolve().parents[3] / "libs" / "normalize-fixtures"
