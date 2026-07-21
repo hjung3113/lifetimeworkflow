@@ -92,9 +92,18 @@ target       = "docs/glossary.md"
 severity     = "advisory"
 dispositions = ["updated", "reviewed-no-change"]
 
+# The target defines five shadow metrics. Four are determined by the eval runner, but
+# `lane_override` ("count and direction of a recorded human lane override, keyed by task and policy
+# hash") has zero occurrence there — it is `risk_router/router.py` that validates `human_override`
+# as {lane, reason} and preserves the override audit alongside the policy hash. Binding only the
+# runner left that row unwatched: the source could not falsify the definition it supposedly owned.
+# Both sources are named so every row in the target has something that can go stale under it.
 [[binding]]
 id           = "lifecycle-eval-shadow-metrics"
-sources      = ["tools/lifecycle_eval/runner.py"]
+sources      = [
+  "tools/lifecycle_eval/runner.py",
+  "tools/risk_router/router.py",
+]
 target       = "docs/explanation/task-lifecycle-shadow-metrics.md"
 severity     = "advisory"
 dispositions = ["updated", "reviewed-no-change"]
