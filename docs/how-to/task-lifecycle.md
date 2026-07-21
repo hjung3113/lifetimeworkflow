@@ -29,6 +29,26 @@ uv run python -m tools.task_control transition .workflow/tasks/T-YYYYMMDDHHMMSS-
 
 FAST remains `INTAKE → EXECUTE → VERIFY → COMPLETE`: packet creation plus verification are its two user-visible ceremony steps. It does not require a detailed spec, plan, separate worktree, or double review. STRICT requires the policy's independent review record; CONTROLLED additionally requires rollback evidence (the `rollback_plan` and `rollback_verified` gate).
 
+### The lane's disciplines are refused, not suggested
+
+A lane owes **artifacts** and it owes **disciplines** — the method behind the artifact. `harness/risk-policy.toml` declares which disciplines each lane owes (`required_disciplines`) and `harness/disciplines.toml` declares what each one is: its skill, the phase it is owed by, and what discharges it. FAST owes none; STANDARD owes `clarify`; STRICT adds `test-driven-change` and `adversarial-review-panel`; CONTROLLED adds `diagnose` and `domain-modeling`.
+
+Ask what is outstanding before attempting the transition:
+
+```sh
+uv run python -m tools.discipline .workflow/tasks/T-YYYYMMDDHHMMSS-example --phase EXECUTE
+```
+
+Exit `0` means nothing is owed or everything is discharged, `1` means something is outstanding, `3` means the declaration or the packet is malformed (fix that, not the task). A transition attempted with an outstanding discipline is refused before any state is written:
+
+```
+FAIL: missing required disciplines: clarify
+```
+
+`phase-gate` reports the same condition as a `discipline: <id>` refresh reason, so a resumed session cannot inherit a green a fresh transition would have refused.
+
+Discharge one by following its skill and then writing `<task_dir>/discipline/<id>.json`, naming the declared skill, the phase, and `outputs` paths that exist. A panel discipline additionally needs the declared number of **distinct** expert seats, and every finding it cites must already exist in the packet's `evidence.json`. No tool writes the record for you: the record is the claim that the method was followed.
+
 ## 3. Capture existing gates as evidence
 
 Use the evidence adapter to record an already-registered gate. It captures the actual command, exit status, artifact path, and hash; it does not redefine the gate.
