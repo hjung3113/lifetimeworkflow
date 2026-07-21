@@ -41,6 +41,13 @@ jobs:
       matrix: ${{ steps.matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v7.0.0
+      # Runs on the runner's bare python3, BEFORE setup-uv, and deliberately so. If a tools/*
+      # directory is missing its pyproject.toml, uv cannot resolve the workspace at all and every
+      # later uv step dies with a raw resolver error that names the symptom, not the fix. This
+      # step turns that into one actionable line. It must never be rewritten to use `uv run` —
+      # a check for "uv is broken" cannot itself require uv.
+      - name: Workspace resolvability (no uv — must precede setup-uv)
+        run: python3 tools/harness_lint/workspace_check.py
       - uses: astral-sh/setup-uv@v8.3.2
       - name: Sync workspace (all packages — bare `uv sync` prunes tool-member deps)
         run: uv sync --all-packages
