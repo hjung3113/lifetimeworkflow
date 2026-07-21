@@ -42,6 +42,7 @@ _SUBMODULE_OF: dict[str, str] = {
     "classify": "guard",
     # impact.py — contract-graph impact ids (ids only, never fabricated).
     "impact_ids": "impact",
+    "impact_map": "impact",
     # exclusions.py — the DOCSUP-06 drafting exclusions (Phase 29).
     "REASON_ACCEPTED_ADR": "exclusions",
     "REASON_CONSTITUTION": "exclusions",

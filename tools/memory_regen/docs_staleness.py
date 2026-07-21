@@ -21,7 +21,7 @@ never by ``git diff``** — the target is gitignored, so ``git diff`` can say no
 (``contracts_index.py:13-14``, Pitfall 2).
 
 Like ``contracts_index.py``, this generator is ~all reuse: it imports
-:func:`tools.docs_guard.guard.classify` and :func:`tools.docs_guard.impact.impact_ids` and NEVER
+:func:`tools.docs_guard.guard.classify` and :func:`tools.docs_guard.impact.impact_map` and NEVER
 re-implements classification, hashing, or graph traversal — a second implementation could silently
 disagree with the gate. The only new logic is row selection, deterministic rendering, and the write.
 
@@ -40,7 +40,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from tools.docs_guard.guard import DEFAULT_LEDGER_PATH, REPO_ROOT, classify
-from tools.docs_guard.impact import impact_ids
+from tools.docs_guard.impact import impact_map
 from tools.docs_guard.registry import DEFAULT_REGISTRY_PATH
 
 # --- paths (derived plane is gitignored + regenerated every session, D-03/D-10) ----------------
@@ -76,7 +76,7 @@ def rows(
     cfg: dict | None = None,
     drift_gate: Callable[[], dict] | None = None,
 ) -> list[tuple[str, str, str, str, str, str]]:
-    """Assemble one sorted row per qualifying binding by REUSING ``classify()`` + ``impact_ids()``.
+    """Assemble one sorted row per qualifying binding by REUSING ``classify()`` + ``impact_map()``.
 
     Each row is ``(binding_id, target, state, severity, dispositions, impact)`` — the DOCSUP-05
     grouping, pointer-only. ``classify`` already returns its bindings sorted by id, so the row
@@ -85,7 +85,7 @@ def rows(
 
     Every path argument is EXPLICIT (D-14, the ``load_project(path=...)`` seam) so the tests are
     hermetic and an instance-local overlay stays possible. ``cfg`` and ``drift_gate`` are the same
-    injection seams ``impact_ids`` and ``classify`` already expose.
+    injection seams ``impact_map`` and ``classify`` already expose.
     """
     result = classify(
         registry_path=registry_path,
@@ -93,11 +93,18 @@ def rows(
         root=root,
         drift_gate=drift_gate,
     )
+    qualifying = [
+        entry
+        for entry in result["bindings"]
+        if entry["state"] in QUEUE_STATES or entry["disposition"] == OPEN_ADR_DISPOSITION
+    ]
+    # ONE compile for the whole report (28 IN-03). Filtering first also means a report with no
+    # qualifying binding compiles the graph ZERO times instead of once per binding in the registry.
+    impact = impact_map(qualifying, cfg)
+
     out: list[tuple[str, str, str, str, str, str]] = []
-    for entry in result["bindings"]:
-        if entry["state"] not in QUEUE_STATES and entry["disposition"] != OPEN_ADR_DISPOSITION:
-            continue
-        ids = impact_ids(entry["sources"], cfg)
+    for entry in qualifying:
+        ids = impact[entry["id"]]
         out.append(
             (
                 entry["id"],

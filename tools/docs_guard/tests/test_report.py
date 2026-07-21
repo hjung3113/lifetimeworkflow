@@ -405,7 +405,7 @@ def test_config_error_in_impact_cannot_escape_the_exit_contract(
 ) -> None:
     """WR-03 adversarial row: the 0/1/3 contract must hold when the GRAPH config is broken.
 
-    ``render()`` calls ``impact_ids(entry["sources"])`` with ``cfg=None`` for every binding, which
+    ``main()`` calls ``impact_map(result["bindings"])`` with ``cfg=None`` ONCE per report, which
     reaches ``effective_relationships(None)`` and ``compile_graph(None)`` — both read the live
     ``harness/project.toml`` and both raise ``ValueError`` on a malformed or self-contradictory
     config (e.g. one contract claimed by two authorities). Only ``classify()`` used to sit inside
@@ -420,10 +420,10 @@ def test_config_error_in_impact_cannot_escape_the_exit_contract(
     _commit(docs_repo, "seed target")
     _write(docs_repo, REG_REL, _binding_toml(id="how-to-one", sources=_ONE, target=target))
 
-    def exploding_impact(sources, cfg=None):
+    def exploding_impact(bindings, cfg=None):
         raise ValueError("harness/project.toml: contract 'widget' is claimed by two authorities")
 
-    monkeypatch.setattr(cli, "impact_ids", exploding_impact)
+    monkeypatch.setattr(cli, "impact_map", exploding_impact)
 
     code = cli.main(_argv(docs_repo))
 
@@ -445,3 +445,90 @@ def test_help_exits_two_via_argparse_only() -> None:
     with pytest.raises(SystemExit) as excinfo:
         cli.main(["--nonexistent-flag"])
     assert excinfo.value.code == 2
+
+
+# ── 28 IN-03 / DEBT-03: one compile per REPORT ──────────────────────────────────────────────────
+
+
+def test_report_compiles_the_graph_once_for_many_bindings(docs_repo: Path, monkeypatch) -> None:
+    """A report over N bindings reads the graph config ONCE, not N times.
+
+    This is the test that fails if `main` regresses to a per-binding `impact_ids` loop. It counts
+    the live reads rather than inspecting the output, because a per-binding loop produces the
+    IDENTICAL report — the defect was only ever the repeated work, so the report text cannot
+    witness it.
+    """
+    from tools.docs_guard import impact as impact_module
+
+    for name in ("one", "two", "three"):
+        target = f"docs/how-to/{name}.md"
+        _write(docs_repo, target, "v1\n")
+    _commit(docs_repo, "seed targets")
+    _write(
+        docs_repo,
+        REG_REL,
+        "\n".join(
+            _binding_toml(id=f"how-to-{name}", sources=_ONE, target=f"docs/how-to/{name}.md")
+            for name in ("one", "two", "three")
+        ),
+    )
+
+    calls: list[str] = []
+    real_compile = impact_module.compile_graph
+    real_relationships = impact_module.effective_relationships
+    monkeypatch.setattr(
+        impact_module,
+        "compile_graph",
+        lambda cfg: (calls.append("compile"), real_compile(cfg))[1],
+    )
+    monkeypatch.setattr(
+        impact_module,
+        "effective_relationships",
+        lambda cfg: (calls.append("relationships"), real_relationships(cfg))[1],
+    )
+
+    code = cli.main(_argv(docs_repo))
+
+    assert code in (0, 1, 3)
+    assert calls.count("compile") == 1, (
+        f"3 bindings compiled the graph {calls.count('compile')}x — 28 IN-03 has regressed"
+    )
+    assert calls.count("relationships") == 1
+
+
+def test_report_text_is_unchanged_by_the_batch_impact_path(docs_repo: Path, capsys) -> None:
+    """Byte-identity: the compile-once rearrangement must not move a single character of output.
+
+    `render` is driven twice over the same classification — once with the impact map `main` now
+    builds in ONE `impact_map` call, once with the per-binding `impact_ids` map it replaced — and
+    the two renderings are compared as whole strings.
+    """
+    from tools.docs_guard.guard import classify
+    from tools.docs_guard.impact import impact_ids, impact_map
+
+    for name in ("one", "two"):
+        _write(docs_repo, f"docs/how-to/{name}.md", "v1\n")
+    _commit(docs_repo, "seed targets")
+    _write(
+        docs_repo,
+        REG_REL,
+        "\n".join(
+            _binding_toml(id=f"how-to-{name}", sources=_ONE, target=f"docs/how-to/{name}.md")
+            for name in ("one", "two")
+        ),
+    )
+
+    result = classify(
+        registry_path=docs_repo / REG_REL,
+        ledger_path=docs_repo / LED_REL,
+        root=docs_repo,
+        drift_gate=lambda: {"ok": True, "drifted": []},
+    )
+
+    batched = _render_text(result, impact=impact_map(result["bindings"]))
+    looped = _render_text(
+        result,
+        impact={entry["id"]: impact_ids(entry["sources"]) for entry in result["bindings"]},
+    )
+
+    assert batched == looped

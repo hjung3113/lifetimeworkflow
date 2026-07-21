@@ -32,7 +32,7 @@ from tools.contract_graph.compile import compile_graph
 from tools.contract_graph.query import direct, transitive
 from tools.harness_config.loader import effective_relationships
 
-__all__ = ["impact_ids"]
+__all__ = ["impact_ids", "impact_map"]
 
 _CONTRACTS_PREFIX = "contracts/"
 _SCHEMA_SUFFIX = ".schema.json"
@@ -84,10 +84,54 @@ def impact_ids(source_paths: Iterable[str], cfg: dict | None = None) -> list[str
     paths = list(source_paths)
     if not paths:
         return []
+    return _ids_for(paths, *_compile(cfg))
 
-    relationships = effective_relationships(cfg)
-    graph = compile_graph(cfg)
 
+def impact_map(bindings: Iterable[dict], cfg: dict | None = None) -> dict[str, list[str]]:
+    """Return ``{binding id: impact ids}`` for ``bindings``, compiling the graph ONCE per call.
+
+    This is the batch entry point every REPORT should use. ``impact_ids`` answers for one source
+    set and therefore compiles per call; a report that loops it compiles once per BINDING, which is
+    28 IN-03 — the same `harness/project.toml` parsed and the same adjacency rebuilt N times to
+    produce an answer that cannot vary between iterations.
+
+    The alternative fixes were both rejected and the rejection is the point. Memoizing inside
+    ``impact_ids`` would put mutable state in a module whose opening line advertises itself as a
+    pure helper, and it would need a `cfg`-keyed invalidation story for a `cfg` that is an
+    unhashable dict. Changing ``impact_ids``'s signature would ripple through `cli`,
+    `docs_staleness.rows`, and three test modules to buy nothing the caller could not get here. A
+    second PURE function costs one name and leaves ``impact_ids`` byte-for-byte what it was.
+
+    ``bindings`` are the guard's binding entries: each needs an ``id`` and a ``sources``. The result
+    is exactly what a per-binding loop over ``impact_ids`` produces — the batch is a compile-sharing
+    rearrangement, never a different answer. NEVER FABRICATE carries over unchanged: a binding whose
+    sources resolve to nothing maps to an EMPTY list, and every binding is present as a key.
+    """
+    entries = list(bindings)
+    if not entries:
+        return {}
+
+    relationships, graph = _compile(cfg)
+    return {
+        entry["id"]: _ids_for(list(entry["sources"]), relationships, graph) for entry in entries
+    }
+
+
+def _compile(cfg: dict | None) -> tuple[list[dict], dict]:
+    """The two live reads — relationship records and graph adjacency — as one step.
+
+    Both raise on a malformed or self-contradictory config. Callers that must not propagate that
+    raise (``cli.main``) wrap the call, exactly as they did when it sat inside ``impact_ids``.
+    """
+    return effective_relationships(cfg), compile_graph(cfg)
+
+
+def _ids_for(paths: list[str], relationships: list[dict], graph: dict) -> list[str]:
+    """The path -> stem -> authority -> adjacency walk against an ALREADY-compiled graph.
+
+    Extracted so ``impact_ids`` and ``impact_map`` share one traversal rather than two that could
+    drift apart. Pure: it reads its arguments and nothing else.
+    """
     found: set[str] = set()
     for path in paths:
         stem = _contract_stem(path)

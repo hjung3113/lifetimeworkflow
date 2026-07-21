@@ -42,7 +42,7 @@ import sys
 from pathlib import Path
 
 from tools.docs_guard.guard import DEFAULT_LEDGER_PATH, REPO_ROOT, classify
-from tools.docs_guard.impact import impact_ids
+from tools.docs_guard.impact import impact_map
 from tools.docs_guard.ledger import LedgerError
 from tools.docs_guard.registry import DEFAULT_REGISTRY_PATH, RegistryError
 
@@ -161,8 +161,10 @@ def _binding_block(entry: dict, impact: list[str]) -> list[str]:
 def render(result: dict, impact: dict[str, list[str]] | None = None) -> tuple[list[str], list[str]]:
     """Render ``result`` into ``(stdout_lines, stderr_lines)``.
 
-    ``impact`` maps a binding id to its graph impact ids; when omitted it is computed from each
-    binding's sources. Passing it explicitly is the hermetic seam the report tests use.
+    ``impact`` maps a binding id to its graph impact ids; when omitted it is computed from the
+    bindings in ONE ``impact_map`` call. Passing it explicitly is the hermetic seam the report tests
+    use. A binding absent from the map reports no impact ids — the same NEVER-FABRICATE answer
+    ``impact_map`` gives for a binding whose sources resolve to nothing.
 
     Advisory blocks and warn/note findings go to STDERR so they are visible without changing what a
     CI step's stdout diff shows; failures and the summary go to STDOUT.
@@ -170,8 +172,11 @@ def render(result: dict, impact: dict[str, list[str]] | None = None) -> tuple[li
     out: list[str] = [HEADER, ""]
     err: list[str] = []
 
+    if impact is None:
+        impact = impact_map(result["bindings"])
+
     for entry in result["bindings"]:
-        ids = impact.get(entry["id"], []) if impact is not None else impact_ids(entry["sources"])
+        ids = impact.get(entry["id"], [])
         block = _binding_block(entry, ids)
         (err if entry["state"] in _STDERR_STATES else out).extend([*block, ""])
 
@@ -230,7 +235,7 @@ def main(argv: list[str] | None = None) -> int:
     # posture): an unmappable impact set is empty, never invented. The degradation is STATED on
     # stderr, never silent — a report that quietly drops a column teaches the wrong confidence.
     try:
-        impact = {entry["id"]: impact_ids(entry["sources"]) for entry in result["bindings"]}
+        impact = impact_map(result["bindings"])
     except Exception as error:  # noqa: BLE001 — same posture as guard.py's drift-gate degradation
         impact = {entry["id"]: [] for entry in result["bindings"]}
         print(

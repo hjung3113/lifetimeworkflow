@@ -192,3 +192,83 @@ def test_module_performs_no_filesystem_write() -> None:
     source = Path(impact.__file__).read_text(encoding="utf-8")
     for token in ("write_text", "write_bytes", "argparse", "shutil.copy"):
         assert token not in source, f"impact.py contains {token!r}"
+
+
+# --- 28 IN-03 / DEBT-03: compile ONCE per report, not once per binding -------------------------
+# These are the tests that go red if the batch entry point regresses to a per-binding loop. The
+# equivalence test pins the ANSWER (a rearrangement, never a different result); the counting tests
+# pin the SAVING (which equivalence alone cannot see, because a per-binding loop is equally correct
+# and merely wasteful).
+
+_THREE_BINDINGS = [
+    {"id": "b-greeting", "sources": ["contracts/sample/greeting.schema.json"]},
+    {"id": "b-converted", "sources": ["contracts/sample/converted.schema.json"]},
+    {"id": "b-unmapped", "sources": ["docs/how-to/nothing.md"]},
+]
+
+
+def test_impact_map_equals_a_per_binding_impact_ids_loop() -> None:
+    """The batch answer is byte-identical to the loop it replaces — including the EMPTY entries.
+
+    If this ever diverges, the report's content changed, which is precisely what the compile-once
+    rearrangement was not allowed to do.
+    """
+    batched = impact.impact_map(_THREE_BINDINGS, cfg=CHAIN_CFG)
+    looped = {
+        entry["id"]: impact.impact_ids(entry["sources"], cfg=CHAIN_CFG) for entry in _THREE_BINDINGS
+    }
+    assert batched == looped
+    assert batched["b-unmapped"] == [], "an unmapped binding must be present with an EMPTY list"
+
+
+def test_impact_map_compiles_the_graph_exactly_once(monkeypatch) -> None:
+    """N bindings, ONE ``compile_graph`` and ONE ``effective_relationships`` call.
+
+    Counting the live reads is the only way to observe 28 IN-03: the defect was never a wrong
+    answer, it was the same config parsed and the same adjacency rebuilt once per binding to produce
+    an answer that cannot vary between iterations. A per-binding loop passes every assertion about
+    the RESULT, so the result cannot be what guards this.
+    """
+    calls: list[str] = []
+    real_compile = impact.compile_graph
+    real_relationships = impact.effective_relationships
+
+    monkeypatch.setattr(
+        impact, "compile_graph", lambda cfg: (calls.append("compile"), real_compile(cfg))[1]
+    )
+    monkeypatch.setattr(
+        impact,
+        "effective_relationships",
+        lambda cfg: (calls.append("relationships"), real_relationships(cfg))[1],
+    )
+
+    impact.impact_map(_THREE_BINDINGS, cfg=CHAIN_CFG)
+
+    assert calls.count("compile") == 1, f"compiled {calls.count('compile')}x for 3 bindings"
+    assert calls.count("relationships") == 1
+
+
+def test_impact_map_with_no_bindings_compiles_nothing(monkeypatch) -> None:
+    """Zero bindings must not touch the config at all — the common case for a clean report."""
+    calls: list[str] = []
+    monkeypatch.setattr(impact, "compile_graph", lambda cfg: calls.append("compile"))
+    monkeypatch.setattr(impact, "effective_relationships", lambda cfg: calls.append("rel"))
+
+    assert impact.impact_map([], cfg=CHAIN_CFG) == {}
+    assert calls == []
+
+
+def test_impact_map_holds_no_state_between_calls() -> None:
+    """No cache: the rejected alternative was memoizing inside a module that advertises purity.
+
+    A second call with a DIFFERENT cfg must answer for that cfg, which a naive module-level memo
+    keyed on nothing would get wrong.
+    """
+    first = impact.impact_map(_THREE_BINDINGS, cfg=CHAIN_CFG)
+    other = impact.impact_map(
+        [{"id": "b-ca", "sources": ["contracts/sample/ca.schema.json"]}], cfg=CYCLE_CFG
+    )
+    again = impact.impact_map(_THREE_BINDINGS, cfg=CHAIN_CFG)
+
+    assert other == {"b-ca": ["beta"]}
+    assert again == first, "a cfg-blind cache would have leaked the CYCLE_CFG answer back"
