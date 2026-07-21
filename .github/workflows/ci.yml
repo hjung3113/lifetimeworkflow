@@ -177,6 +177,40 @@ jobs:
       - name: Harness core suite (tools/ + libs/python — GEN-03/04 guards included)
         run: uv run pytest
 
+  # ── lint ───────────────────────────────────────────────────────────────────────────────────
+  # DEBT-01. `ruff check` was carried as debt across three milestones and gated nothing: 617
+  # findings, zero CI jobs looking at them, and an advisory /lint command that was always red —
+  # which is worse than absent, because an operator learns to ignore it.
+  #
+  # This job does NOT run a bare `ruff check .`, and that is deliberate. 393 genuine findings
+  # remain (the 193 in the vendored docs/references/opencode-matt-workflows tree left via
+  # `extend-exclude`; ruff's safe autofixes took another 31). A bare check would make this job
+  # permanently red, i.e. exactly the same non-gate it replaces. It becomes a step when the
+  # baseline reaches zero, and not before.
+  #
+  # Instead the gate is a RATCHET: tools/ruff_baseline/baseline.json records the per-rule counts,
+  # and `python -m tools.ruff_baseline` fails when any rule class grows, or when a rule code
+  # appears that the baseline has never seen (absent means zero — so a ruff bump that adds a check
+  # under E/F/I/UP/B fails on first appearance rather than being silently absorbed).
+  #
+  # When this job goes red, the operator has exactly two legitimate moves:
+  #   * fix the new finding(s) it names — the normal case; or
+  #   * if findings went DOWN, record the shrink with `uv run python -m tools.ruff_baseline
+  #     --update`, which REFUSES (exit 3) to raise any count.
+  # Raising the baseline is not one of them. There is no flag for it; it requires hand-editing a
+  # committed JSON file, which is visible in review.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.0
+      - uses: astral-sh/setup-uv@v8.3.2
+      - name: Sync workspace (all packages)
+        run: uv sync --all-packages
+      - name: Ruff ratchet — no rule class may grow
+        run: uv run python -m tools.ruff_baseline
+      - name: Ruff baseline unit tests
+        run: uv run pytest tools/ruff_baseline -q
+
   # ── lifecycle-eval ────────────────────────────────────────────────────────────────────────
   # Phase 23 composition coverage.  This invokes the fixture runner plus the focused
   # integration/regression suite; it deliberately reuses (not reimplements) the existing
@@ -337,7 +371,7 @@ jobs:
   # here). needs.*.result values are workflow-computed enums (success/failure/cancelled/skipped),
   # NOT event input — safe to interpolate.
   gate:
-    needs: [setup, lang-tests, contract-check, drift, golden, core-suite, lifecycle-eval, emit-drift, stale-derived, docs-guard, workspace]
+    needs: [setup, lang-tests, contract-check, drift, golden, core-suite, lint, lifecycle-eval, emit-drift, stale-derived, docs-guard, workspace]
     if: always()
     runs-on: ubuntu-latest
     steps:
