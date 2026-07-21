@@ -1,0 +1,14 @@
+{
+  "_comment": "Ratcheting ruff baseline (DEBT-01). Per-rule finding counts that may only SHRINK. Regenerate after fixing findings with `uv run python -m tools.ruff_baseline --update`, which refuses to raise any count. Enforced by the `lint` CI job.",
+  "ruff_version": "0.15.20",
+  "total": 393,
+  "counts": {
+    "B007": 1,
+    "B904": 1,
+    "B905": 1,
+    "E501": 267,
+    "E701": 20,
+    "E702": 102,
+    "F841": 1
+  }
+}
