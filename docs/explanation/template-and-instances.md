@@ -64,9 +64,25 @@ are checked against it by the GEN-03 consistency test.
 The template only works if the core cannot reach into an instance. That is enforced by the GEN-04
 guard `tools/harness_lint/tests/test_core_no_example_dep.py`, which scans every tracked file under
 `tools/`, `harness/`, `libs/` and fails the suite on any `examples/` path reference, `import
-examples`, or surviving `components/toy-converter` reference (the one sanctioned exception is the
-`[instance] root` pointer in `harness/project.toml`). A live negative-control proves the scan cannot
-silently no-op.
+examples`, or surviving `components/toy-converter` reference. A live negative-control proves the
+scan cannot silently no-op.
+
+There is **one** sanctioned exception, and it is a place rather than a line: the instance-config
+slot in `harness/project.toml`, which by ADR-0002 (c) is `[instance]` plus `[[languages]]`. Three
+pointer-key classes inside that slot are exempt, because each is a single line whose whole job is to
+name the instance:
+
+| Key | Example value | Why exempt |
+|-----|---------------|------------|
+| `root` | `examples/log-parser` | the instance-tree pointer itself |
+| `persona` | `examples/log-parser/agents/dotnet-engineer.md` | points at the instance's language-side engineer |
+| `test_paths` | the instance's CI test targets | the Phase-6 test-target data slot |
+
+The guard spells this as `_INSTANCE_POINTER_LINE = re.compile(r"\s*(root|persona|test_paths)\s*=")`,
+and each class carries its own positive test (`test_instance_root_pointer_is_exempt`,
+`test_instance_pointer_persona_is_exempt`, `test_instance_pointer_test_paths_is_exempt`). Naming
+only `root` here would describe a narrower contract than the one in force and imply the other two
+were drift — they are not.
 
 ## How to add an instance
 
