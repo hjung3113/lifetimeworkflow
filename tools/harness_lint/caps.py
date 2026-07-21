@@ -127,6 +127,12 @@ _XML_CHARS = ("<", ">")
 # context-budget (the delegate-vs-inline heuristic that routes into it).
 # Phase 29 (Docs Drive Loop) adds one skill: docs-upkeep (the human-doc review-obligation runbook
 # behind /docs-update — disjoint from data-contracts, two-plane-memory and gate-model, DOCSUP-06).
+# Phase 36 (Lane Discipline) adds the five DISCIPLINE skills a lane can require by name in
+# harness/risk-policy.toml: clarify, test-driven-change, diagnose, domain-modeling and
+# adversarial-review-panel. They are not a sprawl exception — each is a routing trigger no existing
+# skill carries ("the task is ambiguous", "write the failing test first", "the cause is unknown",
+# "the vocabulary is unsettled", "review this from N adversarial frames"), and each is named by
+# harness/disciplines.toml, so test_discipline_wiring.py fails if one goes missing or unrequired.
 # No more, no fewer (anti-sprawl).
 EXPECTED_SKILLS = frozenset(
     {
@@ -143,5 +149,10 @@ EXPECTED_SKILLS = frozenset(
         "context-budget",
         "brownfield-adoption",
         "docs-upkeep",
+        "clarify",
+        "test-driven-change",
+        "diagnose",
+        "domain-modeling",
+        "adversarial-review-panel",
     }
 )
