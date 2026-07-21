@@ -2,9 +2,9 @@
 
 *MADR 4.x · plane: constitution (human-owned, immutable, append-only)*
 
-- **Status:** proposed
-- **Date:** — (set at ratification)
-- **Deciders:** — (pending human/CODEOWNERS ratification)
+- **Status:** accepted
+- **Date:** 2026-07-22
+- **Deciders:** kimhyojung (CODEOWNERS)
 - **Supersedes:** —
 - **Superseded by:** —
 - **Complements:** [ADR-0009](0009-contract-relationship-graph-model.md) (the graph this model's impact
