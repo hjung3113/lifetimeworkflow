@@ -47,7 +47,22 @@ FAIL: missing required disciplines: clarify
 
 `phase-gate` reports the same condition as a `discipline: <id>` refresh reason, so a resumed session cannot inherit a green a fresh transition would have refused.
 
-Discharge one by following its skill and then writing `<task_dir>/discipline/<id>.json`, naming the declared skill, the phase, and `outputs` paths that exist. A panel discipline additionally needs the declared number of **distinct** expert seats, and every finding it cites must already exist in the packet's `evidence.json`. No tool writes the record for you: the record is the claim that the method was followed.
+Discharge one by following its skill and then writing `<task_dir>/discipline/<id>.json`, naming the declared skill, the phase, `outputs` paths that exist, and the `agent` that did the work. A panel discipline additionally needs the declared number of **distinct** expert seats, each carrying its own `agent`, and every finding it cites must already exist in the packet's `evidence.json`. No tool writes the record for you: the record is the claim that the method was followed.
+
+The `agent` is not free text. Each declaration names a **capability** rather than a persona, and `harness/capabilities.toml` holds the closed allowlist of personas that may serve it — so who is allowed to do a kind of work can change without editing any lane's policy. Check a route before taking it:
+
+```sh
+uv run python -m tools.capability list
+uv run python -m tools.capability route adversarial-review code-reviewer
+```
+
+Exit `0` means the route is allowed, `3` means it is **refused**. An out-of-allowlist agent is a defect in the record, so the transition fails the same way an absent record does — for a panel the refusal names the offending seat:
+
+```
+FAIL: missing required disciplines: adversarial-review-panel (panel seat security: agent
+python-engineer is not allowed to serve capability adversarial-review (allowlist:
+code-reviewer, explorer))
+```
 
 ## 3. Capture existing gates as evidence
 
