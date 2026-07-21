@@ -1,4 +1,4 @@
-"""DEBT-01 gate proof — structural assertions for the ``lint`` CI job in ``.github/workflows/ci.yml``.
+"""DEBT-01 gate proof — structural assertions for the ``lint`` job in ``.github/workflows/ci.yml``.
 
 DEBT-01 exists because `ruff check` has never been able to fail anything: the repo carried 617
 findings and zero CI jobs that looked at them. A `lint` job that exists but is missing from the
@@ -70,7 +70,7 @@ def test_lint_job_is_in_the_fan_in() -> None:
 
 
 def test_every_job_is_in_the_fan_in() -> None:
-    """The general invariant — catches the NEXT job someone forgets to wire in, not just this one."""
+    """The general invariant — catches the NEXT job someone forgets, not only this one."""
     ci = _load_ci()
     declared = set(ci["jobs"]) - {"gate"}
     fan_in = set(ci["jobs"]["gate"]["needs"])
