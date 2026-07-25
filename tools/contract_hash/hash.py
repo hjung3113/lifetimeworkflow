@@ -30,6 +30,7 @@ SCHEMA_GLOB = "**/*.schema.json"
 DATA_CONTRACT_PATHS = (
     Path("harness/task-control/transitions.json"),
     Path("harness/task-control/gate-registry.json"),
+    Path("harness/security/deny-domains.json"),
 )
 
 
