@@ -355,6 +355,70 @@ authority (ADR-0012).
 5. The contract-drift gate stays clean — this phase touches no `contracts/` entry and no `contract_hash/hash.py` path list.
 6. Net surface change is deletion-only: **−1 CI job, −1 tool package, −1 lock file, −2 gate tests, +0** commands/agents/skills/contracts/hooks.
 
+#### Phase 41: Docs-Review Plane Removal
+
+**Goal:** Delete the human-doc review-obligation plane in its entirety — the bindings, the ledger,
+the guard, the hook, the command, the skill, the contracts and the CI job — so that **no gate
+requires a human-authored artifact to go green**. This is the last of the five such gates v2.5
+retires, and it is what turns the CI fan-in gate green: `docs-guard` has been red since the plane
+shipped, because a human ledger row is the only thing that can green it.
+
+Authority to delete is already recorded — ADR-0012 (`docs/adr/0012-ci-and-merge-as-decision-authority.md`)
+is `accepted` and supersedes ADR-0010, the record that declared this obligation model.
+
+**Requirements:** CER-05
+
+**Scope** (verified against the tree, 2026-07-27):
+- Unbind first: remove the 8 `[[binding]]` rows from `docs/doc-dependencies.toml` and delete
+  `docs/.docs-review-ledger.toml` (90 lines) before any tool deletion.
+- Delete `tools/docs_guard/` — `guard.py`, `cli.py`, `ledger.py`, `registry.py`, `impact.py`,
+  `digest.py`, `exclusions.py`, `__main__.py`, `__init__.py`, `pyproject.toml` and its 8 test modules
+  (6110 LOC total).
+- Delete the registry and its derived page: `docs/doc-dependencies.toml`,
+  `docs/reference/doc-dependencies.md`; delete `contracts/harness/docs/doc-dependencies.schema.json`
+  and **rebaseline `contracts/.hashes/manifest.json`** in the same commit.
+- Delete the hook and its permission data: `tools/hooks/ledger_guard.py`,
+  `harness/plugins/ledger-guard.ts`, the `docs/.docs-review-ledger.toml` entry in
+  `harness/permission-matrix.json:34` (and its `_note` prose at `:2`), and the emitted hook group
+  (`.claude/settings.json:165`) via re-emit.
+- Delete the runtime surface at source: `harness/commands/docs-update.md`,
+  `harness/skills/docs-upkeep/`, and their rows in `tools/harness_emit/emit-manifest.json`
+  (`:18,41,71,89,101`), then run `python -m tools.harness_emit`.
+- Delete the derived staleness queue: `tools/memory_regen/docs_staleness.py` (233 LOC, imports
+  `tools.docs_guard` at `:158`), its test, the `("docs", _docs_staleness_pointer(...))` injector row
+  (`inject.py:82,217`) and `test_inject_docs_pointer.py`.
+- Delete the adoption docs-binding proposal path (DOCSUP-07) incl.
+  `tools/adoption_apply/tests/test_docs_binding_proposal.py`.
+- Delete CI job `docs-guard` (`ci.yml:317-351`, including its comment block) **and** its entry in the
+  fan-in `needs` (`ci.yml:381`) — same commit.
+- Sweep the surviving references: `AGENTS.md:106-107`, `.memory/README.md`,
+  `harness/skills/gate-model/SKILL.md` (docs-plane claims only), `tools/harness_lint/caps.py:128-129,151`
+  and the wiring tests (`test_docs_update_wiring.py`, `tools/hooks/tests/test_settings_coexist.py`,
+  `tools/harness_emit/tests/test_coexist.py`, `test_tests_are_isolatable.py`,
+  `test_workspace_member_completeness.py`, `tools/docs_sync/tests/test_docs_sync_determinism.py`).
+  Refresh `uv.lock` for the removed workspace member.
+
+**Non-goals:** **no replacement of any kind** — no advisory/warn-only docs job, no severity flip, no
+successor link-checker. Per the milestone's binding constraint the surface may not grow. The
+severity-flip alternative is provably dead: `guard.py:383-399` classifies `BROKEN` before every
+staleness check and `cli.py:6-13` exits 1 on `BROKEN` regardless of severity, and every v2.5 deletion
+produces `BROKEN`. No new ADR (ADR-0012 already covers it) and **no edit to ADR-0010**
+(supersede-don't-edit). Out of scope: `tools/docs_sync` + `/docs-sync` (a different machine), the
+full `gate-model` skill (Phase 44), adoption ↔ task-control decoupling (Phase 42), `memory_regen`'s
+active-task block (Phase 43).
+
+**Accepted consequence:** a human-authored document can go stale against its sources with nothing
+reporting it. Accepted — CI + the merge are the authority (ADR-0012).
+
+**Success Criteria**:
+1. The CI fan-in gate is **green**, and `.github/workflows/ci.yml` has no `docs-guard` job and no dangling `docs-guard` entry in the fan-in `needs` (resolved as YAML, not by grep); no other `needs` entry is added or removed.
+2. No human-authored artifact is required by any gate: `docs/.docs-review-ledger.toml`, `docs/doc-dependencies.toml` and `tools/docs_guard/` do not exist, and no module imports `tools.docs_guard`.
+3. `grep -rnE "docs_guard|docs-guard|docs-review-ledger|ledger_guard|docs-upkeep|docs-update|doc-dependencies"` over `tools/`, `harness/`, `contracts/`, `docs/`, `.github/`, `.claude/`, `.opencode/`, `AGENTS.md`, `.memory/README.md` and `uv.lock` returns nothing (`.planning/` history is exempt and is not rewritten).
+4. `uv run pytest` is green with no collection error from a removed package, and `uv sync --all-packages` resolves against the refreshed `uv.lock`.
+5. `emit-drift` and `stale-derived` produce an empty diff after `python -m tools.harness_emit` — the removals reached the emitted trees through the emitter, not by hand-editing `.opencode/` or `.claude/`.
+6. `contract-drift` is clean against a rebaselined `contracts/.hashes/manifest.json` that no longer carries a `contracts/harness/docs/` entry, and the ruff ratchet is clean.
+7. Net surface change is deletion-only: **−1 CI job, −1 tool package, −1 hook, −1 command, −1 skill, −1 contract, −2 data files, +0** commands/agents/skills/contracts/hooks. Removed LOC is reported from `git diff --stat`, not estimated.
+
 ### 📋 v2.6 Minimal Monorepo Core (Phases 47–50) — SCOPED, NOT STARTED
 
 Smallest goal-complete subset = all of v2.5 **+ 47 + 49**. ① is already covered by the lint adapters +
