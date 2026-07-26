@@ -327,7 +327,7 @@ def test_neighbouring_docs_paths_are_not_constitution() -> None:
         "docs/explanation/template-and-instances.md",
         "docs/tutorials/README.md",
         "docs/glossary-notes.md",
-        "docs/reference/doc-dependencies.md",
+        "docs/reference/deny-domains.md",
     ):
         assert decide(path, "# doc\n", approved=False) is None, (
             f"{path} is human-authored docs, NOT constitution plane"

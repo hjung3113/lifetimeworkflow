@@ -191,9 +191,10 @@ def refuse_unsafe_destination(destination: str, target_root: str | Path) -> Path
             )
 
     # The `\` fold matches step 1's, so the pre-check and the classification see ONE normalization
-    # (IN-02). On POSIX `docs\.docs-review-ledger.toml` is a single file whose NAME contains a
-    # backslash — a different file, and harmless — but on Windows that spelling IS the ledger, and a
-    # deny domain that depends on which OS reads the manifest is not a deny domain.
+    # (IN-02). On POSIX `docs\glossary.md` is a single file whose NAME contains a backslash — a
+    # different file, and harmless — but on Windows that spelling IS `docs/glossary.md`, a
+    # constitution member, and a deny domain that depends on which OS reads the manifest is not a
+    # deny domain.
     relative = target_path.relative_to(resolved_root).as_posix().replace("\\", "/")
     refuse_if_constitution(relative.lower())
 

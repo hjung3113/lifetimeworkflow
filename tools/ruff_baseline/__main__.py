@@ -1,7 +1,6 @@
 """Package entrypoint so ``python -m tools.ruff_baseline`` runs the ratchet.
 
-The import stays deferred inside ``main()`` so merely importing the package costs nothing —
-mirrors ``tools/docs_guard/__main__.py``.
+The import stays deferred inside ``main()`` so merely importing the package costs nothing.
 """
 
 from __future__ import annotations

@@ -10,5 +10,5 @@ dependencies = []
 
 [tool.uv]
 # Virtual member: no build-system, nothing to package. Imported by module path from the shared uv
-# workspace environment. Mirrors tools/docs_guard, tools/harness_lint, tools/memory_regen.
+# workspace environment. Mirrors tools/harness_lint, tools/memory_regen.
 package = false

@@ -19,7 +19,7 @@ one, every ``uv`` invocation in the repo fails at workspace resolution::
     error: Workspace member `.../tools/<name>` is missing a `pyproject.toml` (matches: `tools/*`)
 
 ``uv run pytest`` is a ``uv`` invocation. So is every PreToolUse guard in this repo
-(``contract_guard``, ``secret_scan``, ``ledger_guard``, ``commit_gate``, ``resume_gate``), each
+(``contract_guard``, ``secret_scan``, ``commit_gate``, ``resume_gate``), each
 invoked as ``uv run python -m tools.hooks.<name>``. When workspace resolution fails the guards
 fail, and a failing PreToolUse guard DENIES its tool — correctly, since a guard that cannot run
 must not

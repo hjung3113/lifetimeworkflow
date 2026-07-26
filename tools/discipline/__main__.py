@@ -1,7 +1,7 @@
 """``python -m tools.discipline`` — what a task owes, and what it has not done.
 
-The exit mapping is the one ``tools.docs_guard`` already established, deliberately reused rather
-than replaced by a fourth convention:
+The exit mapping is an established 0/1/3 convention, deliberately reused rather than replaced by a
+fourth one:
 
 ===== ==================================================================================
  0     every discipline owed at the phase is validly discharged (or none is owed).

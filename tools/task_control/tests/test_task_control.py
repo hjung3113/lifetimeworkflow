@@ -810,7 +810,7 @@ def test_the_refusal_is_load_bearing(tmp_path: Path, monkeypatch: pytest.MonkeyP
 
 
 def test_discipline_cli_exit_codes(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    """0 clean / 1 outstanding / 3 invalid — the tools.docs_guard convention, reused."""
+    """0 clean / 1 outstanding / 3 invalid — the established 0/1/3 convention, reused."""
     _, task_dir = make_task(tmp_path, "STRICT")
     assert discipline_main([str(task_dir), "--phase", "INTAKE"]) == 0
     assert discipline_main([str(task_dir), "--phase", "EXECUTE"]) == 1
