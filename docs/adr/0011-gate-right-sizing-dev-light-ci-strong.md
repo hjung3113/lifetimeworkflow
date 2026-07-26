@@ -1,8 +1,8 @@
 # 11. Gate right-sizing — dev-light, CI-strong
 
-- **Status:** proposed
-- **Date:** —
-- **Deciders:** —
+- **Status:** accepted
+- **Date:** 2026-07-26
+- **Deciders:** kimhyojung (CODEOWNERS)
 
 ## Context
 
@@ -77,3 +77,10 @@ while the PR to `main` is genuinely reviewed — which is the same assumption AD
 - This ADR narrows the scope of, but does not supersede, ADR-0007: `HARNESS_DEV_BYPASS` remains the
   constitution-decision opt-out; `HARNESS_DEV_LIGHT` is the broader guard-wall opt-out. A session
   may set either or both.
+
+## Ratification note
+
+This ADR's code landed in commit `bc9a6d9` ("feat(hooks): guard commands degrade instead of
+deadlock, and dev can opt out") before this ADR's formal ratification. The `HARNESS_DEV_LIGHT`
+opt-out and the infrastructure-degrade workspace check described above were already implemented and
+merged at the time this record was formally accepted.
