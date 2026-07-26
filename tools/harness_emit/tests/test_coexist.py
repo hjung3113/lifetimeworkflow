@@ -16,6 +16,7 @@ import json
 from pathlib import Path
 
 from tools.harness_emit import generate as harness_emit
+from tools.harness_emit.merge import _GUARD_PREFIX
 
 
 def _emit(tmp_path: Path, prior_manifest: dict | None = None) -> tuple[list[Path], Path]:
@@ -136,7 +137,7 @@ _SEED_SETTINGS = {
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m tools.hooks.format_on_write",
+                        "command": _GUARD_PREFIX + "uv run python -m tools.hooks.format_on_write",
                         "timeout": 30,
                     }
                 ],
@@ -148,7 +149,7 @@ _SEED_SETTINGS = {
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m tools.hooks.contract_guard",
+                        "command": _GUARD_PREFIX + "uv run python -m tools.hooks.contract_guard",
                         "timeout": 10,
                     }
                 ],
@@ -158,7 +159,7 @@ _SEED_SETTINGS = {
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m tools.hooks.secret_scan",
+                        "command": _GUARD_PREFIX + "uv run python -m tools.hooks.secret_scan",
                         "timeout": 10,
                     }
                 ],
@@ -168,7 +169,8 @@ _SEED_SETTINGS = {
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m tools.hooks.commit_gate --from-hook",
+                        "command": _GUARD_PREFIX
+                        + "uv run python -m tools.hooks.commit_gate --from-hook",
                         "timeout": 120,
                     }
                 ],
@@ -178,7 +180,7 @@ _SEED_SETTINGS = {
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m tools.hooks.resume_gate",
+                        "command": _GUARD_PREFIX + "uv run python -m tools.hooks.resume_gate",
                         "timeout": 15,
                     }
                 ],
@@ -188,7 +190,7 @@ _SEED_SETTINGS = {
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m tools.hooks.ledger_guard",
+                        "command": _GUARD_PREFIX + "uv run python -m tools.hooks.ledger_guard",
                         "timeout": 10,
                     }
                 ],

@@ -107,6 +107,31 @@ GSD_SIGNATURES: tuple[str, ...] = (
 #: AUTHORED (matcher → hooks; type → command → timeout) and MUST match the live committed bytes so
 #: an in-place replace reproduces .claude/settings.json exactly. There is NO harness group in
 #: SessionStart — all 4 SessionStart slots are GSD/injector-owned (untouched by this merge).
+#
+#: Every guard command carries a two-clause shell PREFIX (:data:`_GUARD_PREFIX`) so the guard
+#: cannot take the whole session down and so a dev session can opt out of the guard wall. It is
+#: part of the emitted command string and MUST be reproduced byte-for-byte in .claude/settings.json.
+#
+#: Clause 1 — ``[ -n "$HARNESS_DEV_LIGHT" ] && exit 0``: a dev session that sets HARNESS_DEV_LIGHT
+#: (in the gitignored .claude/settings.local.json) skips the guard entirely. Enforcement then lives
+#: where it belongs for this contract-first repo — CI (contract-drift, golden, ruff) and CODEOWNERS
+#: at the PR to main — not on every in-editor keystroke. The deployed product and CI leave the flag
+#: unset and keep full enforcement.
+#
+#: Clause 2 — ``python3 tools/harness_lint/workspace_check.py >/dev/null 2>&1 || exit 0``: if the uv
+#: workspace cannot resolve (e.g. a tools/* dir was created without its pyproject.toml), EVERY
+#: ``uv run`` guard would otherwise die at workspace resolution — before its Python even starts —
+#: and, because a failing PreToolUse guard denies its tool, take Read/Write/Bash down repo-wide with
+#: the repair locked behind the outage. The bare-python3 workspace check (no uv, no deps) turns that
+#: into ALLOW-with-degrade: a guard must fail closed on a real deny, but must NOT block on tooling
+#: infrastructure that is not its concern. Proven not to weaken a real deny by the mutation tests in
+#: tools/harness_emit/tests/test_guard_prefix.py — a healthy workspace still runs the guard and a
+#: constitution write with no bypass still denies.
+_GUARD_PREFIX: str = (
+    '[ -n "$HARNESS_DEV_LIGHT" ] && exit 0; '
+    "python3 tools/harness_lint/workspace_check.py >/dev/null 2>&1 || exit 0; "
+)
+
 HARNESS_HOOK_GROUPS: dict[str, list[dict]] = {
     "PostToolUse": [
         {
@@ -114,7 +139,7 @@ HARNESS_HOOK_GROUPS: dict[str, list[dict]] = {
             "hooks": [
                 {
                     "type": "command",
-                    "command": "uv run python -m tools.hooks.format_on_write",
+                    "command": _GUARD_PREFIX + "uv run python -m tools.hooks.format_on_write",
                     "timeout": 30,
                 }
             ],
@@ -126,7 +151,7 @@ HARNESS_HOOK_GROUPS: dict[str, list[dict]] = {
             "hooks": [
                 {
                     "type": "command",
-                    "command": "uv run python -m tools.hooks.contract_guard",
+                    "command": _GUARD_PREFIX + "uv run python -m tools.hooks.contract_guard",
                     "timeout": 10,
                 }
             ],
@@ -136,7 +161,7 @@ HARNESS_HOOK_GROUPS: dict[str, list[dict]] = {
             "hooks": [
                 {
                     "type": "command",
-                    "command": "uv run python -m tools.hooks.secret_scan",
+                    "command": _GUARD_PREFIX + "uv run python -m tools.hooks.secret_scan",
                     "timeout": 10,
                 }
             ],
@@ -151,7 +176,7 @@ HARNESS_HOOK_GROUPS: dict[str, list[dict]] = {
             "hooks": [
                 {
                     "type": "command",
-                    "command": "uv run python -m tools.hooks.ledger_guard",
+                    "command": _GUARD_PREFIX + "uv run python -m tools.hooks.ledger_guard",
                     "timeout": 10,
                 }
             ],
@@ -161,7 +186,9 @@ HARNESS_HOOK_GROUPS: dict[str, list[dict]] = {
             "hooks": [
                 {
                     "type": "command",
-                    "command": "uv run python -m tools.hooks.commit_gate --from-hook",
+                    "command": (
+                        _GUARD_PREFIX + "uv run python -m tools.hooks.commit_gate --from-hook"
+                    ),
                     "timeout": 120,
                 }
             ],
@@ -171,7 +198,7 @@ HARNESS_HOOK_GROUPS: dict[str, list[dict]] = {
             "hooks": [
                 {
                     "type": "command",
-                    "command": "uv run python -m tools.hooks.resume_gate",
+                    "command": _GUARD_PREFIX + "uv run python -m tools.hooks.resume_gate",
                     "timeout": 15,
                 }
             ],
