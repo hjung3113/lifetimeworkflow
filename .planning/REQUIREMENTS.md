@@ -25,13 +25,13 @@ maintainability.
 
 ## Theme A — Decision + Self-Gate Teardown (Phases 39–41)
 
-- [ ] **CER-01** *(NEW, Phase 39)*: One **human-ratified ADR-0012** records that **CI + the merge are
+- [x] **CER-01** *(NEW, Phase 39)*: One **human-ratified ADR-0012** records that **CI + the merge are
   the authority**, names every surface this milestone deletes, supersedes ADR-0001's
   constitution-member list (golden leaves the core) and ADR-0010 (the review ledger retires), and
   **accepts ADR-0011** by filling its empty `Date`/`Deciders` while recording that its code landed
   (`bc9a6d9`) before its ratification. It declares the bash surface a **permanent residual by design**
   so it cannot return as debt. (④)
-- [ ] **CER-02** *(NEW, Phase 39)*: The same ADR ratifies the **DEV/PRODUCT boundary** — DEV is this
+- [x] **CER-02** *(NEW, Phase 39)*: The same ADR ratifies the **DEV/PRODUCT boundary** — DEV is this
   checkout (Claude Code + GSD, never installed); PRODUCT is what
   `tools/adoption_scan/destinations.py::_CATEGORY_GLOBS` installs into a target monorepo, run on
   opencode and Claude Code by a weaker in-house model — with the operative rule that **no product
