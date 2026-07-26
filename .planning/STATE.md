@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: De-ceremony
-status: in_progress
-stopped_at: Phase 40 complete (self-gate teardown verified, UAT 4/4)
-last_updated: "2026-07-27T02:00:00.000Z"
+status: executing
+stopped_at: Phase 41 context gathered
+last_updated: "2026-07-26T17:50:47.078Z"
 last_activity: 2026-07-27
 progress:
-  total_phases: 8
+  total_phases: 2
   completed_phases: 2
   total_plans: 3
   completed_plans: 3
-  percent: 25
+  percent: 100
 ---
 
 # Project State
@@ -326,9 +326,9 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-27
-Stopped at: Phase 40 complete — teardown committed (`45364d7`), UAT 4/4 passed, all gates green
-Resume file: .planning/phases/40-self-gate-teardown/40-01-SUMMARY.md
+Last session: 2026-07-26T17:50:47.071Z
+Stopped at: Phase 41 context gathered
+Resume file: .planning/phases/41-docs-review-plane-removal/41-CONTEXT.md
 
 ### Resuming from a fresh clone
 
@@ -336,10 +336,12 @@ Everything needed to continue is committed. Read in this order:
 
 1. `.planning/ROADMAP.md` → the v2.5 section (Phases 39–46) and the "Ordering rules that must hold
    inside every phase" list. Phases 39 and 40 are `[x]`; 41 is next. The DAG is strictly serial.
+
 2. `.planning/phases/40-self-gate-teardown/40-01-SUMMARY.md` → what Phase 40 deleted, the nine
    verification commands with their observed output, and **the deletion-phase ordering constraint
    that applies to 41, 43 and 44** (see below — this is the one thing worth reading before starting
    any deletion).
+
 3. `docs/adr/0012-ci-and-merge-as-decision-authority.md` → the ratified authority for every v2.5
    deletion. Cite it instead of re-litigating scope.
 
@@ -370,4 +372,5 @@ than silently waived; run the command if the formal artifact is wanted.
 - `/gsd:discuss-phase 41 --auto --chain` — Phase 41: Docs-Review Plane Removal. Note its extra
   precondition: the 8 `[[binding]]` rows in `docs/doc-dependencies.toml` must be unbound **before**
   deleting any source they name, or `tools.docs_guard` classifies `BROKEN` and reds the fan-in gate.
+
 - Optional: `/gsd:secure-phase 40` to close the formal security gate above.
