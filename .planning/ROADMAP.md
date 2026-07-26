@@ -482,7 +482,7 @@ genuine gap is ③.
 | 38. Gate Right-Sizing (dev-light/CI-strong) | v2.4 | 1/1 | Complete | 2026-07-26 |
 | 39. Decision Boundary | v2.5 | 2/2 | Complete    | 2026-07-26 |
 | 40. Self-Gate Teardown | v2.5 | 0/TBD | Not started | - |
-| 41. Docs-Review Plane Removal | v2.5 | 0/5 | Planned | - |
+| 41. Docs-Review Plane Removal | v2.5 | 1/5 | In Progress|  |
 | 42. Adoption Decoupling + Install-Set Repair | v2.5 | 0/TBD | Not started | - |
 | 43. Lifecycle Plane Removal | v2.5 | 0/TBD | Not started | - |
 | 44. Non-Goal Surface Removal | v2.5 | 0/TBD | Not started | - |

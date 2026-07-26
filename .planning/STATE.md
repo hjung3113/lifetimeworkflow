@@ -4,14 +4,14 @@ milestone: v2.5
 milestone_name: De-ceremony
 status: executing
 stopped_at: Phase 41 context gathered
-last_updated: "2026-07-26T18:23:10.567Z"
-last_activity: 2026-07-26 -- Phase 41 planning complete
+last_updated: "2026-07-26T18:31:22.175Z"
+last_activity: 2026-07-26
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 8
-  completed_plans: 3
-  percent: 38
+  completed_plans: 4
+  percent: 50
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-22)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 41 — docs-review-plane-removal (next; 39 and 40 complete)
+**Current focus:** Phase 41 — docs-review-plane-removal
 
 ## Current Position
 
-Phase: 40 (complete) — next: 41
-Plan: 40-01 complete
+Phase: 41 (docs-review-plane-removal) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-07-26 -- Phase 41 planning complete
+Last activity: 2026-07-26
 
 ## Performance Metrics
 
@@ -145,6 +145,7 @@ Last activity: 2026-07-26 -- Phase 41 planning complete
 | Phase 27.1 P03 | 25min | 2 tasks | 5 files |
 | Phase 39-decision-boundary-v2-5-a P01 | 12min | 1 tasks | 5 files |
 | Phase 39 P02 | 12min | 2 tasks | 1 files |
+| Phase 41 P01 | 12min | 2 tasks | 22 files |
 
 ## Accumulated Context
 
@@ -261,6 +262,7 @@ Recent decisions affecting current work:
 - [Phase 27.1]: 27.1-03: manifest.schema.json destination/path pattern constraint (WR-03) landed with hash rebaseline + both derived-plane artifacts in one human-ratified commit (f6be4f1); SC-5 seven-finding (plus symlink-read) disposition table closes Phase 27.1.
 - [Phase 39]: 39-01: ADR-0012 ratified as ONE unit (CI+merge authority, v2.5 deletion enumeration as intent-at-ratification, DEV/PRODUCT boundary operative rule, ADR-0001/0010 supersession, bash-residual-by-design, one-time-transition checkpoint clause); ADR-0011 formally accepted (Date 2026-07-26, Deciders kimhyojung, cites bc9a6d9); write path used HARNESS_DEV_BYPASS per explicit human choice at Task 1 checkpoint, not a fresh GOLDEN_APPROVE_HUMAN token.
 - [Phase 39]: RAT-4, RAT-5, and the per-tool deny-spelling gap recorded obsolete-by-deletion citing ADR-0012; v2.4 SEAL-05 withdrawn, not deferred
+- [Phase 41]: Unbind-before-delete (D-09): emptied all 8 [[binding]] rows + deleted the ledger in a standalone commit before deleting tools/docs_guard (6110 LOC), the registry file, and its derived page. contracts/harness/docs/doc-dependencies.schema.json deferred to Plan 04.
 
 ### Pending Todos
 
@@ -326,9 +328,9 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-26T17:50:47.071Z
+Last session: 2026-07-26T18:26:50.617Z
 Stopped at: Phase 41 context gathered
-Resume file: .planning/phases/41-docs-review-plane-removal/41-CONTEXT.md
+Resume file: None
 
 ### Resuming from a fresh clone
 
