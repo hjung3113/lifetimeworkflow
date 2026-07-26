@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: De-ceremony
-status: milestone_complete
-stopped_at: Completed 29-05-PLAN.md Tasks 1–2; Task 3 blocked on human ratification
-last_updated: "2026-07-26T14:35:03.576Z"
+status: completed
+stopped_at: Phase 40 context gathered
+last_updated: "2026-07-26T15:28:25.708Z"
 last_activity: 2026-07-26
 progress:
-  total_phases: 1
-  completed_phases: 2
+  total_phases: 2
+  completed_phases: 1
   total_plans: 2
   completed_plans: 2
-  percent: 200
+  percent: 100
 ---
 
 # Project State
@@ -326,9 +326,9 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-26T14:34:26.172Z
-Stopped at: Completed 29-05-PLAN.md Tasks 1–2; Task 3 blocked on human ratification
-Resume file: None
+Last session: 2026-07-26T15:28:25.702Z
+Stopped at: Phase 40 context gathered
+Resume file: .planning/phases/40-self-gate-teardown/40-CONTEXT.md
 
 ## Operator Next Steps
 
