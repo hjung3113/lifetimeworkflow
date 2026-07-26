@@ -2,7 +2,7 @@
 phase: 41
 slug: docs-review-plane-removal
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: true
 created: 2026-07-27
 ---
@@ -94,11 +94,11 @@ install — this is deletion-only.
 
 ## Validation Sign-Off
 
-- [ ] All tasks have an automated verify command (table above)
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0: nothing owed
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 60s (quick) / < 5 min (full)
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have an automated verify command (table above)
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0: nothing owed
+- [x] No watch-mode flags
+- [x] Feedback latency < 60s (quick) / < 5 min (full)
+- [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending

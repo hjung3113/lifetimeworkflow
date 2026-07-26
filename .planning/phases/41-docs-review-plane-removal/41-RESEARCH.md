@@ -418,9 +418,11 @@ Not applicable — no library/framework version question in a pure-deletion phas
 `tools/ruff_baseline/ratchet.py`'s comparison operator before the plan commits to "no rebaseline
 needed" as an acceptance criterion.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Does `tools/ruff_baseline/ratchet.py` compare `<=` or `==` against `baseline.json`?**
+   RESOLVED: confirmed `>` (found greater than allowed) — a decrease PASSes as an improvement, no
+   rebaseline required; resolved in 41-05-PLAN.md Task 3 (read `ratchet.py` directly this session).
    - What we know: Phase 40 removed 611 LOC and the ratchet passed unchanged (245/245).
    - What's unclear: whether that's because the comparison tolerates *any* count `<=` baseline, or
      because 611 LOC of that specific package happened to carry zero ruff findings (i.e., the
@@ -433,6 +435,9 @@ needed" as an acceptance criterion.
    `test_constitution_refusal.py` be deleted along with the ledger test class, or kept as
    negative controls proving those (now-nonexistent) paths still resolve outside the constitution
    plane?**
+   RESOLVED: delete both rows along with the whole ledger-specific trailing test section; resolved
+   in 41-02-PLAN.md's interfaces section (the `test_constitution_refusal.py` edit spec removes the
+   entire `REVIEW_LEDGER_DESTINATIONS`-through-end-of-file span).
    - What we know: `docs/doc-dependencies.toml` and `docs/reference/doc-dependencies.md` are both
      being deleted in this phase; the test asserts they are NOT refused by
      `refuse_unsafe_destination`, which will remain trivially true (a nonexistent path resolves
