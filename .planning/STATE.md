@@ -4,14 +4,14 @@ milestone: v2.5
 milestone_name: De-ceremony
 status: executing
 stopped_at: Phase 41 context gathered
-last_updated: "2026-07-26T18:42:12.121Z"
+last_updated: "2026-07-26T18:59:37.255Z"
 last_activity: 2026-07-26
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 8
-  completed_plans: 5
-  percent: 63
+  completed_plans: 6
+  percent: 75
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-22)
 ## Current Position
 
 Phase: 41 (docs-review-plane-removal) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-07-26
 
@@ -147,6 +147,7 @@ Last activity: 2026-07-26
 | Phase 39 P02 | 12min | 2 tasks | 1 files |
 | Phase 41 P01 | 12min | 2 tasks | 22 files |
 | Phase 41 P02 | 25min | 2 tasks | 8 files |
+| Phase 41 P03 | 40min | 2 tasks | 21 files |
 
 ## Accumulated Context
 
@@ -265,6 +266,8 @@ Recent decisions affecting current work:
 - [Phase 39]: RAT-4, RAT-5, and the per-tool deny-spelling gap recorded obsolete-by-deletion citing ADR-0012; v2.4 SEAL-05 withdrawn, not deferred
 - [Phase 41]: Unbind-before-delete (D-09): emptied all 8 [[binding]] rows + deleted the ledger in a standalone commit before deleting tools/docs_guard (6110 LOC), the registry file, and its derived page. contracts/harness/docs/doc-dependencies.schema.json deferred to Plan 04.
 - [Phase 41]: Fixed cli.py's ReviewLedgerRefusal catch clause as a Rule 1 auto-fix — an undocumented adoption_apply consumer of the deleted ledger_guard hook beyond apply.py itself
+- [Phase 41]: Added RETIRED_SIGNATURES to tools/harness_emit/merge.py so re-emit actually drops a formerly harness-owned settings.json hook group — Removing a signature from HARNESS_SIGNATURES alone left the stale ledger_guard group classified identically to a GSD/human group and preserved forever
+- [Phase 41]: Fixed harness/commands/refresh-memory.md's stranded tools.memory_regen.docs_staleness invocation while deleting the module — Rule 1 bug found via a repo-wide grep sweep before finalizing Task 2
 
 ### Pending Todos
 
@@ -330,7 +333,7 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-26T18:39:40.401Z
+Last session: 2026-07-26T18:56:46.684Z
 Stopped at: Phase 41 context gathered
 Resume file: None
 
