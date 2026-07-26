@@ -30,7 +30,6 @@ EXPECTED_PAGES = frozenset(
         "approval",
         "attestation",
         "deny-domains",
-        "doc-dependencies",
         "evidence",
         "format-conventions",
         "greeting",

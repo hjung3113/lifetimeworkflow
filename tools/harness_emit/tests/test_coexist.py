@@ -48,6 +48,7 @@ def test_all_26_commands_emit_to_both_trees(tmp_path: Path) -> None:
     Phase 27 adds `/adopt` (the brownfield-adoption composition entry point), taking it 23 → 24.
     Phase 29 adds `/docs-update` (the bounded human-doc review loop, DOCSUP-06), taking it 24 → 25.
     Phase 36 adds `/discipline` (the read-only lane-discipline report, LANE-01), taking it 25 → 26.
+    Phase 41 deletes `/docs-update` (the docs-review plane removal, CER-05), taking it back 26 → 25.
 
     This count tracks the runtime-neutral SOURCE (``harness/commands/*.md``), NOT the committed
     ``.opencode/`` / ``.claude/`` trees: ``_emit`` projects into ``tmp_path``. So authoring a new
@@ -64,8 +65,8 @@ def test_all_26_commands_emit_to_both_trees(tmp_path: Path) -> None:
         if (tmp_path / ".opencode" / "command") in p.parents and p.suffix == ".md"
     ]
     claude_cmds = _claude_commands(tmp_path, written)
-    assert len(opencode_cmds) == 26, f"expected 26 opencode commands, got {len(opencode_cmds)}"
-    assert len(claude_cmds) == 26, f"expected 26 Claude commands, got {len(claude_cmds)}"
+    assert len(opencode_cmds) == 25, f"expected 25 opencode commands, got {len(opencode_cmds)}"
+    assert len(claude_cmds) == 25, f"expected 25 Claude commands, got {len(claude_cmds)}"
 
 
 def test_harness_commands_are_top_level_never_under_gsd(tmp_path: Path) -> None:
@@ -182,16 +183,6 @@ _SEED_SETTINGS = {
                         "type": "command",
                         "command": _GUARD_PREFIX + "uv run python -m tools.hooks.resume_gate",
                         "timeout": 15,
-                    }
-                ],
-            },
-            {
-                "matcher": "Write|Edit",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": _GUARD_PREFIX + "uv run python -m tools.hooks.ledger_guard",
-                        "timeout": 10,
                     }
                 ],
             },

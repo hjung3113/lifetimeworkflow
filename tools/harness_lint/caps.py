@@ -125,8 +125,6 @@ _XML_CHARS = ("<", ">")
 # two-plane-memory. Phase 8 (Pipeline Topology) adds one topology-trace skill: pipeline-map.
 # Phase 10 (Context-Economy) adds two skills: fan-out-synthesize (the fan-out substrate) and
 # context-budget (the delegate-vs-inline heuristic that routes into it).
-# Phase 29 (Docs Drive Loop) adds one skill: docs-upkeep (the human-doc review-obligation runbook
-# behind /docs-update — disjoint from data-contracts, two-plane-memory and gate-model, DOCSUP-06).
 # Phase 36 (Lane Discipline) adds the five DISCIPLINE skills a lane can require by name in
 # harness/risk-policy.toml: clarify, test-driven-change, diagnose, domain-modeling and
 # adversarial-review-panel. They are not a sprawl exception — each is a routing trigger no existing

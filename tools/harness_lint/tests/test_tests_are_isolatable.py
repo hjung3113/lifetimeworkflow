@@ -16,7 +16,7 @@ The failure mode is nastier than a plain missing import, because it is **invocat
 
 So the suite is green under the invocation developers run and red under the invocation CI runs —
 and several CI jobs here DO run scoped commands (``pytest tools/golden_runner``,
-``pytest tools/lifecycle_eval``, ``pytest tools/ruff_baseline``, ``pytest tools/docs_guard ...``).
+``pytest tools/lifecycle_eval``, ``pytest tools/ruff_baseline``, ``pytest tools/harness_lint ...``).
 
 History, which is why prose was not enough:
 
