@@ -305,6 +305,49 @@ phase is decision-record-only. Per the milestone's binding constraint, the surfa
 5. ADR-0001 and ADR-0010 carry a superseded-by pointer to ADR-0012 with their decision bodies unedited (append-only / supersede-don't-edit).
 6. The existing suite and the contract-drift gate stay green — no contract, gate, or emitted artifact changes from this phase.
 
+#### Phase 40: Self-Gate Teardown
+
+**Goal:** Delete the skill-registry self-gate — the lock file, its tool, its two gate tests and its CI
+job — so that no later v2.5 phase can delete a skill and be blocked by a declaration *about* the skill
+tree. This is the first pure-deletion phase and it **must precede every skill deletion** in phases
+41, 43 and 44: `registry.py:44,105-110` recomputes the surface from `harness/skills/**` and fails on
+any diff against the committed lock, so deleting a skill first would red the gate.
+
+Authority to delete is already recorded — ADR-0012 (`docs/adr/0012-ci-and-merge-as-decision-authority.md:96-97`)
+names this exact surface.
+
+**Requirements:** CER-04
+
+**Scope** (verified against the tree, 2026-07-26):
+- Delete `tools/skill_registry/` — `registry.py`, `__main__.py`, `__init__.py`, `pyproject.toml`,
+  `tests/{conftest.py,test_skill_registry.py}` (611 LOC total).
+- Delete `harness/skills/registry.lock` (8462 bytes, 24 declared skills).
+- Delete the LANE-04 mirror gate `tools/harness_lint/tests/test_skill_registry_lock.py` (50 LOC) —
+  ordering rule (8): a deleted `harness/` artifact's dedicated gate test dies in the same commit.
+- Delete CI job `registry-lock` (`ci.yml:275-303`, including its comment block) **and** its entry in
+  `gate.needs` (`ci.yml:410`) — ordering rule (5), same commit.
+- Refresh `uv.lock` (`uv.lock:198` — `source = { virtual = "tools/skill_registry" }`). The workspace
+  glob `members = ["tools/*"]` (`pyproject.toml:34`) needs no edit; removing the directory removes the
+  member.
+
+**Non-goals:** no skill is deleted in this phase (that starts in 41); no other CI job, hook, contract,
+or emitted artifact changes; no replacement gate — per the milestone's binding constraint the surface
+may not grow, and the accepted consequence is recorded below. `docs/explanation/agent-workflow-skillset-design-guide.md`
+mentions a `registry.lock` as *vendored-skill provenance* — a different, unimplemented concept, not
+this gate; it is out of scope here (prose scrub belongs to Phase 45).
+
+**Accepted consequence** (scoping FINAL §156, risk 4): once the lock is gone, a skill `description`
+rewrite silently changes agent routing with no gate catching it. Accepted — CI + the merge are the
+authority (ADR-0012).
+
+**Success Criteria**:
+1. No `registry.lock` anywhere in the tree and no `tools/skill_registry/` directory; `grep -rn "skill_registry\|registry-lock"` over `tools/`, `harness/`, `.github/`, `pyproject.toml` and `uv.lock` returns nothing.
+2. `.github/workflows/ci.yml` has no `registry-lock` job and `gate.needs` (`ci.yml:410`) has no dangling `registry-lock` entry — no other `needs` entry is added or removed.
+3. `uv run pytest` is green with no collection error from a removed package, and `uv sync --all-packages` resolves against the refreshed `uv.lock`.
+4. The emitted trees are unchanged: `emit-drift` and `stale-derived` produce an empty diff (`registry.lock` is a declaration about `harness/skills/`, not an emitted artifact — deleting it must not move `.opencode/` or `.claude/`).
+5. The contract-drift gate stays clean — this phase touches no `contracts/` entry and no `contract_hash/hash.py` path list.
+6. Net surface change is deletion-only: **−1 CI job, −1 tool package, −1 lock file, −2 gate tests, +0** commands/agents/skills/contracts/hooks.
+
 ### 📋 v2.6 Minimal Monorepo Core (Phases 47–50) — SCOPED, NOT STARTED
 
 Smallest goal-complete subset = all of v2.5 **+ 47 + 49**. ① is already covered by the lint adapters +
