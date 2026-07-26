@@ -107,9 +107,9 @@ GSD_SIGNATURES: tuple[str, ...] = (
 #: group whose command matches no *current* signature falls through as ``sig is None`` and is
 #: mistaken for a GSD/human group (kept verbatim forever) — silently defeating a deletion phase's
 #: whole point. Listing a signature here makes the retirement an explicit, re-emit-driven removal
-#: instead of requiring a hand-edit of the emitted ``.claude/settings.json`` (D-12). ADR-0012
-#: retires the docs-review-obligation plane's PreToolUse layer (`tools.hooks.ledger_guard`).
-RETIRED_SIGNATURES: tuple[str, ...] = ("tools.hooks.ledger_guard",)
+#: instead of requiring a hand-edit of the emitted ``.claude/settings.json`` (D-12). Empty until the
+#: next PreToolUse-hook deletion phase needs it.
+RETIRED_SIGNATURES: tuple[str, ...] = ()
 
 #: The canonical harness hook groups the emitter wires, per event. Key order inside each mapping is
 #: AUTHORED (matcher → hooks; type → command → timeout) and MUST match the live committed bytes so
