@@ -1,5 +1,38 @@
 # Milestones
 
+## v2.4 Gate Right-Sizing, Carried Debt, Lane Discipline (Closed PARTIAL: 2026-07-26)
+
+**Phases:** 30–38 planned; **34, 35, 36, 37 shipped** (12 plans), **38 landed as code** (`bc9a6d9`,
+never formalized as a phase), **30 partial** (contract pair only, `27ee704`), **31, 32, 33 cut**.
+
+**Delivered:** `ruff check` became a required CI gate behind a ratcheting baseline with the vendored
+tree excluded; the three carried-debt items reached honest dispositions (phase-27 verification authored
+with an at-closeout honesty stamp, compile-the-graph-once decided, `DEF-05-02-1` proven already fixed
+and the stale *record* corrected); the four discipline skills plus a STRICT+ adversarial panel became
+executable lane requirements; capability-neutral routing with an enforced allowlist plus skill
+`registry.lock` and its CI adapter landed. Suite at close: 1683 passed / 8 snapshots.
+
+**Why it closed partial.** Mid-milestone the owner found the in-session gate wall over-regulated: it
+slowed the dev loop and deadlocked the session twice. ADR-0011 re-pivoted Theme A from *harden the
+denies* to **right-size them — dev-light, CI-strong**, cutting SEAL-02/03, and phase 38 shipped that as
+code. The deeper diagnosis in ADR-0011's own Context — *every milestone's subject matter **is** gate
+machinery, so "maintain consistency" drifted into "add more gates"* — then outgrew the milestone: the
+remaining Theme A work (30's drift test, 33's ratification record) was more of exactly the thing the
+pivot rejected. The owner restated the project's purpose, and the successor milestone **v2.5
+De-ceremony** was scoped to delete rather than extend.
+
+**Superseded by v2.5:** plans 30-02/03/04 are cut (`deny-domains.json`'s own `_note` says no hook reads
+it and a drift test over it would prove a file equals itself); phase 33 is cut (`secret_scan` is
+deleted outright, so SEAL-04 is moot, and SEAL-05's portable ratification record is replaced by one
+recorded decision); ADR-0011 is accepted and its code-before-ratification recorded by v2.5 phase 39,
+which also closes RAT-4, RAT-5 and the per-tool deny spelling as **obsolete-by-deletion** — all three
+being one finding: every human-ratification gate here assumes reviewer ≠ author, and this repo has one
+owner.
+
+**Not archived:** phase directories for 30 and 34–37 stay in place — they hold the human-queue drafts
+and verification records phase 39 discharges. `REQUIREMENTS.md` for v2.4 is archived at
+`.planning/milestones/v2.4-REQUIREMENTS.md`.
+
 ## v2.3 Contract Graph, Brownfield Adoption, Living Docs (Shipped: 2026-07-22)
 
 **Phases completed:** 10 phases (24, 25, 26, 26.1, 26.2, 27, 27.1, 27.2, 28, 29), 43 plans, 58 tasks

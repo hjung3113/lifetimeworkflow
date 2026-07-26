@@ -21,7 +21,11 @@ file keeps only the milestone-level index so it stays constant-size as milestone
 - ✅ **v2.1 MEM2 — Process Memory & Provenance Reframe** — Phases 12–17 (shipped 2026-07-18)
 - ✅ **v2.2 Adaptive Task Control Plane** — Phases 18–23 (shipped 2026-07-19)
 - ✅ **v2.3 Contract Graph, Brownfield Adoption, Living Docs** — Phases 24–29 (shipped 2026-07-22)
-- 🚧 **v2.4 Enforcement Integrity, Carried Debt, Lane Discipline** — Phases 30–37 (in progress)
+- ⚠ **v2.4 Gate Right-Sizing, Carried Debt, Lane Discipline** — Phases 30–38 (**closed PARTIAL
+  2026-07-26**: 34–37 shipped; 30 partial; 31/32/33 cut; 38 landed as code `bc9a6d9`, formalized by
+  v2.5 phase 39)
+- 🚧 **v2.5 De-ceremony** — Phases 39–46 (in progress)
+- 📋 **v2.6 Minimal Monorepo Core** — Phases 47–50 (scoped, not started)
 
 ## Phases
 
@@ -96,7 +100,21 @@ Full detail: `.planning/milestones/v2.3-ROADMAP.md`. Audit: `.planning/milestone
 
 </details>
 
-### 🚧 v2.4 Gate Right-Sizing, Carried Debt, Lane Discipline (Phases 30–38) — IN PROGRESS
+### ⚠ v2.4 Gate Right-Sizing, Carried Debt, Lane Discipline (Phases 30–38) — CLOSED PARTIAL 2026-07-26
+
+> **CLOSED PARTIAL 2026-07-26.** Shipped: **34** (ruff as a required CI gate), **35** (carried-debt
+> dispositions), **36** (discipline skills + adversarial panel), **37** (capability routing +
+> `registry.lock`) — 1683 passed / 8 snapshots. **30** landed only its contract pair (`27ee704`,
+> human-written); plans 30-02/03/04 were never authored, and **v2.5 cuts them** —
+> `deny-domains.json`'s own `_note` says no hook reads it and a drift test over it would prove a file
+> equals itself. **31/32** were cut by ADR-0011. **33** never started and is cut: `secret_scan` is
+> deleted outright in v2.5-44 (so SEAL-04 is moot) and SEAL-05's portable ratification record is the
+> mechanism v2.5 replaces with a recorded decision. **38** landed as code (`bc9a6d9`) but was never
+> formalized, and its ADR-0011 is still `proposed` with empty `Date`/`Deciders` — **v2.5 phase 39
+> discharges that bookkeeping** and closes RAT-4 / RAT-5 / the per-tool deny spelling as
+> obsolete-by-deletion. Two drafted docs-review ledger rows stay unlanded; v2.5 phase 41 deletes the
+> plane that wants them. Phase directories are deliberately **not** cleared — they hold those drafts
+> and records.
 
 > **RE-PIVOT (2026-07-26, ADR-0011):** the human found the in-session gate wall over-regulated for a
 > repo whose goal is consistency + long-horizon maintainability, and it deadlocked the session twice.
@@ -151,11 +169,142 @@ about, and the posture must be ratified before enforcement is written. `33` depe
 D. The named failure mode — phase 32 expanding without bound — is mitigated by phase 31's posture ADR
 being a hard precondition. If 31 cannot pick a posture, stop rather than proceed.
 
+### 🚧 v2.5 De-ceremony (Phases 39–46) — IN PROGRESS
+
+Design: `.planning/research/v2.5-scoping-FINAL.md` — a three-round two-model panel (`gpt-5.6-sol` high
+× `claude-opus-5` high; factual dossier by `gpt-5.6-terra` medium) over a Claude-authored brief,
+owner-approved. Requirements: `.planning/REQUIREMENTS.md` (CER-01..11, PROD-01..05).
+
+**Goal:** stop the harness from verifying itself and start it serving its stated purpose — a monorepo
+where ① per-package conventions stay consistent, ② interface contracts between packages stay
+consistent, ③ an LLM understands cross-project relationships better than in a generic repo, and
+④ the thing stays maintainable. Delete ~16k LOC of self-verification machinery, take the gates a human
+must personally **author** from five kinds to **zero**, and give the **product** an honest lifecycle.
+
+> **Binding constraint (owner):** never expand scope beyond the purpose by adding verification gates,
+> security layers, or ceremony. Default answer to "should we also gate X?" is **NO**; the surface may
+> not grow without retiring at least as much.
+>
+> **The DEV/PRODUCT boundary (the round-3 correction):** rounds 1–2 deleted the product's whole
+> lifecycle on the ground that "GSD already owns it" — true of this checkout, false of the product.
+> GSD is never installed. Operative rule, ratified in ADR-0012: *no product capability may be declined
+> because GSD covers it; only a named shipped artifact may cover it.* What ships is
+> `tools/adoption_scan/destinations.py::_CATEGORY_GLOBS`, not the emitter (`generate.py:41-43`
+> projects this checkout into itself).
+
+- [ ] **Phase 39: Decision Boundary** *(v2.5 A)* — one human-ratified **ADR-0012**: CI + the merge are
+  the authority; the DEV/PRODUCT boundary is ratified with its operative rule; ADR-0001's
+  constitution-member list is superseded (golden leaves the core) and ADR-0010 retires; ADR-0011 is
+  accepted with `Date`/`Deciders` filled and its code-before-ratification recorded; RAT-4 / RAT-5 /
+  the per-tool deny spelling close as **obsolete-by-deletion**; the bash surface is declared a
+  **permanent residual by design**. (CER-01, CER-02, CER-03)
+  **Success:** ADR-0012 exists and is `accepted`; ADR-0011 has non-empty `Date`/`Deciders`; the three
+  carried items show a recorded disposition in `STATE.md`; SEAL-05 is marked withdrawn, not deferred.
+- [ ] **Phase 40: Self-Gate Teardown** *(v2.5 A)* — delete `tools/skill_registry` (611 LOC),
+  `harness/skills/registry.lock`, CI `registry-lock` and its `gate.needs` entry. **Must precede every
+  skill deletion** (`registry.py:44,105-110`). (CER-04)
+  **Success:** no `registry.lock` in the tree; `gate.needs` has no dangling job; the suite is green.
+- [ ] **Phase 41: Docs-Review Plane Removal** *(v2.5 A)* — unbind the 8 `[[binding]]` rows, then delete
+  `tools/docs_guard` (6110 LOC), the ledger, hook `ledger_guard` + its `path_deny_globs` entry,
+  `/docs-update`, skill `docs-upkeep`, `contracts/harness/docs/*`, CI `docs-guard` + its `gate.needs`
+  entry. The severity-flip alternative is provably dead: `guard.py:383-399` classifies `BROKEN` before
+  staleness and `cli.py:6-13` exits 1 on `BROKEN` regardless of severity. (CER-05)
+  **Success:** the CI fan-in gate is **green**; no human-authored ledger row is required by anything.
+- [ ] **Phase 42: Adoption Decoupling + Install-Set Repair** *(v2.5 B)* — drop task-control coupling
+  from `adoption_apply` (inline the ~60-LOC atomic create/replace; inline `gate-registry.json`'s 7
+  redaction regexes into `adoption_scan`, live consumer `scan.py:110-112`); **add the surviving
+  `tools/**` to `_CATEGORY_GLOBS`**, which today ships commands and CI that invoke Python the target
+  never receives (`destinations.py:142-181`). (CER-06, PROD-01)
+  **Success:** adoption runs draft → apply with no `task_control` import and no
+  `GOLDEN_APPROVE_HUMAN`; a fixture install produces a tree where an emitted command's module exists.
+- [ ] **Phase 43: Lifecycle Plane Removal** *(v2.5 B)* — delete 8 `tools/` packages (7021 LOC), the 7
+  task-control contracts, commands `intake·phase-gate·handoff·discipline`, hook `resume_gate`, the 5
+  discipline skills, `harness/{capabilities,disciplines,risk-policy}.toml`, `.workflow/tasks/`, CI
+  `lifecycle-eval` + its `gate.needs` entry; strip `memory_regen`'s active-task block
+  (`inject.py:165-195`) keeping the pointer (`:148-162`). No residue package. (CER-07)
+  **Success:** no module imports a deleted package; `test_capability_wiring.py` is gone with
+  `capabilities.toml`; the suite is green.
+- [ ] **Phase 44: Non-Goal Surface Removal** *(v2.5 B)* — delete `secret_scan` (**no replacement
+  job**), `deny-domains.*`, `gate-registry.json` and their `DATA_CONTRACT_PATHS` entries,
+  `tools/memory_ui` (1756 LOC), `tools/strangler_guard` + `/strangler-step`, `/pipeline` +
+  `pipeline-map` + `[pipeline].edges`, skill `gate-model`, `/component`'s topology half; **relocate the
+  golden stack to `examples/log-parser/`** (ADR-0002(b): `runner.py:78-85` puts .NET in the core).
+  (CER-08, CER-09)
+  **Success:** `contracts/` holds 6–8 entries with a rebaselined hash manifest; the core suite passes
+  with no golden module; the instance leg still runs golden.
+- [ ] **Phase 45: Projection Repair** *(v2.5 C)* — re-emit both trees; update `caps.py` frozensets,
+  `emit-manifest.json`, `HARNESS_SIGNATURES` (`merge.py:86-95`); rebaseline
+  `contracts/.hashes/manifest.json`; regenerate `docs/reference/**`, contracts-index and the syrupy
+  snapshots; repair `gate.needs`; **scrub prose naming deleted surfaces**, including root
+  `AGENTS.md:8-9` and `AGENTS.md:52-62`, both outside the managed block. (CER-10, CER-11)
+  **Success:** `emit-drift` and `stale-derived` produce an empty diff; no surviving artifact names a
+  deleted one.
+- [ ] **Phase 46: Product Flow** *(v2.5 C)* — rewrite `harness/agents/orchestrator.md` (already *"the
+  only planner in the deployed harness"*, `:48`): strip its 8 dangling citations, retire the 25-row
+  table (`:90-129`), add **4 routes** `small-change · bugfix · feature · contract-change` with stop
+  conditions, the delegation-packet fields, the **six-field completion contract**
+  (`WORKFLOW_CONTRACTS.md:39-46`), one operative sentence per deleted discipline skill, and
+  *Repository evidence* from existing `harness_config` + `contract_graph` facts. Add **one** command
+  `/flow`; record route · step · next command in the already-shipped `.memory/state/activeContext.md`.
+  **Zero flow artifacts imported**; upstream mattpocock skills are not a product dependency.
+  (PROD-02, PROD-03, PROD-04, PROD-05)
+  **Success:** net **+1 command, +0 agents/skills/tools/contracts/CI/hooks/state files**; a weak model
+  can pick a route and close with the six fields from the emitted tree alone; re-emit is byte-clean.
+
+**DAG:** strictly serial `39 → 40 → 41 → 42 → 43 → 44 → 45 → 46`. Deletion-first is literal: 40 before
+any skill deletion; 41 before deletions that would classify `BROKEN`; 42 before 43 (adoption and
+`memory_regen` must be decoupled first); 45 after all deletions; 46 last, because it is the only
+additive phase.
+
+**Ordering rules that must hold inside every phase** (each verified against a file): (1) registry lock
+dies before the first skill deletion; (2) unbind a docs binding before deleting a source it names;
+(3) every contract deletion edits `contract_hash/hash.py:32` **and** rebaselines the hash manifest in
+the same commit; (4) decouple `adoption_apply` + `memory_regen` before deleting `task_control` /
+`handoff`; (5) every CI job deletion removes its `gate.needs` entry in the same commit
+(`ci.yml:410`); (6) every `harness/` change re-emits in the same commit and every skill/agent
+add-or-delete edits `caps.py` (`validate.py:182-183`); (7) never hand-edit `.claude/` or `.opencode/`;
+(8) **new** — a deleted `harness/` artifact's dedicated gate test dies in the same commit
+(`test_conductor_graph_render.py:31-32,42-57`, `test_capability_wiring.py:30,51`,
+`test_language_config.py:48-51`).
+
+**Recorded deviation from the panel:** three split deltas decided by the coordinator and approved by
+the owner — `/flow` ships (sol) rather than being cut (opus); the fourth route is `contract-change`
+(opus) rather than `research` (sol); the lifecycle is its own phase 46 (sol) rather than a widening of
+45 (opus).
+
+### 📋 v2.6 Minimal Monorepo Core (Phases 47–50) — SCOPED, NOT STARTED
+
+Smallest goal-complete subset = all of v2.5 **+ 47 + 49**. ① is already covered by the lint adapters +
+nearest-wins `AGENTS.md` + `/component`; ② by `contracts/` + `contract_hash`/`contract_drift` +
+`contract_graph` + CI; ④ by append-only ADR + the derived plane + ADR-0011's CI-strong posture. The
+genuine gap is ③.
+
+- [ ] **Phase 47: Package Facts** — extend `adoption_scan/detect.py`'s manifest detection
+  (`:41-47,100-121`) into a committed **derived** package + dependency graph feeding `contract_graph`;
+  `[[components]]` demoted to an override slot. **Report-only, no gate.** (MONO-01)
+- [ ] **Phase 48: Convention Profiles** — nearest-wins per-package convention data + language→lint/test
+  mapping, populated by `/component` step 2. (MONO-02)
+- [ ] **Phase 49: Contract Impact** — one `/impact` command over `contract_graph.query`'s existing
+  `direct`/`reverse`/`transitive` (`query.py:29,39,55`) + package facts; fills phase 46's evidence
+  slot. On demand only, **no SessionStart injection**. (MONO-03)
+- [ ] **Phase 50: `harness-author` + Managed Adopt/Upgrade** — (a) `harness-author`: one skill, Q&A
+  with grounded `path:line` defaults, **absorbs `skill-creator`** (net skills ±0), zero new
+  packages/commands/contracts, output runtime-neutral under `harness/` only; **presupposes PROD-01**.
+  (b) simplified `/adopt` as a managed install/update with one manifest + conflict report — **does not
+  start without a real multi-package target**. (MONO-04)
+
+**DAG:** `47 → {48, 49}`; `50` needs `48` and, for its (b) half, a real target.
+
 ### 📋 Carried to a later milestone
 
-- **EVOL-01** impact-driven task-evidence policy (needs its own ADR) · **EVOL-02** contract
-  versioning/compatibility engine · **EVOL-03** `examples/**` instance-local docs-registry overlay ·
-  **TCP-F05** signed external attestation + STRICT rollback (needs a breaking ADR).
+- **EVOL-02** contract versioning / compatibility engine — the only survivor; still a standalone
+  engine needing its own ADR.
+- **Obsoleted by v2.5, recorded so they are not re-adopted:** **EVOL-01** (impact-driven task-evidence
+  policy) and **TCP-F05** (signed external attestation + STRICT rollback) die with the task-control
+  plane deleted in phase 43; **EVOL-03** (`examples/**` instance-local docs-registry overlay) dies with
+  the docs-review plane deleted in phase 41; **SEAL-04** is moot once `secret_scan` is deleted
+  (phase 44) and **SEAL-05** (portable ratification record) is withdrawn by phase 39's recorded
+  decision.
 
 ## Progress
 
@@ -178,12 +327,24 @@ being a hard precondition. If 31 cannot pick a posture, stop rather than proceed
 | 30. Deny-Domain Registry | v2.4 | 1/4 | Contract landed (27ee704); loader CUT — kept as inventory | 2026-07-26 |
 | 31. Threat Model + Posture ADR | v2.4 | — | CUT (ADR-0011) | - |
 | 32. Implement the Posture | v2.4 | — | CUT (ADR-0011) | - |
-| 33. Secret Scan + Ratification Record | v2.4 | 0/TBD | BLOCKED — depends on phase 30 | - |
+| 33. Secret Scan + Ratification Record | v2.4 | — | CUT (v2.5 deletes `secret_scan`; SEAL-05 withdrawn) | - |
 | 34. Ruff as a Required CI Gate | v2.4 | 3/3 | Complete | 2026-07-22 |
 | 35. Carried-Debt Dispositions | v2.4 | 3/3 | Complete | 2026-07-22 |
 | 36. Discipline Skills + Review Panel | v2.4 | 4/4 | Complete | 2026-07-22 |
 | 37. Capability Routing + Closeout | v2.4 | 2/2 | Complete | 2026-07-22 |
 | 38. Gate Right-Sizing (dev-light/CI-strong) | v2.4 | 1/1 | Complete | 2026-07-26 |
+| 39. Decision Boundary | v2.5 | 0/TBD | Not started | - |
+| 40. Self-Gate Teardown | v2.5 | 0/TBD | Not started | - |
+| 41. Docs-Review Plane Removal | v2.5 | 0/TBD | Not started | - |
+| 42. Adoption Decoupling + Install-Set Repair | v2.5 | 0/TBD | Not started | - |
+| 43. Lifecycle Plane Removal | v2.5 | 0/TBD | Not started | - |
+| 44. Non-Goal Surface Removal | v2.5 | 0/TBD | Not started | - |
+| 45. Projection Repair | v2.5 | 0/TBD | Not started | - |
+| 46. Product Flow | v2.5 | 0/TBD | Not started | - |
+| 47. Package Facts | v2.6 | — | Scoped | - |
+| 48. Convention Profiles | v2.6 | — | Scoped | - |
+| 49. Contract Impact | v2.6 | — | Scoped | - |
+| 50. harness-author + Managed Adopt | v2.6 | — | Scoped | - |
 
 Per-phase plan counts for v1.0–v2.2 are preserved in the milestone archives under
 `.planning/milestones/`; they are not restated here so this table stays a fixed size.
