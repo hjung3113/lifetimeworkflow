@@ -366,7 +366,7 @@ genuine gap is ③.
 | 36. Discipline Skills + Review Panel | v2.4 | 4/4 | Complete | 2026-07-22 |
 | 37. Capability Routing + Closeout | v2.4 | 2/2 | Complete | 2026-07-22 |
 | 38. Gate Right-Sizing (dev-light/CI-strong) | v2.4 | 1/1 | Complete | 2026-07-26 |
-| 39. Decision Boundary | v2.5 | 0/TBD | Not started | - |
+| 39. Decision Boundary | v2.5 | 0/2 | Not started | - |
 | 40. Self-Gate Teardown | v2.5 | 0/TBD | Not started | - |
 | 41. Docs-Review Plane Removal | v2.5 | 0/TBD | Not started | - |
 | 42. Adoption Decoupling + Install-Set Repair | v2.5 | 0/TBD | Not started | - |
