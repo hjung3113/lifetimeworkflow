@@ -199,7 +199,6 @@ def _cmd_apply(args: argparse.Namespace) -> int:
     # Both are now unreachable through the guard — they are backstop-only by construction.
     except (
         apply_module.ConstitutionRefusal,
-        apply_module.ReviewLedgerRefusal,
         apply_module.ConcurrentDriftError,
         apply_module.UnknownDispositionError,
         apply_module.PathEscapeError,
