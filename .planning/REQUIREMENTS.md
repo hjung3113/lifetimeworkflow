@@ -1,6 +1,6 @@
-# Requirements — v2.4 Enforcement Integrity, Carried Debt, Lane Discipline
+# Requirements — v2.4 Gate Right-Sizing, Carried Debt, Lane Discipline
 
-Scoped to milestone v2.4 (phases 30–37). Ratified design:
+Scoped to milestone v2.4 (phases 30–38; re-pivoted to gate right-sizing per ADR-0011). Ratified design:
 `.planning/research/v2.4-scoping-FINAL.md`. Previous milestone's requirements:
 `.planning/milestones/v2.3-REQUIREMENTS.md`.
 
@@ -23,13 +23,13 @@ v2.4 applies it to the harness itself.
   must not be folded into the constitution plane, and `commit_gate` is not a path-enumeration site
   at all. A `harness_lint` drift test fails when a hook's live constant disagrees with its
   declaration, proven by a mutation that makes it fail.
-- [ ] **SEAL-02** *(NEW, Phase 31)*: A **threat model plus an explicitly chosen enforcement posture**
+- [~] **SEAL-02** *(CUT by ADR-0011 — adding a spelling-independent in-session bash deny is the opposite of the right-sizing pivot; the registry's `uncovered_tool_surfaces` stays as documented reality, not a to-do)* ~~ *(NEW, Phase 31)*: A **threat model plus an explicitly chosen enforcement posture**
   for the uncovered bash surface, ratified as an ADR **before** any enforcement is written. The ADR
   picks among filesystem-level enforcement, a constrained command allowlist, protected command
   wrappers, or a documented residual boundary — and states in the ADR itself what remains uncovered.
   A recorded honest residual satisfies this requirement; an unbounded "spelling-independent" claim
   does not.
-- [ ] **SEAL-03** *(NEW, Phase 32)*: The posture ratified by SEAL-02 is **implemented in both
+- [~] **SEAL-03** *(CUT by ADR-0011)* ~~ *(NEW, Phase 32)*: The posture ratified by SEAL-02 is **implemented in both
   runtimes**, with per-class deletion proofs and live negative controls, and a superseding ADR entry
   records the newly covered surface and the residual. Acceptance is stated against the declared
   posture, never against "all spellings". The known live gap this closes:
@@ -47,6 +47,13 @@ v2.4 applies it to the harness itself.
   on a git host assigning a reviewer. Explicitly excluded: repairing GitHub branch protection,
   reviewer eligibility or CODEOWNERS behaviour for a solo owner. RAT-5 is marked
   closed-with-caveats (PR #4 merged it), not reopened.
+
+- [x] **DEREG-01** *(NEW, Phase 38, ADR-0011)*: The in-session guard wall is right-sized to
+  **dev-light, CI-strong**. Every emitted guard command degrades to allow (not deadlock) when the uv
+  workspace cannot resolve, proven by a bare-`python3` check that needs no uv; and a dev session may
+  set `HARNESS_DEV_LIGHT` to skip the guards entirely, with enforcement then resting on CI +
+  CODEOWNERS. The load-bearing invariant — a healthy workspace with no bypass still DENIES a real
+  constitution write through the prefix — is proven adversarially, never asserted. Landed `bc9a6d9`.
 
 ## Theme B — Carried Debt (Phases 34–35)
 

@@ -96,7 +96,14 @@ Full detail: `.planning/milestones/v2.3-ROADMAP.md`. Audit: `.planning/milestone
 
 </details>
 
-### 🚧 v2.4 Enforcement Integrity, Carried Debt, Lane Discipline (Phases 30–37) — IN PROGRESS
+### 🚧 v2.4 Gate Right-Sizing, Carried Debt, Lane Discipline (Phases 30–38) — IN PROGRESS
+
+> **RE-PIVOT (2026-07-26, ADR-0011):** the human found the in-session gate wall over-regulated for a
+> repo whose goal is consistency + long-horizon maintainability, and it deadlocked the session twice.
+> Theme A flips from *harden the in-session denies* to **right-size them: dev-light, CI-strong**.
+> Enforcement's home is CI + CODEOWNERS; the guards degrade instead of deadlocking and a dev session
+> opts out via `HARNESS_DEV_LIGHT`. SEAL-02/03 (spelling-independent bash denies = MORE blocking) are
+> CUT. Phase 38 delivers the right-sizing.
 
 Design: `.planning/research/v2.4-scoping-FINAL.md` (Claude draft + one codex-sol review pass,
 human-approved). Requirements: `.planning/REQUIREMENTS.md`.
@@ -111,11 +118,11 @@ that does not exist — worse than a missing layer, because it reads as covered.
   owner, bypass semantics, covered tool surfaces and runtime adapters; a `harness_lint` drift test
   fails when a hook's live constant disagrees with its declaration. The domains stay **distinct** —
   this is an inventory, not a merge. (SEAL-01)
-- [ ] **Phase 31: Threat Model + Posture ADR** *(v2.4 A)* — a ratified ADR choosing the enforcement
+- [~] **Phase 31: Threat Model + Posture ADR** *(v2.4 A — CUT by ADR-0011: don't add more in-session denies)* — a ratified ADR choosing the enforcement
   posture for the uncovered bash surface (filesystem-level / constrained allowlist / protected
   wrappers / documented residual) and stating what stays uncovered. Ratified BEFORE enforcement is
   written. (SEAL-02)
-- [ ] **Phase 32: Implement the Posture** *(v2.4 A)* — the chosen posture in both runtimes with
+- [~] **Phase 32: Implement the Posture** *(v2.4 A — CUT by ADR-0011)* — the chosen posture in both runtimes with
   per-class deletion proofs and live negative controls, plus a superseding ADR recording the newly
   covered surface. Acceptance is written against the declared posture, never "all spellings". (SEAL-03)
 - [ ] **Phase 33: Contract-Driven Secret Scan + Ratification Record** *(v2.4 A)* — `secret_scan`
@@ -168,14 +175,15 @@ being a hard precondition. If 31 cannot pick a posture, stop rather than proceed
 | 27.2 Adoption Apply Robustness (INSERTED) | v2.3 | 2/2 | Complete | 2026-07-21 |
 | 28. Human-Docs Registry, Guard, Queue | v2.3 | 9/9 | Complete | 2026-07-21 |
 | 29. Docs Drive Loop + Closeout | v2.3 | 5/5 | Complete | 2026-07-22 |
-| 30. Deny-Domain Registry | v2.4 | 1/4 planned | BLOCKED — human contract write | - |
-| 31. Threat Model + Posture ADR | v2.4 | 0/TBD | BLOCKED — depends on phase 30 | - |
-| 32. Implement the Posture | v2.4 | 0/TBD | BLOCKED — depends on phase 30 | - |
+| 30. Deny-Domain Registry | v2.4 | 1/4 | Contract landed (27ee704); loader CUT — kept as inventory | 2026-07-26 |
+| 31. Threat Model + Posture ADR | v2.4 | — | CUT (ADR-0011) | - |
+| 32. Implement the Posture | v2.4 | — | CUT (ADR-0011) | - |
 | 33. Secret Scan + Ratification Record | v2.4 | 0/TBD | BLOCKED — depends on phase 30 | - |
 | 34. Ruff as a Required CI Gate | v2.4 | 3/3 | Complete | 2026-07-22 |
 | 35. Carried-Debt Dispositions | v2.4 | 3/3 | Complete | 2026-07-22 |
 | 36. Discipline Skills + Review Panel | v2.4 | 4/4 | Complete | 2026-07-22 |
 | 37. Capability Routing + Closeout | v2.4 | 2/2 | Complete | 2026-07-22 |
+| 38. Gate Right-Sizing (dev-light/CI-strong) | v2.4 | 1/1 | Complete | 2026-07-26 |
 
 Per-phase plan counts for v1.0–v2.2 are preserved in the milestone archives under
 `.planning/milestones/`; they are not restated here so this table stays a fixed size.

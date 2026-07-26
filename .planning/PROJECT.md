@@ -34,12 +34,15 @@ harness-wide finding: constitution-plane write-denies are spelled per *tool*, so
 in `STATE.md` under *Deferred Items*, with the third deliberately scheduled for repair in the next
 milestone rather than during its own closeout.
 
-## Current Milestone: v2.4 Enforcement Integrity, Carried Debt, Lane Discipline
+## Current Milestone: v2.4 Gate Right-Sizing, Carried Debt, Lane Discipline
 
-**Goal:** close the gap between what this harness *declares* and what it *enforces*, discharge the
-debt carried across three milestones, and finish the task-lifecycle discipline left unbuilt by v2.2
-— so that every control the documentation claims exists actually fires, and every carried item
-reaches a recorded disposition instead of a fourth carry.
+**Goal (re-pivoted 2026-07-26, ADR-0011):** originally "make every declared gate actually fire". The
+human found that reading of "enforce" had over-regulated the dev inner loop — the in-session guard
+wall slowed development and deadlocked the session twice. Re-scoped to **right-size the gates:
+dev-light, CI-strong.** Enforcement's authoritative home is CI + CODEOWNERS (which serve the real
+goal — consistency + long-horizon maintainability); the in-session guards degrade instead of
+deadlocking and a dev session opts out via `HARNESS_DEV_LIGHT`. Carried debt and lane discipline
+stay in scope; SEAL-02/03 (adding MORE in-session denies) are cut.
 
 **Target features (8 phases, 계속 번호 30–37):**
 - **A. Gate Integrity** *(SEAL-01..05, phases 30–33)* — a deny-domain REGISTRY (constitution /
