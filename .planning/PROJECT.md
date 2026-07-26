@@ -37,6 +37,16 @@ mechanism** — they are one finding with one cause (every human-ratification ga
 reviewer ≠ author, and this repo has one owner), and the planes they guard are deleted in phases 41
 and 44.
 
+**Phase 39 complete 2026-07-26** — ADR-0012 (*CI and the Merge as Decision Authority*) is ratified
+and accepted: CI fan-in + the merge to `main` are the decision authority, the v2.5 deletion
+enumeration is recorded as intent-at-ratification, the DEV/PRODUCT boundary carries an operative
+rule (no product capability may be declined because GSD covers it — only a named shipped artifact
+may cover it), ADR-0001's constitution-member list is superseded and ADR-0010 retires, the bash
+surface is declared a permanent residual by design, and the phase's own human checkpoint is a
+one-time transition creating no standing gate. ADR-0011 is formally accepted alongside it. RAT-4,
+RAT-5, and the per-tool deny-spelling gap are recorded `obsolete-by-deletion`; v2.4's SEAL-05 is
+`withdrawn`. Requirements CER-01/02/03 validated in Phase 39.
+
 ## Current Milestone: v2.5 De-ceremony
 
 **Goal:** stop the harness from verifying itself and start it serving its stated purpose. Four
