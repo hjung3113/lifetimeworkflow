@@ -272,6 +272,39 @@ the owner — `/flow` ships (sol) rather than being cut (opus); the fourth route
 (opus) rather than `research` (sol); the lifecycle is its own phase 46 (sol) rather than a widening of
 45 (opus).
 
+#### Phase 39: Decision Boundary
+
+**Goal:** Land one human-ratified ADR-0012 that makes CI + the merge the authority, ratifies the DEV/PRODUCT boundary with its operative rule, retires the superseded decision records, and closes the three carried human-ratification items as obsolete-by-deletion.
+
+Every later v2.5 deletion phase then has a written decision to cite instead of re-litigating scope.
+
+**Requirements:** CER-01, CER-02, CER-03
+
+**Scope:**
+- Author `docs/adr/0012-*.md` as `accepted`: CI + the merge are the authority; it names every surface
+  this milestone deletes; it supersedes ADR-0001's constitution-member list (golden leaves the core)
+  and ADR-0010 (the review ledger retires); it declares the bash surface a **permanent residual by
+  design**.
+- Ratify the DEV/PRODUCT boundary in the same ADR — DEV is this checkout (Claude Code + GSD, never
+  installed); PRODUCT is what `tools/adoption_scan/destinations.py::_CATEGORY_GLOBS` installs into a
+  target monorepo — with the operative rule that **no product capability may be declined on the ground
+  that GSD covers it**; only a named shipped artifact may cover it.
+- **Accept ADR-0011**: fill its empty `Date`/`Deciders` and record that its code landed (`bc9a6d9`)
+  before its ratification.
+- Record dispositions in `STATE.md` for **RAT-4**, **RAT-5**, and the per-tool deny spelling as
+  *obsolete-by-deletion*; mark v2.4's **SEAL-05** *withdrawn*, not deferred.
+
+**Non-goals:** no code deletion, no gate/CI change, no new mechanism, no new tool or contract. This
+phase is decision-record-only. Per the milestone's binding constraint, the surface may not grow.
+
+**Success Criteria**:
+1. `docs/adr/0012-*.md` exists with `Status: accepted`, non-empty `Date`/`Deciders`, and names the deleted surfaces, the ADR-0001/ADR-0010 supersession, and the bash-residual declaration.
+2. ADR-0012 states the DEV/PRODUCT boundary and its operative rule so a later phase can cite it to justify keeping a product capability GSD also covers.
+3. `docs/adr/0011-*.md` has non-empty `Date` and `Deciders` and records the code-before-ratification fact with the `bc9a6d9` reference.
+4. `.planning/STATE.md` records a disposition for RAT-4, RAT-5 and the per-tool deny spelling as obsolete-by-deletion, and marks SEAL-05 withdrawn (not deferred).
+5. ADR-0001 and ADR-0010 carry a superseded-by pointer to ADR-0012 with their decision bodies unedited (append-only / supersede-don't-edit).
+6. The existing suite and the contract-drift gate stay green — no contract, gate, or emitted artifact changes from this phase.
+
 ### 📋 v2.6 Minimal Monorepo Core (Phases 47–50) — SCOPED, NOT STARTED
 
 Smallest goal-complete subset = all of v2.5 **+ 47 + 49**. ① is already covered by the lint adapters +
