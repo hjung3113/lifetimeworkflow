@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: De-ceremony
-status: executing
-stopped_at: Phase 41 context gathered
-last_updated: "2026-07-26T19:12:14.319Z"
+status: verifying
+stopped_at: Completed 41-05-PLAN.md — phase 41 (docs-review-plane-removal) complete
+last_updated: "2026-07-26T19:32:03.556Z"
 last_activity: 2026-07-26
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 8
-  completed_plans: 7
-  percent: 88
+  completed_plans: 8
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-07-22)
 
 Phase: 41 (docs-review-plane-removal) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-26
 
 ## Performance Metrics
@@ -149,6 +149,7 @@ Last activity: 2026-07-26
 | Phase 41 P02 | 25min | 2 tasks | 8 files |
 | Phase 41 P03 | 40min | 2 tasks | 21 files |
 | Phase 41 P04 | ~20min | 2 tasks | 5 files |
+| Phase 41 P05 | 55min | 3 tasks | 20 files |
 
 ## Accumulated Context
 
@@ -270,6 +271,8 @@ Recent decisions affecting current work:
 - [Phase 41]: Added RETIRED_SIGNATURES to tools/harness_emit/merge.py so re-emit actually drops a formerly harness-owned settings.json hook group — Removing a signature from HARNESS_SIGNATURES alone left the stale ledger_guard group classified identically to a GSD/human group and preserved forever
 - [Phase 41]: Fixed harness/commands/refresh-memory.md's stranded tools.memory_regen.docs_staleness invocation while deleting the module — Rule 1 bug found via a repo-wide grep sweep before finalizing Task 2
 - [Phase 41-04]: Contract + CI fan-in job deletion: contracts/harness/docs/doc-dependencies.schema.json deleted with same-commit manifest rebaseline (D-02); CI docs-guard job + gate.needs entry deleted, verified by a ruamel.yaml-resolved parse (D-14, 11 entries, docs-guard absent); contracts-index derived plane regenerated as an in-scope consequence (17 -> 16 contracts), test_docs_sync_determinism.py left for Plan 05 per its explicit deferral.
+- [Phase 41]: RETIRED_SIGNATURES (merge.py) emptied — empirically verified transitional (re-emit + git status clean); mechanism kept for Phase 44's next PreToolUse-hook deletion
+- [Phase 41]: Residue sweep returns 34 justified exceptions, not zero: plan-mandated historical narrative, append-only ADR text, Phase-44-deferred deny-domains subsystem, and GSD-owned namespace collisions — none are leftovers of the enforced docs-review plane
 
 ### Pending Todos
 
@@ -335,8 +338,8 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-26T19:07:16.727Z
-Stopped at: Phase 41 context gathered
+Last session: 2026-07-26T19:32:03.552Z
+Stopped at: Completed 41-05-PLAN.md — phase 41 (docs-review-plane-removal) complete
 Resume file: None
 
 ### Resuming from a fresh clone

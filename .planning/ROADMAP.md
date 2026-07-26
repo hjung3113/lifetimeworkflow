@@ -211,7 +211,7 @@ must personally **author** from five kinds to **zero**, and give the **product**
   (`destinations.py:217` `git ls-files`), so a tracked-file deletion reds 3 tests until staged (2 of
   them) and committed (`test_catalog_invariant_to_untracked_local_state`, which diffs against HEAD
   and is red by construction while uncommitted). Measured 3→1→0. See `40-01-SUMMARY.md`.
-- [ ] **Phase 41: Docs-Review Plane Removal** *(v2.5 A)* — unbind the 8 `[[binding]]` rows, then delete
+- [x] **Phase 41: Docs-Review Plane Removal** *(v2.5 A)* — unbind the 8 `[[binding]]` rows, then delete (completed 2026-07-26)
   `tools/docs_guard` (6110 LOC), the ledger, hook `ledger_guard` + its `path_deny_globs` entry,
   `/docs-update`, skill `docs-upkeep`, `contracts/harness/docs/*`, CI `docs-guard` + its `gate.needs`
   entry. The severity-flip alternative is provably dead: `guard.py:383-399` classifies `BROKEN` before
@@ -482,7 +482,7 @@ genuine gap is ③.
 | 38. Gate Right-Sizing (dev-light/CI-strong) | v2.4 | 1/1 | Complete | 2026-07-26 |
 | 39. Decision Boundary | v2.5 | 2/2 | Complete    | 2026-07-26 |
 | 40. Self-Gate Teardown | v2.5 | 0/TBD | Not started | - |
-| 41. Docs-Review Plane Removal | v2.5 | 4/5 | In Progress|  |
+| 41. Docs-Review Plane Removal | v2.5 | 5/5 | Complete   | 2026-07-26 |
 | 42. Adoption Decoupling + Install-Set Repair | v2.5 | 0/TBD | Not started | - |
 | 43. Lifecycle Plane Removal | v2.5 | 0/TBD | Not started | - |
 | 44. Non-Goal Surface Removal | v2.5 | 0/TBD | Not started | - |
