@@ -4,14 +4,14 @@ milestone: v2.5
 milestone_name: De-ceremony
 status: executing
 stopped_at: Phase 41 context gathered
-last_updated: "2026-07-26T18:59:37.255Z"
+last_updated: "2026-07-26T19:12:14.319Z"
 last_activity: 2026-07-26
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 8
-  completed_plans: 6
-  percent: 75
+  completed_plans: 7
+  percent: 88
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-22)
 ## Current Position
 
 Phase: 41 (docs-review-plane-removal) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-07-26
 
@@ -148,6 +148,7 @@ Last activity: 2026-07-26
 | Phase 41 P01 | 12min | 2 tasks | 22 files |
 | Phase 41 P02 | 25min | 2 tasks | 8 files |
 | Phase 41 P03 | 40min | 2 tasks | 21 files |
+| Phase 41 P04 | ~20min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -268,6 +269,7 @@ Recent decisions affecting current work:
 - [Phase 41]: Fixed cli.py's ReviewLedgerRefusal catch clause as a Rule 1 auto-fix — an undocumented adoption_apply consumer of the deleted ledger_guard hook beyond apply.py itself
 - [Phase 41]: Added RETIRED_SIGNATURES to tools/harness_emit/merge.py so re-emit actually drops a formerly harness-owned settings.json hook group — Removing a signature from HARNESS_SIGNATURES alone left the stale ledger_guard group classified identically to a GSD/human group and preserved forever
 - [Phase 41]: Fixed harness/commands/refresh-memory.md's stranded tools.memory_regen.docs_staleness invocation while deleting the module — Rule 1 bug found via a repo-wide grep sweep before finalizing Task 2
+- [Phase 41-04]: Contract + CI fan-in job deletion: contracts/harness/docs/doc-dependencies.schema.json deleted with same-commit manifest rebaseline (D-02); CI docs-guard job + gate.needs entry deleted, verified by a ruamel.yaml-resolved parse (D-14, 11 entries, docs-guard absent); contracts-index derived plane regenerated as an in-scope consequence (17 -> 16 contracts), test_docs_sync_determinism.py left for Plan 05 per its explicit deferral.
 
 ### Pending Todos
 
@@ -333,7 +335,7 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-26T18:56:46.684Z
+Last session: 2026-07-26T19:07:16.727Z
 Stopped at: Phase 41 context gathered
 Resume file: None
 
