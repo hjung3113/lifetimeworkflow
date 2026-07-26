@@ -329,9 +329,14 @@ a future-phase carryover.
 **If this table is empty:** N/A — two low-risk naming assumptions are listed above; nothing else in
 this research is unverified.
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> Both questions were resolved at planning time (2026-07-26) by adopting the stated recommendation
+> verbatim; `39-01-PLAN.md` encodes both outcomes.
 
 1. **Exact ADR-0012 title/kebab-slug**
+   - **RESOLVED:** adopt ADR-0010's "adopted as ONE ratified unit, N clauses" structure — ADR-0012
+     carries a five-clause `Decision Outcome`. Encoded in `39-01-PLAN.md` Task 1.
    - What we know: it must cover CI+merge-as-authority, the DEV/PRODUCT boundary + operative rule,
      the ADR-0001/ADR-0010 supersession, ADR-0011 acceptance, and the bash-residual declaration —
      five substantive topics in one ADR (per the roadmap's explicit "adopt as ONE ratified unit"
@@ -346,6 +351,8 @@ this research is unverified.
 
 2. **Whether "bash surface... permanent residual by design" needs its own Decision Driver citing
    ADR-0011's already-accepted acceptance of the same gap**
+   - **RESOLVED:** cite ADR-0011 via a `Complements:` frontmatter line (not `Supersedes:`), since
+     ADR-0012 ratifies rather than changes ADR-0011's decision. Encoded in `39-01-PLAN.md` Task 1.
    - What we know: ADR-0011's own "What this deliberately accepts" section (lines 61-69) already
      names the exact residual: `HARNESS_DEV_LIGHT` sessions leave `secret_scan` and `ledger_guard`
      unscreened in-editor, and `.planning/STATE.md:308` independently documents the underlying

@@ -1,8 +1,8 @@
 ---
 phase: 39
 slug: decision-boundary-v2-5-a
-status: draft
-nyquist_compliant: false
+status: approved
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-07-26
 ---
@@ -73,11 +73,11 @@ or appropriate for a decision-record phase. Existing infrastructure (`core-suite
 
 ## Validation Sign-Off
 
-- [ ] All tasks have an automated or grep-assisted verify command (no Wave 0 dependency exists)
-- [ ] Sampling continuity: every task carries its own verify command — no 3-task gap
-- [ ] Wave 0 covers all MISSING references (N/A — none)
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 120s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have an automated or grep-assisted verify command (no Wave 0 dependency exists) — the one `checkpoint:human-verify` task in 39-01 is correctly exempt
+- [x] Sampling continuity: every task carries its own verify command — no 3-task gap
+- [x] Wave 0 covers all MISSING references (N/A — none)
+- [x] No watch-mode flags
+- [x] Feedback latency < 120s — the ~120s chained command in `39-02-PLAN.md` Task 2 is an intentional **end-of-wave** gate, not a per-task one; the per-task check is the ~1s quick grep
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-07-26 (plan-checker verified, 0 blockers)
