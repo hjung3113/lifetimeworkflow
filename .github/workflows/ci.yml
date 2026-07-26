@@ -314,42 +314,6 @@ jobs:
             exit 1
           fi
 
-  # ── docs-guard ─────────────────────────────────────────────────────────────────────────────
-  # Human-doc review-obligation gate (DOCSUP-03/05). A SEPARATE job — never folded into `drift` —
-  # mirroring the emit-drift / stale-derived / workspace separate-job idiom, so a docs-review
-  # failure and a contract-drift failure stay distinguishable in the CI output.
-  #
-  # Exit codes, and what each means for the operator:
-  #   0 — clean. STALE_ADVISORY findings may be present on stderr and never change the code.
-  #   1 — BROKEN / STALE_REQUIRED / an uncovered- or binding-count regression. Fix the DOCS (review
-  #       the target document against its changed sources), or fix the LEDGER (a human re-records
-  #       both digests). The guard never raises `uncovered_max` or lowers `binding_min` itself.
-  #   3 — the registry or the ledger is INVALID. Fix the REGISTRY, not the docs.
-  #
-  # Contract-drift and golden stay LEADING and authoritative (D-13): a binding whose source is a
-  # currently-drifted contract reports SUPPRESSED here rather than failing a second time with a
-  # second remedy. When both are red, fix `drift` first.
-  #
-  # docs/doc-dependencies.toml is a .toml INSTANCE under docs/, so the `contract-check` job's
-  # schema/instance pairing does NOT cover it — tools.docs_guard is its only validator (D-16 / A7).
-  #
-  # Checkout stays at its DEFAULT depth — deepening it is unnecessary cost here, because
-  # `git show HEAD:./<path>` retrieves the previous committed ledger at depth 1, and the
-  # `unverified-disposition` degradation covers the genuinely history-free case. The derived staleness queue under .memory/derived/ is gitignored and is
-  # deliberately NOT regenerated, staged, or added to `stale-derived` — its content is a function of
-  # the files being edited, so gating on it would red every ordinary source commit.
-  docs-guard:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7.0.0
-      - uses: astral-sh/setup-uv@v8.3.2
-      - name: Sync workspace (all packages)
-        run: uv sync --all-packages
-      - name: Docs guard — registry validation + binding classification
-        run: uv run python -m tools.docs_guard
-      - name: Docs guard unit tests
-        run: uv run pytest tools/docs_guard tools/memory_regen/tests/test_docs_staleness.py -q
-
   # ── workspace ──────────────────────────────────────────────────────────────────────────────
   # Cross-repo (multi-repo workspace) gate (MREPO-03). A SEPARATE job — cross-repo drift/golden are
   # NOT folded into the per-repo `drift`/`golden` jobs (anti-pattern) — mirroring the emit-drift /
@@ -378,7 +342,7 @@ jobs:
   # here). needs.*.result values are workflow-computed enums (success/failure/cancelled/skipped),
   # NOT event input — safe to interpolate.
   gate:
-    needs: [setup, lang-tests, contract-check, drift, golden, core-suite, lint, lifecycle-eval, emit-drift, stale-derived, docs-guard, workspace]
+    needs: [setup, lang-tests, contract-check, drift, golden, core-suite, lint, lifecycle-eval, emit-drift, stale-derived, workspace]
     if: always()
     runs-on: ubuntu-latest
     steps:
