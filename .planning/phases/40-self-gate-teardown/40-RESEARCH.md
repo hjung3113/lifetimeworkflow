@@ -394,29 +394,29 @@ beneficiary of not needing it (per CONTEXT.md's Specific Ideas).
 via `grep`, `Read`, or `uv --version` in this session — no claim here rests on training-data recall of
 this specific repository's contents.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should the CI comment block (`ci.yml:275-293`) be removed wholesale or partially?**
+1. **RESOLVED: Should the CI comment block (`ci.yml:275-293`) be removed wholesale or partially?**
    - What we know: CONTEXT.md explicitly defers this to planner discretion — "whether the CI comment
      block at `ci.yml:275-293` is removed wholesale or partially... None of these change the delivered
      surface."
    - What's unclear: nothing technical is unclear; this is a stylistic choice with zero functional
      consequence, already flagged as free by CONTEXT.md.
-   - Recommendation: remove the entire comment block (lines 275-293) along with the job body
+   - RESOLVED — Recommendation: remove the entire comment block (lines 275-293) along with the job body
      (294-303) — the comment exclusively describes the job being deleted (it explains why
      `registry-lock` is "a DISTINCT concern from emit-drift"), so a partial removal would leave dangling
      prose describing a job that no longer exists, which is a worse outcome than the "wholesale"
      option CONTEXT.md itself frames as equally valid. This recommendation carries no new risk since
      CONTEXT.md already declared both options acceptable.
 
-2. **Is branch protection actually enforcing `gate` as a required status check?**
+2. **RESOLVED (out of scope): Is branch protection actually enforcing `gate` as a required status check?**
    - What we know: ADR-0012 clause (a) itself states "This ADR does not assert that CODEOWNERS review
      is enforced by GitHub branch protection as an operational fact; branch protection was not
      confirmed during this phase's research (see 39-REVIEWS.md, Codex finding)."
    - What's unclear: whether an unenforced branch protection setting would let a red `gate` merge
      anyway, which would matter if this phase's deletion accidentally broke something the local
      verification commands miss.
-   - Recommendation: out of scope for Phase 40 to resolve (it is an ADR-0012-level finding, not a
+   - RESOLVED — Recommendation: out of scope for Phase 40 to resolve (it is an ADR-0012-level finding, not a
      Phase-40 gap) — the planner should rely on the exact local verification commands in this document
      (all six D-08 items) rather than assuming CI-gate enforcement is the only safety net.
 

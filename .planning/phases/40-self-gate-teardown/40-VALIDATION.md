@@ -54,8 +54,21 @@ observable failure of a mis-ordered deletion.
 | V-6 | CER-04 | Emitted trees unmoved by this deletion | regression (local mirror of CI `emit-drift`) | `uv run python -m tools.harness_emit` then `git add -A -- .opencode opencode.json .claude/agents .claude/commands .claude/skills AGENTS.md CLAUDE.md .claude/settings.json` then `git diff --cached --exit-code -- <same path set>` | empty diff | ✅ existing |
 | V-7 | CER-04 | Contract plane untouched | regression | `uv run python -m tools.contract_drift.drift` | exit 0, clean | ✅ existing |
 | V-8 | CER-04 | Lint debt does not regress | regression (ratchet) | `uv run python -m tools.ruff_baseline` | exit 0 | ✅ existing |
+| V-9 | CER-04 | Committed-derived plane not left stale | regression (local mirror of CI `stale-derived`) | `uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index` then `git add -A -- docs/reference .memory/derived/contracts-index.md` then `git diff --cached --exit-code -- docs/reference .memory/derived/contracts-index.md` | empty diff | ✅ existing |
 
 *Status legend: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky. All rows ⬜ pending until execution.*
+
+**V-9 rationale.** ROADMAP Success Criterion 4 names **both** `emit-drift` and `stale-derived`.
+V-6 covered only the former. `stale-derived` is a distinct CI job (`ci.yml:316-338`) over a different
+path set — `docs/reference` + `.memory/derived/contracts-index.md`. It is expected to pass trivially
+(no `skill_registry` referent exists in either path), but the SUMMARY must be able to cite it rather
+than rely on an unstated assumption.
+
+**Known non-blocking staleness:** `.memory/derived/repo-map.md` carries symbols from
+`tools/skill_registry/registry.py` and will be stale after the deletion. It is NOT in
+`stale-derived`'s tracked path set and is regenerated on the next `/orient` or `/refresh-memory`, so
+it gates nothing. D-06's sweep path list deliberately omits `.memory/` — this is recorded as a known
+residue, not a defect to fix inside this phase.
 
 **Sampling continuity:** the phase is one commit, so the "no 3 consecutive tasks without automated
 verify" rule is satisfied trivially — every deletion task is followed by V-1 and V-4 before staging.
@@ -88,7 +101,7 @@ asserting "the package is gone" would be new surface guarding against nothing.
 
 ## Validation Sign-Off
 
-- [ ] V-1..V-8 all green
+- [ ] V-1..V-9 all green
 - [ ] Sampling continuity satisfied (single-commit phase)
 - [ ] Wave 0 empty by design — confirmed, not skipped
 - [ ] No watch-mode flags used
