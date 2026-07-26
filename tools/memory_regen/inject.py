@@ -39,7 +39,6 @@ BANNER = (
 DRIFT_HEADER = "## Contract drift (live)"
 CONTRACTS_HEADER = "## Contracts index (summary)"
 REPO_MAP_HEADER = "## Repo map (top-N)"
-DOCS_HEADER = "## Human docs needing review (pointer)"
 ACTIVE_HEADER = "## Progress log (pointer)"
 TASK_HEADER = "## Active task (validated HANDOFF pointer)"
 AGREEMENTS_HEADER = (
@@ -76,33 +75,6 @@ def _contracts_summary(derived_dir: Path = DERIVED_DIR) -> str:
             f"{CONTRACTS_HEADER}\n"
             "(contracts-index pending — run `python -m tools.memory_regen.contracts_index`)"
         )
-    )
-
-
-def _docs_staleness_pointer(derived_dir: Path = DERIVED_DIR) -> str:
-    """At most TWO lines pointing at the derived docs-review queue, or "" (D-11).
-
-    Reads the RENDERED queue and never recomputes the guard: classification needs a ``git``
-    subprocess and a full doc-corpus walk, neither of which belongs on the session-start hot path,
-    and a live recomputation would make the payload depend on state the tests cannot fixture.
-    ``derived_dir`` is a PARAMETER for the same reason ``_contracts_summary`` takes one.
-
-    Returns "" when the queue is absent or reports zero obligations, so ``assemble()`` skips the
-    section at the ``if not text`` guard below and the payload stays byte-identical to a tree that
-    has never run the generator. ``_read_head`` is deliberately NOT used — it returns
-    :data:`_HEAD_LINES` lines and would make this section grow with the queue.
-    """
-    try:
-        text = (Path(derived_dir) / "docs-staleness.md").read_text(encoding="utf-8")
-    except OSError:
-        return ""
-    # The generator's table is the stable seam: every line of it starts with "| ", and exactly two
-    # of those lines are the column header and its separator.
-    count = max(sum(1 for line in text.splitlines() if line.startswith("| ")) - 2, 0)
-    if count == 0:
-        return ""
-    return (
-        f"{DOCS_HEADER}\n{count} human doc(s) need review — see .memory/derived/docs-staleness.md"
     )
 
 
@@ -213,8 +185,6 @@ def assemble(
         # D-05/TCP-15: this reserved slot is deliberately before all droppable summaries.
         ("task", task),
         ("contracts", _contracts_summary(derived_dir)),
-        # D-11: droppable by design — deliberately absent from the never-drop tuple below.
-        ("docs", _docs_staleness_pointer(derived_dir)),
         ("repomap", _repo_map_topN(derived_dir)),
         ("active", _active_context_pointer(state_dir)),
     ]
