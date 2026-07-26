@@ -37,7 +37,7 @@ maintainability.
   opencode and Claude Code by a weaker in-house model — with the operative rule that **no product
   capability may be declined on the ground that GSD covers it**; only a named shipped artifact may
   cover it. Re-collapsing the two scopes then costs a superseding ADR. (④)
-- [ ] **CER-03** *(NEW, Phase 39)*: **RAT-4, RAT-5 and the per-tool deny spelling reach a recorded
+- [x] **CER-03** *(NEW, Phase 39)*: **RAT-4, RAT-5 and the per-tool deny spelling reach a recorded
   disposition as obsolete-by-deletion** — one decision, no mechanism, on the ground that every
   human-ratification gate here assumes reviewer ≠ author while this repo has one owner. v2.4's
   SEAL-05 ("portable ratification record") is explicitly **withdrawn**, not deferred. (④)

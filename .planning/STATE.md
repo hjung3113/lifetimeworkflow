@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: De-ceremony
-status: executing
+status: verifying
 stopped_at: Completed 29-05-PLAN.md Tasks 1–2; Task 3 blocked on human ratification
-last_updated: "2026-07-26T14:29:50.025Z"
+last_updated: "2026-07-26T14:35:03.576Z"
 last_activity: 2026-07-26
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 50
+  completed_plans: 2
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-07-22)
 
 Phase: 39 (decision-boundary-v2-5-a) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-26
 
 ## Performance Metrics
@@ -143,6 +143,7 @@ Last activity: 2026-07-26
 | Phase 27.1 P02 | 35min | 2 tasks | 4 files |
 | Phase 27.1 P03 | 25min | 2 tasks | 5 files |
 | Phase 39-decision-boundary-v2-5-a P01 | 12min | 1 tasks | 5 files |
+| Phase 39 P02 | 12min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -258,6 +259,7 @@ Recent decisions affecting current work:
 - [Phase 27.1]: D-02 upheld: check_valid's repo_root in _cmd_apply is the harness's own checkout root via a required --repo-root flag mirroring promote's, never the brownfield target.
 - [Phase 27.1]: 27.1-03: manifest.schema.json destination/path pattern constraint (WR-03) landed with hash rebaseline + both derived-plane artifacts in one human-ratified commit (f6be4f1); SC-5 seven-finding (plus symlink-read) disposition table closes Phase 27.1.
 - [Phase 39]: 39-01: ADR-0012 ratified as ONE unit (CI+merge authority, v2.5 deletion enumeration as intent-at-ratification, DEV/PRODUCT boundary operative rule, ADR-0001/0010 supersession, bash-residual-by-design, one-time-transition checkpoint clause); ADR-0011 formally accepted (Date 2026-07-26, Deciders kimhyojung, cites bc9a6d9); write path used HARNESS_DEV_BYPASS per explicit human choice at Task 1 checkpoint, not a fresh GOLDEN_APPROVE_HUMAN token.
+- [Phase 39]: RAT-4, RAT-5, and the per-tool deny-spelling gap recorded obsolete-by-deletion citing ADR-0012; v2.4 SEAL-05 withdrawn, not deferred
 
 ### Pending Todos
 
@@ -323,7 +325,7 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-26T14:29:41.102Z
+Last session: 2026-07-26T14:34:26.172Z
 Stopped at: Completed 29-05-PLAN.md Tasks 1–2; Task 3 blocked on human ratification
 Resume file: None
 

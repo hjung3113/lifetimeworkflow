@@ -192,7 +192,7 @@ must personally **author** from five kinds to **zero**, and give the **product**
 > `tools/adoption_scan/destinations.py::_CATEGORY_GLOBS`, not the emitter (`generate.py:41-43`
 > projects this checkout into itself).
 
-- [ ] **Phase 39: Decision Boundary** *(v2.5 A)* — one human-ratified **ADR-0012**: CI + the merge are
+- [x] **Phase 39: Decision Boundary** *(v2.5 A)* — one human-ratified **ADR-0012**: CI + the merge are (completed 2026-07-26)
   the authority; the DEV/PRODUCT boundary is ratified with its operative rule; ADR-0001's
   constitution-member list is superseded (golden leaves the core) and ADR-0010 retires; ADR-0011 is
   accepted with `Date`/`Deciders` filled and its code-before-ratification recorded; RAT-4 / RAT-5 /
@@ -366,7 +366,7 @@ genuine gap is ③.
 | 36. Discipline Skills + Review Panel | v2.4 | 4/4 | Complete | 2026-07-22 |
 | 37. Capability Routing + Closeout | v2.4 | 2/2 | Complete | 2026-07-22 |
 | 38. Gate Right-Sizing (dev-light/CI-strong) | v2.4 | 1/1 | Complete | 2026-07-26 |
-| 39. Decision Boundary | v2.5 | 1/2 | In Progress|  |
+| 39. Decision Boundary | v2.5 | 2/2 | Complete   | 2026-07-26 |
 | 40. Self-Gate Teardown | v2.5 | 0/TBD | Not started | - |
 | 41. Docs-Review Plane Removal | v2.5 | 0/TBD | Not started | - |
 | 42. Adoption Decoupling + Install-Set Repair | v2.5 | 0/TBD | Not started | - |
