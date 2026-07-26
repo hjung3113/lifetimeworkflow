@@ -8,7 +8,6 @@ members = [
     "harness-capability",
     "harness-discipline",
     "harness-handoff",
-    "harness-skill-registry",
     "harness-task-control",
     "harness-task-packet",
     "lifecycle-eval",
@@ -191,11 +190,6 @@ requires-dist = [{ name = "jsonschema", specifier = "==4.26.0" }]
 name = "harness-handoff"
 version = "0.0.0"
 source = { virtual = "tools/handoff" }
-
-[[package]]
-name = "harness-skill-registry"
-version = "0.0.0"
-source = { virtual = "tools/skill_registry" }
 
 [[package]]
 name = "harness-task-control"

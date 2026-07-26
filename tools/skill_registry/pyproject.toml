@@ -1,9 +1,0 @@
-[project]
-name = "harness-skill-registry"
-version = "0.0.0"
-description = "registry.lock over the declared skill surface, and the recompute-then-compare drift gate."
-requires-python = ">=3.11"
-dependencies = []
-
-[tool.uv]
-package = false

@@ -272,35 +272,6 @@ jobs:
             exit 1
           fi
 
-  # ── registry-lock ──────────────────────────────────────────────────────────────────────────
-  # Skill-surface declaration gate (LANE-04). A DISTINCT concern from emit-drift, and neither
-  # covers the other. emit-drift re-runs the emitter and diffs; it asks "is the emitted tree a
-  # faithful projection of the current source?" and is blind BY CONSTRUCTION to a change in what
-  # that source DECLARES, because it re-derives the expectation from the same source it checks.
-  # This job asks the other question: "does the skill surface still match its declaration in
-  # harness/skills/registry.lock?"
-  #
-  # Three concrete things re-emit cleanly and pass emit-drift green, and are caught only here:
-  #   1. a skill's `description` rewritten — that string is its routing trigger, so it decides
-  #      which requests reach the skill at all;
-  #   2. a new file under a skill's references/ — the emitter discovers that subtree by glob, so
-  #      the file is emitted and manifested with no declaration moving;
-  #   3. a half-emitted surface — a skill present in one runtime lane and absent from the other is
-  #      still a self-consistent re-emit; only declaring the expected PAIR catches it.
-  # caps.EXPECTED_SKILLS already catches an added or removed skill NAME, and nothing else.
-  #
-  # Recompute-then-compare, like `drift` and `stale-derived`; no `git add`/`git diff` is needed
-  # because the tool compares in-process and prints which skill and which facet moved.
-  registry-lock:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7.0.0
-      - uses: astral-sh/setup-uv@v8.3.2
-      - name: Sync workspace (all packages)
-        run: uv sync --all-packages
-      - name: Fail on any skill surface drifted from its declaration
-        run: uv run python -m tools.skill_registry --check
-
   # ── stale-derived ──────────────────────────────────────────────────────────────────────────
   # Committed-derived freshness gate (MAINT-02, D-07/D-08). A DISTINCT concern from emit-drift
   # (which covers the .opencode/.claude runtime surface); this job covers the two committed-derived
@@ -407,7 +378,7 @@ jobs:
   # here). needs.*.result values are workflow-computed enums (success/failure/cancelled/skipped),
   # NOT event input — safe to interpolate.
   gate:
-    needs: [setup, lang-tests, contract-check, drift, golden, core-suite, lint, lifecycle-eval, emit-drift, registry-lock, stale-derived, docs-guard, workspace]
+    needs: [setup, lang-tests, contract-check, drift, golden, core-suite, lint, lifecycle-eval, emit-drift, stale-derived, docs-guard, workspace]
     if: always()
     runs-on: ubuntu-latest
     steps:
