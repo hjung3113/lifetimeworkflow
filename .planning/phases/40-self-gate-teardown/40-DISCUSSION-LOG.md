@@ -113,7 +113,7 @@ license, local diff), not this drift gate. Phase 45 owns prose scrub of deleted 
 | Trust the inventory captured in CONTEXT.md | Cheaper, but the binding check is the one failure mode that reds the fan-in gate | |
 
 **Choice:** recorded sweep + re-run of the binding check (D-06, D-07).
-**Notes:** verified this session — `docs/doc-dependencies.toml` holds 9 `[[binding]]` rows and none
+**Notes:** verified this session — `docs/doc-dependencies.toml` holds 8 `[[binding]]` rows and none
 names `tools/skill_registry`, `harness/skills/registry.lock`, or `.github/workflows/ci.yml` as a
 source, so `docs_guard` cannot classify anything `BROKEN`. Phase 41's "unbind before delete" rule
 does not apply here. The plan re-runs the check rather than trusting this line.

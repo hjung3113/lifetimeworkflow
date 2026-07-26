@@ -113,7 +113,7 @@ names this exact surface.
   `__pycache__/`, and `.claude/get-shit-done/`), and the same grep re-run at the end must return
   only the ADR-0012 and `docs/explanation/...` lines that D-05 keeps.
 - **D-07 — Phase 41's "unbind before delete" rule does NOT apply here — verified, not assumed.**
-  `docs/doc-dependencies.toml` holds 9 `[[binding]]` rows; **none** names `tools/skill_registry`,
+  `docs/doc-dependencies.toml` holds 8 `[[binding]]` rows; **none** names `tools/skill_registry`,
   `harness/skills/registry.lock`, or `.github/workflows/ci.yml` as a source, and none targets a file
   this phase deletes. So `tools.docs_guard` cannot classify anything `BROKEN` from this teardown and
   the `docs-guard` CI job stays green. The plan should re-run this check rather than trusting this
