@@ -52,14 +52,15 @@ observable failure of a mis-ordered deletion.
 | V-4 | CER-04 | Suite collects and passes with no dangling import | regression | `uv run pytest` | exit 0, no `ModuleNotFoundError` at collection | ✅ existing |
 | V-5 | CER-04 | Workspace resolves after member removal | regression | `uv sync --all-packages` | exit 0 | ✅ existing |
 | V-6 | CER-04 | Emitted trees unmoved by this deletion | regression (local mirror of CI `emit-drift`) | `uv run python -m tools.harness_emit` then `git add -A -- .opencode opencode.json .claude/agents .claude/commands .claude/skills AGENTS.md CLAUDE.md .claude/settings.json` then `git diff --cached --exit-code -- <same path set>` | empty diff | ✅ existing |
-| V-7 | CER-04 | Contract plane untouched | regression | `uv run python -m tools.contract_drift.drift` | exit 0, clean | ✅ existing |
-| V-8 | CER-04 | Lint debt does not regress | regression (ratchet) | `uv run python -m tools.ruff_baseline` | exit 0 | ✅ existing |
-| V-9 | CER-04 | Committed-derived plane not left stale | regression (local mirror of CI `stale-derived`) | `uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index` then `git add -A -- docs/reference .memory/derived/contracts-index.md` then `git diff --cached --exit-code -- docs/reference .memory/derived/contracts-index.md` | empty diff | ✅ existing |
+| V-7 | CER-04 | Committed-derived plane not left stale | regression (local mirror of CI `stale-derived`) | `uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index` then `git add -A -- docs/reference .memory/derived/contracts-index.md` then `git diff --cached --exit-code -- docs/reference .memory/derived/contracts-index.md` | empty diff | ✅ existing |
+| V-8 | CER-04 | Contract plane untouched | regression | `uv run python -m tools.contract_drift.drift` | exit 0, clean | ✅ existing |
+| V-9 | CER-04 | Lint debt does not regress | regression (ratchet) | `uv run python -m tools.ruff_baseline` | exit 0 | ✅ existing |
 
 *Status legend: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky. All rows ⬜ pending until execution.*
 
-**V-9 rationale.** ROADMAP Success Criterion 4 names **both** `emit-drift` and `stale-derived`.
-V-6 covered only the former. `stale-derived` is a distinct CI job (`ci.yml:316-338`) over a different
+**V-7 rationale.** ROADMAP Success Criterion 4 names **both** `emit-drift` and `stale-derived`.
+V-6 covered only the former; V-7 was inserted next to it so the two diff-based gates read together
+(the former contract-drift and ruff rows shifted to V-8 and V-9). `stale-derived` is a distinct CI job (`ci.yml:316-338`) over a different
 path set — `docs/reference` + `.memory/derived/contracts-index.md`. It is expected to pass trivially
 (no `skill_registry` referent exists in either path), but the SUMMARY must be able to cite it rather
 than rely on an unstated assumption.
