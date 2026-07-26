@@ -148,7 +148,6 @@ EXPECTED_SKILLS = frozenset(
         "fan-out-synthesize",
         "context-budget",
         "brownfield-adoption",
-        "docs-upkeep",
         "clarify",
         "test-driven-change",
         "diagnose",

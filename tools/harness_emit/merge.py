@@ -102,6 +102,15 @@ GSD_SIGNATURES: tuple[str, ...] = (
     "tools/bootstrap/install.sh",
 )
 
+#: Signatures the harness used to own but no longer emits. A plain signature-set diff (removing a
+#: signature from ``HARNESS_SIGNATURES`` alone) is NOT enough to delete its group on re-emit: a
+#: group whose command matches no *current* signature falls through as ``sig is None`` and is
+#: mistaken for a GSD/human group (kept verbatim forever) — silently defeating a deletion phase's
+#: whole point. Listing a signature here makes the retirement an explicit, re-emit-driven removal
+#: instead of requiring a hand-edit of the emitted ``.claude/settings.json`` (D-12). ADR-0012
+#: retires the docs-review-obligation plane's PreToolUse layer (`tools.hooks.ledger_guard`).
+RETIRED_SIGNATURES: tuple[str, ...] = ("tools.hooks.ledger_guard",)
+
 #: The canonical harness hook groups the emitter wires, per event. Key order inside each mapping is
 #: AUTHORED (matcher → hooks; type → command → timeout) and MUST match the live committed bytes so
 #: an in-place replace reproduces .claude/settings.json exactly. There is NO harness group in
@@ -205,6 +214,7 @@ def merge_settings(
     existing: dict,
     harness_signatures: tuple[str, ...] = HARNESS_SIGNATURES,
     harness_groups: dict[str, list[dict]] = HARNESS_HOOK_GROUPS,
+    retired_signatures: tuple[str, ...] = RETIRED_SIGNATURES,
 ) -> dict:
     """Merge the harness hook groups into ``existing`` settings IN PLACE, order-preserving (Regime B-json).
 
@@ -212,7 +222,9 @@ def merge_settings(
     signature) is APPENDED-OR-REPLACED where it already appears — never duplicated, never sorted,
     never moved. GSD/human groups (no harness signature) are kept verbatim in their live position;
     a second harness group matching an already-placed signature is DROPPED (de-dup → no double-wire).
-    A harness group absent from ``existing`` is appended at the tail of its event list.
+    A harness group absent from ``existing`` is appended at the tail of its event list. A group
+    matching a ``retired_signatures`` entry is DROPPED outright — it is a formerly harness-owned
+    group whose signature was deliberately removed (a deletion phase), not a GSD/human group.
 
     Because the Phase 2/4 hooks are ALREADY committed in the live order, calling this on the parsed
     live ``.claude/settings.json`` reproduces it byte-for-byte from the FIRST emit (serialize with
@@ -239,6 +251,9 @@ def merge_settings(
         for group in existing_groups:
             sig = _group_signature(group, harness_signatures)
             if sig is None:
+                if _group_signature(group, retired_signatures) is not None:
+                    # A retired harness group — drop it, this is the deletion path (D-12).
+                    continue
                 # GSD/human group — keep verbatim, in place, never removed/reordered (T-07-02).
                 result.append(group)
             elif sig in desired_by_sig:
