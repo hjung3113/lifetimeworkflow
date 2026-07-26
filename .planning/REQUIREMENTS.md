@@ -46,7 +46,7 @@ maintainability.
   This must land **before any skill deletion** — the lock's declaration source is
   `harness/disciplines.toml` (`registry.py:44`) and `_disciplines_by_skill` raises on its absence
   (`registry.py:105-110`), so a later ordering breaks structurally. (④)
-- [ ] **CER-05** *(NEW, Phase 41)*: The **docs-review plane is deleted entirely** — the 8 `[[binding]]`
+- [x] **CER-05** *(NEW, Phase 41)*: The **docs-review plane is deleted entirely** — the 8 `[[binding]]`
   rows unbound first, then `tools/docs_guard` (6110 LOC), `docs/.docs-review-ledger.toml`, hook
   `ledger_guard` and its `path_deny_globs` entry, `/docs-update`, skill `docs-upkeep`,
   `contracts/harness/docs/*`, CI `docs-guard` and its `gate.needs` entry. Verified reason the

@@ -4,14 +4,14 @@ milestone: v2.5
 milestone_name: De-ceremony
 status: executing
 stopped_at: Phase 41 context gathered
-last_updated: "2026-07-26T18:31:22.175Z"
+last_updated: "2026-07-26T18:42:12.121Z"
 last_activity: 2026-07-26
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 8
-  completed_plans: 4
-  percent: 50
+  completed_plans: 5
+  percent: 63
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-22)
 ## Current Position
 
 Phase: 41 (docs-review-plane-removal) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-07-26
 
@@ -146,6 +146,7 @@ Last activity: 2026-07-26
 | Phase 39-decision-boundary-v2-5-a P01 | 12min | 1 tasks | 5 files |
 | Phase 39 P02 | 12min | 2 tasks | 1 files |
 | Phase 41 P01 | 12min | 2 tasks | 22 files |
+| Phase 41 P02 | 25min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -263,6 +264,7 @@ Recent decisions affecting current work:
 - [Phase 39]: 39-01: ADR-0012 ratified as ONE unit (CI+merge authority, v2.5 deletion enumeration as intent-at-ratification, DEV/PRODUCT boundary operative rule, ADR-0001/0010 supersession, bash-residual-by-design, one-time-transition checkpoint clause); ADR-0011 formally accepted (Date 2026-07-26, Deciders kimhyojung, cites bc9a6d9); write path used HARNESS_DEV_BYPASS per explicit human choice at Task 1 checkpoint, not a fresh GOLDEN_APPROVE_HUMAN token.
 - [Phase 39]: RAT-4, RAT-5, and the per-tool deny-spelling gap recorded obsolete-by-deletion citing ADR-0012; v2.4 SEAL-05 withdrawn, not deferred
 - [Phase 41]: Unbind-before-delete (D-09): emptied all 8 [[binding]] rows + deleted the ledger in a standalone commit before deleting tools/docs_guard (6110 LOC), the registry file, and its derived page. contracts/harness/docs/doc-dependencies.schema.json deferred to Plan 04.
+- [Phase 41]: Fixed cli.py's ReviewLedgerRefusal catch clause as a Rule 1 auto-fix — an undocumented adoption_apply consumer of the deleted ledger_guard hook beyond apply.py itself
 
 ### Pending Todos
 
@@ -328,7 +330,7 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-26T18:26:50.617Z
+Last session: 2026-07-26T18:39:40.401Z
 Stopped at: Phase 41 context gathered
 Resume file: None
 
