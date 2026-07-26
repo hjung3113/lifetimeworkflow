@@ -200,10 +200,17 @@ must personally **author** from five kinds to **zero**, and give the **product**
   **permanent residual by design**. (CER-01, CER-02, CER-03)
   **Success:** ADR-0012 exists and is `accepted`; ADR-0011 has non-empty `Date`/`Deciders`; the three
   carried items show a recorded disposition in `STATE.md`; SEAL-05 is marked withdrawn, not deferred.
-- [ ] **Phase 40: Self-Gate Teardown** *(v2.5 A)* — delete `tools/skill_registry` (611 LOC),
+- [x] **Phase 40: Self-Gate Teardown** *(v2.5 A)* — delete `tools/skill_registry` (611 LOC),
   `harness/skills/registry.lock`, CI `registry-lock` and its `gate.needs` entry. **Must precede every
-  skill deletion** (`registry.py:44,105-110`). (CER-04)
+  skill deletion** (`registry.py:44,105-110`). (CER-04) (completed 2026-07-27, `45364d7`)
   **Success:** no `registry.lock` in the tree; `gate.needs` has no dangling job; the suite is green.
+  **Verified:** suite 1664 passed/0 failed; `gate.needs` 12 entries, no dangling (YAML-resolved);
+  emit-drift + stale-derived + contract-drift + ruff-ratchet clean; UAT 4/4 passed.
+  **Carry-forward for 41/43/44 —** deletion-phase ordering is **delete → stage → commit → verify →
+  amend-if-red**, NOT verify-before-commit. `tools/adoption_scan` reads git, not the filesystem
+  (`destinations.py:217` `git ls-files`), so a tracked-file deletion reds 3 tests until staged (2 of
+  them) and committed (`test_catalog_invariant_to_untracked_local_state`, which diffs against HEAD
+  and is red by construction while uncommitted). Measured 3→1→0. See `40-01-SUMMARY.md`.
 - [ ] **Phase 41: Docs-Review Plane Removal** *(v2.5 A)* — unbind the 8 `[[binding]]` rows, then delete
   `tools/docs_guard` (6110 LOC), the ledger, hook `ledger_guard` + its `path_deny_globs` entry,
   `/docs-update`, skill `docs-upkeep`, `contracts/harness/docs/*`, CI `docs-guard` + its `gate.needs`

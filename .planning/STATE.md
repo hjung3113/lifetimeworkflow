@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: De-ceremony
-status: completed
-stopped_at: Phase 40 context gathered
-last_updated: "2026-07-26T15:28:25.708Z"
-last_activity: 2026-07-26
+status: in_progress
+stopped_at: Phase 40 complete (self-gate teardown verified, UAT 4/4)
+last_updated: "2026-07-27T02:00:00.000Z"
+last_activity: 2026-07-27
 progress:
-  total_phases: 2
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 100
+  total_phases: 8
+  completed_phases: 2
+  total_plans: 3
+  completed_plans: 3
+  percent: 25
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-22)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 39 — decision-boundary-v2-5-a
+**Current focus:** Phase 41 — docs-review-plane-removal (next; 39 and 40 complete)
 
 ## Current Position
 
-Phase: 39
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-07-26
+Phase: 40 (complete) — next: 41
+Plan: 40-01 complete
+Status: v2.5 in progress (2/8 phases)
+Last activity: 2026-07-27
 
 ## Performance Metrics
 
@@ -326,10 +326,48 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-26T15:28:25.702Z
-Stopped at: Phase 40 context gathered
-Resume file: .planning/phases/40-self-gate-teardown/40-CONTEXT.md
+Last session: 2026-07-27
+Stopped at: Phase 40 complete — teardown committed (`45364d7`), UAT 4/4 passed, all gates green
+Resume file: .planning/phases/40-self-gate-teardown/40-01-SUMMARY.md
+
+### Resuming from a fresh clone
+
+Everything needed to continue is committed. Read in this order:
+
+1. `.planning/ROADMAP.md` → the v2.5 section (Phases 39–46) and the "Ordering rules that must hold
+   inside every phase" list. Phases 39 and 40 are `[x]`; 41 is next. The DAG is strictly serial.
+2. `.planning/phases/40-self-gate-teardown/40-01-SUMMARY.md` → what Phase 40 deleted, the nine
+   verification commands with their observed output, and **the deletion-phase ordering constraint
+   that applies to 41, 43 and 44** (see below — this is the one thing worth reading before starting
+   any deletion).
+3. `docs/adr/0012-ci-and-merge-as-decision-authority.md` → the ratified authority for every v2.5
+   deletion. Cite it instead of re-litigating scope.
+
+**Carry-forward constraint (discovered executing Phase 40).** Deletion phases must run
+**delete → stage → commit → verify → amend-if-red**, not verify-before-commit. `tools/adoption_scan`
+derives its file set from git, not the filesystem (`destinations.py:217` runs `git ls-files`), so
+deleting a tracked file reds three tests until the deletion is staged (two of them) and committed
+(`test_dispositions.py::test_catalog_invariant_to_untracked_local_state`, which checks out HEAD into
+a temp worktree and is red by construction while the deletion is uncommitted). Measured across
+Phase 40: 3 failed unstaged → 1 staged → 0 committed. Do not "fix" `adoption_scan` — the test is
+correct.
+
+**Also carried:** a skill deletion still requires editing `tools/harness_lint/caps.py`
+`EXPECTED_SKILLS` and re-emitting in the same commit (ordering rule 6). Phase 40 removed only the
+`registry.lock` rewrite step, nothing else. Verified by dry-run: deleting a skill now produces 18
+failures, none from a registry-lock gate.
+
+### Phase 40 open item
+
+`/gsd:secure-phase 40` has **not** run and no `40-SECURITY.md` exists. `workflow.security_enforcement`
+is absent from config, which GSD treats as enabled, so the gate is formally outstanding. Substantively
+the phase has no security surface — it deletes a build-time consistency check and touches no request
+path, stored data, auth, or secret (see the PLAN's `<threat_model>`). Recorded as a known gap rather
+than silently waived; run the command if the formal artifact is wanted.
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- `/gsd:discuss-phase 41 --auto --chain` — Phase 41: Docs-Review Plane Removal. Note its extra
+  precondition: the 8 `[[binding]]` rows in `docs/doc-dependencies.toml` must be unbound **before**
+  deleting any source they name, or `tools.docs_guard` classifies `BROKEN` and reds the fan-in gate.
+- Optional: `/gsd:secure-phase 40` to close the formal security gate above.
