@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: De-ceremony
-status: verifying
+status: milestone_complete
 stopped_at: Completed 29-05-PLAN.md Tasks 1–2; Task 3 blocked on human ratification
 last_updated: "2026-07-26T14:35:03.576Z"
 last_activity: 2026-07-26
 progress:
   total_phases: 1
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 2
   completed_plans: 2
-  percent: 100
+  percent: 200
 ---
 
 # Project State
@@ -25,16 +25,16 @@ See: .planning/PROJECT.md (updated 2026-07-22)
 
 ## Current Position
 
-Phase: 39 (decision-boundary-v2-5-a) — EXECUTING
-Plan: 2 of 2
-Status: Phase complete — ready for verification
+Phase: 39
+Plan: Not started
+Status: Milestone complete
 Last activity: 2026-07-26
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 28
+- Total plans completed: 30
 - Average duration: — min
 - Total execution time: 0.0 hours
 
@@ -50,6 +50,7 @@ Last activity: 2026-07-26
 | 16 | 6 | - | - |
 | 24 | 2 | - | - |
 | 25 | 5 | - | - |
+| 39 | 2 | - | - |
 
 **Recent Trend:**
 
