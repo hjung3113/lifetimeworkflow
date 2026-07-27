@@ -68,9 +68,11 @@ maintainability.
   `.github/workflows/**` (`:176`) running the same modules, gets `pyproject.toml` stubs (`:177-178`) —
   and gets **none of the Python**. The surviving `tools/**` is added to the install catalogue, and the
   fix is a data row, not a mechanism. (①②③④ — without it the product is inert)
-- [ ] **CER-07** *(NEW, Phase 43)*: The **task-control lifecycle plane is deleted whole** — 8 `tools/`
+- [x] **CER-07** *(NEW, Phase 43)*: The **task-control lifecycle plane is deleted whole** — 8 `tools/`
   packages (7021 LOC: `task_control`, `task_packet`, `risk_router`, `evidence`, `handoff`,
-  `discipline`, `capability`, `lifecycle_eval`), the 7 task-control contracts, commands
+  `discipline`, `capability`, `lifecycle_eval`), **6 of the 7** task-control contracts — `gate-registry.json`
+  is claimed separately by CER-08 with its `DATA_CONTRACT_PATHS` entry and ships in Phase 44 (collision
+  recorded in the ROADMAP's Phase 43 section) — commands
   `intake · phase-gate · handoff · discipline`, hook `resume_gate`, the 5 discipline skills,
   `harness/{capabilities,disciplines,risk-policy}.toml`, `.workflow/tasks/`, and CI `lifecycle-eval`
   with its `gate.needs` entry. `memory_regen`'s active-task block (`inject.py:165-195`) is stripped
@@ -183,7 +185,7 @@ Deferred by design, not lost. Smallest goal-complete subset = all of v2.5 + **MO
 | CER-05 | Phase 41 | Complete |
 | CER-06 | Phase 42 | Complete |
 | PROD-01 | Phase 42 | Complete |
-| CER-07 | Phase 43 | Not started |
+| CER-07 | Phase 43 | Complete |
 | CER-08 | Phase 44 | Not started |
 | CER-09 | Phase 44 | Not started |
 | CER-10 | Phase 45 | Not started |
