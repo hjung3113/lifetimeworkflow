@@ -125,12 +125,9 @@ _XML_CHARS = ("<", ">")
 # two-plane-memory. Phase 8 (Pipeline Topology) adds one topology-trace skill: pipeline-map.
 # Phase 10 (Context-Economy) adds two skills: fan-out-synthesize (the fan-out substrate) and
 # context-budget (the delegate-vs-inline heuristic that routes into it).
-# Phase 36 (Lane Discipline) adds the five DISCIPLINE skills a lane can require by name in
-# harness/risk-policy.toml: clarify, test-driven-change, diagnose, domain-modeling and
-# adversarial-review-panel. They are not a sprawl exception — each is a routing trigger no existing
-# skill carries ("the task is ambiguous", "write the failing test first", "the cause is unknown",
-# "the vocabulary is unsettled", "review this from N adversarial frames"), and each is named by
-# harness/disciplines.toml, so test_discipline_wiring.py fails if one goes missing or unrequired.
+# Phase 43 (Lifecycle Plane Removal, CER-07) removes the five DISCIPLINE skills Phase 36 added,
+# together with the lane-discipline declarations that named them and the wiring gate that checked
+# them. The twelve entries below are the whole set.
 # No more, no fewer (anti-sprawl).
 EXPECTED_SKILLS = frozenset(
     {
@@ -146,10 +143,5 @@ EXPECTED_SKILLS = frozenset(
         "fan-out-synthesize",
         "context-budget",
         "brownfield-adoption",
-        "clarify",
-        "test-driven-change",
-        "diagnose",
-        "domain-modeling",
-        "adversarial-review-panel",
     }
 )

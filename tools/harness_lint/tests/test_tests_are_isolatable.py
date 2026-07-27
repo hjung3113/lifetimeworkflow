@@ -122,5 +122,5 @@ def test_the_scan_finds_the_members_it_claims_to() -> None:
     assert len(found) >= 10, (
         f"expected many tools/*/tests dirs, found {len(found)}: {sorted(found)}"
     )
-    for expected in ("tools/harness_lint/tests", "tools/lifecycle_eval/tests"):
+    for expected in ("tools/harness_lint/tests",):
         assert expected in found, f"{expected} should be enumerated; scan returned {sorted(found)}"

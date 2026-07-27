@@ -218,22 +218,6 @@ jobs:
       - name: Ruff baseline unit tests
         run: uv run pytest tools/ruff_baseline -q
 
-  # ── lifecycle-eval ────────────────────────────────────────────────────────────────────────
-  # Phase 23 composition coverage.  This invokes the fixture runner plus the focused
-  # integration/regression suite; it deliberately reuses (not reimplements) the existing
-  # schema, router, transition, context, evidence, handoff, resume, and emit gates above.
-  lifecycle-eval:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7.0.0
-      - uses: astral-sh/setup-uv@v8.3.2
-      - name: Sync workspace (all packages)
-        run: uv sync --all-packages
-      - name: Evaluate ratification-pending lane fixtures
-        run: uv run python -m tools.lifecycle_eval.runner
-      - name: Lifecycle fixture execution and negative-fixture binding
-        run: uv run pytest tools/lifecycle_eval
-
   # ── emit-drift ─────────────────────────────────────────────────────────────────────────────
   # Single-source dual-runtime re-emit-diff gate (EMIT-02, D-02). Re-runs the emitter and fails on
   # ANY hand-edited generated-artifact drift — mirrors the `drift` job's recompute→compare shape.
@@ -342,7 +326,7 @@ jobs:
   # here). needs.*.result values are workflow-computed enums (success/failure/cancelled/skipped),
   # NOT event input — safe to interpolate.
   gate:
-    needs: [setup, lang-tests, contract-check, drift, golden, core-suite, lint, lifecycle-eval, emit-drift, stale-derived, workspace]
+    needs: [setup, lang-tests, contract-check, drift, golden, core-suite, lint, emit-drift, stale-derived, workspace]
     if: always()
     runs-on: ubuntu-latest
     steps:

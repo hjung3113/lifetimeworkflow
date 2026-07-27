@@ -37,8 +37,8 @@ def _claude_commands(tmp_path: Path, written: list[Path]) -> list[Path]:
     return [p for p in written if commands_dir in p.parents and p.suffix == ".md"]
 
 
-def test_all_26_commands_emit_to_both_trees(tmp_path: Path) -> None:
-    """26 commands land in .opencode/command/*.md AND .claude/commands/*.md (top-level).
+def test_all_21_commands_emit_to_both_trees(tmp_path: Path) -> None:
+    """21 commands land in .opencode/command/*.md AND .claude/commands/*.md (top-level).
 
     Phase 9 adds /refresh-memory (the curator's local derived-freshness macro), taking the count
     from 17 → 18; Phase 10 adds /fan-out-synthesize (the context-economy fan-out entry point),
@@ -49,6 +49,8 @@ def test_all_26_commands_emit_to_both_trees(tmp_path: Path) -> None:
     Phase 29 adds `/docs-update` (the bounded human-doc review loop, DOCSUP-06), taking it 24 → 25.
     Phase 36 adds `/discipline` (the read-only lane-discipline report, LANE-01), taking it 25 → 26.
     Phase 41 deletes `/docs-update` (the docs-review plane removal, CER-05), taking it back 26 → 25.
+    Phase 43 deletes /intake, /phase-gate, /handoff, /discipline (the lifecycle-plane removal,
+    CER-07), taking it 25 → 21.
 
     This count tracks the runtime-neutral SOURCE (``harness/commands/*.md``), NOT the committed
     ``.opencode/`` / ``.claude/`` trees: ``_emit`` projects into ``tmp_path``. So authoring a new
@@ -65,8 +67,8 @@ def test_all_26_commands_emit_to_both_trees(tmp_path: Path) -> None:
         if (tmp_path / ".opencode" / "command") in p.parents and p.suffix == ".md"
     ]
     claude_cmds = _claude_commands(tmp_path, written)
-    assert len(opencode_cmds) == 25, f"expected 25 opencode commands, got {len(opencode_cmds)}"
-    assert len(claude_cmds) == 25, f"expected 25 Claude commands, got {len(claude_cmds)}"
+    assert len(opencode_cmds) == 21, f"expected 21 opencode commands, got {len(opencode_cmds)}"
+    assert len(claude_cmds) == 21, f"expected 21 Claude commands, got {len(claude_cmds)}"
 
 
 def test_harness_commands_are_top_level_never_under_gsd(tmp_path: Path) -> None:

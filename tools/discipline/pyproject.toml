@@ -1,9 +1,0 @@
-[project]
-name = "harness-discipline"
-version = "0.0.0"
-description = "Lane discipline declarations and the deterministic satisfied-vs-missing checker."
-requires-python = ">=3.11"
-dependencies = ["jsonschema==4.26.0"]
-
-[tool.uv]
-package = false

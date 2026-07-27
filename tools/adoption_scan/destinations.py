@@ -155,7 +155,6 @@ _CATEGORY_GLOBS: tuple[str, ...] = (
     "harness/project.toml",
     "workspace.toml",
     "harness/permission-matrix.json",
-    "harness/risk-policy.toml",
     "harness/opencode.json",
     "harness/opencode.config.schema.json",
     "harness/agents/**/*",

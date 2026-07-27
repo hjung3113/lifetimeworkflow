@@ -90,14 +90,18 @@ def test_catalog_excludes_tools_tests_and_fixtures(repo_root: Path) -> None:
     assert not any("__snapshots__" in d for d in [r["destination"] for r in catalog])
 
 
-def test_discovers_at_least_twenty_modules(repo_root: Path) -> None:
+def test_discovers_at_least_twelve_modules(repo_root: Path) -> None:
     """Sanity guard: the regex-walk helper must find a substantial number of distinct
     `python -m tools.X` references -- guards against the helper silently matching nothing and
-    the main test vacuously passing."""
+    the main test vacuously passing.
+
+    Floor lowered 20 -> 12 in Phase 43 (CER-07): the lifecycle-plane removal deleted 8 of the 21
+    top-level packages this helper discovered, taking the live count to 13. This is a vacuity
+    guard, not a census -- do not raise it back toward the live value."""
     refs = _discover_module_refs(repo_root)
     top_level_packages = {ref.split(".")[0] for ref in refs}
-    assert len(top_level_packages) >= 20, (
-        f"expected at least 20 distinct top-level tools packages, found "
+    assert len(top_level_packages) >= 12, (
+        f"expected at least 12 distinct top-level tools packages, found "
         f"{len(top_level_packages)}: {sorted(top_level_packages)}"
     )
 
@@ -110,7 +114,7 @@ def test_every_referenced_tools_module_lands_in_applied_target(
     produced by a real apply_manifest() run over the live catalog -- not merely have its parent
     directory exist."""
     refs = _discover_module_refs(repo_root)
-    assert refs  # non-vacuous, backstopped by test_discovers_at_least_twenty_modules above
+    assert refs  # non-vacuous, backstopped by test_discovers_at_least_twelve_modules above
 
     # Resolve every reference against THIS checkout first (fails loudly if a reference is stale).
     source_files = {ref: _resolve_module_file(repo_root, ref) for ref in refs}

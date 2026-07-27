@@ -1,9 +1,0 @@
-[project]
-name = "harness-task-packet"
-version = "0.0.0"
-description = "Draft 2020-12 task packet schema and cross-document reference validator."
-requires-python = ">=3.11"
-dependencies = ["jsonschema==4.26.0"]
-
-[tool.uv]
-package = false
