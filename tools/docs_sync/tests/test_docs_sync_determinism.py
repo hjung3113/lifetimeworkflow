@@ -23,11 +23,11 @@ from tools.docs_sync import generate as docs_sync
 # relocated domain schemas moved to the log-parser example, so the CORE contracts tree now holds
 # the generic §4.3–4.6 convention page (format-conventions) and the domain-neutral generic default
 # instance (greeting, GEN-02, 05-02), plus the Phase 18 task-control contracts. Phase 26 Plan 01
-# (26-01) added the three ratified brownfield-adoption contracts (ADOPT-01/02/03). Phase 27 Plan 02
-# (27-02) added the ADOPT-06 promotion approval record (approval.schema.json).
+# (26-01) added the three ratified brownfield-adoption contracts (ADOPT-01/02/03). Phase 42 Plan 02
+# (42-02) deleted the ADOPT-06 promotion approval record (approval.schema.json) along with the
+# gate it backed (CER-06).
 EXPECTED_PAGES = frozenset(
     {
-        "approval",
         "attestation",
         "deny-domains",
         "evidence",

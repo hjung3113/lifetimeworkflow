@@ -1,5 +1,4 @@
 {
-  "contracts/harness/adoption/approval.schema.json": "7a1683f9c4ec4adac1d37d68096d5cb0f58f255f03f3a060cc24fb56b567851f",
   "contracts/harness/adoption/inventory.schema.json": "34a31944180f766e993ca46940c7352a37458027ffc89818c1e8267cbea54531",
   "contracts/harness/adoption/manifest.schema.json": "c10b9b9e22d7002bf9527e5b648b1bb59c7c27126ac76b5912b06d7149a25471",
   "contracts/harness/adoption/plan.schema.json": "5c4f2db58648ed4e5482d46359bad30b08c3729f69b8edc419e48adc3fa107f6",
