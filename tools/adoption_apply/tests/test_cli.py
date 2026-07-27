@@ -1,10 +1,8 @@
-"""Tests for tools.adoption_apply.cli — the draft/apply/promote dispatcher composing
-batch.py/apply.py/approval.py end to end (added plan-checker revision iteration 1).
+"""Tests for tools.adoption_apply.cli — the draft/apply dispatcher composing
+batch.py/apply.py end to end (added plan-checker revision iteration 1).
 
-Covers: the promote refusal->exit-3 contract at BOTH the direct main() call boundary and an
-OS-level subprocess boundary (proving __main__.py's ``from tools.adoption_apply.cli import main``
-now resolves), and the draft/apply sub-verbs exercising real filesystem effects (never merely an
-import check).
+Covers: the draft/apply sub-verbs exercising real filesystem effects (never merely an import
+check). The former ADOPT-06 promote/approval gate is deleted (D-01); the review moves to the PR.
 """
 
 from __future__ import annotations
@@ -19,10 +17,7 @@ import pytest
 
 from tools.adoption_apply.cli import main
 
-HUMAN_TOKEN_ENV = "GOLDEN_APPROVE_HUMAN"
-_HUMAN_VALUE = "ratified-by-a-human"
 _TASK_ID = "T-20260721040000-cli-test"
-_DECISIONS = [{"item_id": "prop-1", "kind": "contract", "disposition": "approve"}]
 
 
 def _git(root: Path, *args: str) -> str:
@@ -89,11 +84,6 @@ def _seed_batch_dir(task_dir: Path) -> tuple[str, Path]:
     return batch_id, batch_dir
 
 
-def _bump_revision(task_dir: Path) -> None:
-    state = json.loads((task_dir / "state.json").read_bytes())
-    _write_state(task_dir, revision=state["revision"] + 1, commit=state["current_ref"])
-
-
 def _seed_batch_with_manifest(task_dir: Path, manifest: dict) -> tuple[str, Path]:
     """A batch whose manifest.json is *manifest* verbatim — inventory/plan content is never
     re-validated by ``apply``, so it is deliberately dummy."""
@@ -110,122 +100,6 @@ def _seed_batch_with_manifest(task_dir: Path, manifest: dict) -> tuple[str, Path
         (json.dumps(manifest, sort_keys=True) + "\n").encode("utf-8")
     )
     return batch_id, batch_dir
-
-
-def _promote(
-    task_dir: Path,
-    batch_id: str,
-    git_repo: Path,
-    decisions_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> int:
-    monkeypatch.setenv(HUMAN_TOKEN_ENV, _HUMAN_VALUE)
-    return main(
-        [
-            "promote",
-            "--task-dir",
-            str(task_dir),
-            "--batch-id",
-            batch_id,
-            "--repo-root",
-            str(git_repo),
-            "--decisions",
-            str(decisions_path),
-            "--approve",
-            "--confirm",
-            _HUMAN_VALUE,
-        ]
-    )
-
-
-@pytest.fixture()
-def decisions_path(tmp_path: Path) -> Path:
-    path = tmp_path / "decisions.json"
-    path.write_text(json.dumps(_DECISIONS), encoding="utf-8")
-    return path
-
-
-def test_cli_promote_refused_exit_code_3(
-    task_dir: Path, git_repo: Path, decisions_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """main(["promote", ...]) with no --approve/--confirm returns exactly int 3."""
-    monkeypatch.delenv(HUMAN_TOKEN_ENV, raising=False)
-    batch_id, _ = _seed_batch_dir(task_dir)
-
-    exit_code = main(
-        [
-            "promote",
-            "--task-dir",
-            str(task_dir),
-            "--batch-id",
-            batch_id,
-            "--repo-root",
-            str(git_repo),
-            "--decisions",
-            str(decisions_path),
-        ]
-    )
-
-    assert exit_code == 3
-
-
-def test_cli_promote_refused_exit_code_3_subprocess(
-    task_dir: Path, git_repo: Path, decisions_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """The identical refusal scenario at OS-level: subprocess.run(...).returncode == 3."""
-    monkeypatch.delenv(HUMAN_TOKEN_ENV, raising=False)
-    batch_id, _ = _seed_batch_dir(task_dir)
-
-    env = {k: v for k, v in __import__("os").environ.items() if k != HUMAN_TOKEN_ENV}
-    result = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "tools.adoption_apply",
-            "promote",
-            "--task-dir",
-            str(task_dir),
-            "--batch-id",
-            batch_id,
-            "--repo-root",
-            str(git_repo),
-            "--decisions",
-            str(decisions_path),
-        ],
-        cwd=Path(__file__).resolve().parents[3],
-        capture_output=True,
-        text=True,
-        env=env,
-    )
-
-    assert result.returncode == 3, f"stdout={result.stdout!r} stderr={result.stderr!r}"
-
-
-def test_cli_promote_succeeds_with_full_human_signals(
-    task_dir: Path, git_repo: Path, decisions_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Positive control: all three human signals present -> exit 0, PROMOTED printed."""
-    monkeypatch.setenv(HUMAN_TOKEN_ENV, _HUMAN_VALUE)
-    batch_id, _ = _seed_batch_dir(task_dir)
-
-    exit_code = main(
-        [
-            "promote",
-            "--task-dir",
-            str(task_dir),
-            "--batch-id",
-            batch_id,
-            "--repo-root",
-            str(git_repo),
-            "--decisions",
-            str(decisions_path),
-            "--approve",
-            "--confirm",
-            _HUMAN_VALUE,
-        ]
-    )
-
-    assert exit_code == 0
 
 
 @pytest.fixture()
@@ -273,23 +147,13 @@ def test_cli_apply_end_to_end(
     git_repo: Path,
     synthetic_target: Path,
     tmp_path: Path,
-    decisions_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """draft, promote, then apply against a separate scratch apply-target — at least one create
-    lands.
+    """draft, then apply against a separate scratch apply-target — at least one create lands.
 
-    D-01 rationale (recorded here verbatim, per plan): D-01's "no Phase 27 test may be weakened or
-    deleted" targets the CR-01/CR-02 refusal-behavior tests (test_refuses_before_mutation,
-    test_refuses_bare_cli_invocation, test_non_constitution_destination_allowed in
-    test_constitution_refusal.py) — tests whose entire purpose is proving a refusal happens. This
-    test is a wiring/integration test proving the HAPPY PATH still works end-to-end; it is not one
-    of D-01's protected refusal tests. Adding the promote step and the new required --repo-root
-    flag here is a REQUIRED STRENGTHENING forced by closing CR-03: once _cmd_apply hard-refuses an
-    unpromoted apply, this test would otherwise start failing with exit 4 — not because this test's
-    own assertions weakened, but because the CLI's contract legitimately grew a new precondition.
-    No existing assertion in this test is removed or loosened; only the promote step and the new
-    required flag are added.
+    D-01 rationale: the former ADOPT-06 promote step is deleted whole; draft -> apply now runs
+    with no intervening gate (D-03) and no existing assertion in this test is weakened — only the
+    promote step is removed.
     """
     monkeypatch.chdir(Path(__file__).resolve().parents[3])
 
@@ -307,9 +171,6 @@ def test_cli_apply_end_to_end(
     batch_dirs = list((task_dir / "artifacts" / "adoption").iterdir())
     assert len(batch_dirs) == 1
     batch_id = batch_dirs[0].name
-
-    promote_exit = _promote(task_dir, batch_id, git_repo, decisions_path, monkeypatch)
-    assert promote_exit == 0
 
     apply_target = tmp_path / "apply-target"
     apply_target.mkdir()
@@ -346,69 +207,6 @@ def test_cli_apply_end_to_end(
     assert applied_at_least_one, "no create-disposition destination landed on disk"
 
 
-# --- CR-03 (27.1-02): apply hard-refuses without a valid, exactly-matching promotion -----------
-
-
-def test_cli_apply_refuses_without_approval(task_dir: Path, git_repo: Path, tmp_path: Path) -> None:
-    """No promote step at all -> apply refuses with exit 4, writes nothing."""
-    batch_id, _ = _seed_batch_dir(task_dir)
-
-    apply_target = tmp_path / "apply-target"
-    apply_target.mkdir()
-
-    exit_code = main(
-        [
-            "apply",
-            "--task-dir",
-            str(task_dir),
-            "--batch-id",
-            batch_id,
-            "--target",
-            str(apply_target),
-            "--repo-root",
-            str(git_repo),
-        ]
-    )
-
-    assert exit_code == 4
-    assert list(apply_target.iterdir()) == [], "apply must not write anything without approval"
-
-
-def test_cli_apply_refuses_on_stale_approval(
-    task_dir: Path,
-    git_repo: Path,
-    tmp_path: Path,
-    decisions_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """A prior valid approval, then the task revision advances -> apply refuses with exit 4."""
-    batch_id, _ = _seed_batch_dir(task_dir)
-    promote_exit = _promote(task_dir, batch_id, git_repo, decisions_path, monkeypatch)
-    assert promote_exit == 0
-
-    _bump_revision(task_dir)
-
-    apply_target = tmp_path / "apply-target"
-    apply_target.mkdir()
-
-    exit_code = main(
-        [
-            "apply",
-            "--task-dir",
-            str(task_dir),
-            "--batch-id",
-            batch_id,
-            "--target",
-            str(apply_target),
-            "--repo-root",
-            str(git_repo),
-        ]
-    )
-
-    assert exit_code == 4
-    assert list(apply_target.iterdir()) == [], "apply must not write anything on a stale approval"
-
-
 # --- WR-04 (27.1-02): apply re-validates manifest.json against its schema before use ------------
 
 
@@ -416,8 +214,6 @@ def test_cli_apply_refuses_on_malformed_manifest(
     task_dir: Path,
     git_repo: Path,
     tmp_path: Path,
-    decisions_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """manifest.json is valid JSON but schema-invalid (missing required "excluded") -> exit 1."""
     malformed_manifest = {
@@ -426,9 +222,6 @@ def test_cli_apply_refuses_on_malformed_manifest(
         # "excluded" deliberately omitted — required by manifest.schema.json.
     }
     batch_id, _ = _seed_batch_with_manifest(task_dir, malformed_manifest)
-
-    promote_exit = _promote(task_dir, batch_id, git_repo, decisions_path, monkeypatch)
-    assert promote_exit == 0, "the approval hash binds to whatever bytes exist, valid or not"
 
     apply_target = tmp_path / "apply-target"
     apply_target.mkdir()
@@ -466,8 +259,6 @@ def test_cli_apply_refuses_hostile_destination_cleanly(
     task_dir: Path,
     git_repo: Path,
     tmp_path: Path,
-    decisions_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """An absolute destination, a `..`-traversal destination, and a symlinked marker-capable
     destination each refuse with exit 1, a clean stderr message, no `Traceback`, and zero writes —
@@ -509,8 +300,6 @@ def test_cli_apply_refuses_hostile_destination_cleanly(
 
     for case_name, manifest, escape_path in cases:
         batch_id, _ = _seed_batch_with_manifest(task_dir, manifest)
-        promote_exit = _promote(task_dir, batch_id, git_repo, decisions_path, monkeypatch)
-        assert promote_exit == 0, case_name
 
         result = subprocess.run(
             [
@@ -554,8 +343,6 @@ def test_cli_apply_refuses_hostile_destination_cleanly(
         "excluded": [],
     }
     batch_id, _ = _seed_batch_with_manifest(task_dir, symlink_manifest)
-    promote_exit = _promote(task_dir, batch_id, git_repo, decisions_path, monkeypatch)
-    assert promote_exit == 0
 
     result = subprocess.run(
         [
@@ -600,8 +387,6 @@ def test_cli_apply_refuses_directory_shaped_destination(
     task_dir: Path,
     git_repo: Path,
     tmp_path: Path,
-    decisions_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
     case_name: str,
     destination: str,
     expected_guard: str,
@@ -626,8 +411,6 @@ def test_cli_apply_refuses_directory_shaped_destination(
         "excluded": [],
     }
     batch_id, _ = _seed_batch_with_manifest(task_dir, manifest)
-    promote_exit = _promote(task_dir, batch_id, git_repo, decisions_path, monkeypatch)
-    assert promote_exit == 0, case_name
 
     result = subprocess.run(
         [
