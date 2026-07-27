@@ -4,14 +4,14 @@ milestone: v2.5
 milestone_name: De-ceremony
 status: executing
 stopped_at: Phase 42 Plan 01 complete (ADOPT-06 approval gate deleted)
-last_updated: "2026-07-27T16:19:59.839Z"
+last_updated: "2026-07-27T16:26:27.359Z"
 last_activity: 2026-07-27
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 13
-  completed_plans: 11
-  percent: 85
+  completed_plans: 12
+  percent: 92
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-22)
 ## Current Position
 
 Phase: 42 (adoption-decoupling-install-set-repair) — EXECUTING
-Plan: 4 of 5 complete (Plans 01 and 03 done; Plans 02, 04, 05 remain)
+Plan: 5 of 5 complete (Plans 01 and 03 done; Plans 02, 04, 05 remain)
 Status: Ready to execute
 Last activity: 2026-07-27
 
@@ -153,6 +153,7 @@ Last activity: 2026-07-27
 | Phase 42 P01 | ~20min | 2 tasks | 4 files |
 | Phase 42 P03 | 15min | 2 tasks | 3 files |
 | Phase 42 P04 | 35min | 2 tasks | 2 files |
+| Phase 42 P02 | 25min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -281,6 +282,8 @@ Recent decisions affecting current work:
 - [Phase ?]: D-07: exactly one blanket tools/**/* row added to _CATEGORY_GLOBS (not enumerated per-package), robust to future package deletions with zero edit here
 - [Phase ?]: D-08: fixture-install test authored RED-first and observed to fail against the pre-fix catalog before the tools glob row landed
 - [Phase ?]: Rule 1 auto-fix: plan's literal tools/** row text matches directories only under Path.glob; corrected to tools/**/* consistent with every sibling _CATEGORY_GLOBS row
+- [Phase 42]: D-02: deleted contracts/harness/adoption/approval.schema.json with a same-commit manifest rebaseline, reusing the Phase-41 procedure verbatim
+- [Phase 42]: D-10/D-11: reworded tools/adoption_apply/apply.py and batch.py docstrings to describe their already-inlined atomic-write sequences on their own terms, dropping every tools.task_control.manager reference
 
 ### Pending Todos
 
@@ -346,7 +349,7 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-27T16:19:44.072Z
+Last session: 2026-07-27T16:26:27.355Z
 Stopped at: Phase 42 Plan 01 complete (ADOPT-06 approval gate deleted)
 Resume file: None
 
