@@ -4,13 +4,7 @@
   "contracts/harness/adoption/plan.schema.json": "5c4f2db58648ed4e5482d46359bad30b08c3729f69b8edc419e48adc3fa107f6",
   "contracts/harness/security/deny-domains.json": "4a8f9a6f0792127662a20689482406eceb5a73880da0f0f0b18a64a28653e6cb",
   "contracts/harness/security/deny-domains.schema.json": "b911652dd477a65ed8f6b925d2ea284874b6b89483a550ed101e9c401aed7749",
-  "contracts/harness/task-control/attestation.schema.json": "2a708cb2a40895d965f4a8407d3824af3386cbf496f5946e51a8390d09b3784c",
-  "contracts/harness/task-control/evidence.schema.json": "2c34f666caa8dfc1e3c88de8ca2438c5623798ded58eb87917e146ba6695003b",
   "contracts/harness/task-control/gate-registry.json": "dac0b5df21dd72187be3aa5b99ded3ffde7928b787138353919b6e926f39159b",
-  "contracts/harness/task-control/handoff.schema.json": "d47edd6c1eb6fc9045cda68f72a9f88617b53c609eb590a8734115d7e0e7246f",
-  "contracts/harness/task-control/state.schema.json": "c2a64cab55f381e15a5a950ba66b8de058436c2206aced500ca2fe611e6313ec",
-  "contracts/harness/task-control/task.schema.json": "1c5a0f5b683e7131673eb1d66484eb64a6302d1e6682ed15306a5d717363ff90",
-  "contracts/harness/task-control/transitions.json": "5d27bb16571de624ca55d94f7cb88928970cedaadd04b648bcbe9ccd5cec7afa",
   "contracts/harness/topology/relationship.schema.json": "27377a8867084ed7121baf3f59a413432824fa58702084a6fd05d41900f9fc38",
   "contracts/normalization/format-conventions.schema.json": "1af8935bf997faf80939db7228366c311c17f14729a0b9eee914799854d85ffc",
   "contracts/sample/greeting.schema.json": "35f71ca2dbeb6b84e093fb4a8dbacde2628974d706aac416d98e595e6c3b55df"

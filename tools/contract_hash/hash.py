@@ -28,7 +28,6 @@ MANIFEST_PATH = CONTRACTS_DIR / ".hashes" / "manifest.json"
 # Glob confined to the contracts/ subtree — no path traversal outside the repo.
 SCHEMA_GLOB = "**/*.schema.json"
 DATA_CONTRACT_PATHS = (
-    Path("harness/task-control/transitions.json"),
     Path("harness/task-control/gate-registry.json"),
     Path("harness/security/deny-domains.json"),
 )

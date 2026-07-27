@@ -28,18 +28,13 @@ from tools.docs_sync import generate as docs_sync
 # gate it backed (CER-06).
 EXPECTED_PAGES = frozenset(
     {
-        "attestation",
         "deny-domains",
-        "evidence",
         "format-conventions",
         "greeting",
-        "handoff",
         "inventory",
         "manifest",
         "plan",
         "relationship",
-        "state",
-        "task",
     }
 )
 

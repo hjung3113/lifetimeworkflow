@@ -90,13 +90,23 @@ def test_build_manifest_ignores_non_schema_files(tmp_path: Path) -> None:
     assert list(build_manifest(contracts)) == ["contracts/a.schema.json"]
 
 
-def test_build_manifest_includes_ratified_data_contracts_and_detects_registry_mutation(tmp_path: Path) -> None:
+def test_build_manifest_includes_ratified_data_contracts_and_detects_registry_mutation(
+    tmp_path: Path,
+) -> None:
     contracts = tmp_path / "contracts"
-    directory = contracts / "harness" / "task-control"; directory.mkdir(parents=True)
-    (directory / "transitions.json").write_text('{"version": 1, "phases": [], "lanes": {}}\n', encoding="utf-8")
-    registry = directory / "gate-registry.json"; registry.write_text('{"version": "v1", "gates": {}}\n', encoding="utf-8")
+    directory = contracts / "harness" / "task-control"
+    directory.mkdir(parents=True)
+    (directory / "transitions.json").write_text(
+        '{"version": 1, "phases": [], "lanes": {}}\n', encoding="utf-8"
+    )
+    registry = directory / "gate-registry.json"
+    registry.write_text('{"version": "v1", "gates": {}}\n', encoding="utf-8")
     before = build_manifest(contracts)
-    assert set(before) == {"contracts/harness/task-control/transitions.json", "contracts/harness/task-control/gate-registry.json"}
+    assert set(before) == {"contracts/harness/task-control/gate-registry.json"}
+    # Negative control: the fixture above still WRITES the transitions data contract, so its
+    # absence here proves the entry was dropped from DATA_CONTRACT_PATHS rather than merely that
+    # the fixture stopped creating the file.
+    assert "contracts/harness/task-control/transitions.json" not in before
     registry.write_text('{"version": "v1", "gates": {"trivial": {}}}\n', encoding="utf-8")
     assert build_manifest(contracts) != before
 
