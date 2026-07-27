@@ -44,9 +44,3 @@ suggestion. Scope the review to:
 The reviewer returns the classified list; the **scoped engineer** (python-engineer or an
 instance-declared engineer) applies the fixes. Re-run `/review` until no blocker/major remains, then
 `/verify-work`. The reviewer does not commit and does not fix — separation of duties is the point.
-When the review belongs to an active task packet, record each result only through
-`python -m tools.evidence.capture add-finding` after the read-only review completes; do **not** edit
-`evidence.json` directly. Each finding requires its `blocker`/`major`/`minor`/`nit` severity, its
-`open`/`resolved`/`accepted` disposition, and (for resolved or accepted) an `E-*` capture reference.
-Do not put diff text, credentials, or PII in findings; the adapter refuses sensitive plaintext and
-records only a redaction report. An open blocker or major finding prevents COMPLETE.

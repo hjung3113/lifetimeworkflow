@@ -12,21 +12,13 @@ but deferred (no runtime yet); this command is the runtime-independent way to ge
 orientation. It regenerates the **derived** plane (gitignored, safe to rebuild) and surfaces the
 capped, drift-aware, pointer-only payload — never full contract bodies (lazy-load, P13).
 
-## 1. Active HANDOFF first (fresh-session resume barrier)
-
-If `.memory/state/active-task.json` exists, it is a pointer only. Validate its HANDOFF and run the
-existing Phase 20 gate before any EXECUTE, REVIEW, or VERIFY action. A stale pointer, state
-revision, ref, or artifact must fail and be regenerated via `/handoff`; do not auto-correct it.
-
-!`test ! -f .memory/state/active-task.json || uv run python -m tools.handoff resume --state-dir .memory/state --repo-root .`
-
-## 2. Regenerate the derived memory plane (never hand-edited)
+## 1. Regenerate the derived memory plane (never hand-edited)
 
 Delete-and-rebuild reproduces these byte-identically — they are derived, so regenerating is free.
 
 !`uv run python -m tools.memory_regen.repo_map && uv run python -m tools.memory_regen.contracts_index && uv run python -m tools.memory_regen.pointer_index`
 
-## 3. Print the orientation payload (the injector's own output)
+## 2. Print the orientation payload (the injector's own output)
 
 The same `assemble()` payload both runtimes honor: working-agreements directive → data-provenance
 banner → live contract-drift → contracts-index summary → repo map top-N → progress-log pointer.
@@ -35,18 +27,16 @@ Capped (~1k tokens), pointer-only.
 
 !`uv run python -m tools.memory_regen.inject`
 
-## 4. Read-order (golden path)
+## 3. Read-order (golden path)
 
 After the payload above, read in this order — shallow first, deep only on demand:
 
 1. **`AGENTS.md`** (root) — the nearest-wins rules + the golden-path command table. Read a
    per-package `AGENTS.md` only when you touch that package (lazy-load).
-2. **Active HANDOFF**, when surfaced above — validate it, then run `/phase-gate`; it is the
-   highest-priority task pointer and does not authorize execution by itself.
-3. **`.memory/state/activeContext.md`** — the session progress log; on a data conflict,
+2. **`.memory/state/activeContext.md`** — the session progress log; on a data conflict,
    contracts/ADR win, and git holds the full completed history.
-4. A specific **`contracts/`** schema — only when the task needs it (never preload all bodies).
-5. The relevant **skill** for the work shape: `polyglot-boundary` (§4.3–4.6), `golden-debug` (red
+3. A specific **`contracts/`** schema — only when the task needs it (never preload all bodies).
+4. The relevant **skill** for the work shape: `polyglot-boundary` (§4.3–4.6), `golden-debug` (red
    golden), `data-contracts` (contracts/), `gate-model` (what's gated), `two-plane-memory` (planes),
    `context-budget` (delegate-vs-inline), `fan-out-synthesize` (large-surface coverage).
 

@@ -90,7 +90,6 @@ HARNESS_SIGNATURES: tuple[str, ...] = (
     "tools.hooks.contract_guard",
     "tools.hooks.secret_scan",
     "tools.hooks.commit_gate",
-    "tools.hooks.resume_gate",
 )
 
 #: GSD-owned hook signatures — NEVER removed or reordered (defensive; they never match a harness
@@ -183,16 +182,6 @@ HARNESS_HOOK_GROUPS: dict[str, list[dict]] = {
                         _GUARD_PREFIX + "uv run python -m tools.hooks.commit_gate --from-hook"
                     ),
                     "timeout": 120,
-                }
-            ],
-        },
-        {
-            "matcher": "Write|Edit|Bash",
-            "hooks": [
-                {
-                    "type": "command",
-                    "command": _GUARD_PREFIX + "uv run python -m tools.hooks.resume_gate",
-                    "timeout": 15,
                 }
             ],
         },

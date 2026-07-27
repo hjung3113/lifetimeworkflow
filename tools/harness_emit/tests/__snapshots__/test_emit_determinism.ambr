@@ -4055,8 +4055,7 @@
       "websearch": "ask"
     },
     "plugin": [
-      "harness/plugins/session-inject.ts",
-      "harness/plugins/resume-gate.ts"
+      "harness/plugins/session-inject.ts"
     ],
     "small_model": "provider/explorer-tier"
   }

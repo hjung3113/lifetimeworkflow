@@ -109,7 +109,7 @@ def test_commit_gate_runs_from_hook() -> None:
 
 
 def test_expected_slot_counts() -> None:
-    """8 PreToolUse (4 GSD + 4 harness) and 4 PostToolUse (3 GSD + 1 harness)."""
+    """7 PreToolUse (4 GSD + 3 harness) and 4 PostToolUse (3 GSD + 1 harness)."""
     hooks = _load()["hooks"]
-    assert len(hooks["PreToolUse"]) == 8, "expected 8 PreToolUse slots (4 GSD + 4 harness gates)"
+    assert len(hooks["PreToolUse"]) == 7, "expected 7 PreToolUse slots (4 GSD + 3 harness gates)"
     assert len(hooks["PostToolUse"]) == 4, "expected 4 PostToolUse slots (3 GSD + 1 new gate)"

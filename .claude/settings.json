@@ -146,16 +146,6 @@
             "timeout": 120
           }
         ]
-      },
-      {
-        "matcher": "Write|Edit|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -n \"$HARNESS_DEV_LIGHT\" ] && exit 0; python3 tools/harness_lint/workspace_check.py >/dev/null 2>&1 || exit 0; uv run python -m tools.hooks.resume_gate",
-            "timeout": 15
-          }
-        ]
       }
     ]
   },

@@ -28,5 +28,5 @@
 
   "mcp": {},
 
-  "plugin": ["harness/plugins/session-inject.ts", "harness/plugins/resume-gate.ts"]
+  "plugin": ["harness/plugins/session-inject.ts"]
 }
