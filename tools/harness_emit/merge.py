@@ -106,9 +106,18 @@ GSD_SIGNATURES: tuple[str, ...] = (
 #: group whose command matches no *current* signature falls through as ``sig is None`` and is
 #: mistaken for a GSD/human group (kept verbatim forever) — silently defeating a deletion phase's
 #: whole point. Listing a signature here makes the retirement an explicit, re-emit-driven removal
-#: instead of requiring a hand-edit of the emitted ``.claude/settings.json`` (D-12). Empty until the
-#: next PreToolUse-hook deletion phase needs it.
-RETIRED_SIGNATURES: tuple[str, ...] = ()
+#: instead of requiring a hand-edit of the emitted ``.claude/settings.json`` (D-12).
+#:
+#: Entries are PERMANENT tombstones, never cleared once added. Clearing an entry after the emitting
+#: repo's own re-emit has landed looks harmless — that repo's settings.json no longer carries the
+#: group, so the merge is idempotent and ``emit-drift`` stays green — but it silently strands every
+#: OTHER checkout. Any tree still holding the pre-retirement ``settings.json`` (an adopted target, a
+#: stale clone, a long-lived branch) re-emits into a group that matches no current signature, keeps
+#: it verbatim as GSD/human-owned, and then runs a module that no longer exists: the guard exits
+#: non-zero, PreToolUse denies every Write/Edit/Bash, and the repair is locked behind the outage it
+#: caused. Reversal of Phase 43's D-06 (and of the same mistake in Phase 41), which specified
+#: emptying this tuple after the re-emit.
+RETIRED_SIGNATURES: tuple[str, ...] = ("tools.hooks.resume_gate",)
 
 #: The canonical harness hook groups the emitter wires, per event. Key order inside each mapping is
 #: AUTHORED (matcher → hooks; type → command → timeout) and MUST match the live committed bytes so

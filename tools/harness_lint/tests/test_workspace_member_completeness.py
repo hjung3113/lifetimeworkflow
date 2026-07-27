@@ -10,8 +10,8 @@ one, EVERY ``uv`` invocation in the repo fails at workspace resolution — not j
     error: Workspace member `.../tools/<name>` is missing a `pyproject.toml` (matches: `tools/*`)
 
 That alone would be ordinary. What makes it worth a gate is the second-order effect. This repo's
-PreToolUse guards (``contract_guard``, ``secret_scan``, ``commit_gate``,
-``resume_gate``) are all invoked as ``uv run python -m tools.hooks.<name>``. When workspace
+PreToolUse guards (``contract_guard``, ``secret_scan``, ``commit_gate``) are all
+invoked as ``uv run python -m tools.hooks.<name>``. When workspace
 resolution fails, every one of those hooks fails, and a failing PreToolUse hook **denies its tool**.
 The guards failing closed is CORRECT — a guard that cannot run must not wave writes through — but
 the consequence is that file-write AND shell tools all stop working at once, including the ones that

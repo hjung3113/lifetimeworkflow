@@ -114,6 +114,44 @@ def test_merge_is_idempotent() -> None:
     assert _serialize(once) == _serialize(twice)
 
 
+def test_retired_signature_group_is_dropped_from_a_stale_checkout() -> None:
+    """A retired harness hook is removed from a tree that still carries its group.
+
+    The emitting repo cannot observe this: once its own re-emit has landed, its settings.json no
+    longer holds the group, so the merge is idempotent and ``emit-drift`` stays green whether or not
+    ``RETIRED_SIGNATURES`` still lists the signature. Every OTHER checkout can — an adopted target,
+    a stale clone, a long-lived branch. There the group matches no current signature, falls through
+    as GSD/human-owned, and is kept verbatim pointing at a deleted module; the guard then exits
+    non-zero and PreToolUse denies every Write/Edit/Bash.
+
+    Phase 43 shipped with the tuple emptied and this branch uncovered, so a full green suite proved
+    nothing about it. The assertion reconstructs the stale group from the retired signature itself,
+    so it keeps biting for whatever signature is retired next.
+    """
+    assert merge.RETIRED_SIGNATURES, "no retired signature to exercise"
+    signature = merge.RETIRED_SIGNATURES[0]
+
+    parsed = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+    stale = copy.deepcopy(parsed)
+    stale["hooks"]["PreToolUse"].append(
+        {
+            "matcher": "Write|Edit|Bash",
+            "hooks": [{"type": "command", "command": f"uv run python -m {signature}"}],
+        }
+    )
+    before = len(stale["hooks"]["PreToolUse"])
+
+    merged = merge.merge_settings(stale)
+
+    assert signature not in json.dumps(merged), (
+        f"{signature} is listed in RETIRED_SIGNATURES but survived a re-emit — a stale checkout "
+        "would keep running a deleted module and deny every Write/Edit/Bash"
+    )
+    assert len(merged["hooks"]["PreToolUse"]) == before - 1
+    # Dropping the orphan must land back on the live bytes exactly.
+    assert _serialize(merged) == SETTINGS_PATH.read_text(encoding="utf-8")
+
+
 def test_gsd_group_never_removed_even_when_sharing_event() -> None:
     """A GSD group is never removed even though harness groups share PostToolUse/PreToolUse."""
     parsed = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
