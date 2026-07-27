@@ -208,8 +208,7 @@ def test_secret_patterns_1_branch_attribution() -> None:
     """SC-3/D-04: pin that the mixed-case-digit-less match comes from registry index 1, not one
     of the other 7 dedicated-shape branches — a structural attribution check, not a substitute
     for the live-consumer behavior assertions above."""
-    registry = json.loads(scan._GATE_REGISTRY_PATH.read_text(encoding="utf-8"))
-    branch_only = re.compile(registry["secret_patterns"][1], re.IGNORECASE)
+    branch_only = re.compile(scan.SECRET_CONTENT_PATTERNS[1], re.IGNORECASE)
     sec = "se" + "cret"
     fixture_value = sec + ": " + "".join(["ABCDEFGHIJKLMNO", "12345"])
     assert scan._secret_pattern().search(fixture_value)
