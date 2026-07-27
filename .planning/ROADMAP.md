@@ -466,6 +466,66 @@ CI + the merge are the authority (ADR-0012), and adoption's real review is the P
 5. `uv run pytest -q` is green; `emit-drift`, `stale-derived`, `contract-drift` and the ruff ratchet are clean.
 6. Net surface change adds no command, agent, skill, contract, hook, or dependency — the only additions are data rows and locally-owned constants.
 
+#### Phase 43: Lifecycle Plane Removal
+
+**Goal:** Delete the task-control lifecycle plane whole — 8 `tools/` packages, its contracts, its four
+commands, its hook, its five discipline skills, its three `harness/*.toml` declarations, its
+`.workflow/tasks/` state directory, and its CI job. **No residue package**: a Python state manager must
+be unreachable in the product by construction, not merely unused.
+
+This is the milestone's largest single deletion (**7021 LOC** of packages alone, verified 2026-07-28).
+Phase 42 already severed adoption — the last non-lifecycle consumer — so the plane now stands alone.
+
+Authority: ADR-0012 names this surface; the lifecycle's in-session gates are exactly the ceremony v2.5
+retires, and CI + the merge are the authority that replaces them.
+
+**Requirements:** CER-07
+
+**Scope** (every path verified present, 2026-07-28):
+- **8 packages, 7021 LOC total** — `tools/task_control` (1677), `tools/handoff` (1238),
+  `tools/discipline` (990), `tools/risk_router` (877), `tools/evidence` (783), `tools/task_packet`
+  (605), `tools/lifecycle_eval` (472), `tools/capability` (379).
+- **6 of the 7 task-control contracts**: `attestation`, `evidence`, `handoff`, `state`, `task`,
+  `transitions`. ⚠ **`gate-registry.json` is NOT deleted here** — CER-08 names it explicitly together
+  with its `DATA_CONTRACT_PATHS` entry (`tools/contract_hash/hash.py:32`), so Phase 44 owns it. CER-07's
+  prose says "the 7 task-control contracts"; the live directory holds 7 files and one of them is
+  claimed by the next phase. Recorded here so the two phases do not both try to delete it.
+  Rebaseline `contracts/.hashes/manifest.json` with the deletions.
+- **4 commands**: `harness/commands/{intake,phase-gate,handoff,discipline}.md` + their emitted copies
+  (via the emitter, never by hand) + their `tools/harness_emit/emit-manifest.json` rows.
+- **The hook**: `tools/hooks/resume_gate.py` and `harness/plugins/resume-gate.ts`, plus the emitted
+  `.claude/settings.json` hook group — which is a hand-maintained literal in
+  `tools/harness_emit/merge.py` (`HARNESS_SIGNATURES` + a hook-group dict), NOT a projected file.
+  Phase 41 built the `RETIRED_SIGNATURES` drop mechanism there for exactly this case and left it in
+  place with an empty tuple — use it, then empty it again once the re-emit has landed.
+- **5 discipline skills**: `harness/skills/{clarify,diagnose,domain-modeling,test-driven-change,adversarial-review-panel}/`
+  and their `tools/harness_lint/caps.py` declarations (`EXPECTED_SKILLS` hard-fails the emitter before
+  it writes a byte — Phase 41 hit this).
+- **3 declarations**: `harness/{capabilities,disciplines,risk-policy}.toml`, and
+  `tools/harness_lint/tests/test_capability_wiring.py` which dies with `capabilities.toml`.
+- **State + CI**: `.workflow/tasks/`, CI job `lifecycle-eval` (`ci.yml:221-231`) and its entry in the
+  fan-in `needs` (`ci.yml:345`) — resolved as YAML, not grep.
+- **`tools/memory_regen/inject.py`**: strip the active-task block, KEEP the activeContext pointer.
+  These are adjacent in the same function — read both before cutting.
+
+**Non-goals:** **no residue package** — do not leave a shim, a stub, a "minimal state manager", or a
+deprecation path. No replacement gate or CI job. Do not delete `gate-registry.json`, `secret_scan`,
+`deny-domains.*`, `tools/memory_ui`, or the golden stack (Phase 44). Per the binding constraint the
+surface may not grow.
+
+**Accepted consequence:** in-session task lifecycle, risk routing, evidence bundles and handoffs stop
+existing as harness machinery. Recorded and intended — the equivalent function is the PR.
+
+**Success Criteria**:
+1. None of the 8 package directories exists, and `grep -rnE "task_control|task_packet|risk_router|tools\.evidence|tools\.handoff|tools\.discipline|tools\.capability|lifecycle_eval" tools/ harness/ contracts/ .github/ .claude/ .opencode/` returns nothing outside `.planning/`.
+2. No module imports a deleted package: `uv run pytest --collect-only -q` exits 0 with zero collection errors.
+3. `contracts/harness/task-control/` contains only `gate-registry.json`; the hash manifest is rebaselined and `uv run python -m tools.contract_drift.drift` exits 0.
+4. `test_capability_wiring.py` is gone with `capabilities.toml`; `caps.py` declares no deleted skill or command.
+5. CI has no `lifecycle-eval` job and the YAML-resolved fan-in `needs` has no dangling entry (10 entries after removal; no other entry added or removed).
+6. `tools/memory_regen/inject.py` no longer emits an active-task block but STILL emits the activeContext pointer — asserted by a test, not by reading.
+7. `uv run pytest -q` green; `emit-drift`, `stale-derived`, `contract-drift`, ruff ratchet clean; `uv.lock` refreshed for the removed workspace members.
+8. Net surface change is deletion-only: **−8 packages, −6 contracts, −4 commands, −1 hook, −5 skills, −3 declarations, −1 CI job, +0** of anything.
+
 ### 📋 v2.6 Minimal Monorepo Core (Phases 47–50) — SCOPED, NOT STARTED
 
 Smallest goal-complete subset = all of v2.5 **+ 47 + 49**. ① is already covered by the lint adapters +
