@@ -2,10 +2,11 @@
 name: brownfield-adoption
 description: >-
   Use when you need to bring an existing (brownfield) repository under this harness's contract-first
-  conventions — teaches the discover, draft, human review, apply lifecycle for an
-  UNKNOWN target tree whose contracts are not yet known, backed by tools.adoption_scan and
-  tools.adoption_apply. Consult when planning how to onboard a repo, not when the contracts already
-  exist and only need authoring or checking.
+  conventions — teaches the discover, draft, apply lifecycle for an UNKNOWN target tree whose
+  contracts are not yet known, backed by tools.adoption_scan and tools.adoption_apply. Review of an
+  applied batch happens at the PR (ADR-0012), not as a gated stage inside the pipeline. Consult when
+  planning how to onboard a repo, not when the contracts already exist and only need authoring or
+  checking.
 ---
 
 # brownfield-adoption
@@ -13,16 +14,17 @@ description: >-
 **Why this is a new skill, not an extension of an existing one:** none of this harness's other
 skills (`python-conventions`, `golden-testing`, `data-contracts`, `skill-creator`, `golden-debug`,
 `polyglot-boundary`, `gate-model`, `two-plane-memory`, `pipeline-map`, `fan-out-synthesize`,
-`context-budget`) own the discover→draft→review→apply adoption lifecycle. The closest
+`context-budget`) own the discover→draft→apply adoption lifecycle. The closest
 candidates — `data-contracts` and `gate-model` — are about authoring or checking contracts already
 known to exist, not about discovering an UNKNOWN brownfield tree and proposing what its contracts
 might be. That is a genuinely disjoint routing trigger, so a new skill directory is justified
 (skill-creator Step 0).
 
-This skill teaches the four-stage adoption runbook: a target repository is scanned read-only, a
-task-local batch drafts what would change, a human reviews and decides, and only then is the batch
-safely applied to the target — review of the applied batch happens at the PR, not through a
-separate promotion step.
+This skill teaches the three-stage adoption runbook: a target repository is scanned read-only, a
+task-local batch drafts what would change, and the batch is then safely applied to the target — no
+gated review stage sits between draft and apply, and no `decisions` (or similar) artifact is
+produced or consumed anywhere in the pipeline. Review happens where every other change in this
+harness is reviewed: at the PR that carries the applied batch (ADR-0012).
 
 ## Stage 1: discover
 
@@ -42,13 +44,7 @@ resumes the SAME batch directory without mutating it. Every write during draftin
 the batch root — `tools.adoption_apply.apply.refuse_if_outside_root` refuses both a direct
 out-of-root write and a `..`-traversal escape attempt.
 
-## Stage 3: human review
-
-The drafted `manifest.json` lists every destination's proposed disposition. A human reviews it and
-records a `decisions` list — this is a judgement call the workflow requires a human for; nothing in
-`tools.adoption_apply` may substitute for it.
-
-## Stage 4: apply
+## Stage 3: apply
 
 `tools.adoption_apply.apply.apply_manifest` applies the batch's dispositions against a target
 root: atomic and collision-safe (`create` never silently overwrites), idempotent (a second apply
