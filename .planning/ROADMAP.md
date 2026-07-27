@@ -419,6 +419,53 @@ reporting it. Accepted — CI + the merge are the authority (ADR-0012).
 6. `contract-drift` is clean against a rebaselined `contracts/.hashes/manifest.json` that no longer carries a `contracts/harness/docs/` entry, and the ruff ratchet is clean.
 7. Net surface change is deletion-only: **−1 CI job, −1 tool package, −1 hook, −1 command, −1 skill, −1 contract, −2 data files, +0** commands/agents/skills/contracts/hooks. Removed LOC is reported from `git diff --stat`, not estimated.
 
+#### Phase 42: Adoption Decoupling + Install-Set Repair
+
+**Goal:** Make adoption a standalone product capability — `draft → apply → PR review`, with no
+task-control import and no `GOLDEN_APPROVE_HUMAN` — and make the installed product **non-inert** by
+shipping the Python its own emitted artifacts invoke. Today a target monorepo receives commands that
+shell `uv run python -m tools.X`, receives `.github/workflows/**` running the same modules, receives
+`pyproject.toml` stubs, and receives **none of the Python**.
+
+Authority: ADR-0012's DEV/PRODUCT boundary and its operative rule — *no product capability may be
+declined because GSD covers it; only a named shipped artifact may cover it.* PROD-01 is the first
+place that rule bites.
+
+**Requirements:** CER-06, PROD-01
+
+**Scope** (verified against the tree, 2026-07-28 — the requirement prose predates three changes):
+- **The task-control coupling is `approval.py:37`**, not `apply.py`: `from tools.task_control.manager
+  import show`, plus `HUMAN_TOKEN_ENV = "GOLDEN_APPROVE_HUMAN"` (`approval.py:45`). Drop the import
+  and the task-revision binding it serves.
+- **The ~60-LOC atomic create/replace is ALREADY inlined** in `tools/adoption_apply/apply.py`
+  (`:207`, `:241`) — only the docstrings still say "Mirrors `tools.task_control.manager._atomic_create`".
+  This phase therefore only has to update that prose, not re-inline the sequence. Confirm before planning.
+- **Inline the secret patterns** `tools/adoption_scan/scan.py` reads from
+  `contracts/harness/task-control/gate-registry.json` (`scan.py:48`, live consumer `:110-112`).
+  There are **8** patterns, not 7. `scan.py:52-54` already owns `SECRET_PATH_GLOBS` for exactly this
+  reason — follow that precedent. The contract file itself is Phase 44's deletion (CER-08); this phase
+  removes adoption's dependency on it.
+- **Add the surviving `tools/**` to `_CATEGORY_GLOBS`** (`tools/adoption_scan/destinations.py:142-181`).
+  A data row, not a mechanism. Scope it to what survives v2.5 — do not ship packages phases 43/44 delete.
+- Adoption's own tests move with it: anything asserting the task-revision binding or the human-token
+  gate on the adoption path.
+
+**Non-goals:** no new gate, tool, contract, or dependency — the milestone's binding constraint holds.
+Do NOT delete `gate-registry.json`, `tools/task_control`, or `secret_scan` here (Phases 43/44 own
+those); this phase only severs adoption's dependence on them. No change to the adoption contracts'
+shapes, and no widening of what `/adopt` may write without a human.
+
+**Accepted consequence:** the adoption apply path loses its human-token gate. That is the point —
+CI + the merge are the authority (ADR-0012), and adoption's real review is the PR.
+
+**Success Criteria**:
+1. `grep -rn "task_control" tools/adoption_apply/ tools/adoption_scan/` returns nothing — no import, no docstring reference, no test.
+2. `grep -rn "GOLDEN_APPROVE_HUMAN" tools/adoption_apply/ tools/adoption_scan/` returns nothing; a full draft → apply run completes with the variable unset.
+3. `tools/adoption_scan/scan.py` reads no file under `contracts/harness/task-control/`; its 8 secret patterns are owned locally alongside `SECRET_PATH_GLOBS`, and the secret-redaction tests still pass unchanged.
+4. `_CATEGORY_GLOBS` contains a `tools/**` entry, and a **fixture install** produces a target tree in which every module an emitted command invokes (`uv run python -m tools.X`) actually exists — asserted by a test, not by inspection.
+5. `uv run pytest -q` is green; `emit-drift`, `stale-derived`, `contract-drift` and the ruff ratchet are clean.
+6. Net surface change adds no command, agent, skill, contract, hook, or dependency — the only additions are data rows and locally-owned constants.
+
 ### 📋 v2.6 Minimal Monorepo Core (Phases 47–50) — SCOPED, NOT STARTED
 
 Smallest goal-complete subset = all of v2.5 **+ 47 + 49**. ① is already covered by the lint adapters +
