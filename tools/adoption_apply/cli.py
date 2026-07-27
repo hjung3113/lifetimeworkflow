@@ -211,7 +211,6 @@ def main(argv: list[str] | None = None) -> int:
     apply_parser.add_argument("--task-dir", type=Path, required=True)
     apply_parser.add_argument("--batch-id", required=True)
     apply_parser.add_argument("--target", type=Path, required=True)
-    apply_parser.add_argument("--repo-root", type=Path, required=True)
     apply_parser.set_defaults(func=_cmd_apply)
 
     args = parser.parse_args(argv)
