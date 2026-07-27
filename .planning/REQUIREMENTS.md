@@ -56,7 +56,7 @@ maintainability.
 
 ## Theme B — Plane Removal + Install-Set Repair (Phases 42–44)
 
-- [ ] **CER-06** *(NEW, Phase 42)*: `adoption_apply` is **decoupled from task-control** — no
+- [x] **CER-06** *(NEW, Phase 42)*: `adoption_apply` is **decoupled from task-control** — no
   `tools.task_control.manager.show`, no task-revision binding, no `GOLDEN_APPROVE_HUMAN` — by inlining
   the ~60-LOC atomic create/replace sequence, and the 7 redaction regexes it needs are inlined from
   `gate-registry.json` into `adoption_scan` (which already owns its own `SECRET_PATH_GLOBS` for the

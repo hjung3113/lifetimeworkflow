@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: De-ceremony
 status: executing
-stopped_at: Phase 42 Plan 01 complete
-last_updated: "2026-07-28T00:00:00.000Z"
-last_activity: 2026-07-28
+stopped_at: Phase 42 Plan 03 complete (adoption_scan secret patterns inlined)
+last_updated: "2026-07-27T16:13:06.690Z"
+last_activity: 2026-07-27
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 13
-  completed_plans: 9
-  percent: 69
+  completed_plans: 10
+  percent: 77
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-07-22)
 ## Current Position
 
 Phase: 42 (adoption-decoupling-install-set-repair) — EXECUTING
-Plan: 1 of 5
-Status: Plan 01 complete (ADOPT-06 approval gate deleted) — Plans 02-05 remain
-Last activity: 2026-07-28
+Plan: 3 of 5 complete (Plans 01 and 03 done; Plans 02, 04, 05 remain)
+Status: Ready to execute
+Last activity: 2026-07-27
 
 ## Performance Metrics
 
@@ -151,6 +151,7 @@ Last activity: 2026-07-28
 | Phase 41 P04 | ~20min | 2 tasks | 5 files |
 | Phase 41 P05 | 55min | 3 tasks | 20 files |
 | Phase 42 P01 | ~20min | 2 tasks | 4 files |
+| Phase 42 P03 | 15min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -275,6 +276,7 @@ Recent decisions affecting current work:
 - [Phase 41-04]: Contract + CI fan-in job deletion: contracts/harness/docs/doc-dependencies.schema.json deleted with same-commit manifest rebaseline (D-02); CI docs-guard job + gate.needs entry deleted, verified by a ruamel.yaml-resolved parse (D-14, 11 entries, docs-guard absent); contracts-index derived plane regenerated as an in-scope consequence (17 -> 16 contracts), test_docs_sync_determinism.py left for Plan 05 per its explicit deferral.
 - [Phase 41]: RETIRED_SIGNATURES (merge.py) emptied — empirically verified transitional (re-emit + git status clean); mechanism kept for Phase 44's next PreToolUse-hook deletion
 - [Phase 41]: Residue sweep returns 34 justified exceptions, not zero: plan-mandated historical narrative, append-only ADR text, Phase-44-deferred deny-domains subsystem, and GSD-owned namespace collisions — none are leftovers of the enforced docs-review plane
+- [Phase 42]: [42-03] D-04/D-05: adoption_scan's 8 secret_patterns inlined byte-identical into scan.py's SECRET_CONTENT_PATTERNS — gate-registry.json left untouched (D-06) for Phase 44 to delete
 
 ### Pending Todos
 
@@ -340,9 +342,9 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-28T00:00:00.000Z
+Last session: 2026-07-27T16:12:25.899Z
 Stopped at: Phase 42 Plan 01 complete (ADOPT-06 approval gate deleted)
-Resume file: .planning/phases/42-adoption-decoupling-install-set-repair/42-02-PLAN.md
+Resume file: None
 
 ### Resuming from a fresh clone
 
