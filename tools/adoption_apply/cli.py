@@ -1,11 +1,11 @@
-"""cli.py — the argument-routed ``draft``/``apply``/``promote`` dispatcher
+"""cli.py — the argument-routed ``draft``/``apply`` dispatcher
 ``python -m tools.adoption_apply`` needs (``__main__.py``'s ``from tools.adoption_apply.cli import
 main``, Plan 27-01's output, has had nothing to import from until this module).
 
 Composition only — this module never re-implements ``tools.adoption_apply``'s own
-``batch``/``apply``/``approval`` logic, nor ``tools.adoption_scan``'s scan/plan/manifest logic.
+``batch``/``apply`` logic, nor ``tools.adoption_scan``'s scan/plan/manifest logic.
 Discovery (``python -m tools.adoption_scan``) stays out of scope here; ``cli.py`` composes only
-the ``adoption_apply``-owned half of the lifecycle (``draft``/``apply``/``promote``), per
+the ``adoption_apply``-owned half of the lifecycle (``draft``/``apply``), per
 ``harness/commands/adopt.md``'s own sub-verb split.
 
 ``draft`` mirrors ``tools.adoption_scan.cli.main``'s EXACT scan -> plan -> manifest wiring order
@@ -21,9 +21,6 @@ destination are the HARNESS'S OWN checkout content at that destination (CR-01's 
 is what the harness template would install", already the source of truth
 ``destinations.harness_proposed_hashes()`` hashes against) — never content read back from the
 scanned target itself.
-
-``promote`` mirrors ``tools.golden_runner.approve.py::main``'s EXACT refuse-by-default exit-code
-idiom: catch the human-ratification refusal, print, return exit code **3** (D-05).
 """
 
 from __future__ import annotations
@@ -32,19 +29,11 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any
 
 from jsonschema import Draft202012Validator
 
 from tools.adoption_apply import apply as apply_module
 from tools.adoption_apply.apply import apply_manifest, refuse_if_outside_root
-from tools.adoption_apply.approval import (
-    AdoptionApprovalRefused,
-    check_valid,
-)
-from tools.adoption_apply.approval import (
-    promote as approval_promote,
-)
 from tools.adoption_apply.batch import create_or_resume_batch
 from tools.adoption_scan import destinations, scan
 from tools.adoption_scan import plan as plan_mod
@@ -143,19 +132,6 @@ def _harness_block_body(destination: str) -> str:
 
 
 def _cmd_apply(args: argparse.Namespace) -> int:
-    # CR-03 (ADOPT-06): a batch must be promoted, and the promotion must still exactly match the
-    # batch's current (draft_hash, task_revision, git_ref) — checked FIRST, before any manifest
-    # read or write. repo_root here is the harness's OWN checkout root (D-02), never the
-    # brownfield --target being adopted into: git_ref/task_revision are harness-side concepts and
-    # a brownfield target may not even be a git repo.
-    if not check_valid(args.task_dir, args.batch_id, args.repo_root):
-        print(
-            f"tools.adoption_apply apply: REFUSED: batch '{args.batch_id}' has no valid, "
-            "current approval — run `promote` first (ADOPT-06 gates apply).",
-            file=sys.stderr,
-        )
-        return 4
-
     batch_root = _batch_root(args.task_dir, args.batch_id)
     manifest_path = batch_root / "manifest.json"
     if not manifest_path.is_file():
@@ -219,30 +195,8 @@ def _cmd_apply(args: argparse.Namespace) -> int:
     return 0
 
 
-def _cmd_promote(args: argparse.Namespace) -> int:
-    decisions: list[dict[str, Any]] | None = None
-    if args.decisions is not None:
-        decisions = json.loads(Path(args.decisions).read_bytes())
-
-    try:
-        document = approval_promote(
-            args.task_dir,
-            args.batch_id,
-            args.repo_root,
-            approve=args.approve,
-            decisions=decisions,
-            confirmation=args.confirm,
-        )
-    except AdoptionApprovalRefused as exc:
-        print(str(exc), file=sys.stderr)
-        return 3
-
-    print(f"PROMOTED: {document['batch_id']}")
-    return 0
-
-
 def main(argv: list[str] | None = None) -> int:
-    """CLI: ``python -m tools.adoption_apply {draft,apply,promote}``."""
+    """CLI: ``python -m tools.adoption_apply {draft,apply}``."""
     argv = sys.argv[1:] if argv is None else argv
     parser = argparse.ArgumentParser(prog="tools.adoption_apply")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -257,20 +211,8 @@ def main(argv: list[str] | None = None) -> int:
     apply_parser.add_argument("--task-dir", type=Path, required=True)
     apply_parser.add_argument("--batch-id", required=True)
     apply_parser.add_argument("--target", type=Path, required=True)
-    # D-02: mirrors promote_parser's own --repo-root — the harness's OWN checkout root, never the
-    # brownfield --target being adopted into (check_valid's git_ref/task_revision are harness-side
-    # concepts; a brownfield target may not even be a git repo).
     apply_parser.add_argument("--repo-root", type=Path, required=True)
     apply_parser.set_defaults(func=_cmd_apply)
-
-    promote_parser = subparsers.add_parser("promote", help="ratify a batch's reviewed decisions")
-    promote_parser.add_argument("--task-dir", type=Path, required=True)
-    promote_parser.add_argument("--batch-id", required=True)
-    promote_parser.add_argument("--repo-root", type=Path, required=True)
-    promote_parser.add_argument("--approve", action="store_true")
-    promote_parser.add_argument("--decisions", default=None)
-    promote_parser.add_argument("--confirm", default=None)
-    promote_parser.set_defaults(func=_cmd_promote)
 
     args = parser.parse_args(argv)
     return args.func(args)
