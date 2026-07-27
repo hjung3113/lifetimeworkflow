@@ -181,8 +181,8 @@ Deferred by design, not lost. Smallest goal-complete subset = all of v2.5 + **MO
 | CER-03 | Phase 39 | Not started |
 | CER-04 | Phase 40 | Not started |
 | CER-05 | Phase 41 | Complete |
-| CER-06 | Phase 42 | Not started |
-| PROD-01 | Phase 42 | Not started |
+| CER-06 | Phase 42 | Complete |
+| PROD-01 | Phase 42 | Complete |
 | CER-07 | Phase 43 | Not started |
 | CER-08 | Phase 44 | Not started |
 | CER-09 | Phase 44 | Not started |

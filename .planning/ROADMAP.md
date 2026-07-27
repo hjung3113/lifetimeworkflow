@@ -217,7 +217,7 @@ must personally **author** from five kinds to **zero**, and give the **product**
   entry. The severity-flip alternative is provably dead: `guard.py:383-399` classifies `BROKEN` before
   staleness and `cli.py:6-13` exits 1 on `BROKEN` regardless of severity. (CER-05)
   **Success:** the CI fan-in gate is **green**; no human-authored ledger row is required by anything.
-- [ ] **Phase 42: Adoption Decoupling + Install-Set Repair** *(v2.5 B)* — drop task-control coupling
+- [x] **Phase 42: Adoption Decoupling + Install-Set Repair** *(v2.5 B)* — drop task-control coupling (completed 2026-07-27)
   from `adoption_apply` (inline the ~60-LOC atomic create/replace; inline `gate-registry.json`'s 7
   redaction regexes into `adoption_scan`, live consumer `scan.py:110-112`); **add the surviving
   `tools/**` to `_CATEGORY_GLOBS`**, which today ships commands and CI that invoke Python the target
@@ -530,7 +530,7 @@ genuine gap is ③.
 | 39. Decision Boundary | v2.5 | 2/2 | Complete    | 2026-07-26 |
 | 40. Self-Gate Teardown | v2.5 | 0/TBD | Not started | - |
 | 41. Docs-Review Plane Removal | v2.5 | 5/5 | Complete   | 2026-07-26 |
-| 42. Adoption Decoupling + Install-Set Repair | v2.5 | 4/5 | In Progress|  |
+| 42. Adoption Decoupling + Install-Set Repair | v2.5 | 5/5 | Complete   | 2026-07-27 |
 | 43. Lifecycle Plane Removal | v2.5 | 0/TBD | Not started | - |
 | 44. Non-Goal Surface Removal | v2.5 | 0/TBD | Not started | - |
 | 45. Projection Repair | v2.5 | 0/TBD | Not started | - |
