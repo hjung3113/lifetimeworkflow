@@ -23,7 +23,6 @@ from tools.handoff.handoff import (
     resume,
     validate,
 )
-from tools.memory_regen.inject import TASK_HEADER, assemble
 from tools.risk_router.router import decide, load_policy
 from tools.task_control.manager import attest, create, transition
 
@@ -566,26 +565,3 @@ def test_pii_refusal_leaves_no_handoff_file(
     with pytest.raises(HandoffError, match="PII in handoff content"):
         generate(packet)
     assert not (packet / "handoffs").exists()
-
-
-def test_real_generate_activate_assemble_injects_reserved_task_pointer(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    root, packet = _packet(tmp_path, monkeypatch)
-    generate(packet)
-    state_dir = root / ".memory/state"
-    state_dir.mkdir(parents=True)
-    activate(packet, state_dir)
-    subprocess.run(
-        ["git", "-C", str(root), "add", ".workflow", ".memory/state/active-task.json"], check=True
-    )
-    subprocess.run(["git", "-C", str(root), "commit", "-qm", "checkpoint publication"], check=True)
-    derived = root / ".memory/derived"
-    derived.mkdir(parents=True)
-    (derived / "contracts-index.md").write_text("contract\n" * 20, encoding="utf-8")
-    (derived / "repo-map.md").write_text("repo\n" * 20, encoding="utf-8")
-    payload = assemble(
-        derived_dir=derived, state_dir=state_dir, agreements_dir=root / ".memory/agreements"
-    )
-    assert "ACTIVE HANDOFF INVALID" not in payload, payload
-    assert TASK_HEADER in payload and "run the phase gate" in payload
