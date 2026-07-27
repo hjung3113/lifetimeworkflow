@@ -83,7 +83,6 @@ _NEW_GATES = [
     ("PreToolUse", "tools.hooks.secret_scan", "Read|Write|Edit"),
     ("PreToolUse", "tools.hooks.commit_gate", "Bash"),
     ("PostToolUse", "tools.hooks.format_on_write", "Write|Edit"),
-    ("PreToolUse", "tools.hooks.resume_gate", "Write|Edit|Bash"),
 ]
 
 

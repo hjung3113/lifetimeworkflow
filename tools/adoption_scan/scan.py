@@ -1,9 +1,9 @@
 """scan.py — confined, read-only, deterministic enumeration + exclusion classification + hashing.
 
 The reuse-at-function-level core recommended by D-07 (26-RESEARCH.md): assembled from four
-existing repo primitives, never a fresh scanning engine and never built on
-``tools/evidence/capture.py`` (which executes subprocesses and mutates task state, both forbidden
-here — see the plan's own must_haves.truths).
+existing repo primitives, never a fresh scanning engine and never built on any primitive that
+executes subprocesses or mutates task state — both are forbidden here (see the plan's own
+must_haves.truths), which is what keeps this module read-only and deterministic.
 
 1. Confined + symlink-guarded walk idiom — copied from ``tools/memory_regen/repo_map.py`` (the
    ``root_resolved not in resolved.parents`` containment check), never re-derived.
