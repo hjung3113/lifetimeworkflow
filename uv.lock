@@ -4,13 +4,6 @@ requires-python = ">=3.11"
 
 [manifest]
 members = [
-    "evidence-adapters",
-    "harness-capability",
-    "harness-discipline",
-    "harness-handoff",
-    "harness-task-control",
-    "harness-task-packet",
-    "lifecycle-eval",
     "logparser-adoption-apply",
     "logparser-adoption-scan",
     "logparser-agree",
@@ -32,7 +25,6 @@ members = [
     "logparser-ruff-baseline",
     "logparser-strangler-guard",
     "logparser-workspace-config",
-    "risk-router",
 ]
 
 [[package]]
@@ -165,54 +157,6 @@ wheels = [
 ]
 
 [[package]]
-name = "evidence-adapters"
-version = "0.0.0"
-source = { virtual = "tools/evidence" }
-
-[[package]]
-name = "harness-capability"
-version = "0.0.0"
-source = { virtual = "tools/capability" }
-
-[[package]]
-name = "harness-discipline"
-version = "0.0.0"
-source = { virtual = "tools/discipline" }
-dependencies = [
-    { name = "jsonschema" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "jsonschema", specifier = "==4.26.0" }]
-
-[[package]]
-name = "harness-handoff"
-version = "0.0.0"
-source = { virtual = "tools/handoff" }
-
-[[package]]
-name = "harness-task-control"
-version = "0.0.0"
-source = { virtual = "tools/task_control" }
-dependencies = [
-    { name = "jsonschema" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "jsonschema", specifier = "==4.26.0" }]
-
-[[package]]
-name = "harness-task-packet"
-version = "0.0.0"
-source = { virtual = "tools/task_packet" }
-dependencies = [
-    { name = "jsonschema" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "jsonschema", specifier = "==4.26.0" }]
-
-[[package]]
 name = "idna"
 version = "3.18"
 source = { registry = "https://pypi.org/simple" }
@@ -256,11 +200,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/19/74/a633ee74eb36c44aa
 wheels = [
     { url = "https://files.pythonhosted.org/packages/41/45/1a4ed80516f02155c51f51e8cedb3c1902296743db0bbc66608a0db2814f/jsonschema_specifications-2025.9.1-py3-none-any.whl", hash = "sha256:98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe", size = 18437, upload-time = "2025-09-08T01:34:57.871Z" },
 ]
-
-[[package]]
-name = "lifecycle-eval"
-version = "0.0.0"
-source = { virtual = "tools/lifecycle_eval" }
 
 [[package]]
 name = "logparser-adoption-apply"
@@ -635,11 +574,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/ef/2f/fa1d2e740c490191b
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4d/78/119878110660b2ad709888c8a1614fce7e2fab39080ab960656dc8605bf6/rfc8785-0.1.4-py3-none-any.whl", hash = "sha256:520d690b448ecf0703691c76e1a34a24ddcd4fc5bc41d589cb7c58ec651bcd48", size = 9240, upload-time = "2024-09-27T16:33:29.683Z" },
 ]
-
-[[package]]
-name = "risk-router"
-version = "0.0.0"
-source = { virtual = "tools/risk_router" }
 
 [[package]]
 name = "rpds-py"

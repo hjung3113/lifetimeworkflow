@@ -48,54 +48,6 @@
 | **GEN-04 무의존** | 코어는 `examples/` 인스턴스나 `workspace.toml` 멤버를 import·경로참조하지 않음. 가드 테스트가 단방향 의존을 증명. |
 | **기계 게이트, 사람 비준** | `/golden-approve`는 명시적 사람 플래그 + ADR 참조 + 확인 토큰 없이 baseline 승격을 거부. |
 
-## v2.2 — Adaptive Task Control Plane
-
-에이전트가 작업 한 건을 안전하게 완주하도록 하는 **적응형 작업 통제 평면**. 소작업은 ceremony를
-억제하고, 고위험은 fail-closed로 막는다. 6개 phase(18–23):
-
-### 1. Task Packet 계약 (Phase 18)
-작업은 `.workflow/tasks/<task-id>/` 에 산다. `task`·`state`·`evidence`·`handoff` JSON Schema(Draft
-2020-12) + validator + 전이 매트릭스(`transitions.json`). 계약이 코드보다 우선.
-
-### 2. Deterministic Risk Router (Phase 19)
-`harness/risk-policy.toml` 이 7축(모호성·변경범위·데이터보안·가역성·영향·조정·컨텍스트압력)을 점수화해
-레인을 결정:
-
-| 레인 | 점수 | 의미 |
-|---|---|---|
-| **FAST** | 0–4 | 상세 SPEC/PLAN/워크트리/이중 리뷰 없이 통과. 사용자 의식 단계 ≤2(intake+verify). |
-| **STANDARD** | 5–9 | 기본 리뷰 + 명세. |
-| **STRICT** | 10–14 | 독립 review record 요구. |
-| **CONTROLLED** | 15–21 | 독립 review + rollback 증거 요구. |
-
-**reason-code 승격**(점수와 무관하게 상향): `auth_authorization`·`secret_pii`→STRICT,
-`payment`·`destructive_data_change`→CONTROLLED, `golden_or_contract_mutation`→CONTROLLED(점수 0이어도).
-오버레이는 **escalate-only** — 코어 레인을 낮추거나 필수 산출물을 제거할 수 없다. 커맨드: **`/intake`**.
-
-### 3. Atomic State Manager + Phase Gate (Phase 20)
-상태 전이는 temp+rename **원자적 교체** + `state.revision` **compare-and-swap(flock)** — 같은 revision
-경쟁 시 정확히 하나만 성공, 중단된 쓰기 후 정확히 하나의 valid canonical. phase 시작 전 repo/워크트리/
-baseline/제약 attestation을 **fail-closed** 검사. 커맨드: **`/phase-gate`**.
-
-### 4. Evidence Bundle Adapters (Phase 21)
-기존 게이트(lint·test·contract-drift·golden·`/verify-work`)를 **재구현하지 않고 감싸서** 위조 탐지
-가능한 증거로 수집: gate-argv 레지스트리(정본 명령 정확일치), **HEAD-커밋 신뢰루트**(에이전트가 커밋
-못 하는 불변식이 trust root), secret/PII 거부, criterion↔evidence 추적. status PASSED/FAILED/SKIPPED/
-BLOCKED 엄격 분리(skip을 pass로 승격 불가).
-
-### 5. Handoff + Fresh-Session Resume (Phase 22)
-대화 transcript 없이 **특정 revision의 immutable HANDOFF 스냅샷**을 새 세션에 전달. 원본 계약·evidence를
-복제하지 않고 path/hash로 참조. `resume_gate` **PreToolUse 훅**이 revision-bound attestation으로
-검증 전 EXECUTE/REVIEW/VERIFY mutation을 fail-closed 차단(재개 후 정상 작업은 데드락 없이 진행).
-커맨드: **`/handoff`**·**`/checkpoint`**·**`/orient`**.
-
-### 6. Lifecycle Evaluation (Phase 23)
-사람이 비준한 도메인-중립 **레인 fixture 20개(레인별 5)** + negative/stress 12개(buried constraint·
-stale handoff·wrong worktree·tampered evidence·concurrent writers·secret artifact·constitution
-change·illegal downgrade). E2E runner가 각 fixture를 실제 git task로 실체화해 intake→전이→evidence→
-handoff→별도 프로세스 orient→phase-gate를 **실행으로 증명**(선언 검사 아님). `docs/how-to/task-lifecycle.md`
-+ 비준된 **ADR-0008**(namespace·authority·lifecycle·overlay).
-
 ## 빠른 시작
 
 > 사전조건: [`uv`](https://docs.astral.sh/uv/)(Python 워크스페이스). .NET 10 쪽은 선택이며
@@ -105,7 +57,7 @@ handoff→별도 프로세스 orient→phase-gate를 **실행으로 증명**(선
 # 1. uv 워크스페이스 동기화 (루트 pyproject.toml + 모든 tools/ + libs/python 멤버)
 uv sync --all-packages
 
-# 2. 전체 하네스 테스트 스위트 (904 통과)
+# 2. 전체 하네스 테스트 스위트 (982 통과)
 uv run pytest -q
 
 # 3. harness/ 소스에서 런타임 표면 재방출 후 byte-identical 확인
@@ -114,10 +66,6 @@ git diff --exit-code -- .opencode .claude/agents .claude/commands .claude/skills
 
 # 4. 계약 + schema-hash 드리프트 게이트 검증
 uv run python -m tools.contract_drift.drift
-
-# 5. Task Control Plane: 위험 레인 라우팅 + lifecycle 증명
-uv run python -m tools.risk_router            # 7축 점수 → 레인
-uv run python -m tools.lifecycle_eval.runner  # 20개 비준 fixture를 실제 E2E 경로로 실행
 ```
 
 ## 저장소 구조
@@ -125,15 +73,14 @@ uv run python -m tools.lifecycle_eval.runner  # 20개 비준 fixture를 실제 E
 ```
 harness/            # ★ 에이전트 표면의 런타임-중립 소스 (여기서 작성)
   agents/ commands/ skills/ plugins/
-  risk-policy.toml  #   v2.2 위험 라우팅 정책 (7축 점수·레인 cut·reason code·오버레이)
   project.toml      #   GEN-03 언어/툴체인 슬롯 (순수 DATA)
 .opencode/ .claude/  # 생성된 런타임 트리 (손편집 금지) ← tools.harness_emit
 contracts/           # 헌법 평면 — JSON Schema 계약 (단일 정본)
-  harness/task-control/  # v2.2: task·state·evidence·handoff·transitions·gate-registry·attestation
+  harness/task-control/  # gate-registry
 golden/              # 헌법 평면 — 승인된 등가 baseline
 docs/                # Diátaxis + adr/(0001–0008) + glossary + how-to/task-lifecycle.md
-tools/               # Python 도구: risk_router·task_control·evidence·handoff·lifecycle_eval·
-                     #   harness_emit·contract_drift·golden_runner·memory_regen·hooks·…
+tools/               # Python 도구: harness_emit·contract_drift·golden_runner·memory_regen·
+                     #   docs_sync·polyglot_lint·harness_lint·workspace_config·hooks·…
 examples/log-parser/ # 참조 인스턴스 (도메인 특화; 코어는 이것에 의존하지 않음)
 .planning/           # GSD 워크플로우 상태: PROJECT.md·ROADMAP.md·MILESTONES.md·phases/·milestones/
 AGENTS.md CLAUDE.md  # nearest-wins 에이전트 규칙
@@ -147,7 +94,8 @@ AGENTS.md CLAUDE.md  # nearest-wins 에이전트 규칙
   fan-out/synthesize · multi-repo workspace.
 - ✅ **v2.1 — Process Memory & Provenance (Phase 12–16)**: PROCESS 메모리 층(`.memory/agreements/`) ·
   injector 리프레임 · `/agree` write 경로 · emit round-trip 게이트 · 로컬 메모리 web UI.
-- ✅ **v2.2 — Adaptive Task Control Plane (Phase 18–23)**: 위 6개 phase. TCP-01..18 완료, ADR-0008 비준.
+- 🗑 **v2.2 — Adaptive Task Control Plane (Phase 18–23)**: 6개 phase로 출시(ADR-0008 비준)했으나
+  v2.5에서 CER-07에 따라 전량 제거됨. 저장소에 남은 산출물 없음 — 마일스톤 이력으로만 기록.
 
 개발은 **GSD** 워크플로우(`.planning/` + `/gsd:*` 커맨드)로 진행. 새 마일스톤은 `/gsd:new-milestone`.
 
