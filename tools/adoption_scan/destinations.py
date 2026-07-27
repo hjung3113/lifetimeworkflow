@@ -176,7 +176,7 @@ _CATEGORY_GLOBS: tuple[str, ...] = (
     ".github/workflows/**/*",
     "pyproject.toml",
     "**/pyproject.toml",
-    "tools/**",
+    "tools/**/*",
     "libs/normalize-spec.md",
     "libs/normalize-fixtures/**/*",
     ".gitignore",
