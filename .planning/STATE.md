@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: De-ceremony
 status: executing
-stopped_at: Phase 42 context gathered
-last_updated: "2026-07-27T16:02:25.386Z"
-last_activity: 2026-07-27 -- Phase 42 planning complete
+stopped_at: Phase 42 Plan 01 complete
+last_updated: "2026-07-28T00:00:00.000Z"
+last_activity: 2026-07-28
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 13
-  completed_plans: 8
-  percent: 62
+  completed_plans: 9
+  percent: 69
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-22)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 41 — docs-review-plane-removal
+**Current focus:** Phase 42 — adoption-decoupling-install-set-repair
 
 ## Current Position
 
-Phase: 41 (docs-review-plane-removal) — EXECUTING
-Plan: 5 of 5
-Status: Ready to execute
-Last activity: 2026-07-27 -- Phase 42 planning complete
+Phase: 42 (adoption-decoupling-install-set-repair) — EXECUTING
+Plan: 1 of 5
+Status: Plan 01 complete (ADOPT-06 approval gate deleted) — Plans 02-05 remain
+Last activity: 2026-07-28
 
 ## Performance Metrics
 
@@ -150,6 +150,7 @@ Last activity: 2026-07-27 -- Phase 42 planning complete
 | Phase 41 P03 | 40min | 2 tasks | 21 files |
 | Phase 41 P04 | ~20min | 2 tasks | 5 files |
 | Phase 41 P05 | 55min | 3 tasks | 20 files |
+| Phase 42 P01 | ~20min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -268,6 +269,7 @@ Recent decisions affecting current work:
 - [Phase 39]: RAT-4, RAT-5, and the per-tool deny-spelling gap recorded obsolete-by-deletion citing ADR-0012; v2.4 SEAL-05 withdrawn, not deferred
 - [Phase 41]: Unbind-before-delete (D-09): emptied all 8 [[binding]] rows + deleted the ledger in a standalone commit before deleting tools/docs_guard (6110 LOC), the registry file, and its derived page. contracts/harness/docs/doc-dependencies.schema.json deferred to Plan 04.
 - [Phase 41]: Fixed cli.py's ReviewLedgerRefusal catch clause as a Rule 1 auto-fix — an undocumented adoption_apply consumer of the deleted ledger_guard hook beyond apply.py itself
+- [Phase 42-01]: D-01/D-03 — deleted `tools/adoption_apply/approval.py` (the whole ADOPT-06 human-ratification gate: `promote`, `check_valid`, `HUMAN_TOKEN_ENV`, the one live `tools.task_control.manager.show` import) and `cli.py`'s `promote` subcommand + `check_valid` apply-refusal; `draft -> apply` now runs with no promotion step, review moves to the PR (ADR-0012). `test_cli.py` rewritten (5 tests deleted, 4 edited, dead helper/fixture/constants removed); 73 passed. CER-06 NOT yet marked complete — prose-only `task_control` references in `apply.py`/`batch.py` and the secret-pattern inline are Plans 02/03's job (frontmatter splits CER-06 across 42-01/02/03).
 - [Phase 41]: Added RETIRED_SIGNATURES to tools/harness_emit/merge.py so re-emit actually drops a formerly harness-owned settings.json hook group — Removing a signature from HARNESS_SIGNATURES alone left the stale ledger_guard group classified identically to a GSD/human group and preserved forever
 - [Phase 41]: Fixed harness/commands/refresh-memory.md's stranded tools.memory_regen.docs_staleness invocation while deleting the module — Rule 1 bug found via a repo-wide grep sweep before finalizing Task 2
 - [Phase 41-04]: Contract + CI fan-in job deletion: contracts/harness/docs/doc-dependencies.schema.json deleted with same-commit manifest rebaseline (D-02); CI docs-guard job + gate.needs entry deleted, verified by a ruamel.yaml-resolved parse (D-14, 11 entries, docs-guard absent); contracts-index derived plane regenerated as an in-scope consequence (17 -> 16 contracts), test_docs_sync_determinism.py left for Plan 05 per its explicit deferral.
@@ -338,9 +340,9 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-27T15:39:07.352Z
-Stopped at: Phase 42 context gathered
-Resume file: .planning/phases/42-adoption-decoupling-install-set-repair/42-CONTEXT.md
+Last session: 2026-07-28T00:00:00.000Z
+Stopped at: Phase 42 Plan 01 complete (ADOPT-06 approval gate deleted)
+Resume file: .planning/phases/42-adoption-decoupling-install-set-repair/42-02-PLAN.md
 
 ### Resuming from a fresh clone
 
