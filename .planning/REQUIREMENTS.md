@@ -62,7 +62,7 @@ maintainability.
   `gate-registry.json` into `adoption_scan` (which already owns its own `SECRET_PATH_GLOBS` for the
   same reason, `scan.py:52-54`; the live consumer is `scan.py:110-112`). Adoption becomes
   draft → apply → PR review. (④)
-- [ ] **PROD-01** *(NEW, Phase 42)*: **The product receives the code its own artifacts invoke.**
+- [x] **PROD-01** *(NEW, Phase 42)*: **The product receives the code its own artifacts invoke.**
   `_CATEGORY_GLOBS` (`destinations.py:142-181`) contains no `tools/**` glob today, so a target monorepo
   gets every command that shells `uv run python -m tools.X` (`orient.md:6-7`), gets
   `.github/workflows/**` (`:176`) running the same modules, gets `pyproject.toml` stubs (`:177-178`) —

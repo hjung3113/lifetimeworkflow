@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: De-ceremony
 status: executing
-stopped_at: Phase 42 Plan 03 complete (adoption_scan secret patterns inlined)
-last_updated: "2026-07-27T16:13:06.690Z"
+stopped_at: Phase 42 Plan 01 complete (ADOPT-06 approval gate deleted)
+last_updated: "2026-07-27T16:19:59.839Z"
 last_activity: 2026-07-27
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 13
-  completed_plans: 10
-  percent: 77
+  completed_plans: 11
+  percent: 85
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-22)
 ## Current Position
 
 Phase: 42 (adoption-decoupling-install-set-repair) — EXECUTING
-Plan: 3 of 5 complete (Plans 01 and 03 done; Plans 02, 04, 05 remain)
+Plan: 4 of 5 complete (Plans 01 and 03 done; Plans 02, 04, 05 remain)
 Status: Ready to execute
 Last activity: 2026-07-27
 
@@ -152,6 +152,7 @@ Last activity: 2026-07-27
 | Phase 41 P05 | 55min | 3 tasks | 20 files |
 | Phase 42 P01 | ~20min | 2 tasks | 4 files |
 | Phase 42 P03 | 15min | 2 tasks | 3 files |
+| Phase 42 P04 | 35min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -277,6 +278,9 @@ Recent decisions affecting current work:
 - [Phase 41]: RETIRED_SIGNATURES (merge.py) emptied — empirically verified transitional (re-emit + git status clean); mechanism kept for Phase 44's next PreToolUse-hook deletion
 - [Phase 41]: Residue sweep returns 34 justified exceptions, not zero: plan-mandated historical narrative, append-only ADR text, Phase-44-deferred deny-domains subsystem, and GSD-owned namespace collisions — none are leftovers of the enforced docs-review plane
 - [Phase 42]: [42-03] D-04/D-05: adoption_scan's 8 secret_patterns inlined byte-identical into scan.py's SECRET_CONTENT_PATTERNS — gate-registry.json left untouched (D-06) for Phase 44 to delete
+- [Phase ?]: D-07: exactly one blanket tools/**/* row added to _CATEGORY_GLOBS (not enumerated per-package), robust to future package deletions with zero edit here
+- [Phase ?]: D-08: fixture-install test authored RED-first and observed to fail against the pre-fix catalog before the tools glob row landed
+- [Phase ?]: Rule 1 auto-fix: plan's literal tools/** row text matches directories only under Path.glob; corrected to tools/**/* consistent with every sibling _CATEGORY_GLOBS row
 
 ### Pending Todos
 
@@ -342,7 +346,7 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-27T16:12:25.899Z
+Last session: 2026-07-27T16:19:44.072Z
 Stopped at: Phase 42 Plan 01 complete (ADOPT-06 approval gate deleted)
 Resume file: None
 
