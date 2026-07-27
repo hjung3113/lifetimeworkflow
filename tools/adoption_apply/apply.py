@@ -13,10 +13,10 @@ discovery/draft-mode writes (ADOPT-05 clause 1) to a given task artifact root â€
 `/adopt draft` (Plan 27-06's ``cli.py``) calls before writing ``inventory.json``/``plan.json``/
 ``manifest.json``.
 
-Two publish idioms, reused verbatim from ``tools.task_control.manager``'s already-audited sequence
-(``tempfile.mkstemp`` in the target's own directory -> write/flush/fsync -> publish -> directory
-fsync -> ``finally: os.unlink(tmp)``), each copied (not cross-package-imported) per 27-RESEARCH's
-"Don't Hand-Roll" guidance:
+Two publish idioms, each a complete, self-contained, already-inlined implementation of the same
+durable-write sequence (``tempfile.mkstemp`` in the target's own directory -> write/flush/fsync ->
+publish -> directory fsync -> ``finally: os.unlink(tmp)``), per 27-RESEARCH's "Don't Hand-Roll"
+guidance:
 
 * :func:`atomic_create` â€” ``os.link``-based; raises ``FileExistsError`` -> :class:`CollisionError`
   on an existing target. Never silently overwrites. Used for the ``create`` disposition, where a
@@ -204,10 +204,10 @@ def refuse_unsafe_destination(destination: str, target_root: str | Path) -> Path
 def atomic_create(path: Path, payload: bytes) -> None:
     """Create ``path`` exactly once via durable temp + hard-link publication.
 
-    Mirrors ``tools.task_control.manager._atomic_create``'s exact sequence, operating on raw
-    ``bytes`` rather than a JSON-serializable dict. ``os.link`` raises ``FileExistsError`` on an
-    existing target -> :class:`CollisionError`; ``os.replace`` (which silently overwrites) is never
-    used here.
+    Writes ``payload`` (raw ``bytes``) to a same-directory temp file, flushes and fsyncs it, then
+    publishes via ``os.link`` -> fsyncs the containing directory -> unlinks the temp file in a
+    ``finally``. ``os.link`` raises ``FileExistsError`` on an existing target ->
+    :class:`CollisionError`; ``os.replace`` (which silently overwrites) is never used here.
     """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -238,8 +238,10 @@ def atomic_create(path: Path, payload: bytes) -> None:
 def _atomic_replace(path: Path, payload: bytes) -> None:
     """Durably replace ``path`` with a same-directory temporary file.
 
-    Mirrors ``tools.task_control.manager._atomic_replace``'s exact sequence, bytes-based. Only used
-    by :func:`_apply_marker_merge`, where the target already exists by definition.
+    Writes ``payload`` (raw ``bytes``) to a same-directory temp file, flushes and fsyncs it, then
+    publishes via ``os.replace`` -> fsyncs the containing directory, unlinking the temp file on any
+    exception. Only used by :func:`_apply_marker_merge`, where the target already exists by
+    definition.
     """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)

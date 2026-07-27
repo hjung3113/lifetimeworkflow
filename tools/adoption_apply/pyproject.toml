@@ -1,7 +1,7 @@
 [project]
 name = "logparser-adoption-apply"
 version = "0.0.0"
-description = "ADOPT-04/05/06/07 task-local adoption batch storage, atomic/collision-safe non-constitution apply, structural constitution-plane refusal, human-ratification promotion, and the /adopt command composition. Zero new external packages: stdlib only (hashlib, tempfile, fcntl, os, json, subprocess); invoked by module path as `python -m tools.adoption_apply`."
+description = "ADOPT-04/05/07 task-local adoption batch storage, atomic/collision-safe non-constitution apply, structural constitution-plane refusal, and the /adopt command composition (draft -> apply, with the PR as the review boundary). Zero new external packages: stdlib only (hashlib, tempfile, fcntl, os, json, subprocess); invoked by module path as `python -m tools.adoption_apply`."
 requires-python = ">=3.11"
 # Zero new external packages. All stdlib (hashlib, tempfile, fcntl, os, json, subprocess, pathlib,
 # datetime). jsonschema (schema-conformance) and pytest come from the workspace root runtime/dev
