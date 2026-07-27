@@ -279,11 +279,14 @@ def test_catalog_covers_real_contract_schemas(repo_root: Path) -> None:
 
 
 def test_catalog_covers_real_nested_agents_md(repo_root: Path) -> None:
-    """Live structural check: every nested (non-root), non-instance AGENTS.md in the checkout has a
-    catalog row, and the root AGENTS.md appears exactly once (not double-counted by the nested
-    glob). The domain-instance directory is out of scope (GEN-04 core->instance independence) —
-    ``instance_prefix`` is built via concatenation so this file never carries the forbidden
-    contiguous core->instance path-token substring itself."""
+    """Live structural check: every nested (non-root), non-instance, non-test-fixture AGENTS.md in
+    the checkout has a catalog row, and the root AGENTS.md appears exactly once (not double-counted
+    by the nested glob). The domain-instance directory is out of scope (GEN-04 core->instance
+    independence) — ``instance_prefix`` is built via concatenation so this file never carries the
+    forbidden contiguous core->instance path-token substring itself. Test-fixture AGENTS.md files
+    (a "tests" path segment, e.g. ``tools/adoption_apply/tests/fixtures/**/AGENTS.md``) are also out
+    of scope: 42-REVIEW.md Fix 1 deliberately excludes them from the catalog so an adopted target
+    never receives dev-only fixture content."""
     instance_prefix = "examples" + "/"
     live_nested = {
         p.resolve().relative_to(repo_root.resolve()).as_posix()
@@ -291,6 +294,7 @@ def test_catalog_covers_real_nested_agents_md(repo_root: Path) -> None:
         if p.is_file() and p.resolve() != (repo_root / "AGENTS.md").resolve()
     }
     live_nested = {d for d in live_nested if not d.startswith(instance_prefix)}
+    live_nested = {d for d in live_nested if "tests" not in d.split("/")}
     catalog_destinations = {row["destination"] for row in destinations.destination_catalog()}
 
     assert live_nested.issubset(catalog_destinations)

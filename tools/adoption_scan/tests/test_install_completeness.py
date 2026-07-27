@@ -69,6 +69,27 @@ def _resolve_module_file(repo_root: Path, dotted: str) -> Path:
     )
 
 
+def test_catalog_excludes_tools_tests_and_fixtures(repo_root: Path) -> None:
+    """MINIMALITY (26-REVIEW.md Fix 1): the destination catalog must ship no dev-only test asset
+    under `tools/**` -- no `tests` path segment at all, and specifically none of the fixture
+    mini-repos or `__snapshots__` files that embed deliberately secret-shaped literals for the
+    secret scanner's own red-check inputs. `test_every_referenced_tools_module_lands_in_applied_
+    target` above proves SUFFICIENCY (every real reference resolves); this proves MINIMALITY
+    (nothing beyond that leaks in)."""
+    catalog = destinations.destination_catalog()
+    leaked = [
+        row["destination"]
+        for row in catalog
+        if row["destination"].startswith("tools/") and "tests" in row["destination"].split("/")
+    ]
+    assert leaked == [], (
+        f"destination catalog ships {len(leaked)} dev-only test asset(s) under tools/**: "
+        f"{leaked[:10]}{'...' if len(leaked) > 10 else ''}"
+    )
+    assert not any("fixtures/polyglot-single" in d for d in [r["destination"] for r in catalog])
+    assert not any("__snapshots__" in d for d in [r["destination"] for r in catalog])
+
+
 def test_discovers_at_least_twenty_modules(repo_root: Path) -> None:
     """Sanity guard: the regex-walk helper must find a substantial number of distinct
     `python -m tools.X` references -- guards against the helper silently matching nothing and

@@ -198,8 +198,17 @@ _INSTANCE_DIR_NAME = "examples"
 # denylists (never re-derived) — a second layer of defense for the git-unavailable fallback path,
 # where _tracked_repo_files() cannot filter and an untracked vendor/build directory could otherwise
 # slip into the catalog.
-_SKIP_SEGMENTS: frozenset[str] = frozenset(scan._VENDOR_SEGMENTS) | frozenset(
-    scan._GENERATED_SEGMENTS
+#
+# 42-REVIEW.md Fix 1: also skips any "tests" path segment. This is what keeps the "tools/**/*" row
+# (added by this same phase so an adopted target receives the Python its emitted commands invoke)
+# from also shipping dev-only test suites, `__snapshots__` fixtures, and the fixture mini-repos
+# under tools/adoption_apply/tests/fixtures/** — the latter deliberately embed secret-shaped
+# literals (AKIA…, PEM headers, ghp_…) as red-check inputs for the secret scanner, which must never
+# ride into a stranger's repo. No other _CATEGORY_GLOBS row currently matches a path with a "tests"
+# segment (verified: only `libs/python/normalize/tests/**`, which is not catalogued at all), so
+# this is a no-op for every category besides `tools/**/*`.
+_SKIP_SEGMENTS: frozenset[str] = (
+    frozenset(scan._VENDOR_SEGMENTS) | frozenset(scan._GENERATED_SEGMENTS) | frozenset({"tests"})
 )
 
 
