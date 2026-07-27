@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: De-ceremony
 status: verifying
-stopped_at: Completed 41-05-PLAN.md — phase 41 (docs-review-plane-removal) complete
-last_updated: "2026-07-26T19:32:03.556Z"
+stopped_at: Phase 42 context gathered
+last_updated: "2026-07-27T15:39:07.357Z"
 last_activity: 2026-07-26
 progress:
-  total_phases: 3
+  total_phases: 4
   completed_phases: 3
   total_plans: 8
   completed_plans: 8
@@ -338,9 +338,9 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-26T19:32:03.552Z
-Stopped at: Completed 41-05-PLAN.md — phase 41 (docs-review-plane-removal) complete
-Resume file: None
+Last session: 2026-07-27T15:39:07.352Z
+Stopped at: Phase 42 context gathered
+Resume file: .planning/phases/42-adoption-decoupling-install-set-repair/42-CONTEXT.md
 
 ### Resuming from a fresh clone
 
