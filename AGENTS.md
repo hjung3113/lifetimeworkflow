@@ -24,9 +24,13 @@ Breaking one of these is a defect, not a style choice. Each is enforced by a gat
    object passing (A-model: CLI spawn + exit codes).
 
 3. **Constitution plane is gated — machines gate, humans ratify.** Agents do **not** write to
-   `contracts/`, `docs/adr/`, `golden/`, or `docs/glossary.md` (the four members declared by
-   [ADR-0001](docs/adr/0001-walking-skeleton-golden-core.md) §Decision). No agent self-blesses
-   a golden baseline or edits an ADR — ADRs are append-only, supersede-don't-edit. Enforced at
+   `contracts/`, `docs/adr/`, or `docs/glossary.md` — three members.
+   [ADR-0012](docs/adr/0012-ci-and-merge-as-decision-authority.md) clause (d) supersedes
+   [ADR-0001](docs/adr/0001-walking-skeleton-golden-core.md) §Decision to the extent that
+   `golden/**` leaves the constitution-plane core. No agent self-blesses a golden baseline or
+   edits an ADR — ADRs are append-only, supersede-don't-edit. Instance goldens still exist and
+   are still human-ratified: the CODEOWNERS `/examples/*/golden/` route is the ratification
+   path. Enforced at
    runtime: `tools/hooks/contract_guard.py` denies the write unless a human set
    `GOLDEN_APPROVE_HUMAN`, and CODEOWNERS gates it again at merge. **Never edit the guard, the
    token check, or a hook to get past a deny — stop and report instead.** The glossary is one
@@ -63,8 +67,6 @@ Breaking one of these is a defect, not a style choice. Each is enforced by a gat
 | Run all tests | `uv run pytest` |
 | Contract-drift gate (JCS SHA-256 over `contracts/**/*.schema.json`) | `bash tools/contract_drift/check.sh` (or `python -m tools.contract_drift.drift`) |
 | Contract hash baseline/manifest | `python -m tools.contract_hash.hash` |
-| Golden equivalence runner (normalize both sides, diff vs `.verified`) | `python -m tools.golden_runner.runner` |
-| Promote a golden baseline (human-gated) | `python -m tools.golden_runner.approve --approve --adr <id>` |
 | Regenerate derived memory (repo-map / contracts-index) | `python -m tools.memory_regen.repo_map` · `python -m tools.memory_regen.contracts_index` |
 | Assemble the SessionStart injection payload | `python -m tools.memory_regen.inject` |
 
@@ -76,12 +78,11 @@ one-or-more **instances** under `examples/<name>/`.
 ```txt
 CORE — domain-neutral, stays on clone ───────────────────────────────────────────────
 contracts/    Constitution plane. JSON Schema Draft 2020-12 + YAML specs. THE source of truth.
-golden/       Constitution plane. Approved equivalence baselines (.verified). Human-promoted only.
 docs/         Diátaxis docs (agent-writable) + docs/adr/ (append-only MADR, GATED)
               + docs/glossary.md (ubiquitous language, GATED).
 libs/python/  Language-neutral §4.3–4.6 normalization core.        → libs/python/AGENTS.md
 libs/         + normalize-spec.md (rule spec) + normalize-fixtures/ (shared (raw,canonical) corpus).
-tools/        The engine (Python): contract_hash, contract_drift, golden_runner, harness_config,
+tools/        The engine (Python): contract_hash, contract_drift, harness_config,
               harness_lint, memory_regen, bootstrap.
 harness/      Runtime-neutral config: project.toml (language/instance slot), agents/, commands/,
               skills/, permission-matrix.json.  Emitted into .claude/ + .opencode/ — never hand-edit those.
