@@ -1,9 +1,9 @@
 #!/bin/sh
 # HOOK-03 pre-commit shim — the committed SOURCE of the git commit-gate (D-06).
 #
-# Runs the composed commit-gate (contract-drift + polyglot §4.3-4.6 + golden-parity). The gate
-# blocks (non-zero exit) on a contract-drift or a §4.3-4.6 violation in a staged TSV; golden-parity
-# is SKIPped-with-a-log when .NET is absent, so a missing runtime never disables a real gate.
+# Runs the composed commit-gate (contract-drift + polyglot §4.3-4.6). The gate blocks (non-zero
+# exit) on a contract-drift or a §4.3-4.6 violation in a staged TSV. Both components ALWAYS run —
+# neither can be skipped, so a missing runtime can never silently disable a gate.
 #
 # This file lives under harness/git-hooks/ as version-controlled source — it is NOT auto-installed
 # into .git/hooks (that path is env-specific and outside the repo). Install it locally with:
@@ -19,5 +19,5 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "$REPO_ROOT"
 
 # Reuse the uv workspace env (single lockfile). `python -m tools.hooks.commit_gate` composes the
-# three built-once gates — no re-hash, no byte-diff (D-02). Its exit code is the hook's verdict.
+# two built-once gates — no re-hash, no byte-diff (D-02). Its exit code is the hook's verdict.
 exec uv run python -m tools.hooks.commit_gate

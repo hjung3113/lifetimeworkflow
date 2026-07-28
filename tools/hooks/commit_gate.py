@@ -15,7 +15,7 @@ Phase 44 (CER-09) removed a third, equivalence-parity component: it resolved .NE
 owned by the instance overlay, which the core plane may not import. Nothing in this module gates
 equivalence any more — that job belongs to the instance's own suite and to CI.
 
-``main`` exits 0 iff every non-skipped component passes, else 1 (block). A ``--from-hook`` wrapper
+``main`` exits 0 iff every component passes, else 1 (block). A ``--from-hook`` wrapper
 reads the untrusted Claude Bash stdin (:mod:`tools.hooks._stdin`) and engages ONLY when the command
 is a ``git commit`` — classified by a **token-walk**, never a naive regex or shell interpolation
 (T-04-14, gsd-validate-commit.sh precedent) — emitting a PreToolUse block (exit 2) on failure.
@@ -57,7 +57,7 @@ def _human_approved() -> bool:
 
 @dataclass(frozen=True)
 class GateResult:
-    """One component's outcome: ``PASS`` | ``FAIL`` | ``SKIP`` + a human-readable detail."""
+    """One component's outcome: ``PASS`` | ``FAIL`` + a human-readable detail."""
 
     name: str
     status: str
@@ -200,8 +200,9 @@ def check_polyglot(files: list[str]) -> GateResult:
 def run_composition() -> int:
     """Run drift + polyglot, both ALWAYS; return 0 (allow) / 1 (block).
 
-    A SKIP never blocks and never suppresses a sibling FAIL (T-04-13). Every component's line is
-    logged; FAIL/BLOCK lines go to stderr so a human/hook sees the reason.
+    A FAIL never suppresses a sibling component: both always run and both are always reported
+    (T-04-13). Every component's line is logged; FAIL/BLOCK lines go to stderr so a human/hook
+    sees the reason.
     """
     results = [check_drift(), check_polyglot(staged_files())]
     blocked = False

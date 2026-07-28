@@ -193,7 +193,7 @@ def test_catalog_excludes_tools_tests_and_fixtures(repo_root: Path) -> None:
     assert not any("__snapshots__" in d for d in [r["destination"] for r in catalog])
 
 
-def test_discovers_at_least_twelve_modules(repo_root: Path) -> None:
+def test_discovers_at_least_eleven_modules(repo_root: Path) -> None:
     """Sanity guard: the regex-walk helper must find a substantial number of distinct
     `python -m tools.X` references -- guards against the helper silently matching nothing and
     the main test vacuously passing.
@@ -219,7 +219,7 @@ def test_every_referenced_tools_module_lands_in_applied_target(
     produced by a real apply_manifest() run over the live catalog -- not merely have its parent
     directory exist."""
     refs = _discover_module_refs(repo_root)
-    assert refs  # non-vacuous, backstopped by test_discovers_at_least_twelve_modules above
+    assert refs  # non-vacuous, backstopped by test_discovers_at_least_eleven_modules above
 
     # Resolve every reference against THIS checkout first (fails loudly if a reference is stale).
     source_files = {ref: _resolve_module_file(repo_root, ref) for ref in refs}
