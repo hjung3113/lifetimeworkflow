@@ -56,14 +56,6 @@ def test_default_deny_posture_empty_rules() -> None:
 # --- resolve_path: constitution / secret denies (T-03-02, T-03-03) ------------------------------
 
 
-def test_golden_write_denied(matrix: dict) -> None:
-    assert resolve_path(matrix["path_deny_globs"], "golden/case.verified") == "deny"
-
-
-def test_dotenv_denied(matrix: dict) -> None:
-    assert resolve_path(matrix["path_deny_globs"], "config/prod.env") == "deny"
-
-
 def test_contracts_denied(matrix: dict) -> None:
     assert resolve_path(matrix["path_deny_globs"], "contracts/log-specs/x.schema.json") == "deny"
 

@@ -31,7 +31,7 @@ HOSTILE_DESTINATIONS = [
     [
         "contracts/widget.schema.json",
         "docs/adr/0099-example.md",
-        "golden/y/baseline.verified.tsv",
+        "docs/adr/y/0099-example.md",
     ],
 )
 def test_refuses_before_mutation(tmp_path, monkeypatch, destination):

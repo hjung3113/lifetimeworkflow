@@ -41,7 +41,7 @@ _PERMISSION_MATRIX = _REPO_ROOT / "harness" / "permission-matrix.json"
 # derived-only write boundary — MAINT-01/D-05). opencode's `edit` key is not path-globbable, so the
 # curator's "never write the constitution" boundary is a fact of this GLOBAL data + the Phase-4
 # contract-guard hook, not a per-persona frontmatter list.
-_CONSTITUTION_DENY_GLOBS = ("contracts/**", "docs/adr/**", "golden/**", "docs/glossary.md")
+_CONSTITUTION_DENY_GLOBS = ("contracts/**", "docs/adr/**", "docs/glossary.md")
 
 # A routing-signal description must carry an invocation trigger token (P7 guard).
 _ROUTING_TRIGGERS = ("use", "when")
