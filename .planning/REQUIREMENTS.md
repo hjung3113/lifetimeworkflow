@@ -41,7 +41,7 @@ maintainability.
   disposition as obsolete-by-deletion** — one decision, no mechanism, on the ground that every
   human-ratification gate here assumes reviewer ≠ author while this repo has one owner. v2.4's
   SEAL-05 ("portable ratification record") is explicitly **withdrawn**, not deferred. (④)
-- [ ] **CER-04** *(NEW, Phase 40)*: `tools/skill_registry` (611 LOC), `harness/skills/registry.lock`
+- [x] **CER-04** *(NEW, Phase 40)*: `tools/skill_registry` (611 LOC), `harness/skills/registry.lock`
   and CI `registry-lock` are **deleted**, with the job removed from `gate.needs` in the same commit.
   This must land **before any skill deletion** — the lock's declaration source is
   `harness/disciplines.toml` (`registry.py:44`) and `_disciplines_by_skill` raises on its absence
@@ -78,13 +78,13 @@ maintainability.
   with its `gate.needs` entry. `memory_regen`'s active-task block (`inject.py:165-195`) is stripped
   while the activeContext pointer (`:148-162`) stays. **No residue package**: a Python state manager is
   unreachable in the product by construction. (④)
-- [ ] **CER-08** *(NEW, Phase 44)*: The **non-goal surface is deleted** — `secret_scan` **with no
+- [x] **CER-08** *(NEW, Phase 44)*: The **non-goal surface is deleted** — `secret_scan` **with no
   replacement CI job** (a security layer not motivated by a threat this repo faces),
   `deny-domains.{json,schema.json}`, `gate-registry.json` and their `DATA_CONTRACT_PATHS` entries,
   `tools/memory_ui` (1756 LOC), `tools/strangler_guard` + `/strangler-step`, `/pipeline` + skill
   `pipeline-map` + `[pipeline].edges`, skill `gate-model`, and `/component`'s topology-registration
   half (steps 1–3 survive as an ① mechanism). (④)
-- [ ] **CER-09** *(NEW, Phase 44)*: The **golden stack relocates to `examples/log-parser/`** —
+- [x] **CER-09** *(NEW, Phase 44)*: The **golden stack relocates to `examples/log-parser/`** —
   `tools/golden_runner`, root `golden/`, `/golden`, `/golden-approve`, skills `golden-testing` and
   `golden-debug`, CI `golden`. Ground: `resolve_dotnet()` (`runner.py:78-85`) puts .NET code in the
   core, which ADR-0002(b) forbids in its own words, and `compare()` calls `normalize_tsv`
@@ -181,13 +181,13 @@ Deferred by design, not lost. Smallest goal-complete subset = all of v2.5 + **MO
 | CER-01 | Phase 39 | Not started |
 | CER-02 | Phase 39 | Not started |
 | CER-03 | Phase 39 | Not started |
-| CER-04 | Phase 40 | Not started |
+| CER-04 | Phase 40 | Complete |
 | CER-05 | Phase 41 | Complete |
 | CER-06 | Phase 42 | Complete |
 | PROD-01 | Phase 42 | Complete |
 | CER-07 | Phase 43 | Complete |
-| CER-08 | Phase 44 | Not started |
-| CER-09 | Phase 44 | Not started |
+| CER-08 | Phase 44 | Complete |
+| CER-09 | Phase 44 | Complete |
 | CER-10 | Phase 45 | Not started |
 | CER-11 | Phase 45 | Not started |
 | PROD-02 | Phase 46 | Not started |

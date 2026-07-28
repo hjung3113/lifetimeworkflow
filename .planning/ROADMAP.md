@@ -681,11 +681,11 @@ genuine gap is ③.
 | 37. Capability Routing + Closeout | v2.4 | 2/2 | Complete | 2026-07-22 |
 | 38. Gate Right-Sizing (dev-light/CI-strong) | v2.4 | 1/1 | Complete | 2026-07-26 |
 | 39. Decision Boundary | v2.5 | 2/2 | Complete    | 2026-07-26 |
-| 40. Self-Gate Teardown | v2.5 | 0/TBD | Not started | - |
+| 40. Self-Gate Teardown | v2.5 | 1/1 | Complete   | 2026-07-29 |
 | 41. Docs-Review Plane Removal | v2.5 | 5/5 | Complete   | 2026-07-26 |
 | 42. Adoption Decoupling + Install-Set Repair | v2.5 | 5/5 | Complete   | 2026-07-27 |
 | 43. Lifecycle Plane Removal | v2.5 | 5/5 | Complete   | 2026-07-28 |
-| 44. Non-Goal Surface Removal | v2.5 | 0/6 | Planned | - |
+| 44. Non-Goal Surface Removal | v2.5 | 6/6 | Complete   | 2026-07-29 |
 | 45. Projection Repair | v2.5 | 0/TBD | Not started | - |
 | 46. Product Flow | v2.5 | 0/TBD | Not started | - |
 | 47. Package Facts | v2.6 | — | Scoped | - |
