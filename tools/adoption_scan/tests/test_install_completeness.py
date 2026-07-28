@@ -20,12 +20,25 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from ruamel.yaml import YAML
+
 from tools.adoption_apply.apply import apply_manifest
 from tools.adoption_apply.cli import _harness_payload
 from tools.adoption_scan import destinations
 
 # Matches `python -m tools.<dotted.module.path>`; captures the dotted path after `tools.`.
 _MODULE_REF_RE = re.compile(r"python -m tools\.([a-zA-Z0-9_.]+)")
+
+# Shell characters that make a token something other than a literal filesystem path (expansion,
+# globbing, quoting). A token carrying any of these is not resolved -- the heuristic stays
+# deliberately conservative and skips rather than guesses.
+_SHELL_METACHARS = frozenset("$`\"'*?[]{}()!\\~=")
+# Tokens that terminate the current `pytest` invocation: everything after them belongs to a
+# different command in the same `run:` line.
+_COMMAND_SEPARATORS = frozenset("&|;<>")
+# Flags whose following token is a value, not a path (selection expressions, plugin names,
+# ini overrides, counts).
+_VALUE_TAKING_FLAGS = frozenset({"-k", "-m", "-p", "-n", "-o", "--tb", "--maxfail", "--color"})
 
 
 def _discover_module_refs(repo_root: Path) -> set[str]:
@@ -66,6 +79,96 @@ def _resolve_module_file(repo_root: Path, dotted: str) -> Path:
     raise AssertionError(
         f"tools.{dotted} does not resolve to any real .py file in this checkout "
         f"(tried {candidate}, {main_candidate}, {init_candidate})"
+    )
+
+
+def _discover_ci_pytest_path_args(repo_root: Path) -> list[tuple[str, str, str]]:
+    """Walk every `.github/workflows/*.yml` `jobs.*.steps[*].run` block and extract the bare
+    filesystem path arguments handed to a `pytest` invocation.
+
+    Returns `(workflow_filename, job_name, token)` triples so a failure can name exactly where an
+    unresolvable path lives.
+
+    The heuristic is deliberately conservative: a token counts as a path argument only when it is
+    not a flag, is not the value of a value-taking flag, carries no shell metacharacter, and
+    either contains a `/` or names an existing top-level entry in the checkout. Scanning of an
+    invocation stops at the first shell command separator, so tokens belonging to a following
+    command are never mistaken for pytest arguments. Anything the heuristic is unsure about is
+    skipped rather than guessed at -- which is why
+    `test_ci_pytest_path_arguments_are_discovered_non_vacuously` backstops it: a matcher that
+    silently stops finding anything must not pass.
+    """
+    yaml = YAML(typ="safe")
+    found: list[tuple[str, str, str]] = []
+    workflows_dir = repo_root / ".github" / "workflows"
+    for workflow in sorted(workflows_dir.glob("*.yml")):
+        document = yaml.load(workflow.read_text(encoding="utf-8")) or {}
+        jobs = document.get("jobs") or {}
+        for job_name, job in jobs.items():
+            for step in job.get("steps") or []:
+                run = step.get("run")
+                if not isinstance(run, str):
+                    continue
+                for line in run.splitlines():
+                    tokens = line.split()
+                    if "pytest" not in tokens:
+                        continue
+                    previous = ""
+                    for token in tokens[tokens.index("pytest") + 1 :]:
+                        if any(char in _COMMAND_SEPARATORS for char in token):
+                            break
+                        if token.startswith("-"):
+                            previous = token
+                            continue
+                        if previous in _VALUE_TAKING_FLAGS:
+                            previous = token
+                            continue
+                        previous = token
+                        if any(char in _SHELL_METACHARS for char in token):
+                            continue
+                        candidate = token.split("::", 1)[0]
+                        if not candidate:
+                            continue
+                        if "/" not in candidate and not (repo_root / candidate).exists():
+                            continue
+                        found.append((workflow.name, str(job_name), candidate))
+    return found
+
+
+def test_ci_pytest_path_arguments_are_discovered_non_vacuously(repo_root: Path) -> None:
+    """Vacuity guard for `_discover_ci_pytest_path_args`. The resolution assertion below can only
+    catch a broken CI path if the extractor is still finding CI paths at all -- a regex/parser that
+    silently matches nothing would make it pass while proving nothing (the same defect class the
+    module docstring records for the pre-fix directory-existence check)."""
+    discovered = _discover_ci_pytest_path_args(repo_root)
+    assert discovered, (
+        "no pytest path arguments were extracted from any .github/workflows/*.yml `run:` step -- "
+        "the extractor has gone vacuous (workflow restructured, or the pytest invocations moved). "
+        "Fix the extractor; do not delete this guard."
+    )
+
+
+def test_every_ci_pytest_path_argument_resolves(repo_root: Path) -> None:
+    """Every bare filesystem path argument a CI workflow hands to `pytest` must name a path that
+    exists in this checkout.
+
+    Nothing else in the repo proves this. `python -m tools.X` module references are covered by
+    `test_every_referenced_tools_module_lands_in_applied_target`, but a bare path argument is
+    unchecked -- so a workflow repointed at a directory that has moved (or never existed) lands
+    green locally and fails only in CI, after merge. That is a repudiation surface: a job that
+    cannot collect any tests is not a gate, and it is claimed as one."""
+    discovered = _discover_ci_pytest_path_args(repo_root)
+    assert discovered  # non-vacuous, backstopped by the guard above
+
+    missing = [
+        (workflow, job, token)
+        for workflow, job, token in discovered
+        if not (repo_root / token).exists()
+    ]
+    assert missing == [], (
+        "CI hands pytest a path argument that does not exist in this checkout: "
+        + "; ".join(f"{workflow} job '{job}' -> {token!r}" for workflow, job, token in missing)
+        + f" (checked {len(discovered)} path argument(s))"
     )
 
 
