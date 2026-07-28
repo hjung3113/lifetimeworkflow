@@ -11,6 +11,8 @@ Parsing is delegated to the shared ``parse_frontmatter`` (Plan 02) — no per-te
 from __future__ import annotations
 
 import json
+import subprocess
+from fnmatch import fnmatchcase
 from pathlib import Path
 
 import pytest
@@ -196,3 +198,49 @@ def test_constitution_paths_denied_globally() -> None:
     deny = set(matrix.get("path_deny_globs", []))
     missing = set(_CONSTITUTION_DENY_GLOBS) - deny
     assert not missing, f"constitution globs missing from path_deny_globs: {sorted(missing)}"
+
+
+def _tracked_paths() -> list[str]:
+    """Every git-tracked path in this repo (``git ls-files``, ``shell=False``).
+
+    Same subprocess idiom as ``test_core_no_example_dep.py`` /
+    ``test_core_no_workspace_member_dep.py`` — the established way to ground an assertion in the
+    real index rather than in a hand-maintained list.
+    """
+    completed = subprocess.run(
+        ["git", "ls-files"],
+        cwd=_REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return [line.strip() for line in completed.stdout.splitlines() if line.strip()]
+
+
+def test_every_path_deny_glob_matches_a_tracked_file() -> None:
+    """No ``path_deny_globs`` row may match ZERO tracked files (ROADMAP SC-1, glob clause).
+
+    A deny glob whose subject no longer exists in the tree presents as protection while protecting
+    nothing — exactly the ``golden/**`` defect Phase 44 left behind and Phase 44's review caught by
+    READING rather than at the commit (CR-01). This asserts it mechanically instead.
+
+    Matched with ``fnmatch.fnmatchcase`` — the SAME matcher ``tools/harness_perms/resolver.py``
+    (``resolve_path``) uses at runtime, so a row that passes here is a row the resolver would
+    actually be able to act on. (Under fnmatch, ``*`` crosses ``/`` and ``**`` degrades to a plain
+    ``*``; probing this declaration with pathlib's recursive-``**`` semantics instead gives false
+    verdicts.)
+
+    SCOPE — deliberately NOT extended to ``tools/adoption_scan/scan.py``'s ``SECRET_PATH_GLOBS`` or
+    ``tools/adoption_scan/destinations.py``'s ``_CATEGORY_GLOBS``. Their subject is a SCANNED
+    brownfield TARGET repository, not this checkout, so matching zero paths here is correct
+    behaviour and asserting otherwise would be a false failure. Do not widen this test to them.
+    """
+    matrix = json.loads(_PERMISSION_MATRIX.read_text(encoding="utf-8"))
+    globs = matrix.get("path_deny_globs", [])
+    assert globs, "path_deny_globs is empty — nothing to prove, the declaration itself is gone"
+    tracked = _tracked_paths()
+    dead = [g for g in globs if not any(fnmatchcase(p, g) for p in tracked)]
+    assert not dead, (
+        f"path_deny_globs rows matching ZERO git-tracked files: {dead} — a deny glob with no "
+        "subject is a dead control; remove the row or repoint it at the path it means to protect"
+    )

@@ -20,6 +20,8 @@ from __future__ import annotations
 
 import io
 import json
+import subprocess
+from fnmatch import fnmatchcase
 from pathlib import Path
 
 import pytest
@@ -374,3 +376,47 @@ def test_every_declared_plane_member_is_independently_enforced() -> None:
             )
     finally:
         cg.CONSTITUTION_GLOBS[:] = original
+
+
+def _tracked_paths() -> list[str]:
+    """Every git-tracked path in this repo (``git ls-files``, ``shell=False``).
+
+    Same subprocess idiom as ``tools/harness_lint/tests/test_core_no_example_dep.py`` — the
+    established way to ground an assertion in the real index rather than a hand-kept list.
+    """
+    completed = subprocess.run(
+        ["git", "ls-files"],
+        cwd=_REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return [line.strip() for line in completed.stdout.splitlines() if line.strip()]
+
+
+def test_every_constitution_glob_matches_a_tracked_file() -> None:
+    """No ``CONSTITUTION_GLOBS`` member may match ZERO tracked files (ROADMAP SC-1, glob clause).
+
+    The sibling mutation proof above shows each member is INDEPENDENTLY enforced; it cannot show
+    that the member still has a subject. A glob whose tree is gone denies nothing while still
+    advertising a plane — the ``golden/**`` defect Phase 44 left behind, caught then by reading and
+    asserted here mechanically.
+
+    Matched with ``fnmatch.fnmatchcase``, the SAME matcher ``resolve_path`` (and therefore this
+    gate) uses at runtime, so a member that passes here is one the gate could actually act on.
+
+    SCOPE — deliberately NOT extended to ``tools/adoption_scan/scan.py``'s ``SECRET_PATH_GLOBS`` or
+    ``tools/adoption_scan/destinations.py``'s ``_CATEGORY_GLOBS``: their subject is a SCANNED
+    brownfield TARGET repository, not this checkout, so a zero-match there is correct behaviour and
+    asserting otherwise would be a false failure. Do not widen this test to them.
+    """
+    import tools.hooks.contract_guard as cg
+
+    globs = list(cg.CONSTITUTION_GLOBS)
+    assert globs, "CONSTITUTION_GLOBS is empty — the plane declaration itself is gone"
+    tracked = _tracked_paths()
+    dead = [g for g in globs if not any(fnmatchcase(p, g) for p in tracked)]
+    assert not dead, (
+        f"CONSTITUTION_GLOBS members matching ZERO git-tracked files: {dead} — a plane member with "
+        "no subject is a dead control; remove it (with a superseding ADR) or repoint it"
+    )
