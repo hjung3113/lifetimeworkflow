@@ -28,16 +28,16 @@ Run the five gates in order; stop at the first hard failure and fix before proce
 
 !`uv run python -m tools.contract_drift.drift`
 
-## 4. Golden cases (`/golden`) — .NET-gated + presence-safe
+## 4. Golden cases — .NET-gated + presence-safe
 
 Runs every discoverable golden case through the normalized-equivalence comparator. Golden
 equivalence spawns the instance's converter, so it is **.NET-presence-gated** (like `/test` and
 `/lint`): an absent SDK is an announced skip, never a hard failure (BOOT-01 egress deferral). The
 domain-neutral core/template ships no converter — so in the bare template this step legitimately
 skips. **Presence-safe** on both axes: zero golden cases OR absent SDK → a no-op that exits 0. A red
-when it DOES run is a signal — do not edit `.verified`; use the `golden-debug` skill.
+when it DOES run is a signal — do not edit `.verified`; fix the divergence.
 
-!`shopt -s nullglob; cases=(golden/*/); if [ ${#cases[@]} -eq 0 ]; then echo 'SKIP: no golden cases — no-op (exit 0).'; elif [ ! -x "$HOME/.dotnet/dotnet" ]; then echo "SKIP: .NET SDK not found at \$HOME/.dotnet/dotnet — golden equivalence needs the instance converter; skipping (non-fatal). Run 'bash tools/bootstrap/install.sh' once egress is allowed."; else fail=0; for d in "${cases[@]}"; do c=$(basename "$d"); echo "golden: $c"; uv run python -m tools.golden_runner.runner "$c" || fail=1; done; [ "$fail" -eq 0 ] || { echo 'FAIL: golden red — use golden-debug, do NOT edit .verified.'; exit 1; }; fi`
+!`shopt -s nullglob; cases=(golden/*/); if [ ${#cases[@]} -eq 0 ]; then echo 'SKIP: no golden cases — no-op (exit 0).'; elif [ ! -x "$HOME/.dotnet/dotnet" ]; then echo "SKIP: .NET SDK not found at \$HOME/.dotnet/dotnet — golden equivalence needs the instance converter; skipping (non-fatal). Run 'bash tools/bootstrap/install.sh' once egress is allowed."; else fail=0; for d in "${cases[@]}"; do c=$(basename "$d"); echo "golden: $c"; uv run python -m tools.golden_runner.runner "$c" || fail=1; done; [ "$fail" -eq 0 ] || { echo 'FAIL: golden red — do NOT edit .verified.'; exit 1; }; fi`
 
 ## 5. Derived freshness (mirror of the CI stale-derived gate) — presence-safe
 

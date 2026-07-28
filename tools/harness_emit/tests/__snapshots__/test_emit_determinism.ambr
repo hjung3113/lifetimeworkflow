@@ -277,15 +277,14 @@
   | Work shape | Route to | Entry command / skill |
   |---|---|---|
   | Onboard / resume cold | (self) | `/orient` |
-  | Change on a declared pipeline **stage/component** (parser / converter / scheduler / collector) | **owning component engineer** (`project.toml`) | `/golden`, `/lint` |
+  | Change on a declared pipeline **stage/component** (parser / converter / scheduler / collector) | **owning component engineer** (`project.toml`) | `/lint` |
   | Stage/component change with **no declared component engineer** | **language engineer** (fallback) | `/lint` |
   | Edge-contract change between two stages (upstream produces / downstream consumes) | **owning component engineer** | `/contract-check` |
   | Scheduler / collector / `tools/` Python change | **python-engineer** | `/test`, `/lint` |
-  | An instance's parser/converter (native toolchain) change | **instance engineer** (`project.toml`) | `/golden`, `/lint` |
+  | An instance's parser/converter (native toolchain) change | **instance engineer** (`project.toml`) | `/lint` |
   | Add a new instance language/toolchain | **python-engineer** | `/add-language` (derives from the engineer template) |
   | Contract shape / validation change | **python-engineer** | `/contract-check`, `data-contracts` skill |
   | New rule governed by a contract | **python-engineer** | `/new-contract-rule` |
-  | Golden went red | scoped engineer | `golden-debug` skill, `/golden` |
   | Cross-language / §4.3–4.6 boundary question | scoped engineer | `polyglot-boundary` skill |
   | Review written code | **code-reviewer** (read-only) | `/review` |
   | "Should I delegate this or work inline?" | (self) | `context-budget` skill |
@@ -370,15 +369,14 @@
   | Work shape | Route to | Entry command / skill |
   |---|---|---|
   | Onboard / resume cold | (self) | `/orient` |
-  | Change on a declared pipeline **stage/component** (parser / converter / scheduler / collector) | **owning component engineer** (`project.toml`) | `/golden`, `/lint` |
+  | Change on a declared pipeline **stage/component** (parser / converter / scheduler / collector) | **owning component engineer** (`project.toml`) | `/lint` |
   | Stage/component change with **no declared component engineer** | **language engineer** (fallback) | `/lint` |
   | Edge-contract change between two stages (upstream produces / downstream consumes) | **owning component engineer** | `/contract-check` |
   | Scheduler / collector / `tools/` Python change | **python-engineer** | `/test`, `/lint` |
-  | An instance's parser/converter (native toolchain) change | **instance engineer** (`project.toml`) | `/golden`, `/lint` |
+  | An instance's parser/converter (native toolchain) change | **instance engineer** (`project.toml`) | `/lint` |
   | Add a new instance language/toolchain | **python-engineer** | `/add-language` (derives from the engineer template) |
   | Contract shape / validation change | **python-engineer** | `/contract-check`, `data-contracts` skill |
   | New rule governed by a contract | **python-engineer** | `/new-contract-rule` |
-  | Golden went red | scoped engineer | `golden-debug` skill, `/golden` |
   | Cross-language / §4.3–4.6 boundary question | scoped engineer | `polyglot-boundary` skill |
   | Review written code | **code-reviewer** (read-only) | `/review` |
   | "Should I delegate this or work inline?" | (self) | `context-budget` skill |
@@ -416,7 +414,7 @@
   - Contracts in `contracts/` are the single source of truth. If your code disagrees with a
     contract, the code is wrong — fix the code.
   - Golden/approval tests (syrupy) gate behavior. Machines gate, humans ratify — never self-bless
-    a golden; promotion goes through `/golden-approve`.
+    a golden; promotion is human review at the PR (the `golden/` CODEOWNERS entry).
   - Respect the §4.3–4.6 boundary invariants when reading/writing across the language boundary
     (process/file/DB only — never in-process interop with .NET).
   - Derived-plane files (`.memory/derived/`, `docs/reference/`) are generated, never hand-edited.
@@ -442,7 +440,7 @@
   - Contracts in `contracts/` are the single source of truth. If your code disagrees with a
     contract, the code is wrong — fix the code.
   - Golden/approval tests (syrupy) gate behavior. Machines gate, humans ratify — never self-bless
-    a golden; promotion goes through `/golden-approve`.
+    a golden; promotion is human review at the PR (the `golden/` CODEOWNERS entry).
   - Respect the §4.3–4.6 boundary invariants when reading/writing across the language boundary
     (process/file/DB only — never in-process interop with .NET).
   - Derived-plane files (`.memory/derived/`, `docs/reference/`) are generated, never hand-edited.
@@ -1264,151 +1262,6 @@
   recovers their compact returns, and synthesizes them without re-opening the raw files it delegated
   away. The synthesized result is an ephemeral runtime value — it is not committed and not CI-gated.
   
-  ===== opencode-command/golden-approve =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use when a human reviewer has approved a proposed golden baseline and wants to promote it — wraps the human-gated approval tool, which refuses (exit 3) without an explicit human flag, an ADR reference, and a confirmation token. Invoke only after a human sign-off, never by an agent."
-  agent: orchestrator
-  ---
-  
-  # /golden-approve — human-gated golden promotion (no agent self-bless)
-  
-  Thin macro over the **already-coded** refusal gate. Do NOT re-implement approval logic —
-  `tools.golden_runner.approve` already encodes "machines gate, humans ratify" (CMD-03, P9).
-  
-  ## Invocation
-  
-  The case id and human signals are taken from `$ARGUMENTS` and passed **positionally** to the
-  approve module (no shell-string construction from arguments):
-  
-  !`python -m tools.golden_runner.approve $ARGUMENTS`
-  
-  ## The human gate (refusal is the default)
-  
-  Promotion of `baseline.received.tsv` → the human-approved `baseline.verified.tsv` is **REFUSED**
-  (`GoldenApprovalRefused`, CLI **exit 3**) unless ALL of the following are present:
-  
-  1. an explicit human `--approve` flag,
-  2. an `--adr <id>` reference (every baseline change must cite a decision), and
-  3. a `--confirm <token>` human confirmation token matching the `$GOLDEN_APPROVE_HUMAN` env var
-     — a value an agent is instructed **never** to fabricate.
-  
-  An agent running this command **cannot** self-approve: without the human token the tool refuses
-  and exits 3. Affirmative promotion is a human-only action (constitution-plane, CODEOWNERS-gated).
-  
-  Example (human-run):
-  
-  ```
-  python -m tools.golden_runner.approve value-regression --approve --adr 0002 --confirm "$GOLDEN_APPROVE_HUMAN"
-  ```
-  
-  ===== claude-command/golden-approve =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use when a human reviewer has approved a proposed golden baseline and wants to promote it — wraps the human-gated approval tool, which refuses (exit 3) without an explicit human flag, an ADR reference, and a confirmation token. Invoke only after a human sign-off, never by an agent."
-  ---
-  
-  # /golden-approve — human-gated golden promotion (no agent self-bless)
-  
-  Thin macro over the **already-coded** refusal gate. Do NOT re-implement approval logic —
-  `tools.golden_runner.approve` already encodes "machines gate, humans ratify" (CMD-03, P9).
-  
-  ## Invocation
-  
-  The case id and human signals are taken from `$ARGUMENTS` and passed **positionally** to the
-  approve module (no shell-string construction from arguments):
-  
-  !`python -m tools.golden_runner.approve $ARGUMENTS`
-  
-  ## The human gate (refusal is the default)
-  
-  Promotion of `baseline.received.tsv` → the human-approved `baseline.verified.tsv` is **REFUSED**
-  (`GoldenApprovalRefused`, CLI **exit 3**) unless ALL of the following are present:
-  
-  1. an explicit human `--approve` flag,
-  2. an `--adr <id>` reference (every baseline change must cite a decision), and
-  3. a `--confirm <token>` human confirmation token matching the `$GOLDEN_APPROVE_HUMAN` env var
-     — a value an agent is instructed **never** to fabricate.
-  
-  An agent running this command **cannot** self-approve: without the human token the tool refuses
-  and exits 3. Affirmative promotion is a human-only action (constitution-plane, CODEOWNERS-gated).
-  
-  Example (human-run):
-  
-  ```
-  python -m tools.golden_runner.approve value-regression --approve --adr 0002 --confirm "$GOLDEN_APPROVE_HUMAN"
-  ```
-  
-  ===== opencode-command/golden =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use when you need to verify polyglot equivalence for a golden case — runs the golden runner, which normalizes both sides via the shared §4-5 core and diffs against the human-approved baseline. Invoke after a converter/normalization change or when a golden goes red."
-  agent: python-engineer
-  subtask: true
-  ---
-  
-  # /golden — run a golden case + normalized diff
-  
-  Thin macro over the **existing** golden runner. Do NOT re-implement golden/normalize/diff logic —
-  `tools.golden_runner.runner` already shares the §4-5 normalization core (a second comparator would
-  drift, Pitfall P4).
-  
-  ## Invocation
-  
-  The golden case id is taken from `$ARGUMENTS` and passed **positionally** to the runner module.
-  The runner spawns the .NET toy converter with `subprocess.run([list], shell=False)` — arguments are
-  never concatenated into a shell string (command-injection guard, T-03-13):
-  
-  !`python -m tools.golden_runner.runner $ARGUMENTS`
-  
-  ## Semantics
-  
-  - **exit 0** → PASS (normalized output equals the approved `.verified` baseline; repr-only diffs
-    are absorbed by the shared normalization core).
-  - **exit 1** → FAIL (a value regression); the runner writes a machine-proposed
-    `baseline.received.tsv` and **never** overwrites the human-approved `.verified` baseline (P9).
-  
-  To promote a proposed baseline after review, use `/golden-approve` — an agent must never self-bless.
-  
-  ## Notes
-  
-  - The .NET spawn is presence-gated inside the runner; the normalize+diff path is proven without a
-    live .NET runtime.
-  
-  ===== claude-command/golden =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use when you need to verify polyglot equivalence for a golden case — runs the golden runner, which normalizes both sides via the shared §4-5 core and diffs against the human-approved baseline. Invoke after a converter/normalization change or when a golden goes red."
-  ---
-  
-  # /golden — run a golden case + normalized diff
-  
-  Thin macro over the **existing** golden runner. Do NOT re-implement golden/normalize/diff logic —
-  `tools.golden_runner.runner` already shares the §4-5 normalization core (a second comparator would
-  drift, Pitfall P4).
-  
-  ## Invocation
-  
-  The golden case id is taken from `$ARGUMENTS` and passed **positionally** to the runner module.
-  The runner spawns the .NET toy converter with `subprocess.run([list], shell=False)` — arguments are
-  never concatenated into a shell string (command-injection guard, T-03-13):
-  
-  !`python -m tools.golden_runner.runner $ARGUMENTS`
-  
-  ## Semantics
-  
-  - **exit 0** → PASS (normalized output equals the approved `.verified` baseline; repr-only diffs
-    are absorbed by the shared normalization core).
-  - **exit 1** → FAIL (a value regression); the runner writes a machine-proposed
-    `baseline.received.tsv` and **never** overwrites the human-approved `.verified` baseline (P9).
-  
-  To promote a proposed baseline after review, use `/golden-approve` — an agent must never self-bless.
-  
-  ## Notes
-  
-  - The .NET spawn is presence-gated inside the runner; the normalize+diff path is proven without a
-    live .NET runtime.
-  
   ===== opencode-command/lint =====
   ---
   # generated by tools.harness_emit — do not hand-edit
@@ -1554,7 +1407,7 @@
   - **Order is load-bearing:** contract → (input, expected) data case → failing code stub. A rule that
     starts from code, or a stub authored green before the contract + data case exist, defeats the
     contract-first invariant (Pattern 4, T-03-26).
-  - Only after the data case turns the failing stub green (via `/test` / `/golden`) is the rule done.
+  - Only after the data case turns the failing stub green (via `/test`) is the rule done.
   - Stage new/edited files individually when committing; do not blanket-add the working tree.
   
   ===== claude-command/new-contract-rule =====
@@ -1600,7 +1453,7 @@
   - **Order is load-bearing:** contract → (input, expected) data case → failing code stub. A rule that
     starts from code, or a stub authored green before the contract + data case exist, defeats the
     contract-first invariant (Pattern 4, T-03-26).
-  - Only after the data case turns the failing stub green (via `/test` / `/golden`) is the rule done.
+  - Only after the data case turns the failing stub green (via `/test`) is the rule done.
   - Stage new/edited files individually when committing; do not blanket-add the working tree.
   
   ===== opencode-command/orient =====
@@ -1642,8 +1495,8 @@
   2. **`.memory/state/activeContext.md`** — the session progress log; on a data conflict,
      contracts/ADR win, and git holds the full completed history.
   3. A specific **`contracts/`** schema — only when the task needs it (never preload all bodies).
-  4. The relevant **skill** for the work shape: `polyglot-boundary` (§4.3–4.6), `golden-debug` (red
-     golden), `data-contracts` (contracts/), `two-plane-memory` (planes),
+  4. The relevant **skill** for the work shape: `polyglot-boundary` (§4.3–4.6),
+     `data-contracts` (contracts/), `two-plane-memory` (planes),
      `context-budget` (delegate-vs-inline), `fan-out-synthesize` (large-surface coverage).
   
   ## Notes
@@ -1691,8 +1544,8 @@
   2. **`.memory/state/activeContext.md`** — the session progress log; on a data conflict,
      contracts/ADR win, and git holds the full completed history.
   3. A specific **`contracts/`** schema — only when the task needs it (never preload all bodies).
-  4. The relevant **skill** for the work shape: `polyglot-boundary` (§4.3–4.6), `golden-debug` (red
-     golden), `data-contracts` (contracts/), `two-plane-memory` (planes),
+  4. The relevant **skill** for the work shape: `polyglot-boundary` (§4.3–4.6),
+     `data-contracts` (contracts/), `two-plane-memory` (planes),
      `context-budget` (delegate-vs-inline), `fan-out-synthesize` (large-surface coverage).
   
   ## Notes
@@ -1950,16 +1803,16 @@
   
   !`uv run python -m tools.contract_drift.drift`
   
-  ## 4. Golden cases (`/golden`) — .NET-gated + presence-safe
+  ## 4. Golden cases — .NET-gated + presence-safe
   
   Runs every discoverable golden case through the normalized-equivalence comparator. Golden
   equivalence spawns the instance's converter, so it is **.NET-presence-gated** (like `/test` and
   `/lint`): an absent SDK is an announced skip, never a hard failure (BOOT-01 egress deferral). The
   domain-neutral core/template ships no converter — so in the bare template this step legitimately
   skips. **Presence-safe** on both axes: zero golden cases OR absent SDK → a no-op that exits 0. A red
-  when it DOES run is a signal — do not edit `.verified`; use the `golden-debug` skill.
+  when it DOES run is a signal — do not edit `.verified`; fix the divergence.
   
-  !`shopt -s nullglob; cases=(golden/*/); if [ ${#cases[@]} -eq 0 ]; then echo 'SKIP: no golden cases — no-op (exit 0).'; elif [ ! -x "$HOME/.dotnet/dotnet" ]; then echo "SKIP: .NET SDK not found at \$HOME/.dotnet/dotnet — golden equivalence needs the instance converter; skipping (non-fatal). Run 'bash tools/bootstrap/install.sh' once egress is allowed."; else fail=0; for d in "${cases[@]}"; do c=$(basename "$d"); echo "golden: $c"; uv run python -m tools.golden_runner.runner "$c" || fail=1; done; [ "$fail" -eq 0 ] || { echo 'FAIL: golden red — use golden-debug, do NOT edit .verified.'; exit 1; }; fi`
+  !`shopt -s nullglob; cases=(golden/*/); if [ ${#cases[@]} -eq 0 ]; then echo 'SKIP: no golden cases — no-op (exit 0).'; elif [ ! -x "$HOME/.dotnet/dotnet" ]; then echo "SKIP: .NET SDK not found at \$HOME/.dotnet/dotnet — golden equivalence needs the instance converter; skipping (non-fatal). Run 'bash tools/bootstrap/install.sh' once egress is allowed."; else fail=0; for d in "${cases[@]}"; do c=$(basename "$d"); echo "golden: $c"; uv run python -m tools.golden_runner.runner "$c" || fail=1; done; [ "$fail" -eq 0 ] || { echo 'FAIL: golden red — do NOT edit .verified.'; exit 1; }; fi`
   
   ## 5. Derived freshness (mirror of the CI stale-derived gate) — presence-safe
   
@@ -2009,16 +1862,16 @@
   
   !`uv run python -m tools.contract_drift.drift`
   
-  ## 4. Golden cases (`/golden`) — .NET-gated + presence-safe
+  ## 4. Golden cases — .NET-gated + presence-safe
   
   Runs every discoverable golden case through the normalized-equivalence comparator. Golden
   equivalence spawns the instance's converter, so it is **.NET-presence-gated** (like `/test` and
   `/lint`): an absent SDK is an announced skip, never a hard failure (BOOT-01 egress deferral). The
   domain-neutral core/template ships no converter — so in the bare template this step legitimately
   skips. **Presence-safe** on both axes: zero golden cases OR absent SDK → a no-op that exits 0. A red
-  when it DOES run is a signal — do not edit `.verified`; use the `golden-debug` skill.
+  when it DOES run is a signal — do not edit `.verified`; fix the divergence.
   
-  !`shopt -s nullglob; cases=(golden/*/); if [ ${#cases[@]} -eq 0 ]; then echo 'SKIP: no golden cases — no-op (exit 0).'; elif [ ! -x "$HOME/.dotnet/dotnet" ]; then echo "SKIP: .NET SDK not found at \$HOME/.dotnet/dotnet — golden equivalence needs the instance converter; skipping (non-fatal). Run 'bash tools/bootstrap/install.sh' once egress is allowed."; else fail=0; for d in "${cases[@]}"; do c=$(basename "$d"); echo "golden: $c"; uv run python -m tools.golden_runner.runner "$c" || fail=1; done; [ "$fail" -eq 0 ] || { echo 'FAIL: golden red — use golden-debug, do NOT edit .verified.'; exit 1; }; fi`
+  !`shopt -s nullglob; cases=(golden/*/); if [ ${#cases[@]} -eq 0 ]; then echo 'SKIP: no golden cases — no-op (exit 0).'; elif [ ! -x "$HOME/.dotnet/dotnet" ]; then echo "SKIP: .NET SDK not found at \$HOME/.dotnet/dotnet — golden equivalence needs the instance converter; skipping (non-fatal). Run 'bash tools/bootstrap/install.sh' once egress is allowed."; else fail=0; for d in "${cases[@]}"; do c=$(basename "$d"); echo "golden: $c"; uv run python -m tools.golden_runner.runner "$c" || fail=1; done; [ "$fail" -eq 0 ] || { echo 'FAIL: golden red — do NOT edit .verified.'; exit 1; }; fi`
   
   ## 5. Derived freshness (mirror of the CI stale-derived gate) — presence-safe
   
@@ -2047,7 +1900,7 @@
   # brownfield-adoption
   
   **Why this is a new skill, not an extension of an existing one:** none of this harness's other
-  skills (`python-conventions`, `golden-testing`, `data-contracts`, `skill-creator`, `golden-debug`,
+  skills (`python-conventions`, `data-contracts`, `skill-creator`,
   `polyglot-boundary`, `two-plane-memory`, `fan-out-synthesize`,
   `context-budget`) own the discover→draft→apply adoption lifecycle. The closest
   candidate — `data-contracts` — is about authoring or checking contracts already
@@ -2270,131 +2123,6 @@
   - `harness/agents/orchestrator.md` — the primary conductor that decomposes, dispatches, and
     synthesizes the recovered summaries.
   
-  ===== skill/golden-debug =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  name: golden-debug
-  description: "Use when a golden/approval snapshot goes red and you must find WHY — walks the 7 canonicalization axes (BOM, newlines, decimal/culture, float tolerance, row ordering, timezone, TSV escape/null) as a decision tree, telling you how to tell which axis caused the diff and which side to fix."
-  ---
-  
-  # golden-debug
-  
-  A red golden is a *signal*, not a chore. It means one of two things: the code regressed (fix the
-  code), or behavior intentionally changed (capture a data case, get human approval + an ADR). This
-  skill is the decision procedure for the hardest, highest-value work in this repo — telling a
-  representation diff apart from a real value regression.
-  
-  Equivalence here is **normalized-equivalence**, never a byte-diff: both sides pass through the
-  shared §4.3–4.6 canonicalization core (`libs/normalize-spec.md`, `libs/python/normalize`) *before*
-  they are compared. So a red almost always means one canonicalization axis was missed on one side.
-  
-  ## First: reproduce and read the two sides
-  
-  - Re-run the case: `uv run python -m tools.golden_runner.runner <case>`.
-  - The runner writes the machine-proposed baseline to `golden/<case>/expected/baseline.received.tsv`
-    on FAIL; the approved truth is `golden/<case>/expected/baseline.verified.tsv`. Diff *those two*
-    to see the exact cells that moved. **Do not edit `.verified`** to make red go away.
-  - Ask the one question that routes everything below: **is the moved cell a different representation
-    of the same value, or a different value?** Representation diff → a missed axis (fix normalization).
-    Value diff → a real regression (fix the producing code) or an intended change (data case + ADR).
-  
-  ## The 7-axis decision tree
-  
-  Walk these in order; the first that matches the moved cells is almost always the cause. Each axis:
-  the *tell* (how to know it's this one) → the *fix side*. Full detail + the canonical rule table is
-  in `references/canonicalization-axes.md`.
-  
-  1. **Encoding / BOM (R1).** *Tell:* the very first column/cell is off (a stray `﻿`/`EF BB BF`
-     glued to it), only on the first row. *Fix:* strip the BOM on read (`utf-8-sig` / emit without a
-     BOM) — a producer re-introduced one.
-  2. **Newlines (R2).** *Tell:* whole-file or trailing-cell diff with `\r` present; row counts look
-     right but every line mismatches. *Fix:* force LF before compare — a producer emitted CRLF/lone CR.
-  3. **Decimal & culture (R3).** *Tell:* numbers differ only as `1,5` vs `1.5`, or `1.50` vs `1.5`, or
-     `100.0` vs `100`. *Fix:* InvariantCulture `.` + trailing-zero trim; parse with decimal types,
-     never a float round-trip.
-  4. **Float compare tolerance (R4).** *Tell:* numbers agree to many digits and differ only in the
-     last (e.g. `...0000001`). *Fix:* this is a *compare* concern — the runner compares with tolerance
-     (`1e-9`); if a last-digit diff flipped red, the tolerance path was bypassed, not the data.
-  5. **Key / row ordering.** *Tell:* the *set* of rows is identical but their order differs. *Fix:*
-     deterministic sort before diff — an unordered producer must not cause a false red.
-  6. **Timezone / datetime (R5).** *Tell:* timestamps differ by a fixed offset (e.g. +09:00), or one
-     side carries `Z`/offset and the other is naive. *Fix:* convert to UTC, emit fixed ISO-8601
-     `yyyy-MM-ddTHH:mm:ssZ`; assume UTC when an input is naive.
-  7. **TSV escape / null-vs-empty (R6/R7).** *Tell:* a cell has a raw tab/newline shifting columns, or
-     an empty cell on one side vs the null token (`\N`) on the other. *Fix:* apply the agreed escape;
-     keep `"" ≠ null` — the null token canonicalizes to the `<NULL>` sentinel, an empty string stays
-     `""`.
-  
-  If NONE of the 7 axes explains the diff, treat it as a **real value change**: either the producing
-  code regressed (fix the code and the golden goes green on its own) or the behavior changed on
-  purpose.
-  
-  ## When the change is intentional (not a normalization miss)
-  
-  - Express the new behavior as a **data case** (`(input, expected)`), not a code special-case.
-  - Promotion is human-gated: `/golden-approve` wraps `tools.golden_runner.approve` and **refuses**
-    (exit 3) without an explicit human `--approve` + `--adr <id>` + token. `golden/` is a
-    constitution-plane sibling of `contracts/` — CODEOWNERS-gated, never agent-writable.
-  - Never hand-promote `.received` → `.verified` yourself; that self-blesses a golden.
-  
-  ## Deeper reference
-  - `references/canonicalization-axes.md` — the 7 axes with the canonical rule, the discriminator, and
-    the fix side, cross-referenced to `libs/normalize-spec.md` R1–R7 and the `CLAUDE.md`
-    Golden-Equivalence Comparator table.
-  - `harness/skills/polyglot-boundary/SKILL.md` — the §4.3–4.6 invariants these axes enforce.
-  
-  ===== skill/golden-testing =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  name: golden-testing
-  description: "Use when running, diffing, or promoting golden/approval snapshots across the .NET and Python sides. Covers the tools.golden_runner run + normalized-equivalence compare (no byte-diff), the Verify.XunitV3 / syrupy `.received`/`.verified` workflow, and the human-gated /golden-approve promotion — machines gate, humans ratify."
-  ---
-  
-  # golden-testing
-  
-  How cross-language equivalence is proven in this repo. Golden testing is the linchpin that lets a
-  .NET rewrite and the legacy/Python behavior be declared equivalent — but only through a
-  canonicalizing comparator, never a naive `diff`.
-  
-  ## The discipline: normalized-equivalence, not byte-diff
-  
-  A raw `diff` fails on exactly the polyglot bugs this project exists to catch — BOM, CRLF,
-  locale decimals, float last-digit repr, unordered rows, timezone kind. Equivalence is compared
-  **only after** the shared §4.3–4.6 canonicalization core:
-  
-  - UTF-8 BOM stripped · forced LF · InvariantCulture `.` decimals · tolerance-aware float compare ·
-    deterministic key/row ordering · UTC ISO-8601 timestamps · explicit TSV escape + null token.
-  
-  Representation-only differences PASS; a value regression FAILs. This is the run/compare contract
-  of `tools.golden_runner.runner`.
-  
-  ## Running
-  
-  - Run a case: `uv run python -m tools.golden_runner.runner <case>`. It spawns the .NET converter
-    (subprocess, `shell=False`, absolute dotnet path), normalizes both sides through the one shared
-    core, and diffs against the approved `.verified`.
-  - .NET-side snapshots use **Verify.XunitV3** (`.received`/`.verified`); Python-side determinism
-    uses **syrupy** (`.ambr`, `--snapshot-update`).
-  
-  ## Promotion — machines gate, humans ratify
-  
-  - Never let an agent self-bless a golden. Promotion is `/golden-approve`, which wraps
-    `tools.golden_runner.approve` and **refuses** (exit 3) without an explicit human
-    `--approve` + `--adr <id>` + token.
-  - `golden/` is a top-level constitution-plane sibling of `contracts/` — CODEOWNERS-gated, never
-    agent-writable.
-  
-  ## When a golden goes red
-  
-  Golden red is a signal, not a chore: either the code regressed (fix the code) or the behavior
-  intentionally changed (capture a data case, get human approval + ADR). Do not update `.verified`
-  to make red go away.
-  
-  ## Deeper reference
-  
-  Put a worked run-and-approve transcript under `references/`. See `CLAUDE.md`
-  §"Golden-Equivalence Comparator" for the full canonicalization rule table.
-  
   ===== skill/polyglot-boundary =====
   ---
   # generated by tools.harness_emit — do not hand-edit
@@ -2455,8 +2183,6 @@
   > JSON *contract text* for the drift hash — they share only the word "canonical". Do not conflate.
   
   ## Related
-  - `harness/skills/golden-debug/SKILL.md` — the decision tree when these invariants are violated and
-    a golden goes red.
   - `references/canonicalization-table.md` — the full rule table with rationale per axis.
   
   ===== skill/python-conventions =====
@@ -2483,7 +2209,7 @@
   ## Quality gates
   
   - **Tests:** `uv run pytest` (full) or `uv run pytest libs/python -x -q` (scoped). Prove
-    determinism of derived artifacts with **syrupy** snapshots (see golden-testing).
+    determinism of derived artifacts with **syrupy** snapshots.
   - **Lint + format:** **ruff** (lint AND format — replaces black/isort/flake8). One config in
     `pyproject.toml`.
   - **Types:** **pyright** (LSP-native), not mypy.

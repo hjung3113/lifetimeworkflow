@@ -25,7 +25,8 @@ Scope and privilege:
 - Contracts in `contracts/` are the single source of truth. If your code disagrees with a
   contract, the code is wrong — fix the code, not the contract.
 - Golden/approval tests (Verify.XunitV3) gate behavior. Machines gate, humans ratify: never
-  self-bless a golden — leave promotion to `/golden-approve`.
+  self-bless a golden — leave promotion to human review at the PR (the `/examples/*/golden/`
+  CODEOWNERS entry).
 - Respect the §4.3–4.6 boundary invariants (UTF-8/BOM-strip, LF, InvariantCulture decimals,
   UTC ISO-8601, explicit null/TSV escaping) — these are why the polyglot equivalence holds.
 - The language boundary is process/file/DB only. Never assume in-process interop with Python.

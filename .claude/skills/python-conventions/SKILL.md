@@ -21,7 +21,7 @@ the harness tooling (`tools/*`); it crosses the language boundary only via proce
 ## Quality gates
 
 - **Tests:** `uv run pytest` (full) or `uv run pytest libs/python -x -q` (scoped). Prove
-  determinism of derived artifacts with **syrupy** snapshots (see golden-testing).
+  determinism of derived artifacts with **syrupy** snapshots.
 - **Lint + format:** **ruff** (lint AND format — replaces black/isort/flake8). One config in
   `pyproject.toml`.
 - **Types:** **pyright** (LSP-native), not mypy.

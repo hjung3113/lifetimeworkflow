@@ -76,15 +76,14 @@ table is stale.
 | Work shape | Route to | Entry command / skill |
 |---|---|---|
 | Onboard / resume cold | (self) | `/orient` |
-| Change on a declared pipeline **stage/component** (parser / converter / scheduler / collector) | **owning component engineer** (`project.toml`) | `/golden`, `/lint` |
+| Change on a declared pipeline **stage/component** (parser / converter / scheduler / collector) | **owning component engineer** (`project.toml`) | `/lint` |
 | Stage/component change with **no declared component engineer** | **language engineer** (fallback) | `/lint` |
 | Edge-contract change between two stages (upstream produces / downstream consumes) | **owning component engineer** | `/contract-check` |
 | Scheduler / collector / `tools/` Python change | **python-engineer** | `/test`, `/lint` |
-| An instance's parser/converter (native toolchain) change | **instance engineer** (`project.toml`) | `/golden`, `/lint` |
+| An instance's parser/converter (native toolchain) change | **instance engineer** (`project.toml`) | `/lint` |
 | Add a new instance language/toolchain | **python-engineer** | `/add-language` (derives from the engineer template) |
 | Contract shape / validation change | **python-engineer** | `/contract-check`, `data-contracts` skill |
 | New rule governed by a contract | **python-engineer** | `/new-contract-rule` |
-| Golden went red | scoped engineer | `golden-debug` skill, `/golden` |
 | Cross-language / §4.3–4.6 boundary question | scoped engineer | `polyglot-boundary` skill |
 | Review written code | **code-reviewer** (read-only) | `/review` |
 | "Should I delegate this or work inline?" | (self) | `context-budget` skill |

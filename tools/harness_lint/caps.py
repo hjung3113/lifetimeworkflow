@@ -130,15 +130,17 @@ _XML_CHARS = ("<", ">")
 # them. Phase 44 (Non-Goal Surface Removal, CER-08) removes `gate-model` together with the orphan
 # migration-step command and tool package it documented; the same phase also removes the Phase-8
 # topology-trace skill named above, together with its command and the core topology-edge DATA slot
-# that trace read. The ten entries below are the whole set.
+# that trace read. CER-09 in the same phase retires the golden COMMAND/SKILL surface — the
+# `golden-testing` authoring skill and the `golden-debug` red-golden decision tree — because
+# promotion is no longer a human-gated in-session command but review at the PR (the `golden/`
+# CODEOWNERS entry, ADR-0012). The golden RUNNER package is unaffected by that removal.
+# The eight entries below are the whole set.
 # No more, no fewer (anti-sprawl).
 EXPECTED_SKILLS = frozenset(
     {
         "python-conventions",
-        "golden-testing",
         "data-contracts",
         "skill-creator",
-        "golden-debug",
         "polyglot-boundary",
         "two-plane-memory",
         "fan-out-synthesize",

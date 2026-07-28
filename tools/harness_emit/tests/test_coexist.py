@@ -37,8 +37,8 @@ def _claude_commands(tmp_path: Path, written: list[Path]) -> list[Path]:
     return [p for p in written if commands_dir in p.parents and p.suffix == ".md"]
 
 
-def test_all_19_commands_emit_to_both_trees(tmp_path: Path) -> None:
-    """19 commands land in .opencode/command/*.md AND .claude/commands/*.md (top-level).
+def test_all_17_commands_emit_to_both_trees(tmp_path: Path) -> None:
+    """17 commands land in .opencode/command/*.md AND .claude/commands/*.md (top-level).
 
     Phase 9 adds /refresh-memory (the curator's local derived-freshness macro), taking the count
     from 17 → 18; Phase 10 adds /fan-out-synthesize (the context-economy fan-out entry point),
@@ -52,7 +52,8 @@ def test_all_19_commands_emit_to_both_trees(tmp_path: Path) -> None:
     Phase 43 deletes /intake, /phase-gate, /handoff, /discipline (the lifecycle-plane removal,
     CER-07), taking it 25 → 21.
     Phase 44 deletes the orphan migration-step command and the topology-trace command (the
-    non-goal surface removal, CER-08), taking it 21 → 19.
+    non-goal surface removal, CER-08), taking it 21 → 19; CER-09 in the same phase retires the
+    golden command pair /golden and /golden-approve, taking it 19 → 17.
 
     This count tracks the runtime-neutral SOURCE (``harness/commands/*.md``), NOT the committed
     ``.opencode/`` / ``.claude/`` trees: ``_emit`` projects into ``tmp_path``. So authoring a new
@@ -69,8 +70,8 @@ def test_all_19_commands_emit_to_both_trees(tmp_path: Path) -> None:
         if (tmp_path / ".opencode" / "command") in p.parents and p.suffix == ".md"
     ]
     claude_cmds = _claude_commands(tmp_path, written)
-    assert len(opencode_cmds) == 19, f"expected 19 opencode commands, got {len(opencode_cmds)}"
-    assert len(claude_cmds) == 19, f"expected 19 Claude commands, got {len(claude_cmds)}"
+    assert len(opencode_cmds) == 17, f"expected 17 opencode commands, got {len(opencode_cmds)}"
+    assert len(claude_cmds) == 17, f"expected 17 Claude commands, got {len(claude_cmds)}"
 
 
 def test_harness_commands_are_top_level_never_under_gsd(tmp_path: Path) -> None:

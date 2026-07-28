@@ -20,7 +20,8 @@ converter; it talks to the Python side only across process/file/DB (A-model), ne
 - **Tests:** xunit.v3 (Microsoft.Testing.Platform built in). Do not use xunit v2 or the v4
   pre-release.
 - **Golden / approval:** Verify.XunitV3 — the `.received`/`.verified` snapshot workflow. Promotion
-  is the human-gated `/golden-approve`, never an agent self-bless (see the golden-testing skill).
+  is human review at the PR (the `/examples/*/golden/` CODEOWNERS entry), never an agent
+  self-bless.
 - **Schema validation:** JsonSchema.Net (System.Text.Json, Draft 2020-12). No Newtonsoft.
 
 ## Boundary invariants (§4.3–4.6) — the .NET-specific traps

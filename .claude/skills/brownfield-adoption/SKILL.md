@@ -7,7 +7,7 @@ description: "Use when you need to bring an existing (brownfield) repository und
 # brownfield-adoption
 
 **Why this is a new skill, not an extension of an existing one:** none of this harness's other
-skills (`python-conventions`, `golden-testing`, `data-contracts`, `skill-creator`, `golden-debug`,
+skills (`python-conventions`, `data-contracts`, `skill-creator`,
 `polyglot-boundary`, `two-plane-memory`, `fan-out-synthesize`,
 `context-budget`) own the discover→draft→apply adoption lifecycle. The closest
 candidate — `data-contracts` — is about authoring or checking contracts already

@@ -12,7 +12,8 @@
   .NET execution is deferred; author code + tests, but run them once the SDK is installed.
 - **Tests:** xunit.v3 (Microsoft.Testing.Platform built in) via `dotnet test`.
 - **Golden / approval:** Verify.XunitV3 — `.received`/`.verified` snapshot workflow; promotion
-  is the human-gated `/golden-approve`, never an agent self-bless.
+  is human review at the PR (the `/examples/*/golden/` CODEOWNERS entry), never an agent
+  self-bless.
 - **Schema validation:** JsonSchema.Net (System.Text.Json, Draft 2020-12) — no Newtonsoft.
 - **Normalization core:** the §4.3–4.6 canonicalization .NET impl lives here
   (`libs/dotnet/Normalize`), cross-validated against `libs/python` via the shared

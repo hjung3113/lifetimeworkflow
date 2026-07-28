@@ -39,8 +39,8 @@ def to_claude(fm: dict) -> dict:
 def iter_reference_files(references_dir: str | Path) -> list[Path]:
     """Yield each regular file under ``references/`` as a path RELATIVE to it, sorted, symlink-safe.
 
-    Returns ``[]`` when the directory is absent (the common case — only golden-debug and
-    polyglot-boundary carry a ``references/`` subtree). Symlinks are skipped so a link pointing
+    Returns ``[]`` when the directory is absent (the common case — only polyglot-boundary
+    carries a ``references/`` subtree). Symlinks are skipped so a link pointing
     outside the subtree can never be followed into the emitted tree (T-07-01, mirrors the docs_sync
     ``iter_*`` traversal defense); the emitter still ``_confine``s every resolved target.
     """
