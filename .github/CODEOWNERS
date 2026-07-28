@@ -3,8 +3,10 @@
 # "Machines gate, humans ratify." The CI workflow (.github/workflows/ci.yml) is the machine gate;
 # this file routes changes to the human-owned constitution plane (contracts / ADRs / goldens /
 # glossary) to their owner for review. It is the merge-time mirror of the in-session
-# CODEOWNERS-gated posture. The plane's four members are declared by
-# docs/adr/0001-walking-skeleton-golden-core.md:48; this file must not drift from that list.
+# CODEOWNERS-gated posture. The plane's three members are declared by
+# docs/adr/0001-walking-skeleton-golden-core.md:48 as superseded by
+# docs/adr/0012-ci-and-merge-as-decision-authority.md clause (d), which removed golden/** from the
+# constitution-plane core; this file must not drift from that list.
 #
 # ── ENFORCEMENT CAVEAT (repo setting — human, out of scope for this file) ────────────────────
 # By itself CODEOWNERS is ADVISORY: GitHub will auto-request the listed owner as a reviewer, but a
@@ -24,12 +26,10 @@
 # recursively. Later matching entries win, so keep these least-to-most specific if extended.
 
 # ── Constitution plane (core) ───────────────────────────────────────────────────────────────
-# The fourth member is a single FILE, not a tree — the plane is the glossary itself, never docs/.
+# The third member is a single FILE, not a tree — the plane is the glossary itself, never docs/.
 /contracts/        @hjung3113
 /docs/adr/         @hjung3113
-/golden/           @hjung3113
 /docs/glossary.md  @hjung3113
-/approvals/        @hjung3113
 
 # ── Example-instance equivalents (constitution plane inside an instance) ─────────────────────
 /examples/*/contracts/   @hjung3113

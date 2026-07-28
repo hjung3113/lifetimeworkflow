@@ -141,7 +141,6 @@ DISPOSITION_ENUM: tuple[str, ...] = (
 # never silently reintroduce it.
 _CATEGORY_GLOBS: tuple[str, ...] = (
     "contracts/**/*",
-    "golden/**/*",
     "docs/adr/**/*",
     "docs/tutorials/**/*",
     "docs/how-to/**/*",
