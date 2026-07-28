@@ -850,7 +850,7 @@ genuine gap is ③.
 | 43. Lifecycle Plane Removal | v2.5 | 5/5 | Complete   | 2026-07-28 |
 | 44. Non-Goal Surface Removal | v2.5 | 6/6 | Complete   | 2026-07-29 |
 | 45. Projection Repair | v2.5 | 6/6 | Complete   | 2026-07-29 |
-| 46. Product Flow | v2.5 | 0/TBD | Not started | - |
+| 46. Product Flow | v2.5 | 3/3 | Complete   | 2026-07-29 |
 | 47. Package Facts | v2.6 | — | Scoped | - |
 | 48. Convention Profiles | v2.6 | — | Scoped | - |
 | 49. Contract Impact | v2.6 | — | Scoped | - |

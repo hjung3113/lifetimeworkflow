@@ -104,7 +104,7 @@ maintainability.
   `AGENTS.md:8-9` (names the guard hooks as "the true backstop" — false after phase 44) and
   `AGENTS.md:52-62` (golden-path table naming `tools.golden_runner`, relocated by CER-09). Every
   surviving command, skill and persona is free of dangling references. (④)
-- [ ] **PROD-02** *(NEW, Phase 46)*: **The product has a lifecycle, authored where it already lives.**
+- [x] **PROD-02** *(NEW, Phase 46)*: **The product has a lifecycle, authored where it already lives.**
   `harness/agents/orchestrator.md` — which already declares itself *"the only planner in the deployed
   harness (GSD is dev-side and is not emitted)"* (`:48`) — is rewritten: its 8 dangling citations
   stripped, its 25-row routing table (`:90-129`) retired, and **4 route sections** added —
@@ -114,18 +114,18 @@ maintainability.
   `WORKFLOW_CONTRACTS.md:39-46`). `contract-change` exists because it is the one route where this
   harness is not repo-agnostic; `research` is deliberately absent (it terminates in a document and
   `explorer` + `fan-out-synthesize` + `context-budget` already cover it). (②③)
-- [ ] **PROD-03** *(NEW, Phase 46)*: Each deleted discipline skill leaves **one operative sentence** in
+- [x] **PROD-03** *(NEW, Phase 46)*: Each deleted discipline skill leaves **one operative sentence** in
   the route that needed it — bugfix→reproduce before fixing; feature→settle vocabulary first;
   contract-change→contract entry, then failing case, then code; all→red before green. Five skills
   become ~20 lines of prose in a file already being rewritten. (①)
-- [ ] **PROD-04** *(NEW, Phase 46)*: **One** new command `harness/commands/flow.md` is the product's
+- [x] **PROD-04** *(NEW, Phase 46)*: **One** new command `harness/commands/flow.md` is the product's
   named entry point (the driver is the weakest model in the picture and has no GSD habit to fall back
   on), and **route · step · next command** are recorded in the already-shipped
   `.memory/state/activeContext.md` (`destinations.py:151`), written by the existing `/checkpoint`
   (`checkpoint.md:24-38`) and read by the existing `/orient` (`orient.md:2-5`). **No `.flow/state.md`,
   no router agent, no new skill, no new contract, no new CI job, no new hook** — net **+1 command,
   +0 everything else**, against 9 commands retired. (③④)
-- [ ] **PROD-05** *(NEW, Phase 46)*: Each route's *Repository evidence* section is filled from
+- [x] **PROD-05** *(NEW, Phase 46)*: Each route's *Repository evidence* section is filled from
   **monorepo facts** the harness alone can compute — in v2.5 the existing `harness_config` +
   `contract_graph` facts, worded so v2.6's `/impact` slots in without a rewrite. This is the
   differentiator: the vendored matt flows are repo-agnostic; these are not. **Zero flow artifacts are
@@ -190,10 +190,10 @@ Deferred by design, not lost. Smallest goal-complete subset = all of v2.5 + **MO
 | CER-09 | Phase 44 | Complete |
 | CER-10 | Phase 45 | Complete |
 | CER-11 | Phase 45 | Complete |
-| PROD-02 | Phase 46 | Not started |
-| PROD-03 | Phase 46 | Not started |
-| PROD-04 | Phase 46 | Not started |
-| PROD-05 | Phase 46 | Not started |
+| PROD-02 | Phase 46 | Complete |
+| PROD-03 | Phase 46 | Complete |
+| PROD-04 | Phase 46 | Complete |
+| PROD-05 | Phase 46 | Complete |
 
 **Coverage:** 16 requirements → 8 phases, every requirement in exactly one phase.
 
