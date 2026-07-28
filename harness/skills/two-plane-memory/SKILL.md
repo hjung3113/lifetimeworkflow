@@ -14,7 +14,7 @@ skill is the map: which plane a file is in, and what that permits.
 
 ## Plane 1 — Constitution (human-owned, gated, the source of truth)
 
-- **What:** `contracts/**`, `docs/adr/**`, `golden/**`, plus the language-neutral spec
+- **What:** `contracts/**`, `docs/adr/**`, `docs/glossary.md`, plus the language-neutral spec
   `libs/normalize-spec.md`.
 - **Rule:** human-owned / CODEOWNERS-gated. Agents do **not** write it. Code that disagrees with a
   contract is the code that is wrong. ADRs are append-only (supersede, never edit).

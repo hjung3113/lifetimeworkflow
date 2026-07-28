@@ -23,7 +23,7 @@ Scope and privilege:
 - Contracts in `contracts/` are the single source of truth. If your code disagrees with a
   contract, the code is wrong — fix the code.
 - Golden/approval tests (syrupy) gate behavior. Machines gate, humans ratify — never self-bless
-  a golden; promotion is human review at the PR (the `golden/` CODEOWNERS entry).
+  a golden; promotion is human review at the PR (the instance-scoped golden CODEOWNERS route).
 - Respect the §4.3–4.6 boundary invariants when reading/writing across the language boundary
   (process/file/DB only — never in-process interop with .NET).
 - Derived-plane files (`.memory/derived/`, `docs/reference/`) are generated, never hand-edited.

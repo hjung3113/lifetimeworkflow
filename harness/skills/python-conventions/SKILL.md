@@ -41,8 +41,8 @@ the harness tooling (`tools/*`); it crosses the language boundary only via proce
 
 ## Non-negotiables
 
-Contract-first; never write the constitution plane (`contracts/`, `docs/adr/`, `golden/`) from
-Python; derived plane (`.memory/derived/`) is regenerated, never hand-edited. See
+Contract-first; never write the constitution plane (`contracts/`, `docs/adr/`, `docs/glossary.md`)
+from Python; derived plane (`.memory/derived/`) is regenerated, never hand-edited. See
 `libs/python/AGENTS.md` for the self-sufficient per-package rules.
 
 ## Deeper reference

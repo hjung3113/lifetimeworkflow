@@ -36,6 +36,6 @@ Re-assemble the capped, pointer-only, drift-aware payload the SessionStart injec
 ## Notes
 
 - This command only touches the **derived** plane; it never writes the constitution plane
-  (`contracts/`, `docs/adr/`, `golden/`) or `.memory/state/`.
+  (`contracts/`, `docs/adr/`, `docs/glossary.md`) or `.memory/state/`.
 - It invokes ONLY `tools.memory_regen.*` + `tools.docs_sync` — no inline derivation (D-06). A second
   index/hash impl would silently diverge from the drift gate.

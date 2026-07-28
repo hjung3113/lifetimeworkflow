@@ -31,7 +31,7 @@
   - Boundary-invariant breaks (§4.3–4.6): BOM, CRLF, locale-dependent decimals, naive timezones,
     TSV escaping / `"" ≠ null` — the classic polyglot-equivalence defects.
   - Attempts to self-bless a golden, hand-edit derived plane, or write the constitution plane
-    (`contracts/`, `docs/adr/`, `golden/`).
+    (`contracts/`, `docs/adr/`, `docs/glossary.md`).
   
   Report findings with severity; do not validate that work was merely "done". Fixes are handed
   back to the scoped engineer personas — you do not apply them.
@@ -61,7 +61,7 @@
   - Boundary-invariant breaks (§4.3–4.6): BOM, CRLF, locale-dependent decimals, naive timezones,
     TSV escaping / `"" ≠ null` — the classic polyglot-equivalence defects.
   - Attempts to self-bless a golden, hand-edit derived plane, or write the constitution plane
-    (`contracts/`, `docs/adr/`, `golden/`).
+    (`contracts/`, `docs/adr/`, `docs/glossary.md`).
   
   Report findings with severity; do not validate that work was merely "done". Fixes are handed
   back to the scoped engineer personas — you do not apply them.
@@ -102,7 +102,7 @@
     edit is lost on the next regeneration and is a lie in the meantime.
   - You never write source, and you never write the constitution plane. Attempts to self-bless a
     golden, hand-edit the derived plane, or write the constitution plane (`contracts/`, `docs/adr/`,
-    `golden/`) are out of bounds — that deny is global permission data enforced by the contract-guard
+    `docs/glossary.md`) are out of bounds — that deny is global permission data enforced by the contract-guard
     hook; this prose is the advisory restatement.
   
   Freshness is proven by machine-write + gate, not by trust: after regenerating, the tree is ready to
@@ -138,7 +138,7 @@
     edit is lost on the next regeneration and is a lie in the meantime.
   - You never write source, and you never write the constitution plane. Attempts to self-bless a
     golden, hand-edit the derived plane, or write the constitution plane (`contracts/`, `docs/adr/`,
-    `golden/`) are out of bounds — that deny is global permission data enforced by the contract-guard
+    `docs/glossary.md`) are out of bounds — that deny is global permission data enforced by the contract-guard
     hook; this prose is the advisory restatement.
   
   Freshness is proven by machine-write + gate, not by trust: after regenerating, the tree is ready to
@@ -414,7 +414,7 @@
   - Contracts in `contracts/` are the single source of truth. If your code disagrees with a
     contract, the code is wrong — fix the code.
   - Golden/approval tests (syrupy) gate behavior. Machines gate, humans ratify — never self-bless
-    a golden; promotion is human review at the PR (the `golden/` CODEOWNERS entry).
+    a golden; promotion is human review at the PR (the instance-scoped golden CODEOWNERS route).
   - Respect the §4.3–4.6 boundary invariants when reading/writing across the language boundary
     (process/file/DB only — never in-process interop with .NET).
   - Derived-plane files (`.memory/derived/`, `docs/reference/`) are generated, never hand-edited.
@@ -440,7 +440,7 @@
   - Contracts in `contracts/` are the single source of truth. If your code disagrees with a
     contract, the code is wrong — fix the code.
   - Golden/approval tests (syrupy) gate behavior. Machines gate, humans ratify — never self-bless
-    a golden; promotion is human review at the PR (the `golden/` CODEOWNERS entry).
+    a golden; promotion is human review at the PR (the instance-scoped golden CODEOWNERS route).
   - Respect the §4.3–4.6 boundary invariants when reading/writing across the language boundary
     (process/file/DB only — never in-process interop with .NET).
   - Derived-plane files (`.memory/derived/`, `docs/reference/`) are generated, never hand-edited.
@@ -579,7 +579,7 @@
   ### apply
   
   Apply a drafted batch's manifest dispositions against a target root — atomic, collision-safe,
-  idempotent; refuses any constitution-plane (`contracts/` · `docs/adr/` · `golden/`) destination
+  idempotent; refuses any constitution-plane (`contracts/` · `docs/adr/` · `docs/glossary.md`) destination
   before any write:
   
   !`python -m tools.adoption_apply apply $ARGUMENTS`
@@ -627,7 +627,7 @@
   ### apply
   
   Apply a drafted batch's manifest dispositions against a target root — atomic, collision-safe,
-  idempotent; refuses any constitution-plane (`contracts/` · `docs/adr/` · `golden/`) destination
+  idempotent; refuses any constitution-plane (`contracts/` · `docs/adr/` · `docs/glossary.md`) destination
   before any write:
   
   !`python -m tools.adoption_apply apply $ARGUMENTS`
@@ -1595,7 +1595,7 @@
   ## Notes
   
   - This command only touches the **derived** plane; it never writes the constitution plane
-    (`contracts/`, `docs/adr/`, `golden/`) or `.memory/state/`.
+    (`contracts/`, `docs/adr/`, `docs/glossary.md`) or `.memory/state/`.
   - It invokes ONLY `tools.memory_regen.*` + `tools.docs_sync` — no inline derivation (D-06). A second
     index/hash impl would silently diverge from the drift gate.
   
@@ -1636,7 +1636,7 @@
   ## Notes
   
   - This command only touches the **derived** plane; it never writes the constitution plane
-    (`contracts/`, `docs/adr/`, `golden/`) or `.memory/state/`.
+    (`contracts/`, `docs/adr/`, `docs/glossary.md`) or `.memory/state/`.
   - It invokes ONLY `tools.memory_regen.*` + `tools.docs_sync` — no inline derivation (D-06). A second
     index/hash impl would silently diverge from the drift gate.
   
@@ -1915,7 +1915,7 @@
   `tools.adoption_apply.apply.apply_manifest` applies the batch's dispositions against a target
   root: atomic and collision-safe (`create` never silently overwrites), idempotent (a second apply
   against an unchanged target is a no-op), and structurally refuses every constitution-plane
-  (`contracts/` · `docs/adr/` · `golden/`) destination before any filesystem write — independent of
+  (`contracts/` · `docs/adr/` · `docs/glossary.md`) destination before any filesystem write — independent of
   any Claude tool-call hook, since a bare CLI/CI invocation has no hook in the loop at all.
   
   ## Related
@@ -1999,7 +1999,8 @@
   
   - **YAML spec** = human-readable skeleton. **Companion `.schema.json`** (JSON Schema Draft
     2020-12) = the validated, hashed source of truth.
-  - `golden/` is a **separate top-level sibling**, not `contracts/golden/`.
+  - The golden baseline directory is a **separate top-level sibling** within the instance overlay that
+    owns it — never nested under a `contracts/` tree.
   - Seeds are example placeholders (CONTRACT-01) — real domain values are Out of Scope. The point is
     to seed the plumbing that enforces contracts, not to fill them.
   
@@ -2204,8 +2205,8 @@
   
   ## Non-negotiables
   
-  Contract-first; never write the constitution plane (`contracts/`, `docs/adr/`, `golden/`) from
-  Python; derived plane (`.memory/derived/`) is regenerated, never hand-edited. See
+  Contract-first; never write the constitution plane (`contracts/`, `docs/adr/`, `docs/glossary.md`)
+  from Python; derived plane (`.memory/derived/`) is regenerated, never hand-edited. See
   `libs/python/AGENTS.md` for the self-sufficient per-package rules.
   
   ## Deeper reference
@@ -2273,7 +2274,7 @@
   
   ## Plane 1 — Constitution (human-owned, gated, the source of truth)
   
-  - **What:** `contracts/**`, `docs/adr/**`, `golden/**`, plus the language-neutral spec
+  - **What:** `contracts/**`, `docs/adr/**`, `docs/glossary.md`, plus the language-neutral spec
     `libs/normalize-spec.md`.
   - **Rule:** human-owned / CODEOWNERS-gated. Agents do **not** write it. Code that disagrees with a
     contract is the code that is wrong. ADRs are append-only (supersede, never edit).

@@ -37,7 +37,7 @@ Create-or-resume a task-local adoption batch — writes the same three artifacts
 ### apply
 
 Apply a drafted batch's manifest dispositions against a target root — atomic, collision-safe,
-idempotent; refuses any constitution-plane (`contracts/` · `docs/adr/` · `golden/`) destination
+idempotent; refuses any constitution-plane (`contracts/` · `docs/adr/` · `docs/glossary.md`) destination
 before any write:
 
 !`python -m tools.adoption_apply apply $ARGUMENTS`

@@ -44,7 +44,7 @@ out-of-root write and a `..`-traversal escape attempt.
 `tools.adoption_apply.apply.apply_manifest` applies the batch's dispositions against a target
 root: atomic and collision-safe (`create` never silently overwrites), idempotent (a second apply
 against an unchanged target is a no-op), and structurally refuses every constitution-plane
-(`contracts/` · `docs/adr/` · `golden/`) destination before any filesystem write — independent of
+(`contracts/` · `docs/adr/` · `docs/glossary.md`) destination before any filesystem write — independent of
 any Claude tool-call hook, since a bare CLI/CI invocation has no hook in the loop at all.
 
 ## Related
