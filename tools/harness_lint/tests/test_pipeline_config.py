@@ -1,20 +1,23 @@
-"""PIPE-01 topology CONSISTENCY gate — the generic [[components]] + [pipeline] slot in
+"""PIPE-01 component CONSISTENCY gate — the generic [[components]] slot in
 harness/project.toml is well-formed and internally agrees (config = SSOT, no codegen).
 
 Mirrors test_language_config.py's structural-scan idiom (repo root via parents[3], real config
 loaded through the shared loader, iterate-config / assert-agreement / fail-loud). These checks run
 against the GENERIC core default ONLY (source/sink carrying the `greeting` contract) — they must NOT reference any
 instance overlay (an instance's own topology lives under its own tree, never the core default).
-A malformed topology (component naming an undeclared language, an edge with an
-unknown endpoint, or a contract absent from the from-component's produces / to-component's consumes)
+A malformed component set (a component naming an undeclared language, or duplicate component ids)
 fails the suite loud so a broken config never resolves silently (T-8-01).
+
+CER-08 (Phase 44) removed the core edge DATA together with the two edge gates that read it: with no
+edges declared, their loop bodies never executed and they passed while asserting nothing. An
+instance overlay declares its own edges and gates them in its own tree.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from tools.harness_config import components, languages, load_project, pipeline
+from tools.harness_config import components, languages, load_project
 
 # test_pipeline_config.py -> tests -> harness_lint -> tools -> repo root.
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -45,44 +48,3 @@ def test_component_ids_unique() -> None:
     ids = [c["id"] for c in components(load_project())]
     dupes = sorted({i for i in ids if ids.count(i) > 1})
     assert not dupes, f"duplicate component id(s): {dupes}"
-
-
-def test_pipeline_edges_are_well_formed() -> None:
-    """Every [pipeline] edge is well-formed against the declared components.
-
-    For each edge: `from`/`to` name declared components, and `contract` is BOTH in the
-    from-component's `produces` AND the to-component's `consumes`. A dangling endpoint or a
-    contract the endpoints do not actually exchange is a malformed topology — fail loud.
-    """
-    cfg = load_project()
-    by_id = {c["id"]: c for c in components(cfg)}
-    for edge in pipeline(cfg).get("edges", []):
-        src, dst, contract = edge["from"], edge["to"], edge["contract"]
-        assert src in by_id, f"edge {edge!r}: `from` {src!r} is not a declared component"
-        assert dst in by_id, f"edge {edge!r}: `to` {dst!r} is not a declared component"
-        assert contract in by_id[src].get("produces", []), (
-            f"edge {edge!r}: contract {contract!r} not in {src!r}.produces "
-            f"({by_id[src].get('produces', [])})"
-        )
-        assert contract in by_id[dst].get("consumes", []), (
-            f"edge {edge!r}: contract {contract!r} not in {dst!r}.consumes "
-            f"({by_id[dst].get('consumes', [])})"
-        )
-
-
-def test_edge_contracts_have_a_tracked_schema() -> None:
-    """Every core edge `contract` resolves to a tracked `contracts/**/<contract>.schema.json`.
-
-    The well-formedness gate above only proves the contract STRING appears in both endpoint lists —
-    it does not prove the contract actually exists. The core `/pipeline` flow tells users to open the
-    edge contract under `contracts/`, so a default topology naming a contract with no schema (e.g. the
-    old `sample-record`, which had no `contracts/**/sample-record.schema.json`) points component
-    agents at a dead reference. Pin each core edge contract to a real tracked schema — fail loud.
-    """
-    schemas = {p.name.removesuffix(".schema.json") for p in _CONTRACTS_DIR.rglob("*.schema.json")}
-    for edge in pipeline(load_project()).get("edges", []):
-        contract = edge["contract"]
-        assert contract in schemas, (
-            f"edge {edge!r}: contract {contract!r} has no tracked schema "
-            f"contracts/**/{contract}.schema.json (found schemas: {sorted(schemas)})"
-        )

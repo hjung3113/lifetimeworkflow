@@ -13,7 +13,7 @@ description: >-
 
 **Why this is a new skill, not an extension of an existing one:** none of this harness's other
 skills (`python-conventions`, `golden-testing`, `data-contracts`, `skill-creator`, `golden-debug`,
-`polyglot-boundary`, `two-plane-memory`, `pipeline-map`, `fan-out-synthesize`,
+`polyglot-boundary`, `two-plane-memory`, `fan-out-synthesize`,
 `context-budget`) own the discover→draft→apply adoption lifecycle. The closest
 candidate — `data-contracts` — is about authoring or checking contracts already
 known to exist, not about discovering an UNKNOWN brownfield tree and proposing what its contracts

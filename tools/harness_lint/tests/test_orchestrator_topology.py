@@ -6,7 +6,7 @@ only by language. This gate keeps that evolution from silently regressing:
 
 - it stays the ONE ``mode: primary`` persona named ``orchestrator`` (no second primary);
 - its intake carries a "Trace the topology" step and the ``topology`` token;
-- its routing section keys on stage/component (or the component role words) and references ``/pipeline``.
+- its routing section keys on stage/component (or the component role words).
 
 Parsing is delegated to the shared ``parse_frontmatter`` — no hand-sliced ``---`` fences. Kept
 domain-neutral (no instance-overlay path or domain-contract tokens) so the GEN-04 core-plane guard stays green.
@@ -58,4 +58,3 @@ def test_conductor_routes_by_stage_component() -> None:
     assert any(tok in lowered for tok in _COMPONENT_TOKENS), (
         f"routing does not mention a component dimension ({_COMPONENT_TOKENS})"
     )
-    assert "/pipeline" in lowered, "routing does not reference the /pipeline entry command"

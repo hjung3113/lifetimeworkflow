@@ -128,7 +128,9 @@ _XML_CHARS = ("<", ">")
 # Phase 43 (Lifecycle Plane Removal, CER-07) removes the five DISCIPLINE skills Phase 36 added,
 # together with the lane-discipline declarations that named them and the wiring gate that checked
 # them. Phase 44 (Non-Goal Surface Removal, CER-08) removes `gate-model` together with the orphan
-# migration-step command and tool package it documented. The eleven entries below are the whole set.
+# migration-step command and tool package it documented; the same phase also removes the Phase-8
+# topology-trace skill named above, together with its command and the core topology-edge DATA slot
+# that trace read. The ten entries below are the whole set.
 # No more, no fewer (anti-sprawl).
 EXPECTED_SKILLS = frozenset(
     {
@@ -139,7 +141,6 @@ EXPECTED_SKILLS = frozenset(
         "golden-debug",
         "polyglot-boundary",
         "two-plane-memory",
-        "pipeline-map",
         "fan-out-synthesize",
         "context-budget",
         "brownfield-adoption",

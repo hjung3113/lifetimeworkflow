@@ -51,17 +51,6 @@ def test_accessor_is_raw_passthrough() -> None:
 # --- lowering (TOPO-03, D-04) ---------------------------------------------------------------------
 
 
-def test_lowers_linear_default_to_single_relationship() -> None:
-    """The unedited source→sink/greeting edge lowers with zero config edits."""
-    rels = effective_relationships(load_project())
-    assert len(rels) == 1
-    rel = rels[0]
-    assert rel["id"] == "pipeline/greeting/source->sink"
-    assert rel["contract"] == "greeting"
-    assert rel["authority"] == "source"
-    assert rel["dependents"] == ["sink"]
-
-
 def test_output_is_deterministic() -> None:
     """Two calls on the same cfg yield byte-identical (==) output."""
     cfg = load_project()
