@@ -106,9 +106,9 @@ def test_ci_yml_false_positive_closed(repo_root: Path) -> None:
 
     Red-green proof: the OLD generic pattern DOES match the real false-positive line (proving the
     bug is real, not a fixture artifact), while the LIVE (currently-committed) ``_secret_pattern()``
-    must not classify the file as ``excluded: "secret-content"`` in the inventory. Until the
-    gate-registry.json fix lands, this second half of the assertion is expected to FAIL — that is
-    the intended red state for this task.
+    must not classify the file as ``excluded: "secret-content"`` in the inventory. The tightened
+    pattern landed in 26.1 (commit d6e9054), so both halves are green and stay green; this test is
+    the regression guard, not a pending red.
     """
     ci_yml = repo_root / ".github" / "workflows" / "ci.yml"
     text = ci_yml.read_text(encoding="utf-8")

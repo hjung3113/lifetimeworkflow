@@ -1,15 +1,12 @@
 # DERIVED — do not hand-edit (tools/memory_regen/contracts_index.py)
 
-Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reuses tools.contract_hash + tools.contract_drift). 9 contract(s).
+Generated from contracts/ by `python -m tools.memory_regen.contracts_index` (reuses tools.contract_hash + tools.contract_drift). 6 contract(s).
 
 | contract | kind | owner | hash | drift |
 | --- | --- | --- | --- | --- |
 | contracts/harness/adoption/inventory.schema.json | other | TBD | 34a31944180f | clean |
 | contracts/harness/adoption/manifest.schema.json | other | TBD | c10b9b9e22d7 | clean |
 | contracts/harness/adoption/plan.schema.json | other | TBD | 5c4f2db58648 | clean |
-| contracts/harness/security/deny-domains.json | other | TBD | 4a8f9a6f0792 | clean |
-| contracts/harness/security/deny-domains.schema.json | other | TBD | b911652dd477 | clean |
-| contracts/harness/task-control/gate-registry.json | other | TBD | dac0b5df21dd | clean |
 | contracts/harness/topology/relationship.schema.json | other | TBD | 27377a886708 | clean |
 | contracts/normalization/format-conventions.schema.json | normalization | TBD | 1af8935bf997 | clean |
 | contracts/sample/greeting.schema.json | other | TBD | 35f71ca2dbeb | clean |

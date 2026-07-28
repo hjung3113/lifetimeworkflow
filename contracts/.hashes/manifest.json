@@ -2,9 +2,6 @@
   "contracts/harness/adoption/inventory.schema.json": "34a31944180f766e993ca46940c7352a37458027ffc89818c1e8267cbea54531",
   "contracts/harness/adoption/manifest.schema.json": "c10b9b9e22d7002bf9527e5b648b1bb59c7c27126ac76b5912b06d7149a25471",
   "contracts/harness/adoption/plan.schema.json": "5c4f2db58648ed4e5482d46359bad30b08c3729f69b8edc419e48adc3fa107f6",
-  "contracts/harness/security/deny-domains.json": "4a8f9a6f0792127662a20689482406eceb5a73880da0f0f0b18a64a28653e6cb",
-  "contracts/harness/security/deny-domains.schema.json": "b911652dd477a65ed8f6b925d2ea284874b6b89483a550ed101e9c401aed7749",
-  "contracts/harness/task-control/gate-registry.json": "dac0b5df21dd72187be3aa5b99ded3ffde7928b787138353919b6e926f39159b",
   "contracts/harness/topology/relationship.schema.json": "27377a8867084ed7121baf3f59a413432824fa58702084a6fd05d41900f9fc38",
   "contracts/normalization/format-conventions.schema.json": "1af8935bf997faf80939db7228366c311c17f14729a0b9eee914799854d85ffc",
   "contracts/sample/greeting.schema.json": "35f71ca2dbeb6b84e093fb4a8dbacde2628974d706aac416d98e595e6c3b55df"

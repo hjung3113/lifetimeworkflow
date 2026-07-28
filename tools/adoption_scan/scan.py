@@ -8,8 +8,9 @@ must_haves.truths), which is what keeps this module read-only and deterministic.
 1. Confined + symlink-guarded walk idiom — copied from ``tools/memory_regen/repo_map.py`` (the
    ``root_resolved not in resolved.parents`` containment check), never re-derived.
 2. Secret pattern set — owned locally as the ``SECRET_CONTENT_PATTERNS`` module-level tuple,
-   byte-identical to ``contracts/harness/task-control/gate-registry.json``'s ``secret_patterns``
-   array at the time it was inlined (no filesystem read at scan time; see ``SECRET_PATH_GLOBS``
+   byte-identical to the Phase-42 task-control registry contract's ``secret_patterns``
+   array at the time it was inlined — that contract was deleted in Phase 44 (CER-08), which this
+   module is unaffected by (no filesystem read at scan time; see ``SECRET_PATH_GLOBS``
    for the same "own the constant locally" idiom this module already used for secret-path globs).
 3. Last-wins glob resolution — ``tools.harness_perms.resolve_path`` for the secret-path check
    (this module's OWN ``SECRET_PATH_GLOBS`` constant — not the hook-specific
@@ -54,8 +55,8 @@ DEFAULT_MAX_FILE_BYTES = 256 * 1024
 SECRET_PATH_GLOBS = ["*.env", "**/*.env", "*.pem", "*.key", "id_rsa*", ".npmrc", ".netrc"]
 
 # This module's OWN secret-content pattern tuple (D-04/D-05, Phase 42 Plan 03) — inlined
-# byte-identical from contracts/harness/task-control/gate-registry.json's "secret_patterns"
-# array, which Phase 44 (CER-08) deletes. No filesystem read at scan time; follows the same
+# byte-identical from the Phase-42 task-control registry contract's "secret_patterns"
+# array, which Phase 44 (CER-08) deleted. No filesystem read at scan time; follows the same
 # "own the constant locally" idiom as SECRET_PATH_GLOBS above.
 SECRET_CONTENT_PATTERNS: tuple[str, ...] = (
     "AKIA[0-9A-Z]{16}",
