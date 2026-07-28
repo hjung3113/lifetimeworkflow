@@ -94,12 +94,12 @@ maintainability.
 
 ## Theme C — Projection Repair + the Product's Lifecycle (Phases 45–46)
 
-- [ ] **CER-10** *(NEW, Phase 45)*: Both runtime trees **re-emit clean** after the deletions:
+- [x] **CER-10** *(NEW, Phase 45)*: Both runtime trees **re-emit clean** after the deletions:
   `caps.py` frozensets, `emit-manifest.json` and `HARNESS_SIGNATURES` (`merge.py:86-95`) updated;
   `contracts/.hashes/manifest.json` rebaselined; `docs/reference/**`,
   `.memory/derived/contracts-index.md` and the syrupy snapshots regenerated; `gate.needs` repaired.
   `emit-drift` and `stale-derived` are green with an empty diff. (④)
-- [ ] **CER-11** *(NEW, Phase 45)*: **Prose that names a deleted surface is scrubbed**, including the
+- [x] **CER-11** *(NEW, Phase 45)*: **Prose that names a deleted surface is scrubbed**, including the
   two claims **outside** the emitter's managed block that a re-emit will therefore not repair: root
   `AGENTS.md:8-9` (names the guard hooks as "the true backstop" — false after phase 44) and
   `AGENTS.md:52-62` (golden-path table naming `tools.golden_runner`, relocated by CER-09). Every
@@ -188,8 +188,8 @@ Deferred by design, not lost. Smallest goal-complete subset = all of v2.5 + **MO
 | CER-07 | Phase 43 | Complete |
 | CER-08 | Phase 44 | Complete |
 | CER-09 | Phase 44 | Complete |
-| CER-10 | Phase 45 | Not started |
-| CER-11 | Phase 45 | Not started |
+| CER-10 | Phase 45 | Complete |
+| CER-11 | Phase 45 | Complete |
 | PROD-02 | Phase 46 | Not started |
 | PROD-03 | Phase 46 | Not started |
 | PROD-04 | Phase 46 | Not started |
