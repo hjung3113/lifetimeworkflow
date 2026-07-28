@@ -526,6 +526,80 @@ existing as harness machinery. Recorded and intended — the equivalent function
 7. `uv run pytest -q` green; `emit-drift`, `stale-derived`, `contract-drift`, ruff ratchet clean; `uv.lock` refreshed for the removed workspace members.
 8. Net surface change is deletion-only: **−8 packages, −6 contracts, −4 commands, −1 hook, −5 skills, −3 declarations, −1 CI job, +0** of anything.
 
+#### Phase 44: Non-Goal Surface Removal
+
+**Goal:** Delete the surface v2.5 declared a non-goal — a security layer no threat in this repo
+motivates, a 1756-LOC UI, a migration guard, a topology-tracing command set — and **relocate the golden
+stack to `examples/log-parser/`**, where ADR-0002(b) says language-specific evidence belongs.
+
+Authority: ADR-0012 §"Phase 44 — Non-Goal Surface Removal" names this surface. CER-09's ground is
+structural, not preference: `resolve_dotnet()` (`golden_runner/runner.py:78-85`) puts .NET resolution in
+the domain-neutral core, which ADR-0002(b) forbids in its own words, and `compare()` calls
+`normalize_tsv` unconditionally with `baseline.{verified,received}.tsv` hardcoded. Making it
+format-pluggable would be additive machinery the binding constraint forbids — so the core stops
+promising golden parity and each instance owns that evidence.
+
+**Requirements:** CER-08, CER-09
+
+**Scope** (every path verified present, 2026-07-29):
+- **`secret_scan`** — `tools/hooks/secret_scan.py` + `tools/hooks/tests/test_secret_scan.py`.
+  ⚠ CER-08's prose implies a `tools/secret_scan/` package; there is none. It is a **live PreToolUse
+  hook** with `harness/plugins/secret-scan.ts`, a `HARNESS_SIGNATURES` entry and a hook-group literal in
+  `tools/harness_emit/merge.py`, and a `harness/commands/review.md` reference. **Deleted with no
+  replacement CI job.**
+- **`deny-domains.{json,schema.json}`** + the `DATA_CONTRACT_PATHS` entry (`contract_hash/hash.py:33`),
+  `docs/reference/deny-domains.md`, the `docs_sync` `EXPECTED_PAGES` member, `test_contract_guard.py:330`,
+  and both syrupy snapshots that render them. Deleting these **self-clears two stale declarations**
+  carried from Phase 41: `deny-domains.json:81,102` names `tools.hooks.ledger_guard` (deleted in 41) and
+  the schema description at `:5,77` names `tools.deny_domains.registry`, a module that has never existed.
+- **`gate-registry.json`** + its `DATA_CONTRACT_PATHS` entry (`hash.py:32`) — deferred here by Phase 43's
+  recorded CER-07/CER-08 collision. Phase 43 narrowed `test_hash.py`'s expected set to
+  `{gate-registry.json}`; deleting it moves that assertion again. Also clears the **5 hyphenated
+  provenance docstrings** in `tools/adoption_scan/**` carried from Phase 42.
+- **`tools/memory_ui`** (1756 LOC) — no consumer outside itself.
+- **`tools/strangler_guard`** (240 LOC) + `harness/commands/strangler-step.md` + its `emit-manifest.json`
+  row + `test_commands.py`; also referenced by `harness/skills/gate-model/SKILL.md`, which dies with it.
+- **`/pipeline` + skill `pipeline-map` + `[pipeline].edges`** (`harness/project.toml:77`) and the
+  `harness_config/loader.py` `pipeline()` passthrough. ⚠ Widest blast radius in the phase: eight
+  `tools/harness_lint/tests/*` read the topology, including `test_pipeline_config.py` (the consistency
+  gate), `test_orchestrator_topology.py`, and `test_conductor_graph_render.py`.
+- **Skill `gate-model`**, and **`/component`'s topology-registration half** — steps 1–3 survive as an
+  ① mechanism; only the registration half goes.
+- **CER-09 — the golden stack relocates** (not deletes) to `examples/log-parser/`:
+  `tools/golden_runner` (791 LOC), root `golden/`, `/golden`, `/golden-approve`, skills
+  `golden-testing` and `golden-debug`, CI job `golden` (`ci.yml:157-168`). ⚠ **A second consumer CER-09's
+  text omits**: the `workspace` job also runs `tools/golden_runner/tests/test_workspace_golden.py`
+  (`ci.yml:336`), so the cross-repo gate must be repointed too, not just the `golden` job.
+
+**Non-goals:** no replacement for `secret_scan` — not a lighter hook, not a CI job, not a pre-commit
+entry. No shim for the relocated golden stack in the core. `/component` steps 1–3, `tools/contract_graph`
+and the `[components]` slot survive. Projection repair (`caps.py`, `emit-manifest.json`,
+`HARNESS_SIGNATURES`, `docs/reference/**`, `AGENTS.md`) is **Phase 45's**, not this phase's.
+
+**Accepted consequence:** the core no longer promises golden parity, and secret detection at the tool
+boundary stops existing — both recorded in ADR-0012 as permanent residuals caught at CI/PR review
+instead. Adopted repos lose a hook they may believe is protecting them; the relocation is why CER-09
+moves rather than deletes.
+
+**Carried in from Phase 43 — the defect class that cost four verification passes:**
+deleting `secret_scan` repeats the `RETIRED_SIGNATURES` case exactly. Removing a signature from
+`HARNESS_SIGNATURES` alone leaves the emitted hook group looking human-owned, so every checkout still
+holding the old `.claude/settings.json` keeps running a deleted module and denies every Write/Edit/Bash.
+`merge.py:111` now carries `("tools.hooks.resume_gate",)` as a **permanent tombstone** — append to it,
+never clear it. Plan every live-tree-rendering test (`.ambr` snapshots, `EXPECTED_PAGES`,
+`EXPECTED_SKILLS`, slot counts, module-discovery floors, `DATA_CONTRACT_PATHS` membership) into the same
+commit as the deletion that invalidates it, and sweep **both** `gate-registry`/`gate_registry` spellings.
+
+**Success Criteria**:
+1. `tools/hooks/secret_scan.py`, `harness/plugins/secret-scan.ts`, `tools/memory_ui`, `tools/strangler_guard`, `harness/commands/{strangler-step,pipeline}.md`, and skills `pipeline-map`/`gate-model` do not exist, and no surviving file invokes them.
+2. A checkout still carrying the pre-44 `.claude/settings.json` drops the `secret_scan` group on re-emit — asserted by extending `test_retired_signature_group_is_dropped_from_a_stale_checkout`, not by reading the merge.
+3. `contracts/harness/` contains no `deny-domains.*` and no `gate-registry.json`; `DATA_CONTRACT_PATHS` retains only surviving entries; the manifest is rebaselined and `contract-drift` exits 0.
+4. The `[pipeline]` slot and its consistency gate are gone, and the surviving `harness_lint` suite has no dangling topology assertion.
+5. The golden stack resolves under `examples/log-parser/`; the core contains no `.NET` resolution; BOTH the `golden` job and the `workspace` job's `test_workspace_golden.py` path are repointed, YAML-resolved.
+6. No Phase-42 hyphenated `gate-registry.json` provenance docstring survives, and `grep -rn "gate.registry\|gate_registry"` outside `.planning/` returns only legitimate history.
+7. `uv run pytest -q` green at every commit; `emit-drift`, `stale-derived`, `contract-drift`, ruff ratchet clean; `uv.lock` refreshed.
+8. Net surface change is deletion or relocation only — **+0** gates, tools, contracts, or dependencies.
+
 ### 📋 v2.6 Minimal Monorepo Core (Phases 47–50) — SCOPED, NOT STARTED
 
 Smallest goal-complete subset = all of v2.5 **+ 47 + 49**. ① is already covered by the lint adapters +
