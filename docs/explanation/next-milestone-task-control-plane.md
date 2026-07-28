@@ -1,5 +1,9 @@
 # 최종 마일스톤 설계서 — Adaptive Task Control Plane
 
+> **HISTORICAL (역사 기록).** 이 문서는 Phase 43이 삭제한 task-control plane을 설계한 기록이며,
+> 여기 서술된 control·경로·커맨드는 더 이상 존재하지 않는다. `docs/adr/0008-task-control-plane-lifecycle.md`가
+> 이 문서를 "Design authority"로 인용하고 ADR은 append-only이므로 삭제하지 않고 보존한다. ADR-0012 참조.
+
 > 사람 승인용 최종 제안서. 이 문서는 구현 자체가 아니라 다음 단일 마일스톤의
 > 범위, 책임 경계, 결정론적 완료 조건을 고정한다.
 
@@ -327,7 +331,8 @@ handoff는 `/checkpoint`·`/orient`·SessionStart·commit/ref 재개를 소유�
 - CI jobs:
   schemas, router, transition/concurrency, context gate,
   evidence/handoff, emit parity/drift, existing full suite fan-in.
-- `docs/how-to/task-lifecycle.md`.
+- 라이프사이클 how-to 문서 (당시 계획된 산출물. Phase 43의 plane 삭제와 함께 제거되었다 —
+  이 문서 상단의 HISTORICAL 헤더 참조).
 - 사람 작성·승인 대상 ADR:
   Task Control Plane의 namespace, authority, lifecycle, overlay 결정.
 - shadow 운영 시 수집할 지표 정의:
