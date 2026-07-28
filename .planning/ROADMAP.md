@@ -541,6 +541,17 @@ promising golden parity and each instance owns that evidence.
 
 **Requirements:** CER-08, CER-09
 
+**Plans:** 6 plans, 6 waves (sequential — `caps.py`, the emit `.ambr` snapshot and the emitter itself
+are shared by every commit, so parallelism buys nothing)
+
+Plans:
+- [ ] 44-01-PLAN.md — delete `memory_ui` + `strangler_guard` + `/strangler-step` + skill `gate-model`; delete the `deny-domains` + `gate-registry` contracts and rebaseline the manifest
+- [ ] 44-02-PLAN.md — cover every `RETIRED_SIGNATURES` tombstone, then remove the `secret_scan` hook with no replacement
+- [ ] 44-03-PLAN.md — remove `/component`'s topology-registration half, then the core `[pipeline]` data + `/pipeline` + `pipeline-map` (keeping `loader.pipeline()`)
+- [ ] 44-04-PLAN.md — assert CI pytest path arguments resolve; retire the `/golden` + `/golden-approve` commands and the `golden-testing` + `golden-debug` skills
+- [ ] 44-05-PLAN.md — delete `commit_gate`'s golden-parity component, then relocate the golden stack to `examples/log-parser/` (atomic)
+- [ ] 44-06-PLAN.md — whole-phase gate sweep, success-criteria evidence table, measured net LOC, recorded consequences
+
 **Scope** (every path verified present, 2026-07-29):
 - **`secret_scan`** — `tools/hooks/secret_scan.py` + `tools/hooks/tests/test_secret_scan.py`.
   ⚠ CER-08's prose implies a `tools/secret_scan/` package; there is none. It is a **live PreToolUse
@@ -603,7 +614,7 @@ commit as the deletion that invalidates it, and sweep **both** `gate-registry`/`
 2. A checkout still carrying the pre-44 `.claude/settings.json` drops the `secret_scan` group on re-emit — asserted by extending `test_retired_signature_group_is_dropped_from_a_stale_checkout`, not by reading the merge.
 3. `contracts/harness/` contains no `deny-domains.*` and no `gate-registry.json`; `DATA_CONTRACT_PATHS` retains only surviving entries; the manifest is rebaselined and `contract-drift` exits 0.
 4. The `[pipeline]` slot and its consistency gate are gone, and the surviving `harness_lint` suite has no dangling topology assertion.
-5. The golden stack resolves under `examples/log-parser/`; the core contains no `.NET` resolution; BOTH the `golden` job and the `workspace` job's `test_workspace_golden.py` path are repointed, YAML-resolved.
+5. The golden stack resolves under `examples/log-parser/`; the core contains no **golden/parity** `.NET` resolution and no core module imports `golden_runner`; BOTH the `golden` job and the `workspace` job's `test_workspace_golden.py` path are repointed, YAML-resolved. ⚠ **Corrected 2026-07-29** from "the core contains no `.NET` resolution", which a commit replay proved unachievable: `tools/hooks/format_on_write.py:57` defines a second `resolve_dotnet()` that shells `dotnet format`. That is a **language-toolchain** concern, legitimate in a polyglot template core, whereas CER-09's ADR-0002(b) ground is that .NET *parity evidence* belongs in the instance. The resolver is deliberately retained; only the golden-side one relocates.
 6. No Phase-42 hyphenated `gate-registry.json` provenance docstring survives, and `grep -rn "gate.registry\|gate_registry"` outside `.planning/` returns only legitimate history.
 7. `uv run pytest -q` green at every commit; `emit-drift`, `stale-derived`, `contract-drift`, ruff ratchet clean; `uv.lock` refreshed.
 8. Net surface change is deletion or relocation only — **+0** gates, tools, contracts, or dependencies.
@@ -674,7 +685,7 @@ genuine gap is ③.
 | 41. Docs-Review Plane Removal | v2.5 | 5/5 | Complete   | 2026-07-26 |
 | 42. Adoption Decoupling + Install-Set Repair | v2.5 | 5/5 | Complete   | 2026-07-27 |
 | 43. Lifecycle Plane Removal | v2.5 | 5/5 | Complete   | 2026-07-28 |
-| 44. Non-Goal Surface Removal | v2.5 | 0/TBD | Not started | - |
+| 44. Non-Goal Surface Removal | v2.5 | 0/6 | Planned | - |
 | 45. Projection Repair | v2.5 | 0/TBD | Not started | - |
 | 46. Product Flow | v2.5 | 0/TBD | Not started | - |
 | 47. Package Facts | v2.6 | — | Scoped | - |
