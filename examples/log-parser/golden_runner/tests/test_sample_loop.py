@@ -14,9 +14,10 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
+from golden_runner.runner import run_golden_case
+
 from tools.contract_drift.drift import run_gate
 from tools.contract_hash.hash import CONTRACTS_DIR, build_manifest
-from tools.golden_runner.runner import run_golden_case
 
 
 def test_sample_case_passes_via_identity_no_dotnet() -> None:

@@ -249,7 +249,7 @@ source = { virtual = "tools/docs_sync" }
 [[package]]
 name = "logparser-golden-runner"
 version = "0.0.0"
-source = { virtual = "tools/golden_runner" }
+source = { virtual = "examples/log-parser/golden_runner" }
 
 [[package]]
 name = "logparser-harness"

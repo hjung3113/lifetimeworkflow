@@ -199,12 +199,14 @@ def test_discovers_at_least_twelve_modules(repo_root: Path) -> None:
     the main test vacuously passing.
 
     Floor lowered 20 -> 12 in Phase 43 (CER-07): the lifecycle-plane removal deleted 8 of the 21
-    top-level packages this helper discovered, taking the live count to 13. This is a vacuity
-    guard, not a census -- do not raise it back toward the live value."""
+    top-level packages this helper discovered, taking the live count to 13. Floor lowered 12 -> 11
+    in Phase 44 (CER-09): the golden runner was relocated out of the core tree into the instance
+    overlay, taking the discovered count to 11. This is a vacuity guard, not a census -- do not
+    raise it back toward the live value."""
     refs = _discover_module_refs(repo_root)
     top_level_packages = {ref.split(".")[0] for ref in refs}
-    assert len(top_level_packages) >= 12, (
-        f"expected at least 12 distinct top-level tools packages, found "
+    assert len(top_level_packages) >= 11, (
+        f"expected at least 11 distinct top-level tools packages, found "
         f"{len(top_level_packages)}: {sorted(top_level_packages)}"
     )
 

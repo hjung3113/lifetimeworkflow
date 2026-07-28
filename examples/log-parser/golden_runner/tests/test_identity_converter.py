@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from tools.golden_runner.runner import (
+from golden_runner.runner import (
     run_golden_case,
     run_identity_converter,
     verified_path,

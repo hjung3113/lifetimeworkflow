@@ -152,7 +152,7 @@ jobs:
   # ── golden ─────────────────────────────────────────────────────────────────────────────────
   # Golden/approval parity. Installs .NET 10 for REAL so the example's require_dotnet cases RUN
   # (this is where the .NET egress deferral finally executes on GitHub runners), then:
-  #   step 1 — root identity golden (converter-agnostic, .NET-free) via pytest tools/golden_runner
+  #   step 1 — the golden runner's own suite (converter-agnostic, .NET-free)
   #   step 2 — example .NET golden parity via pytest examples/log-parser/tests
   golden:
     runs-on: ubuntu-latest
@@ -164,8 +164,8 @@ jobs:
       - uses: astral-sh/setup-uv@v8.3.2
       - name: Sync workspace (all packages)
         run: uv sync --all-packages
-      - name: Golden — root identity (converter-agnostic)
-        run: uv run pytest tools/golden_runner
+      - name: Golden — runner identity (converter-agnostic)
+        run: uv run pytest examples/log-parser/golden_runner
       - name: Golden — example .NET parity (require_dotnet runs)
         run: uv run pytest examples/log-parser/tests
 
@@ -317,7 +317,7 @@ jobs:
       - name: Cross-repo drift — workspace members + edges
         run: uv run python -m tools.contract_drift.drift --workspace
       - name: Cross-repo golden + workspace gates
-        run: uv run pytest tools/workspace_config tools/harness_lint/tests/test_workspace_config.py tools/harness_lint/tests/test_core_no_workspace_member_dep.py tools/golden_runner/tests/test_workspace_golden.py tools/contract_drift/tests/test_workspace_drift.py
+        run: uv run pytest tools/workspace_config tools/harness_lint/tests/test_workspace_config.py tools/harness_lint/tests/test_core_no_workspace_member_dep.py examples/log-parser/golden_runner/tests/test_workspace_golden.py tools/contract_drift/tests/test_workspace_drift.py
 
   # ── gate ───────────────────────────────────────────────────────────────────────────────────
   # Fan-in. Depends on every upstream job; runs even when one fails (if: always()) and FAILS if

@@ -21,7 +21,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from tools.golden_runner.runner import received_path, verified_path
+from golden_runner.runner import received_path, verified_path
 
 HUMAN_TOKEN_ENV = "GOLDEN_APPROVE_HUMAN"
 

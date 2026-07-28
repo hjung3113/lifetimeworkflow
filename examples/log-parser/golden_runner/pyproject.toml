@@ -7,6 +7,6 @@ requires-python = ">=3.11"
 dependencies = []
 
 [tool.uv]
-# Virtual member: no build-system, nothing to package. Invoked as `python -m tools.golden_runner.runner`
-# / `python -m tools.golden_runner.approve`; the normalize core is imported by path from the workspace.
+# Virtual member: no build-system, nothing to package. Invoked as `python -m golden_runner.runner`
+# / `python -m golden_runner.approve`; the normalize core is imported by path from the workspace.
 package = false

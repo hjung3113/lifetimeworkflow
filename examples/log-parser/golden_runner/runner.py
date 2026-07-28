@@ -26,14 +26,16 @@ from dataclasses import dataclass
 from pathlib import Path
 
 # --- import the shared §4-5 core (libs/python is a virtual uv workspace member, not installed) ---
-REPO_ROOT = Path(__file__).resolve().parents[2]  # golden_runner -> tools -> repo root
+REPO_ROOT = Path(__file__).resolve().parents[3]  # golden_runner -> log-parser -> examples -> root
 _LIBS_PYTHON = REPO_ROOT / "libs" / "python"
 if str(_LIBS_PYTHON) not in sys.path:
     sys.path.insert(0, str(_LIBS_PYTHON))
 
 from normalize.core import normalize_tsv  # noqa: E402
 
-GOLDEN_DIR = REPO_ROOT / "golden"
+# Deliberately anchored at the instance root, NOT at REPO_ROOT: the cases live beside this package
+# inside the instance overlay, so this anchor must not follow REPO_ROOT out to the repository root.
+GOLDEN_DIR = Path(__file__).resolve().parents[1] / "golden"
 
 
 class GoldenRunnerError(RuntimeError):
@@ -124,7 +126,7 @@ def compare(
     On mismatch, write ``expected/baseline.received.tsv`` (the raw converter output — the exact
     bytes a human would review) and return FAIL. NEVER touch ``baseline.verified.tsv``.
 
-    ``golden_dir`` overrides the case root (default ``REPO_ROOT/golden``) so the identical
+    ``golden_dir`` overrides the case root (default :data:`GOLDEN_DIR`) so the identical
     §4.3-4.6 compare path serves both the domain golden tree and a tmp/generic instance.
 
     ``case`` is CLI-controlled, so BOTH the verified-baseline read and the received-baseline write
@@ -293,7 +295,7 @@ def workspace_golden_case(
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI: ``python -m tools.golden_runner.runner <case> [--out PATH]``. Exit 0 PASS, 1 FAIL."""
+    """CLI: ``python -m golden_runner.runner <case> [--out PATH]``. Exit 0 PASS, 1 FAIL."""
     import argparse
     import tempfile
 

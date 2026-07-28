@@ -21,16 +21,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
-from tools.golden_runner.runner import (
+from golden_runner.runner import (
     GoldenRunnerError,
     _confine,
     workspace_golden_case,
 )
+
 from tools.workspace_config import load_workspace, members
 
 # tests -> golden_runner -> tools -> repo root (mirrors conftest.py).
-_REPO_ROOT = Path(__file__).resolve().parents[3]
+_REPO_ROOT = Path(__file__).resolve().parents[4]
 
 # The edge-spanning golden case shipped by 11-01 (a case id, not a member-root path literal).
 _EDGE_CASE = "greeting-edge"

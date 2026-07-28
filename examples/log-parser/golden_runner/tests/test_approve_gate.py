@@ -10,9 +10,8 @@ show the mechanism is not dead — the load-bearing assertions here are the refu
 from __future__ import annotations
 
 import pytest
-
-from tools.golden_runner import approve
-from tools.golden_runner.approve import GoldenApprovalRefused, promote
+from golden_runner import approve
+from golden_runner.approve import GoldenApprovalRefused, promote
 
 _ADR = "docs/adr/0001-walking-skeleton-golden-core.md"
 

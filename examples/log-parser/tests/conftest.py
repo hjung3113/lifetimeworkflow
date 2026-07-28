@@ -20,12 +20,13 @@ import pytest
 # --- import path wiring (virtual uv workspace members, not pip-installed) ---------------------
 # tests -> log-parser -> examples -> repo root
 _REPO_ROOT = Path(__file__).resolve().parents[3]
+_INSTANCE_ROOT = Path(__file__).resolve().parents[1]
 _LIBS_PYTHON = _REPO_ROOT / "libs" / "python"
-for _p in (str(_REPO_ROOT), str(_LIBS_PYTHON)):
+for _p in (str(_REPO_ROOT), str(_INSTANCE_ROOT), str(_LIBS_PYTHON)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from tools.golden_runner.runner import resolve_dotnet  # noqa: E402
+from golden_runner.runner import resolve_dotnet  # noqa: E402
 
 # The example's own relocated golden tree + .NET converter project (05-03 move set).
 _EXAMPLE_ROOT = Path(__file__).resolve().parents[1]  # examples/log-parser

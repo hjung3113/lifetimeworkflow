@@ -31,7 +31,7 @@ package = false
 # tools/*      = repo-level Python tools (golden-runner, contract-hash/drift — later plans).
 # uv requires every dir matched by `members` to contain a pyproject.toml, so shell-only tool dirs
 # (tools/bootstrap) must be excluded or `uv sync` fails. components/* (.NET) are not members at all.
-members = ["libs/python", "tools/*"]
+members = ["libs/python", "tools/*", "examples/log-parser/golden_runner"]
 exclude = ["tools/bootstrap"]
 
 [tool.pytest.ini_options]

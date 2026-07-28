@@ -32,7 +32,7 @@ the harness tooling (`tools/*`); it crosses the language boundary only via proce
 
 ## Idioms
 
-- Invoke tools by module path (`python -m tools.golden_runner.runner`), not by file path — it
+- Invoke tools by module path (`python -m tools.contract_drift.drift`), not by file path — it
   keeps the uv workspace import graph honest.
 - Subprocess spawns use a list argv with `shell=False` — never build a shell string from
   arguments (command-injection guard).
