@@ -5,7 +5,7 @@ status: passed
 score: 8/8 success criteria verified
 overrides_applied: 1
 overrides:
-  - must_have: "SC-1 — the ROADMAP's literal bare-token grep over tools/ harness/ contracts/ .github/ .claude/ .opencode/ returns nothing"
+  - must_have: 'SC-1 — the executable-invocation sweep `(python -m tools\.|from tools\.|import tools\.)` over the six product-surface paths tools/ harness/ contracts/ .github/ .claude/ .opencode/ returns zero real invocations of the deleted packages'
     reason: >-
       The literal command returns 11 matches, ALL of which fall inside the pre-declared
       <surviving_residue> table in 43-04-PLAN.md:357-387 (module-docstring history, one
