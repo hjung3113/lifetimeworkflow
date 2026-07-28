@@ -571,6 +571,14 @@ promising golden parity and each instance owns that evidence.
   text omits**: the `workspace` job also runs `tools/golden_runner/tests/test_workspace_golden.py`
   (`ci.yml:336`), so the cross-repo gate must be repointed too, not just the `golden` job.
 
+**Recorded scope extension (2026-07-29, from research):** `tools/hooks/commit_gate.py:42` — a core
+PreToolUse guard — imports `tools.golden_runner.runner`. Neither CER-08 nor CER-09 names it, but after
+the relocation the core suite dies at collection, and repointing the import at `examples/` is hard-failed
+by GEN-04's `test_core_no_example_dep.py`. So **CER-09 also deletes `commit_gate`'s golden-parity
+component** (15 coupled `test_commit_gate.py` tests, not the 2 a reading suggests). Grounded in ADR-0012:
+a pre-commit golden-parity check is exactly the in-session gate that CI and the merge replace. The rest
+of `commit_gate` survives.
+
 **Non-goals:** no replacement for `secret_scan` — not a lighter hook, not a CI job, not a pre-commit
 entry. No shim for the relocated golden stack in the core. `/component` steps 1–3, `tools/contract_graph`
 and the `[components]` slot survive. Projection repair (`caps.py`, `emit-manifest.json`,
