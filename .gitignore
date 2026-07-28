@@ -11,7 +11,8 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
-# Golden machine-proposed baselines (transient; promoted to .verified only by /golden-approve, P9).
+# Golden machine-proposed baselines (transient; promoted to .verified only by a human
+# GOLDEN_APPROVE_HUMAN ratification, gated again by CODEOWNERS at merge).
 # Unanchored `**/` so an INSTANCE's own golden tree (examples/<name>/golden/) is covered too — the
 # root-anchored form left the instance's .received untracked and dirtied the working tree.
 **/golden/**/baseline.received.tsv

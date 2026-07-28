@@ -14,8 +14,9 @@ from pathlib import Path
 
 import pytest
 
-# The four constitution-plane members that .memory/README.md must name (MEM-01).
-CONSTITUTION_MEMBERS = ["contracts/", "docs/adr/", "glossary", "golden/"]
+# The three constitution-plane members that .memory/README.md must name (MEM-01).
+# ADR-0001's fourth member, root `golden/`, is superseded by ADR-0012 clause (d).
+CONSTITUTION_MEMBERS = ["contracts/", "docs/adr/", "glossary"]
 
 
 def _is_git_ignored(repo_root: Path, rel_path: str) -> bool:
@@ -53,7 +54,7 @@ def test_readme_carries_derived_marker(repo_root: Path) -> None:
 
 
 def test_readme_names_all_constitution_members(repo_root: Path) -> None:
-    """README must name all four constitution-plane members (MEM-01 declaration)."""
+    """README must name all three constitution-plane members (MEM-01 declaration)."""
     readme = (repo_root / ".memory" / "README.md").read_text(encoding="utf-8")
     missing = [m for m in CONSTITUTION_MEMBERS if m not in readme]
     assert not missing, f".memory/README.md does not name constitution members: {missing}"
