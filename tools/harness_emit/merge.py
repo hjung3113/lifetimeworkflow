@@ -88,7 +88,6 @@ def splice_managed_block(existing_text: str, block_body: str) -> str:
 HARNESS_SIGNATURES: tuple[str, ...] = (
     "tools.hooks.format_on_write",
     "tools.hooks.contract_guard",
-    "tools.hooks.secret_scan",
     "tools.hooks.commit_gate",
 )
 
@@ -116,8 +115,13 @@ GSD_SIGNATURES: tuple[str, ...] = (
 #: it verbatim as GSD/human-owned, and then runs a module that no longer exists: the guard exits
 #: non-zero, PreToolUse denies every Write/Edit/Bash, and the repair is locked behind the outage it
 #: caused. Reversal of Phase 43's D-06 (and of the same mistake in Phase 41), which specified
-#: emptying this tuple after the re-emit.
-RETIRED_SIGNATURES: tuple[str, ...] = ("tools.hooks.resume_gate",)
+#: emptying this tuple after the re-emit. Phase 44 / CER-08 appends ``tools.hooks.secret_scan``
+#: under the same rule: both entries stay listed permanently, and the tuple is only ever appended
+#: to — never cleared, never reordered.
+RETIRED_SIGNATURES: tuple[str, ...] = (
+    "tools.hooks.resume_gate",
+    "tools.hooks.secret_scan",
+)
 
 #: The canonical harness hook groups the emitter wires, per event. Key order inside each mapping is
 #: AUTHORED (matcher → hooks; type → command → timeout) and MUST match the live committed bytes so
@@ -168,16 +172,6 @@ HARNESS_HOOK_GROUPS: dict[str, list[dict]] = {
                 {
                     "type": "command",
                     "command": _GUARD_PREFIX + "uv run python -m tools.hooks.contract_guard",
-                    "timeout": 10,
-                }
-            ],
-        },
-        {
-            "matcher": "Read|Write|Edit",
-            "hooks": [
-                {
-                    "type": "command",
-                    "command": _GUARD_PREFIX + "uv run python -m tools.hooks.secret_scan",
                     "timeout": 10,
                 }
             ],

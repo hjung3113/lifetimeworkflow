@@ -8,7 +8,7 @@ approved constitution write — denies a payload whose bytes fail the reused POL
 Composition invariants (04-06):
   * CONSTITUTION-ONLY subset: the gate feeds the resolver ``["contracts/**", "docs/adr/**",
     "golden/**"]`` — NOT the full matrix ``path_deny_globs`` union (which also carries ``*.env``,
-    secret_scan's domain). A ``*.env`` write is therefore never mislabeled "constitution plane".
+    outside this gate's domain). A ``*.env`` write is never mislabeled "constitution plane".
   * Empty-string token does NOT bypass: ``approved`` is truthy ONLY on a non-empty, non-blank
     ``GOLDEN_APPROVE_HUMAN`` value (Q1 RESOLVED) — an agent must not fabricate it.
   * Allowed-path byte hygiene is NOT this gate's job: a BOM/CRLF payload into a non-constitution

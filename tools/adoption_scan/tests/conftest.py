@@ -49,8 +49,7 @@ def tmp_minirepo(tmp_path: Path) -> Path:
 
     # (b) secret-by-content: NOT named .env, matches a SECRET_CONTENT_PATTERNS regex
     # (the AKIA[0-9A-Z]{16} AWS-access-key shape) — 16 chars after AKIA. Built by concatenation
-    # so this fixture's own source text never carries a contiguous secret-shaped literal (the
-    # repo's own secret_scan PreToolUse hook would otherwise refuse to write this very file).
+    # so this fixture's own source text never carries a contiguous secret-shaped literal.
     sink_dir = root / "sink"
     sink_dir.mkdir()
     _fixture_aws_key = "AKIA" + "ABCDEFGHIJKLMNOP"

@@ -1,8 +1,8 @@
 """Regime B-json — signature-matched, order-preserving hook-group merge into .claude/settings.json.
 
 This is the single highest-risk surface in Phase 7 (T-07-09 / T-07-11 / Pitfall 4). The Phase 2/4
-harness hooks (``tools.hooks.format_on_write`` / ``contract_guard`` / ``secret_scan`` /
-``commit_gate``) + the ``memory-inject.sh`` injector are ALREADY hand-wired into the LIVE
+harness hooks (``tools.hooks.format_on_write`` / ``contract_guard`` / ``commit_gate``) + the
+``memory-inject.sh`` injector are ALREADY hand-wired into the LIVE
 ``.claude/settings.json`` and guarded by ``tools/memory_regen/tests/test_hook_wiring.py`` (exactly 4
 SessionStart groups). The MVP contract (Open Q2 / A5) is IDEMPOTENT COEXISTENCE:
 
@@ -168,6 +168,11 @@ def test_retired_signatures_are_permanent_tombstones() -> None:
     assert "tools.hooks.resume_gate" in merge.RETIRED_SIGNATURES, (
         "tools.hooks.resume_gate was dropped from RETIRED_SIGNATURES — tombstones are permanent; "
         "a checkout still carrying the pre-43 settings.json would invoke a deleted module"
+    )
+    # Phase 44 / CER-08 — the secret_scan non-goal surface removal.
+    assert "tools.hooks.secret_scan" in merge.RETIRED_SIGNATURES, (
+        "tools.hooks.secret_scan was dropped from RETIRED_SIGNATURES — tombstones are permanent; "
+        "a checkout still carrying the pre-44 settings.json would invoke a deleted module"
     )
 
 

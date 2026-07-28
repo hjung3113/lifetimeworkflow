@@ -1,6 +1,6 @@
 """Shared Claude hook-stdin adapter for the Phase-4 gates (thin, stdlib-only).
 
-Every Phase-4 gate (secret_scan here; contract-guard / boundary / stop gates in plans 03-05)
+Every Phase-4 gate (contract-guard / boundary / stop gates in plans 03-05)
 uses this one seam to translate Claude's untrusted hook stdin JSON into a typed record and back
 into a decision. Keeping it in `_stdin` means the gate modules never re-implement JSON plumbing
 and the plans can add sibling modules without touching each other's files.

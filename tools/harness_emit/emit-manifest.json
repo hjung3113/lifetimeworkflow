@@ -67,7 +67,6 @@
     ".opencode/plugin/contract-guard.ts",
     ".opencode/plugin/format-on-write.ts",
     ".opencode/plugin/polyglot-lint.ts",
-    ".opencode/plugin/secret-scan.ts",
     ".opencode/plugin/session-inject.ts",
     ".opencode/skill/brownfield-adoption/SKILL.md",
     ".opencode/skill/context-budget/SKILL.md",

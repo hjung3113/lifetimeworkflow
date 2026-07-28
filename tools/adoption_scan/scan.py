@@ -13,8 +13,8 @@ must_haves.truths), which is what keeps this module read-only and deterministic.
    module is unaffected by (no filesystem read at scan time; see ``SECRET_PATH_GLOBS``
    for the same "own the constant locally" idiom this module already used for secret-path globs).
 3. Last-wins glob resolution — ``tools.harness_perms.resolve_path`` for the secret-path check
-   (this module's OWN ``SECRET_PATH_GLOBS`` constant — not the hook-specific
-   ``tools.hooks.secret_scan.SECRET_PATH_GLOBS``, since ``scan.py`` is not a hook).
+   (this module's OWN ``SECRET_PATH_GLOBS`` constant, owned locally here since ``scan.py`` is
+   not a hook).
 4. ``hashlib.sha256`` for raw file bytes — never RFC-8785 (that is JSON schema canonicalization
    only, see ``tools.contract_hash``).
 
@@ -50,8 +50,8 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 
 DEFAULT_MAX_FILE_BYTES = 256 * 1024
 
-# This plan's OWN secret-path glob constant (T-26-02 threat model) — deliberately NOT imported
-# from tools.hooks.secret_scan.SECRET_PATH_GLOBS, which is hook-specific.
+# This plan's OWN secret-path glob constant (T-26-02 threat model) — owned locally by this
+# module, never imported from a hook.
 SECRET_PATH_GLOBS = ["*.env", "**/*.env", "*.pem", "*.key", "id_rsa*", ".npmrc", ".netrc"]
 
 # This module's OWN secret-content pattern tuple (D-04/D-05, Phase 42 Plan 03) — inlined

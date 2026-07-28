@@ -55,7 +55,7 @@ truth** and turns every guardrail into something executable:
 | 🧠 | **Two-plane memory** | Human-owned *constitution* (`contracts/`, `docs/adr/`, `golden/`) vs auto-regenerated *derived* (`repo-map`, `contracts-index`, `docs/reference/`) — with a **self-maintaining curator** + CI freshness gate. |
 | 🔁 | **Single-source → dual-runtime** | Author once in `harness/`; emit **byte-identical** to `.opencode/` **and** `.claude/`, enforced by a non-bypassable `emit-drift` CI job. |
 | 🌐 | **Polyglot boundary** | Language boundary = process/file/DB only (never in-process object passing); a boundary linter enforces the §4.3–4.6 canonicalization invariants on wire files. |
-| 🪝 | **Runtime hooks** | `contract-guard`, `polyglot-lint`, `format-on-write`, `secret-scan`, `commit-gate` — prose advice made enforceable. |
+| 🪝 | **Runtime hooks** | `contract-guard`, `polyglot-lint`, `format-on-write`, `commit-gate` — prose advice made enforceable. |
 | 🧩 | **Multi-repo workspace** | `workspace.toml` declares member repos + cross-repo edges; drift/golden gates and pipeline topology extend across repo boundaries. |
 | 🚦 | **CI fan-in** | A multi-job matrix (`setup, lang-tests, contract-check, drift, golden, core-suite, lint, emit-drift, stale-derived, workspace, gate`) all green before merge. |
 

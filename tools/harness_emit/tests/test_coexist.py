@@ -160,16 +160,6 @@ _SEED_SETTINGS = {
                 ],
             },
             {
-                "matcher": "Read|Write|Edit",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": _GUARD_PREFIX + "uv run python -m tools.hooks.secret_scan",
-                        "timeout": 10,
-                    }
-                ],
-            },
-            {
                 "matcher": "Bash",
                 "hooks": [
                     {

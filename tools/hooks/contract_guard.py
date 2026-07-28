@@ -16,8 +16,7 @@ the CONSTITUTION plane (``contracts/**`` · ``docs/adr/**`` · ``golden/**`` · 
 Composition invariants (04-06):
   * CONSTITUTION-ONLY subset (W-1): this gate feeds the reused resolver ``CONSTITUTION_GLOBS`` —
     NOT the full matrix ``path_deny_globs`` union (which also carries ``*.env``). ``*.env`` is
-    secret_scan's ``SECRET_PATH_GLOBS`` domain; the two gates' domains are provably disjoint, so a
-    ``.env`` write is never mislabeled "constitution plane" here.
+    outside this gate's domain, so a ``.env`` write is never mislabeled "constitution plane" here.
   * Allowed-path byte hygiene is NOT this gate's job: a BOM/CRLF payload into a non-constitution
     path returns ``None`` — general byte hygiene is format-on-write's PostToolUse auto-fix (04-04).
     contract-guard must not preempt it.
@@ -37,8 +36,8 @@ from tools.harness_perms import resolve_path
 from tools.hooks._stdin import dev_bypassed, emit_deny, parse_event, read_stdin, repo_relative
 from tools.polyglot_lint import lint_bytes
 
-# CONSTITUTION-ONLY subset — the human-owned, CODEOWNERS-gated plane. Deliberately EXCLUDES *.env
-# (secret_scan's SECRET_PATH_GLOBS domain) so the two gates are provably non-overlapping (W-1).
+# CONSTITUTION-ONLY subset — the human-owned, CODEOWNERS-gated plane. Deliberately EXCLUDES *.env,
+# which is outside this gate's domain (W-1).
 # Fed to the reused CONFIG-02 resolver (D-02) — no new glob matcher.
 #
 # The four members are DECLARED by `docs/adr/0001-walking-skeleton-golden-core.md:48` (accepted,
