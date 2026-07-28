@@ -20,7 +20,7 @@ skill is the map: which plane a file is in, and what that permits.
   contract is the code that is wrong. ADRs are append-only (supersede, never edit).
 - **Committed?** Yes — it *is* the versioned truth.
 - **Changed how?** Only through the gated path: schema-drift + a paired golden update + an ADR, with
-  human ratification (see the `gate-model` skill). Never a silent tweak.
+  human ratification. Never a silent tweak.
 
 ## Plane 2 — Derived / volatile (machine-owned, regenerated)
 
@@ -70,7 +70,6 @@ specific contract only when the task needs it. The SessionStart injector (and `/
 that capped, pointer-only, data-authority-banner-first payload — never a full schema body.
 
 ## Related
-- `harness/skills/gate-model/SKILL.md` — how the constitution plane is enforced.
 - `/orient` — regenerate + surface the derived plane. `/checkpoint` — persist the committed state tier.
 - `/refresh-memory` — regenerate the FULL derived set (incl. the committed-derived tier) before
   handoff; the local counterpart of the CI `stale-derived` gate.

@@ -36,7 +36,7 @@ suggestion. Scope the review to:
 - **Contract-first** — does code disagree with a `contracts/` schema? The code is wrong, not the
   contract.
 - **Least privilege / gates** — any new broad permission, any attempt to write the constitution
-  plane or self-bless a golden (see `gate-model`).
+  plane or self-bless a golden.
 - **Simplicity / reuse** — re-implementation of an existing `tools/` capability (forbidden).
 
 ## 4. Return findings to the scoped engineer

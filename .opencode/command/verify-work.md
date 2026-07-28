@@ -56,4 +56,4 @@ change and exits 0. Uses `git add -A` (not bare `git diff`) so a NEW untracked p
 - All five must be green before handoff. The .NET side of lint/test is presence-gated (announced
   skip when the SDK is absent — BOOT-01 egress deferral), so this stays runnable in-container.
 - Green here is a *preview*, not a substitute for CI + human ratification of any constitution-plane
-  change (see `gate-model`).
+  change.

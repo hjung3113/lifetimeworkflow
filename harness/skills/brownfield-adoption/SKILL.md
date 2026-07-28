@@ -13,9 +13,9 @@ description: >-
 
 **Why this is a new skill, not an extension of an existing one:** none of this harness's other
 skills (`python-conventions`, `golden-testing`, `data-contracts`, `skill-creator`, `golden-debug`,
-`polyglot-boundary`, `gate-model`, `two-plane-memory`, `pipeline-map`, `fan-out-synthesize`,
+`polyglot-boundary`, `two-plane-memory`, `pipeline-map`, `fan-out-synthesize`,
 `context-budget`) own the discover→draft→apply adoption lifecycle. The closest
-candidates — `data-contracts` and `gate-model` — are about authoring or checking contracts already
+candidate — `data-contracts` — is about authoring or checking contracts already
 known to exist, not about discovering an UNKNOWN brownfield tree and proposing what its contracts
 might be. That is a genuinely disjoint routing trigger, so a new skill directory is justified
 (skill-creator Step 0).
@@ -56,7 +56,5 @@ any Claude tool-call hook, since a bare CLI/CI invocation has no hook in the loo
 
 - `harness/commands/adopt.md` — the `/adopt` command invokes each stage's module by a fixed
   `python -m tools.adoption_scan`/`tools.adoption_apply <sub-verb>` argv form.
-- `harness/skills/gate-model/SKILL.md` — the general refuse-by-default human-gate pattern that
-  governs the constitution-plane refusal `apply` performs before any write.
 - `harness/skills/data-contracts/SKILL.md` — authoring/checking contracts already known to exist,
   the disjoint sibling concern this skill does not cover.

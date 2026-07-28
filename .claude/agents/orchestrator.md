@@ -82,7 +82,6 @@ table is stale.
 | Golden went red | scoped engineer | `golden-debug` skill, `/golden` |
 | Cross-language / §4.3–4.6 boundary question | scoped engineer | `polyglot-boundary` skill |
 | Review written code | **code-reviewer** (read-only) | `/review` |
-| "Is this allowed / why is it blocked?" | (self) | `gate-model` skill |
 | "Should I delegate this or work inline?" | (self) | `context-budget` skill |
 | Large surface to cover / would balloon one context | (self) fan out | `fan-out-synthesize` skill, `/fan-out-synthesize` |
 | Analyze a multi-repo workspace / cover several member repos | (self) fan out, one read-only worker per member repo | `fan-out-synthesize` skill, `/fan-out-synthesize` |

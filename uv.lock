@@ -19,11 +19,9 @@ members = [
     "logparser-harness-perms",
     "logparser-hooks",
     "logparser-memory-regen",
-    "logparser-memory-ui",
     "logparser-normalize",
     "logparser-polyglot-lint",
     "logparser-ruff-baseline",
-    "logparser-strangler-guard",
     "logparser-workspace-config",
 ]
 
@@ -333,11 +331,6 @@ requires-dist = [
 ]
 
 [[package]]
-name = "logparser-memory-ui"
-version = "0.0.0"
-source = { virtual = "tools/memory_ui" }
-
-[[package]]
 name = "logparser-normalize"
 version = "0.0.0"
 source = { virtual = "libs/python" }
@@ -351,11 +344,6 @@ source = { virtual = "tools/polyglot_lint" }
 name = "logparser-ruff-baseline"
 version = "0.0.0"
 source = { virtual = "tools/ruff_baseline" }
-
-[[package]]
-name = "logparser-strangler-guard"
-version = "0.0.0"
-source = { virtual = "tools/strangler_guard" }
 
 [[package]]
 name = "logparser-workspace-config"

@@ -127,7 +127,8 @@ _XML_CHARS = ("<", ">")
 # context-budget (the delegate-vs-inline heuristic that routes into it).
 # Phase 43 (Lifecycle Plane Removal, CER-07) removes the five DISCIPLINE skills Phase 36 added,
 # together with the lane-discipline declarations that named them and the wiring gate that checked
-# them. The twelve entries below are the whole set.
+# them. Phase 44 (Non-Goal Surface Removal, CER-08) removes `gate-model` together with the orphan
+# migration-step command and tool package it documented. The eleven entries below are the whole set.
 # No more, no fewer (anti-sprawl).
 EXPECTED_SKILLS = frozenset(
     {
@@ -137,7 +138,6 @@ EXPECTED_SKILLS = frozenset(
         "skill-creator",
         "golden-debug",
         "polyglot-boundary",
-        "gate-model",
         "two-plane-memory",
         "pipeline-map",
         "fan-out-synthesize",

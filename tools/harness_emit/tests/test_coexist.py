@@ -37,8 +37,8 @@ def _claude_commands(tmp_path: Path, written: list[Path]) -> list[Path]:
     return [p for p in written if commands_dir in p.parents and p.suffix == ".md"]
 
 
-def test_all_21_commands_emit_to_both_trees(tmp_path: Path) -> None:
-    """21 commands land in .opencode/command/*.md AND .claude/commands/*.md (top-level).
+def test_all_20_commands_emit_to_both_trees(tmp_path: Path) -> None:
+    """20 commands land in .opencode/command/*.md AND .claude/commands/*.md (top-level).
 
     Phase 9 adds /refresh-memory (the curator's local derived-freshness macro), taking the count
     from 17 → 18; Phase 10 adds /fan-out-synthesize (the context-economy fan-out entry point),
@@ -51,6 +51,8 @@ def test_all_21_commands_emit_to_both_trees(tmp_path: Path) -> None:
     Phase 41 deletes `/docs-update` (the docs-review plane removal, CER-05), taking it back 26 → 25.
     Phase 43 deletes /intake, /phase-gate, /handoff, /discipline (the lifecycle-plane removal,
     CER-07), taking it 25 → 21.
+    Phase 44 deletes the orphan migration-step command (the non-goal surface removal, CER-08),
+    taking it 21 → 20.
 
     This count tracks the runtime-neutral SOURCE (``harness/commands/*.md``), NOT the committed
     ``.opencode/`` / ``.claude/`` trees: ``_emit`` projects into ``tmp_path``. So authoring a new
@@ -67,8 +69,8 @@ def test_all_21_commands_emit_to_both_trees(tmp_path: Path) -> None:
         if (tmp_path / ".opencode" / "command") in p.parents and p.suffix == ".md"
     ]
     claude_cmds = _claude_commands(tmp_path, written)
-    assert len(opencode_cmds) == 21, f"expected 21 opencode commands, got {len(opencode_cmds)}"
-    assert len(claude_cmds) == 21, f"expected 21 Claude commands, got {len(claude_cmds)}"
+    assert len(opencode_cmds) == 20, f"expected 20 opencode commands, got {len(opencode_cmds)}"
+    assert len(claude_cmds) == 20, f"expected 20 Claude commands, got {len(claude_cmds)}"
 
 
 def test_harness_commands_are_top_level_never_under_gsd(tmp_path: Path) -> None:
