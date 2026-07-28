@@ -619,6 +619,105 @@ commit as the deletion that invalidates it, and sweep **both** `gate-registry`/`
 7. `uv run pytest -q` green at every commit; `emit-drift`, `stale-derived`, `contract-drift`, ruff ratchet clean; `uv.lock` refreshed.
 8. Net surface change is deletion or relocation only — **+0** gates, tools, contracts, or dependencies.
 
+#### Phase 45: Projection Repair
+
+**Goal:** After four deletion phases removed ~25k LOC, make the repo's own account of itself true
+again. Every surviving file that names a deleted control, path, or command is either corrected or
+recorded as a deliberate history note — and no gate is left claiming a protection it no longer
+provides.
+
+This phase is larger than "prose scrub". Phases 41–44 each deferred residue here, and the reviews
+found that the most dangerous residue is not stale prose but **a control whose scope silently emptied**.
+
+**Requirements:** CER-10, CER-11
+
+**Scope** (every item verified present, 2026-07-29):
+
+*Tier 1 — controls that no longer control anything (do these first):*
+- **`tools/hooks/contract_guard.py:53`** — `CONSTITUTION_GLOBS` still lists `golden/**`. Root
+  `golden/` was deleted in Phase 44 and the baselines now live at `examples/log-parser/golden/`, which
+  that repo-root-anchored glob does not match. **Measured: all 7 relocated baselines match NOTHING.**
+  Phase 44 recorded this downgrade as accepted (`44-06-SUMMARY.md:311-316`) on the ground that widening
+  the glob would be SC-8 surface growth, with `/examples/*/golden/ @hjung3113` in CODEOWNERS as the
+  compensating control. ⚠ **Re-open that reasoning here:** repointing an existing glob to follow files
+  it already covered is maintaining scope, not growing surface — growth would be a *new* gate. Decide
+  deliberately between repointing and removing the dead entry, but do not leave a glob that matches
+  zero paths while its comment claims a plane. Note the member list is declared by `docs/adr/0001:48`
+  and pinned by `test_every_declared_plane_member_is_independently_enforced`, so a change may need
+  ADR cover.
+- **`.github/CODEOWNERS:30`** — still routes `/golden/`, a directory Phase 44 deleted. `:36` correctly
+  covers the new path; `:30` is dead.
+- **`harness/permission-matrix.json` `path_deny_globs`** — its `*.env` secret rows lost their only
+  enforcer when `secret_scan` was deleted (`contract_guard` explicitly excludes them), and
+  `tools/harness_perms/tests/test_resolver.py:64` still asserts `config/prod.env` → `deny`, keeping a
+  claimed control green. `:60` likewise asserts `golden/case.verified` → `deny` against the old path.
+
+*Tier 2 — dangling references (CER-11):*
+- Root **`AGENTS.md`**: `:8-9` calls the guard hooks "the true backstop" (false after Phase 44's
+  `secret_scan` removal), and `:66,67,84` still ship `python -m tools.golden_runner.runner` /
+  `.approve` and name `golden_runner` in the engine list. `:8-9` and `:66-67` sit **outside** the
+  emitter's HARNESS-MANAGED block, so a re-emit will not repair them.
+- **`tools/hooks/contract_guard.py:9,55,75,89`** — names `/golden-approve` (a command Phase 44 retired)
+  in live refusal text, plus a stale `tools/golden_runner/approve.py` path; asserted by
+  `tools/hooks/tests/test_contract_guard.py:51,288`.
+- **`README.md:119`**; **`README.ko.md` whole file** — `:79` labels `harness/task-control/` (deleted in
+  Phase 43) and it also carries stale `golden/` and `tools/golden_runner` lines. ⚠ Every prior deferral
+  list named `README.md` and never the Korean file; that gap is why it survived four phases.
+- **`docs/`** — `glossary.md:20`, `how-to/README.md:11`, and `how-to/approve-a-golden.md` (whole file)
+  carry `/golden-approve`; `how-to/task-lifecycle.md` (8 command blocks invoking 7 deleted modules),
+  `explanation/task-lifecycle-shadow-metrics.md`, `explanation/next-milestone-task-control-plane.md`,
+  `how-to/README.md`, `adr/README.md`, and `explanation/agent-workflow-skillset-design-guide.md` carry
+  Phase-43 plane prose. ⚠ `docs/` sits outside every sweep the harness runs and `tools/docs_guard` was
+  deleted in Phase 41, so nothing gates any of this.
+- **`tools/adoption_scan/tests/test_install_completeness.py:196`** — `test_discovers_at_least_twelve_modules`
+  now asserts `>= 11`. Mechanical rename, no callers.
+- **`tools/hooks/commit_gate.py:18,60,203`** — a surviving `SKIP` vocabulary describing a state no
+  component can produce after the golden-parity amputation.
+
+*Tier 3 — CER-10 re-emit + drained assertions:*
+- `caps.py` frozensets, `emit-manifest.json`, `HARNESS_SIGNATURES`, `contracts/.hashes/manifest.json`,
+  `docs/reference/**`, `.memory/derived/contracts-index.md`, the syrupy snapshots, `gate.needs`.
+  Much of this was kept green per-commit by Phases 43–44, so verify rather than assume work remains.
+- **`tools/harness_lint/tests/test_topology_relationships.py:54-57`** — `test_output_is_deterministic`
+  now asserts `[] == []`; verified live that `effective_relationships(load_project())` returns `[]`.
+  Deleting its sibling drained it.
+- **`tools/harness_lint/tests/test_ci_paths.py`** (Phase 44's CI-path assertion) hard-requires
+  `examples/**` — 3 of its 8 discovered tokens — while living in the core suite. Deleting the reference
+  instance, which ADR-0002 explicitly invites, turns the **core** suite red, and
+  `test_core_no_example_dep.py` cannot see it (`_CORE_ROOTS` scans neither `pyproject.toml` nor `.github/`).
+- **`harness/agents/templates/component-engineer.md`** — still shipped and gated, its header still says
+  "`/component` instantiates a COPY of this file", but Phase 44 deleted the step that did so.
+
+*Tier 4 — the record itself:*
+- **ADR-0008** still reads `Status: Accepted`, `Superseded by: —` while Phase 43 deleted the plane it
+  governs; ADR-0012 supersedes 0001 and 0010 but never mentions 0008. In a repo whose stated precedence
+  is "accepted ADRs win a data conflict against code", it currently tells agents the deletion was the
+  error. The supersede-don't-edit convention means this needs a **new ADR**, which is a human-gated call.
+- **Phase 43's SC-1 wording** can never pass as literally written — the negative-control fixture at
+  `tools/contract_graph/tests/test_query.py:75-78` must contain the forbidden strings for the assertion
+  above it to mean anything. `43-VERIFICATION.md` recorded an executable-invocation override; correct
+  the wording rather than leaving it to be hand-waived.
+
+**Non-goals:** no new gate, tool, contract, or dependency — the binding constraint still holds, and a
+"prose freshness checker" is exactly the class this milestone removes. Do not re-add `docs_guard`. Do
+not delete history notes that name a retired artifact **in order to record its retirement** (`caps.py:124,134`,
+`test_coexist.py:56`, `test_commands.py:42`) — Phase 43 and 44 executors each correctly refused to strip
+those to force a clean grep. Product lifecycle work is Phase 46's.
+
+**Accepted consequence:** some residue is legitimate and stays — the relocated `golden_runner` package
+implements the approve gate and will keep naming it; append-only ADR text keeps naming deleted surface
+by design. This phase must distinguish those from staleness rather than sweeping by token.
+
+**Success Criteria**:
+1. No glob, deny-list entry, or CODEOWNERS route in the repo matches zero paths while claiming to protect a plane — asserted mechanically, not by reading.
+2. `contract_guard`'s constitution decision is explicit: either the relocated goldens are covered again, or their exclusion is recorded with ADR cover and the dead `golden/**` entry removed. No third state.
+3. `harness/permission-matrix.json` declares no deny row without a live enforcer, and no test asserts a deny that nothing performs.
+4. Root `AGENTS.md` names no deleted module, command, or hook — including `:8-9` and `:66-67`, which lie outside the emitter's managed block.
+5. `README.md`, `README.ko.md` and every file under `docs/` name no deleted surface except inside append-only ADR text or an explicit history note.
+6. No surviving test asserts a tautology drained by a deletion (`[] == []`), and no test name contradicts its own assertion.
+7. `emit-drift`, `stale-derived`, `contract-drift` and the ruff ratchet are green with an empty diff; `uv run pytest -q` green at every commit.
+8. Net surface change is **+0** gates, tools, contracts, or dependencies.
+
 ### 📋 v2.6 Minimal Monorepo Core (Phases 47–50) — SCOPED, NOT STARTED
 
 Smallest goal-complete subset = all of v2.5 **+ 47 + 49**. ① is already covered by the lint adapters +
