@@ -1,0 +1,66 @@
+---
+description: >-
+  Use when starting or resuming any unit of product work — names the four routes
+  (small-change, bugfix, feature, contract-change), picks one, and states the literal next step.
+  Invoke when you do not know which route you are on.
+agent: orchestrator
+subtask: false
+---
+
+# /flow — the entry point: pick a route, record where you are, resume
+
+One command for "what am I doing and what is the next literal step". It routes; it does not
+execute. `/checkpoint` and `/orient` do the running.
+
+## 1. Pick a route
+
+Exactly one of four. If none fits, **stop and ask** — there is no fifth route, and do not blend
+two. `research` is deliberately **not** a route: it ends in a document, not a change, and the
+`explorer` persona plus `/fan-out-synthesize` already cover it.
+
+| Route | Use it when | Owner |
+|-------|-------------|-------|
+| `small-change` | one file, shape already known, nothing under `contracts/` | the component engineer the declared instance registers, else `python-engineer` |
+| `bugfix` | observed behaviour differs from a contract, a test, or documented intent, and it reproduces | the engineer owning the path, after `explorer` locates it |
+| `feature` | the capability does not exist yet and more than one file will change | `orchestrator` decomposes, then the owning engineers |
+| `contract-change` | the change lands on an entry under `contracts/` | both sides of the declared edge, one at a time |
+
+The **steps** for each route live in `harness/agents/orchestrator.md`, under its `## Route:`
+sections — one per route, each with *When to use*, *Steps*, *Repository evidence*, *Stop condition*,
+*Next command*. That file is the authority; read the section for your route there and follow it. Do
+not work from this table alone, and do not restate those steps anywhere else.
+
+## 2. Record where you are
+
+Three lines. Route, step, next command. They go in `.memory/state/activeContext.md` under
+`## In flight` / `## Next`, and they are written by `/checkpoint`.
+
+**There is no new state file, no new writer, and no new reader.** Do not create one.
+
+Write literally this shape:
+
+```text
+- Route: contract-change
+- Step: 3 of 5 — failing case
+- Next command: /contract-check
+```
+
+Run `/checkpoint` to persist them. Do that before a risky step and at the end of a session,
+because the container is ephemeral and only the committed state plane survives it.
+
+## 3. Resume
+
+Run `/orient`. It regenerates the derived plane and prints the pointer payload. That payload
+carries a **pointer** to `.memory/state/activeContext.md` — it never inlines the file's body. Open
+the file the pointer names and read the three lines from §2: they tell you the route, the step you
+stopped on, and the one command to run next. Then continue that route from that step.
+
+## 4. Finish
+
+Every handoff returns the six-field completion contract defined in the orchestrator's
+`### Completion contract` section. Return it verbatim from there; it is not re-copied here.
+
+## Notes
+
+- This command is a router: it carries no shell block and grants no new permission.
+- One route at a time. Widening scope mid-route is the signal to stop and re-route, not to continue.

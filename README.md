@@ -118,8 +118,8 @@ uv run python -m tools.contract_drift.drift --workspace # across workspace.toml 
 
 Common developer flows are packaged as **commands/skills** (emitted to both runtimes):
 `/add-language`, `/adopt`, `/adr`, `/agree`, `/build`, `/checkpoint`, `/component`,
-`/contract-check`, `/docs-sync`, `/fan-out-synthesize`, `/lint`, `/new-contract-rule`, `/orient`,
-`/refresh-memory`, `/review`, `/test`, and `/verify-work`.
+`/contract-check`, `/docs-sync`, `/fan-out-synthesize`, `/flow`, `/lint`, `/new-contract-rule`,
+`/orient`, `/refresh-memory`, `/review`, `/test`, and `/verify-work`.
 
 ## 📁 Repository layout
 
