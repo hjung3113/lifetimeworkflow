@@ -718,6 +718,70 @@ by design. This phase must distinguish those from staleness rather than sweeping
 7. `emit-drift`, `stale-derived`, `contract-drift` and the ruff ratchet are green with an empty diff; `uv run pytest -q` green at every commit.
 8. Net surface change is **+0** gates, tools, contracts, or dependencies.
 
+#### Phase 46: Product Flow
+
+**Goal:** Give the **product** a lifecycle. Seven phases removed ~25k LOC of dev-side ceremony; this
+one repays it on the other side of the DEV/PRODUCT boundary — the deployed harness, driven by a weaker
+in-house model with no GSD to fall back on, gets four named routes and one entry point.
+
+`harness/agents/orchestrator.md` already declares itself *"the only planner in the deployed harness
+(GSD is dev-side and is not emitted)"* (`:45`). This phase makes that claim true.
+
+**Requirements:** PROD-02, PROD-03, PROD-04, PROD-05
+
+**Scope** (measured 2026-07-29 — see the ⚠ corrections, the requirement prose predates phases 43–45):
+- **Four route sections** in `orchestrator.md`: `small-change · bugfix · feature · contract-change`,
+  each with an explicit stop condition, the delegation-packet fields, and the **six-field completion
+  contract** — `Outcome · Artifacts or changes · Verification · Decisions and assumptions ·
+  Risks or unresolved items · Next command` (verified verbatim at
+  `docs/references/opencode-matt-workflows/WORKFLOW_CONTRACTS.md:39-46`).
+  `contract-change` exists because it is the one route where this harness is **not** repo-agnostic.
+  `research` is deliberately absent — it terminates in a document, and `explorer` +
+  `fan-out-synthesize` + `context-budget` already cover it.
+- **Retire the routing decision table.** ⚠ **Corrections:** it starts at **`:72`** and has **19 rows**,
+  not the "25-row (`:90-129`)" the requirement states — phases 43–44 deleted the personas those rows
+  named. `orchestrator.md` is **102 lines**, not 129.
+- ⚠ **PROD-02's "8 dangling citations" are already gone.** All twelve command citations in
+  `orchestrator.md` resolve to live artifacts today (`/add-language`, `/checkpoint`, `/component`,
+  `/contract-check`, `/fan-out-synthesize`, `/lint`, `/new-contract-rule`, `/orient`, `/review`,
+  `/test`, `/verify-work`, plus `tools.harness_config` and `tools.contract_graph`). Phases 43–45
+  discharged this clause; **verify, do not redo.**
+- **PROD-03 — five deleted discipline skills become ~20 lines of prose** in the file already being
+  rewritten: bugfix → reproduce before fixing; feature → settle vocabulary first; contract-change →
+  contract entry, then failing case, then code; all → red before green.
+- **PROD-04 — exactly one new command**, `harness/commands/flow.md`, as the product's named entry
+  point. **Route · step · next command** are recorded in the already-shipped
+  `.memory/state/activeContext.md` (`destinations.py:151`), written by the existing `/checkpoint`
+  and read by the existing `/orient`. **No `.flow/state.md`, no router agent, no new skill, no new
+  contract, no new CI job, no new hook** — net **+1 command, +0 everything else**, against 9 retired
+  across this milestone (live count: **17** commands).
+- **PROD-05 — each route's *Repository evidence* section is filled from monorepo facts the harness
+  alone can compute**, using the existing `harness_config` + `contract_graph` surfaces, worded so
+  v2.6's `/impact` slots in without a rewrite. This is the differentiator: the vendored matt flows are
+  repo-agnostic; these are not.
+
+**Non-goals:** **zero flow artifacts are imported.** `docs/references/opencode-matt-workflows/` is a
+pinned **DEV-only** vendored reference (79 files) and stays that way; the mattpocock upstream skills are
+**not** a product dependency even optionally — the vendored contract says *stop* when one is missing
+(`UPSTREAM_SKILLS.md:34-42`), so "degrades gracefully" was false. No second command, no state file, no
+router agent. The binding constraint still holds: the surface may not grow beyond the one command
+PROD-04 names.
+
+**Accepted consequence:** the deployed harness gains a lifecycle it did not have, authored as prose in
+files that already ship. Nothing enforces route adherence — that is deliberate, and consistent with
+ADR-0012: CI and the merge are the authority, and a route-compliance gate would be exactly the ceremony
+this milestone removed.
+
+**Success Criteria**:
+1. `harness/agents/orchestrator.md` contains four route sections — `small-change`, `bugfix`, `feature`, `contract-change` — each with an explicit stop condition and the delegation-packet fields.
+2. The six-field completion contract appears verbatim, and `research` appears as no route.
+3. The 19-row routing decision table is gone, and every command or module the rewritten file cites resolves to a live artifact (asserted mechanically, not by eye).
+4. Each of the five retired discipline skills leaves one operative sentence in the route that needed it.
+5. `harness/commands/flow.md` exists and is the only command added; `ls harness/commands/*.md` returns **18**.
+6. Route · step · next command round-trip through `.memory/state/activeContext.md` via the existing `/checkpoint` → `/orient` pair — no new state file, no new writer, no new reader.
+7. Each route's *Repository evidence* section cites only `harness_config` / `contract_graph` facts that resolve today, and no file from the vendored bundle is imported or depended on.
+8. `uv run pytest -q` green at every commit; `emit-drift`, `stale-derived`, `contract-drift`, ruff ratchet clean. Net surface change: **+1 command, +0** gates, tools, contracts, skills, agents, hooks, or dependencies.
+
 ### 📋 v2.6 Minimal Monorepo Core (Phases 47–50) — SCOPED, NOT STARTED
 
 Smallest goal-complete subset = all of v2.5 **+ 47 + 49**. ① is already covered by the lint adapters +
