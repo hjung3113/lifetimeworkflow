@@ -134,6 +134,69 @@ contract, or dependency: a "prose freshness checker" is exactly the class this m
 - **D-23:** Report whole-phase LOC from `git diff --shortstat` (measured). Expect a small net deletion:
   this phase corrects and deletes prose, it does not remove machinery.
 
+### Corrections from research (2026-07-29) — these override the text above
+
+- **D-02 undercounts: the constitution declaration has ELEVEN copies, not four.** The four named are
+  correct but incomplete. Also carrying it: `tools/harness_lint/tests/test_agents.py:44,198`
+  (`_CONSTITUTION_DENY_GLOBS`), `tools/adoption_apply/tests/test_constitution_refusal.py:48`, and three
+  prose copies — `AGENTS.md:27-28`, `.github/CODEOWNERS:6-7,27`, and `contract_guard.py:87` **inside the
+  live refusal string**. Measured: removing `golden/**` from both data sites and repairing nothing
+  yields **7 failures, all runtime assertions, zero collection errors** — `pytest --collect-only` sees
+  none of it. Full Tier 1 as one 7-file commit lands at **874 passed**.
+- **Tier 1 does not touch the emitted trees** (verified by re-running the emitter: only the two source
+  files moved). The one Phase-45 target that does is `harness/skills/two-plane-memory/SKILL.md:17`,
+  needing a 4-file commit including a `--snapshot-update`.
+- **CER-10 is already satisfied.** Emitter, `contract_hash.hash`, `docs_sync.generate` and
+  `memory_regen.contracts_index` all produce an empty diff at clean HEAD; `gate.needs` lists 10 jobs
+  and all 10 exist. The only residue is a stale `.ruff-baseline` (`total: 84`, live 73). **Verify
+  rather than assume work remains.**
+- **Three items in D-10/D-11/D-13 are factually wrong.** `tools/harness_lint/tests/test_ci_paths.py`
+  does not exist — the CI-path test lives in `tools/adoption_scan/tests/test_install_completeness.py`.
+  `docs/how-to/approve-a-golden.md` is **already deleted**; the live defect is the dangling link at
+  `docs/how-to/README.md:11`. `test_topology_relationships.py` is under `tools/harness_config/`, not
+  `harness_lint/`. Separately, `REQUIREMENTS.md:105` and `ROADMAP.md:245` both cite `AGENTS.md:52-62`
+  for the golden-path table, which is actually at **`:62-71`**.
+- **The `AGENTS.md` managed block is exactly `:100-109`.** Every Phase-45 target is outside it, so
+  hand-editing is correct and a re-emit was verified not to revert them.
+- **`path_deny_globs` is read by NO production code.** Every enforced `resolve_path` call uses a
+  hardcoded module constant; the constitution rows survive only because `contract_guard` duplicates the
+  list. This makes D-04's removal cheaper than assumed — 3 runtime failures
+  (`test_resolver.py:64`, `test_order_resolution.py:122` ×2 params). `:130` is unaffected; CONTEXT
+  flagged it unnecessarily.
+- **Two more dead controls, unnamed until now.** `.github/CODEOWNERS:32` routes `/approvals/`, a
+  directory that does not exist, inside the constitution block. `tools/adoption_scan/destinations.py:144`
+  (`golden/**/*`) is dead under its own matcher; removing it costs zero tests.
+- **D-13 is 6× larger than recorded.** `git rm -r examples/` reds **6 core tests across 4 modules**, but
+  4 fail because `harness/project.toml`'s `[instance]` slot points at the instance — arguably correct
+  per ADR-0002. Fixing only the `ci.yml` one would manufacture a false independence claim. **Scope
+  deliberately or defer whole.**
+- **`docs/references/opencode-matt-workflows/` is a vendored 79-file third-party bundle inside `docs/`**
+  — the largest false-positive source in the phase. Exclude it from every sweep.
+- **ADR-0003 has ADR-0008's defect and nobody named it.** `docs/adr/0008:50` cites
+  `next-milestone-task-control-plane.md` and `docs/adr/0003:95` cites `component-engineer.md`. Both ADRs
+  are accepted and append-only, so **deleting either target creates a permanent dangling reference from
+  the constitution plane.** This constrains D-10 and D-12 directly.
+- **SC-1's zero-match assertion is only half-buildable.** The glob half fits inside existing modules
+  (`test_agents.py:188`, `test_contract_guard.py:352`) as coverage of declarations they already load,
+  with precedent from two existing `git ls-files`-grounded guards. The **CODEOWNERS half can only be a
+  new parser** — no test reads that file's routes — so SC-8 forbids it. **Decline the CODEOWNERS half
+  and satisfy SC-1 by deleting the two dead routes.**
+
+### ⚠ Recorded risk for the owner — CODEOWNERS is advisory on this repo
+
+- **D-24:** D-01 removes the last *enforcing* control on golden self-blessing. Measured via
+  `gh api repos/hjung3113/lifetimeworkflow/branches/main/protection`: `main` requires the `gate` status
+  check (strict) but has **no `required_pull_request_reviews` block at all**, and `enforce_admins` is
+  `false`. So "Require review from Code Owners" is OFF and `CODEOWNERS:36` auto-requests the owner as a
+  reviewer without being able to block the merge — exactly as `.github/CODEOWNERS:9-14` warns. The
+  required `gate` check does not close this: CI validates against whatever baseline is committed, so a
+  mutated `baseline.verified.tsv` makes CI green.
+  **Proceed with D-01 anyway** — ADR-0012 clause (d) ratified it, and in-session gates are what this
+  milestone retires. But record the residual plainly and surface the one-toggle remedy at the
+  milestone-close PR; it is a repo-settings action no file in this repo can perform:
+  `gh api -X PUT repos/hjung3113/lifetimeworkflow/branches/main/protection/required_pull_request_reviews -f require_code_owner_reviews=true`.
+  Do NOT add an in-session hook to compensate — that is the surface growth the constraint forbids.
+
 ### Claude's Discretion
 
 - Plan/task decomposition and wave count. Tier 1 (D-01…D-04) should land first and separately — it is
