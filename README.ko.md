@@ -42,11 +42,11 @@
 |---|---|
 | **계약 우선(Contract-first)** | `contracts/`가 코드보다 우선. 변경은 RFC 8785로 정규화 → SHA-256 → 커밋된 해시. CI가 재계산해 **골든 갱신 없는 드리프트면 실패**. |
 | **골든 등가(Golden equivalence)** | 레거시↔신규 비교가 순진한 byte-diff가 아니라 7축(BOM·개행·소수/로케일·부동소수 허용오차·행 순서·타임존·TSV escape/null) 정규화 기반. |
-| **두 평면 메모리** | *헌법*(`contracts/`·`docs/adr/`·`golden/`)은 사람 소유·CODEOWNERS 게이트. *파생*(`repo-map`·`contracts-index`·`docs/reference/`)은 기계 재생성·CI 검증(손편집 금지). `curator` 에이전트가 파생 신선도 소유. |
+| **두 평면 메모리** | *헌법*(`contracts/`·`docs/adr/`·`docs/glossary.md`)은 사람 소유·CODEOWNERS 게이트. *파생*(`repo-map`·`contracts-index`·`docs/reference/`)은 기계 재생성·CI 검증(손편집 금지). `curator` 에이전트가 파생 신선도 소유. |
 | **단일 소스 → 두 런타임 emit** | `harness/`에서 한 번 작성 → `.opencode/`와 `.claude/`에 **byte-identical** 방출. `emit-drift` CI 잡이 우회 불가로 강제. |
 | **폴리글랏 경계** | 언어 경계 = 프로세스/파일/DB만(객체 직접 전달 금지). 경계 린터가 §4.3–4.6 정규화 불변식을 wire 파일에 강제. |
 | **GEN-04 무의존** | 코어는 `examples/` 인스턴스나 `workspace.toml` 멤버를 import·경로참조하지 않음. 가드 테스트가 단방향 의존을 증명. |
-| **기계 게이트, 사람 비준** | `/golden-approve`는 명시적 사람 플래그 + ADR 참조 + 확인 토큰 없이 baseline 승격을 거부. |
+| **기계 게이트, 사람 비준** | baseline 승격은 사람이 `GOLDEN_APPROVE_HUMAN` 토큰을 설정해야만 가능하고, merge 시 CODEOWNERS가 `/examples/*/golden/`을 사람 리뷰어로 라우팅한다. 에이전트는 골든 baseline을 스스로 승인할 수 없다. |
 
 ## 빠른 시작
 
@@ -76,10 +76,8 @@ harness/            # ★ 에이전트 표면의 런타임-중립 소스 (여기
   project.toml      #   GEN-03 언어/툴체인 슬롯 (순수 DATA)
 .opencode/ .claude/  # 생성된 런타임 트리 (손편집 금지) ← tools.harness_emit
 contracts/           # 헌법 평면 — JSON Schema 계약 (단일 정본)
-  harness/task-control/  # gate-registry
-golden/              # 헌법 평면 — 승인된 등가 baseline
-docs/                # Diátaxis + adr/(0001–0008) + glossary + how-to/task-lifecycle.md
-tools/               # Python 도구: harness_emit·contract_drift·golden_runner·memory_regen·
+docs/                # Diátaxis + adr/(0001–0012) + glossary
+tools/               # Python 도구: harness_emit·contract_drift·memory_regen·
                      #   docs_sync·polyglot_lint·harness_lint·workspace_config·hooks·…
 examples/log-parser/ # 참조 인스턴스 (도메인 특화; 코어는 이것에 의존하지 않음)
 .planning/           # GSD 워크플로우 상태: PROJECT.md·ROADMAP.md·MILESTONES.md·phases/·milestones/

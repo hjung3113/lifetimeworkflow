@@ -52,7 +52,7 @@ truth** and turns every guardrail into something executable:
 |---|---|---|
 | 📜 | **Contract-first gate** | JSON Schema (Draft 2020-12) contracts + an RFC 8785 (JCS) schema-hash **drift gate** — a contract change without a paired golden update fails CI. |
 | 🥇 | **Golden equivalence** | Legacy↔new comparison via **normalized** equivalence (BOM/CRLF/decimal-locale/timezone/float-tolerance canonicalized), never a naïve byte-diff. |
-| 🧠 | **Two-plane memory** | Human-owned *constitution* (`contracts/`, `docs/adr/`, `golden/`) vs auto-regenerated *derived* (`repo-map`, `contracts-index`, `docs/reference/`) — with a **self-maintaining curator** + CI freshness gate. |
+| 🧠 | **Two-plane memory** | Human-owned *constitution* (`contracts/`, `docs/adr/`, `docs/glossary.md`) vs auto-regenerated *derived* (`repo-map`, `contracts-index`, `docs/reference/`) — with a **self-maintaining curator** + CI freshness gate. |
 | 🔁 | **Single-source → dual-runtime** | Author once in `harness/`; emit **byte-identical** to `.opencode/` **and** `.claude/`, enforced by a non-bypassable `emit-drift` CI job. |
 | 🌐 | **Polyglot boundary** | Language boundary = process/file/DB only (never in-process object passing); a boundary linter enforces the §4.3–4.6 canonicalization invariants on wire files. |
 | 🪝 | **Runtime hooks** | `contract-guard`, `polyglot-lint`, `format-on-write`, `commit-gate` — prose advice made enforceable. |
@@ -76,11 +76,11 @@ flowchart LR
 
     subgraph CONST["Constitution plane (human-owned, gated)"]
       K["contracts/*.schema.json"]
-      G["golden/"]
       D["docs/adr/"]
+      GL["docs/glossary.md"]
     end
     K -->|RFC 8785 hash| DRIFT["contract-drift gate"]
-    K -->|normalized compare| GOLD["golden runner"]
+    K -->|normalized compare| GOLD["golden runner (instance overlay)"]
 
     subgraph DERIVED["Derived plane (machine-regenerated)"]
       RM[".memory/derived/repo-map"]
@@ -114,14 +114,12 @@ git diff --exit-code -- .opencode .claude/agents .claude/commands .claude/skills
 # 4. Validate contracts + the schema-hash drift gate
 uv run python -m tools.contract_drift.drift            # single-repo
 uv run python -m tools.contract_drift.drift --workspace # across workspace.toml members
-
-# 5. Run a golden equivalence case (normalized, not byte-diff)
-uv run python -m tools.golden_runner.runner
 ```
 
-Common developer flows are packaged as **commands/skills** (emitted to both runtimes): `/orient`,
-`/verify-work`, `/golden`, `/golden-approve`, `/contract-check`, `/refresh-memory`,
-`/fan-out-synthesize`, `/pipeline`, `/checkpoint`, and `/review`.
+Common developer flows are packaged as **commands/skills** (emitted to both runtimes):
+`/add-language`, `/adopt`, `/adr`, `/agree`, `/build`, `/checkpoint`, `/component`,
+`/contract-check`, `/docs-sync`, `/fan-out-synthesize`, `/lint`, `/new-contract-rule`, `/orient`,
+`/refresh-memory`, `/review`, `/test`, and `/verify-work`.
 
 ## 📁 Repository layout
 
@@ -136,9 +134,8 @@ opencode.json        # GENERATED wholesale config (15-key permission block)
 workspace.toml       # multi-repo manifest: members + cross-repo edges (pure DATA)
 
 contracts/           # constitution plane — JSON Schema contracts (single source of truth)
-golden/              # constitution plane — approved equivalence baselines
 docs/                # Diátaxis (tutorials/how-to/reference/explanation) + adr/ + glossary
-tools/               # Python tooling: harness_emit, contract_drift, golden_runner, memory_regen,
+tools/               # Python tooling: harness_emit, contract_drift, memory_regen,
                      #   docs_sync, polyglot_lint, harness_lint, workspace_config, hooks, …
 libs/                # language-neutral normalize core + fixtures (Python side)
 components/          # component packages
@@ -160,8 +157,9 @@ AGENTS.md CLAUDE.md  # nearest-wins agent rules (partly HARNESS-MANAGED, spliced
   **fail loud at emit time**, never truncate.
 - **GEN-04 no-dependency** — the core never imports or path-references an `examples/` instance or a
   `workspace.toml` member; a guard test proves the single-direction dependency.
-- **Machines gate, humans ratify** — `/golden-approve` refuses to promote a baseline without an
-  explicit human flag + ADR reference + confirmation token.
+- **Machines gate, humans ratify** — a baseline is promoted only when a human sets the
+  `GOLDEN_APPROVE_HUMAN` token, and CODEOWNERS routes `/examples/*/golden/` to a human reviewer at
+  merge. No agent self-blesses a golden baseline.
 
 ## 🗺 Roadmap
 
