@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.6
 milestone_name: Minimal Monorepo Core
-status: planning
-last_updated: "2026-07-29T16:39:41.948Z"
+status: executing
+stopped_at: Completed 47-01-PLAN.md
+last_updated: "2026-07-29T18:01:30.682Z"
 last_activity: 2026-07-29
 progress:
-  total_phases: 5
+  total_phases: 1
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 5
+  completed_plans: 1
+  percent: 20
 ---
 
 # Project State
@@ -20,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-30)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** v2.6 Minimal Monorepo Core (phases 47, 48, 49, 50a, 50b) — roadmap created 2026-07-30; 12/12 requirements (MONO-01..12) mapped. Phase 47 (Package Facts) is next. Phase 50 is split: 50a (`harness-author`) ships independently, 50b (managed adopt/upgrade) blocks on a real multi-package target repo.
+**Current focus:** Phase 47 — Package Facts
 
 ## Current Position
 
-Phase: 47 — Package Facts (not started)
-Plan: — (no plans yet — next step is `/gsd:plan-phase 47`)
-Status: Roadmap created — 5 phases (47, 48, 49, 50a, 50b), 12/12 requirements mapped
-Last activity: 2026-07-30 — v2.6 roadmap created; phase 50 split into 50a/50b
+Phase: 47 (Package Facts) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-07-29
 
 ## Performance Metrics
 
@@ -154,6 +155,7 @@ Last activity: 2026-07-30 — v2.6 roadmap created; phase 50 split into 50a/50b
 | Phase 42 P04 | 35min | 2 tasks | 2 files |
 | Phase 42 P02 | 25min | 2 tasks | 10 files |
 | Phase 42 P05 | 50min | 2 tasks | 8 files |
+| Phase 47 P01 | 12min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -286,6 +288,7 @@ Recent decisions affecting current work:
 - [Phase 42]: D-10/D-11: reworded tools/adoption_apply/apply.py and batch.py docstrings to describe their already-inlined atomic-write sequences on their own terms, dropping every tools.task_control.manager reference
 - [Phase 42]: CER-06 and PROD-01 traceability rows set to Complete in REQUIREMENTS.md, matching their already-checked [x] boxes
 - [Phase 42]: harness/commands/adopt.md and harness/skills/brownfield-adoption/SKILL.md rewritten to a promote-free draft->apply->PR-review lifecycle, re-emitted via python -m tools.harness_emit
+- [Phase 47-01]: detect_dependencies helpers take only (text); Cargo.toml parser scoped to path dependencies only, registry deps dropped never fabricated
 
 ### Pending Todos
 
@@ -353,11 +356,11 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-29
-Stopped at: Milestone v2.5 close PR opened (#5) — CI green on all 11 jobs + `gate`, first CI run on
+Last session: 2026-07-29T18:01:30.677Z
+Stopped at: Completed 47-01-PLAN.md
 any v2.5 work, which satisfies Phase 43 SC-1's CI-green half. Awaiting the four human-gated items
 and the merge. Do NOT run `/gsd:complete-milestone` before the merge.
-Resume file: .planning/.continue-here.md
+Resume file: None
 
 ### Resuming from a fresh clone
 
