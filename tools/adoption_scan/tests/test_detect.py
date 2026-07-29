@@ -153,6 +153,26 @@ def test_csproj_project_reference_is_path_based() -> None:
     assert entry["kind"] == "runtime"
 
 
+def test_csproj_project_reference_backslash_separators_normalized() -> None:
+    """WR-01 (47-REVIEW.md): a Windows-style backslash ``Include`` path (MSBuild accepts it on
+    any OS, and Visual-Studio-authored .csproj files commonly emit it) must normalize to
+    forward slashes so the referenced path resolves against git-tracked (always forward-slash)
+    manifest paths."""
+    text = (
+        "<Project>\n"
+        "  <ItemGroup>\n"
+        '    <ProjectReference Include="..\\widget-core\\widget-core.csproj" />\n'
+        "  </ItemGroup>\n"
+        "</Project>\n"
+    )
+    entries = detect.detect_dependencies("widget-app/widget-app.csproj", "*.csproj", text)
+    assert len(entries) == 1
+    entry = entries[0]
+    assert entry["path"] == "../widget-core/widget-core.csproj"
+    assert entry["name"] == "../widget-core/widget-core.csproj"
+    assert entry["kind"] == "runtime"
+
+
 def test_go_mod_require_block_and_single_line_both_parsed() -> None:
     text = (
         "module widget-app\n\n"

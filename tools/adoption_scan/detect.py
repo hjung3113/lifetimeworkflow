@@ -289,7 +289,11 @@ def _dependencies_from_csproj(text: str) -> list[dict]:
         include = element.get("Include")
         if include is None:
             continue
-        entries.append({"name": include, "kind": "runtime", "path": include})
+        # WR-01 (47-REVIEW.md): MSBuild accepts backslash separators on any OS, and
+        # Visual-Studio-authored .csproj files commonly emit them; git-tracked paths are always
+        # forward-slash, so normalize before this reference is used as a lookup key.
+        include_posix = include.replace("\\", "/")
+        entries.append({"name": include_posix, "kind": "runtime", "path": include_posix})
     return entries
 
 
