@@ -1,5 +1,49 @@
 # Milestones
 
+## v2.5 De-ceremony (Shipped: 2026-07-30)
+
+**Phases completed:** 8 phases (39–46), 33 plans, strictly serial DAG — no insertions.
+
+**Timeline:** 2026-07-26 → 2026-07-30 (5 days, 171 commits, `dacaae6`..`dd8ac08`)
+
+**Scale:** 385 files outside `.planning/`, +3,115 / −30,513 = **net −27,398 LOC**.
+
+**Delivered:** the harness stopped verifying itself. ADR-0012 made **CI and the merge** the decision
+authority; seven phases then deleted the machinery that had been doing that job in-session — the
+skill-registry self-gate, the entire docs-review plane, the task-control lifecycle plane (8 `tools/`
+packages, 7 contracts, 4 commands, 5 discipline skills), `secret_scan`, `memory_ui`,
+`strangler_guard`, `/pipeline` — and relocated the golden stack to `examples/log-parser/` per
+ADR-0002(b). The gates a human must personally **author** went from five kinds to **zero**; the
+constitution plane narrowed 4 → 3 members by ratified decision (ADR-0012 clause (d)). The eighth
+phase repaid the product side: four routes (`small-change · bugfix · feature · contract-change`) plus
+`/flow`, commands 17 → 18 with `+0` on every other surface count. Suite at close: **881 passed / 7
+snapshots** core, 14 instance.
+
+**How it closed.** `ci.yml` is `pull_request`-only and this repo does one PR per milestone, so CI had
+never run on any of this work — PR #5 was the milestone's entire CI evidence and the only way to
+satisfy Phase 43's SC-1. All 11 jobs plus the `gate` fan-in passed. PR #6 then closed the four
+human-gated leftovers: **ADR-0013** (retires ADR-0008, whose plane Phase 43 deleted while it still
+read `Accepted`, and ratifies the rule that a path cited by an accepted ADR is corrected or marked
+historical but never deleted), the two deferred `docs/glossary.md` rows, the README test counts
+(982 → 881), and **D-24** — CODEOWNERS being advisory here — accepted as a documented residual
+because `require_code_owner_reviews` cannot be satisfied in a solo repo and compensating for it
+in-session would be the ceremony ADR-0012 rules out.
+
+**The lesson that outlived the milestone.** Most of the work went not into deleting but into proving
+the deletions safe, and the recurring obstacle was never a stale reference — it was **a check that
+cannot fail**. Six distinct guards across phases 40–46 passed while the thing they guarded was
+absent: `RETIRED_SIGNATURES[0]` reading one entry, a test asserting `[] == []`, a loop over an
+emptied edge list, deny rows whose only enforcer had been deleted, a glob set matching zero paths,
+and three predicates passing on prose elsewhere in the same file. The normal gates verify that
+declared things *exist*, never that declarations still *mean* something. Two more of that class were
+found and fixed during this very close: Phase 43–46 sat unchecked in ROADMAP while the Progress table
+read Complete, and CER-01/02/03 read `Not started` while their VERIFICATION recorded all three
+SATISFIED.
+
+**Archived:** `.planning/milestones/v2.5-ROADMAP.md` and `.planning/milestones/v2.5-REQUIREMENTS.md`.
+No `v2.5-MILESTONE-AUDIT.md` was run — completion was verified directly against the phase artifacts
+(33/33 SUMMARY files, 16/16 requirements) and against the two green CI fan-ins.
+
 ## v2.4 Gate Right-Sizing, Carried Debt, Lane Discipline (Closed PARTIAL: 2026-07-26)
 
 **Phases:** 30–38 planned; **34, 35, 36, 37 shipped** (12 plans), **38 landed as code** (`bc9a6d9`,

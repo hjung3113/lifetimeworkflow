@@ -16,6 +16,26 @@
 
 ## Current State
 
+**v2.5 De-ceremony shipped 2026-07-30** — the harness no longer verifies itself. **ADR-0012** makes
+CI and the merge the decision authority, and seven phases then deleted the in-session machinery that
+had been doing that job: the skill-registry self-gate, the whole docs-review plane, the task-control
+lifecycle plane (8 `tools/` packages, 7 contracts, 4 commands, 5 discipline skills), `secret_scan`,
+`memory_ui`, `strangler_guard` and `/pipeline`; the golden stack relocated to
+`examples/log-parser/` per ADR-0002(b). Gates a human must personally **author**: five kinds → **zero**.
+Constitution plane: 4 → 3 members by ratified decision. The eighth phase repaid the product side —
+four routes (`small-change · bugfix · feature · contract-change`) plus `/flow`, commands 17 → 18 with
+`+0` on every other surface. **net −27,398 LOC** outside `.planning/`; suite **881 core / 14 instance**.
+Closed out by **ADR-0013**, which retires ADR-0008 and ratifies the rule that a path cited by an
+accepted ADR is corrected or marked historical, never deleted. Archived to `.planning/milestones/v2.5-*`.
+
+**Next: v2.6 Minimal Monorepo Core (phases 47–50)** — scoped in ROADMAP, not started. The smallest
+goal-complete subset is v2.5 + 47 + 49. D-24 (CODEOWNERS advisory on this repo) is accepted as a
+documented residual and is re-openable here as a machine-side check on golden baseline diffs, which
+v2.5's no-growth constraint forbade and which is now unblocked.
+
+<details>
+<summary>Previous state — v2.3 and the v2.4/v2.5 transition</summary>
+
 **v2.3 shipped 2026-07-22** — the harness's topology is no longer assumed linear (an authority-centred
 contract-relationship *graph*, with the legacy `[pipeline]` slot lowered into it additively rather
 than migrated), it can be *adopted into* an existing brownfield repo through a deterministic
@@ -47,7 +67,9 @@ one-time transition creating no standing gate. ADR-0011 is formally accepted alo
 RAT-5, and the per-tool deny-spelling gap are recorded `obsolete-by-deletion`; v2.4's SEAL-05 is
 `withdrawn`. Requirements CER-01/02/03 validated in Phase 39.
 
-## Current Milestone: v2.5 De-ceremony
+</details>
+
+## Shipped Milestone: v2.5 De-ceremony
 
 **Goal:** stop the harness from verifying itself and start it serving its stated purpose. Four
 milestones of gate machinery grew a surface where the *harness's own integrity* is the subject and the
