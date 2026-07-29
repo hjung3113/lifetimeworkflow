@@ -66,12 +66,32 @@ references are in **ADR-0008's own Links section**, which names six paths that n
 `tools/handoff/`) and is immutable. ADR-0013 clause (a) records that as historical text, and clause
 (b) ratifies the keep-cited-targets rule Phase 45 followed without one.
 
-## Still open
+## How the human-gated half landed
 
-| Item | Actor | Where |
-|------|-------|-------|
-| ADR-0013 + ADR-0008 header + index row | human token | `HUMAN-APPLY.md` §A-C |
-| `docs/glossary.md:20`, `:23` | human token | `HUMAN-APPLY.md` §D |
-| D-24 CODEOWNERS residual | human decision | `HUMAN-APPLY.md` tail |
+`apply.sh` was written for the owner to run, and the owner ran it. That is not a bypass: the
+contract-guard hook gates the **agent's** Write/Edit tool, and the script sets neither
+`GOLDEN_APPROVE_HUMAN` nor `HARNESS_DEV_BYPASS`. CODEOWNERS at the merge remains the ratification.
 
-`/gsd:complete-milestone` runs after these land.
+Each of the six replacements asserts its target occurs **exactly once** before anything is written;
+the guard was mutation-tested both directions (a zero-match probe and a 40-match probe each abort),
+and a failed preflight rolls the new ADR back via an `ERR` trap. Result: ADR-0008's body untouched
+(two header lines only), glossary `:21` intact, 8 changed lines plus the new record.
+
+Shipped in `145fb8b`; PR #6 green on all 11 CI jobs plus `gate`.
+
+## All four items closed
+
+| Item | Outcome |
+|------|---------|
+| README test counts | `19ff9e7` — 982 → 881 |
+| ADR-0013 + ADR-0008 header + index row | `145fb8b` |
+| `docs/glossary.md:20`, `:23` | `145fb8b` |
+| D-24 CODEOWNERS residual | **accepted as a documented residual** (owner, 2026-07-29) — recorded in STATE.md Deferred Items |
+
+D-24's rationale: `require_code_owner_reviews=true` cannot be satisfied in a solo repo (GitHub
+forbids self-approval) without a second account, already declined at v2.3 RAT-5. Accepting matches
+ADR-0012 (CI and the merge are the authority) and ADR-0013 clause (c) (no new enforcement).
+Re-openable in v2.6 as a machine-side golden-diff check, now that the no-growth constraint has
+closed.
+
+`/gsd:complete-milestone` runs after PR #6 merges.
