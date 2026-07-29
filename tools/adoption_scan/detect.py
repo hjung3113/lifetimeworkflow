@@ -20,6 +20,10 @@ scope here — that evidence ladder step belongs to Plan 03's ``plan.py``.
 
 from __future__ import annotations
 
+import json
+import re
+import tomllib
+import xml.etree.ElementTree as ET
 from pathlib import PurePosixPath
 
 # Extension -> language slug (observed on extension presence, D-02).
@@ -248,3 +252,103 @@ def detect_candidate_process_boundaries(included: list[dict]) -> list[dict]:
             }
         )
     return records
+
+
+def _dependency_bare_name(dep: str) -> str:
+    """Split a version specifier / marker off a PEP 508-ish dependency string."""
+    return re.split(r"[<>=!~\[; ]", dep, maxsplit=1)[0].strip()
+
+
+def _dependencies_from_pyproject(text: str) -> list[dict]:
+    """Parse ``[project].dependencies`` (runtime) and PEP 735 ``[dependency-groups].dev`` (dev)."""
+    data = tomllib.loads(text)
+    entries: list[dict] = []
+    for dep in data.get("project", {}).get("dependencies", []):
+        entries.append({"name": _dependency_bare_name(dep), "kind": "runtime"})
+    for dep in data.get("dependency-groups", {}).get("dev", []):
+        entries.append({"name": _dependency_bare_name(dep), "kind": "dev"})
+    return entries
+
+
+def _dependencies_from_package_json(text: str) -> list[dict]:
+    """Parse ``dependencies`` (runtime) and ``devDependencies`` (dev) keys; version values ignored."""
+    data = json.loads(text)
+    entries: list[dict] = []
+    for name in data.get("dependencies", {}):
+        entries.append({"name": name, "kind": "runtime"})
+    for name in data.get("devDependencies", {}):
+        entries.append({"name": name, "kind": "dev"})
+    return entries
+
+
+def _dependencies_from_csproj(text: str) -> list[dict]:
+    """Parse ``<ProjectReference Include="...">`` elements; each is a path-based reference."""
+    root = ET.fromstring(text)
+    entries: list[dict] = []
+    for element in root.findall(".//ProjectReference"):
+        include = element.get("Include")
+        if include is None:
+            continue
+        entries.append({"name": include, "kind": "runtime", "path": include})
+    return entries
+
+
+def _dependencies_from_go_mod(text: str) -> list[dict]:
+    """Line-based parse of a ``require (...)`` block and single-line ``require`` statements."""
+    entries: list[dict] = []
+    in_block = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not in_block and stripped.startswith("require") and stripped.endswith("("):
+            in_block = True
+            continue
+        if in_block:
+            if stripped == ")":
+                in_block = False
+                continue
+            if not stripped or stripped.startswith("//"):
+                continue
+            parts = stripped.split()
+            if parts:
+                entries.append({"name": parts[0], "kind": "runtime"})
+            continue
+        if stripped.startswith("require ") and not stripped.startswith("require("):
+            parts = stripped[len("require ") :].split()
+            if parts:
+                entries.append({"name": parts[0], "kind": "runtime"})
+    return entries
+
+
+def _dependencies_from_cargo_toml(text: str) -> list[dict]:
+    """Parse path-only ``[dependencies]``/``[dev-dependencies]`` entries; registry deps dropped."""
+    data = tomllib.loads(text)
+    entries: list[dict] = []
+    for section, kind in (("dependencies", "runtime"), ("dev-dependencies", "dev")):
+        for name, value in data.get(section, {}).items():
+            if isinstance(value, dict) and "path" in value:
+                entries.append({"name": name, "kind": kind, "path": value["path"]})
+    return entries
+
+
+_DEPENDENCY_PARSER_BY_KIND = {
+    "pyproject.toml": _dependencies_from_pyproject,
+    "package.json": _dependencies_from_package_json,
+    "*.csproj": _dependencies_from_csproj,
+    "go.mod": _dependencies_from_go_mod,
+    "Cargo.toml": _dependencies_from_cargo_toml,
+}
+
+
+def detect_dependencies(path: str, kind: str, text: str) -> list[dict]:
+    """Parse declared dependency names + kind ("runtime"|"dev") from one manifest's raw text.
+
+    Pure: given identical (path, kind, text) always returns identical output. Performs NO
+    filesystem access itself — the caller (the generator) already reads `text` off disk to
+    render the artifact, so this function never diverges from that read. An unrecognized `kind`
+    returns `[]` rather than raising.
+    """
+    del path  # unused: kept for signature symmetry with detect_manifests' path-first shape
+    parser = _DEPENDENCY_PARSER_BY_KIND.get(kind)
+    if parser is None:
+        return []
+    return parser(text)
