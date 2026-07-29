@@ -215,7 +215,7 @@ genuine gap is ③.
 > command**, **50a is net ±0 on skills** (8 → 8, `harness-author` absorbs `skill-creator`), and
 > **nothing is injected into SessionStart**.
 
-- [ ] **Phase 47: Package Facts** *(v2.6)* — extend `tools/adoption_scan/detect.py`'s manifest
+- [x] **Phase 47: Package Facts** *(v2.6)* — extend `tools/adoption_scan/detect.py`'s manifest (completed 2026-07-29)
   detection (`:41-47,100-121`, which today records manifest *existence* and parses no dependencies)
   into a committed **derived** package + dependency graph that feeds `contract_graph`;
   `[[components]]` in `harness/project.toml` is demoted to an **override slot** layered over the
@@ -401,7 +401,7 @@ EVOL-02).
 | 44. Non-Goal Surface Removal | v2.5 | 6/6 | Complete   | 2026-07-29 |
 | 45. Projection Repair | v2.5 | 6/6 | Complete   | 2026-07-29 |
 | 46. Product Flow | v2.5 | 3/3 | Complete   | 2026-07-29 |
-| 47. Package Facts | v2.6 | 4/5 | In Progress|  |
+| 47. Package Facts | v2.6 | 5/5 | Complete   | 2026-07-29 |
 | 48. Convention Profiles | v2.6 | — | Not started | - |
 | 49. Contract Impact | v2.6 | — | Not started | - |
 | 50a. Harness Authoring | v2.6 | — | Not started | - |

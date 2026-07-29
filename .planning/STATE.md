@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.6
 milestone_name: Minimal Monorepo Core
-status: executing
-stopped_at: Completed 47-04-PLAN.md
-last_updated: "2026-07-29T18:22:05.909Z"
+status: verifying
+stopped_at: Completed 47-05-PLAN.md
+last_updated: "2026-07-29T18:27:28.646Z"
 last_activity: 2026-07-29
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 4
-  percent: 80
+  completed_plans: 5
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-07-30)
 
 Phase: 47 (Package Facts) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-29
 
 ## Performance Metrics
@@ -159,6 +159,7 @@ Last activity: 2026-07-29
 | Phase 47 P02 | 25min | 2 tasks | 3 files |
 | Phase 47 P03 | 35min | 2 tasks | 6 files |
 | Phase 47 P04 | 20min | 2 tasks | 3 files |
+| Phase 47 P05 | 20min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -296,6 +297,7 @@ Recent decisions affecting current work:
 - [Phase 47-02]: Dependency edge resolution (path normalize, self-ref drop, dedup, sort) lives in build_facts(), detect_dependencies() stays a pure parser
 - [Phase 47-03]: GEN-04 self-check caught a literal examples/ leak in a new core-plane test docstring before commit — reworded to a generic phrase; a separate pre-existing Plan 47-02 GEN-04 failure was verified out of scope and logged to deferred-items.md
 - [Phase 47]: MONO-04 owning_package(): pure nearest-enclosing-package-folder lookup with root-package fallback, deterministic sorted-id tie-break — Reworded 'directory'->'folder' and avoided literal direct/reverse/transitive/examples/ substrings in prose so the plan's own acceptance greps prove no-traversal-coupling and GEN-04-clean honestly, not by accident
+- [Phase 47-05]: SC5 no-growth proof: widened the existing stale-derived CI job's regen command + diff path list to cover package-facts.md, rather than adding a job — job set and gate.needs stay byte-unchanged; proven structurally by test_ci_stale_derived.py
 
 ### Pending Todos
 
@@ -363,8 +365,8 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-29T18:22:05.905Z
-Stopped at: Completed 47-04-PLAN.md
+Last session: 2026-07-29T18:27:28.641Z
+Stopped at: Completed 47-05-PLAN.md
 any v2.5 work, which satisfies Phase 43 SC-1's CI-green half. Awaiting the four human-gated items
 and the merge. Do NOT run `/gsd:complete-milestone` before the merge.
 Resume file: None
