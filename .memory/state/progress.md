@@ -1,5 +1,5 @@
 ---
-updated: "2026-07-16"
+updated: "2026-07-29"
 ---
 
 # progress — terse running log (COMMITTED)
@@ -10,10 +10,17 @@ updated: "2026-07-16"
 
 ## Recently done (last 5)
 
-- v1.0 (phases 1–8) + v2.0 (phases 9–11): complete + archived.
-- Full-harness audit: done — Batch A merged; Batch B (H2/M1 golden comparator) deferred (ADR-0005).
-- Phase 13: SessionStart injection is live with the reframed two-block payload.
+- v1.0 (phases 1–8), v2.0 (9–11) and the v2.1–v2.3 milestones: complete + archived.
+- v2.5 phases 40–45: ~25k LOC of dev-side ceremony removed; personas and commands consolidated
+  (commands 26 → 17), projections repaired.
+- Phase 46 Plan 01 (`439b416`): the 19-row orchestrator routing table retired for four named product
+  routes with stop conditions, delegation packet and the six-field completion contract.
+- Phase 46 Plan 02 (`4df76db`): `harness/commands/flow.md` — the product's one entry point,
+  17 → 18 commands, all six live-tree renderers repaired in the same commit.
+- Phase 46 Plan 03: route/step/next round-trip recorded in this state plane via the existing
+  `/checkpoint` → `/orient` pair; eight-criterion phase verification.
 
 ## Remaining
 
-- MEM2 memory-model upgrade — see `.planning/MEMORY-UPGRADE-PROPOSAL.md` → `/gsd:new-milestone`.
+- Milestone-close PR for v2.5 — the nine-item deferral list from `45-06-SUMMARY.md`.
+- v2.6 Minimal Monorepo Core (phases 47–50): `/impact`, package facts, `contract_graph` queries.

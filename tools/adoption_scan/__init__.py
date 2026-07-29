@@ -2,9 +2,10 @@
 
 A virtual uv-workspace member (sibling of contract_hash/, docs_sync/, memory_regen/), assembled
 from four existing repo primitives rather than a fresh scanning engine (D-07): the confined +
-symlink-guarded walk idiom (``tools/memory_regen/repo_map.py``), the committed secret-pattern
-registry read as data (``contracts/harness/task-control/gate-registry.json``, the same idiom as
-``tools/evidence/capture.py::_sensitive_pattern``), the repo's last-wins glob resolver
+symlink-guarded walk idiom (``tools/memory_regen/repo_map.py``), the locally-owned
+``SECRET_CONTENT_PATTERNS`` tuple (inlined byte-identical from the Phase-42 task-control
+registry contract's ``secret_patterns`` array, Phase 42 Plan 03; no runtime read of that contract,
+which Phase 44 (CER-08) deleted), the repo's last-wins glob resolver
 (``tools.harness_perms.resolve_path``), and stdlib ``hashlib.sha256`` content hashing.
 
 This plan (26-02) ships the read-only enumeration + exclusion-classification + detection core:

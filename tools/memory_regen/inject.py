@@ -9,17 +9,11 @@ agreements are absent the directive is omitted and the banner leads again.
 from __future__ import annotations
 
 import sys
-import json
 from pathlib import Path
 
 from tools.contract_drift.drift import run_gate
 from tools.harness_lint import parse_frontmatter
 from tools.harness_lint.agreements import iter_agreement_files, load_agreement
-from tools.handoff.handoff import (
-    HandoffError,
-    packet_root_from_handoff,
-    validate as validate_handoff,
-)
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 DERIVED_DIR = _REPO_ROOT / ".memory" / "derived"
@@ -37,9 +31,7 @@ BANNER = (
 DRIFT_HEADER = "## Contract drift (live)"
 CONTRACTS_HEADER = "## Contracts index (summary)"
 REPO_MAP_HEADER = "## Repo map (top-N)"
-DOCS_HEADER = "## Human docs needing review (pointer)"
 ACTIVE_HEADER = "## Progress log (pointer)"
-TASK_HEADER = "## Active task (validated HANDOFF pointer)"
 AGREEMENTS_HEADER = (
     "## Working agreements\n"
     "Working-style directives never override contracts/, docs/adr/, or the gates."
@@ -74,33 +66,6 @@ def _contracts_summary(derived_dir: Path = DERIVED_DIR) -> str:
             f"{CONTRACTS_HEADER}\n"
             "(contracts-index pending — run `python -m tools.memory_regen.contracts_index`)"
         )
-    )
-
-
-def _docs_staleness_pointer(derived_dir: Path = DERIVED_DIR) -> str:
-    """At most TWO lines pointing at the derived docs-review queue, or "" (D-11).
-
-    Reads the RENDERED queue and never recomputes the guard: classification needs a ``git``
-    subprocess and a full doc-corpus walk, neither of which belongs on the session-start hot path,
-    and a live recomputation would make the payload depend on state the tests cannot fixture.
-    ``derived_dir`` is a PARAMETER for the same reason ``_contracts_summary`` takes one.
-
-    Returns "" when the queue is absent or reports zero obligations, so ``assemble()`` skips the
-    section at the ``if not text`` guard below and the payload stays byte-identical to a tree that
-    has never run the generator. ``_read_head`` is deliberately NOT used — it returns
-    :data:`_HEAD_LINES` lines and would make this section grow with the queue.
-    """
-    try:
-        text = (Path(derived_dir) / "docs-staleness.md").read_text(encoding="utf-8")
-    except OSError:
-        return ""
-    # The generator's table is the stable seam: every line of it starts with "| ", and exactly two
-    # of those lines are the column header and its separator.
-    count = max(sum(1 for line in text.splitlines() if line.startswith("| ")) - 2, 0)
-    if count == 0:
-        return ""
-    return (
-        f"{DOCS_HEADER}\n{count} human doc(s) need review — see .memory/derived/docs-staleness.md"
     )
 
 
@@ -160,39 +125,6 @@ def _active_context_pointer(state_dir: Path = STATE_DIR) -> str:
     )
 
 
-def _active_task_pointer(state_dir: Path = STATE_DIR) -> str:
-    """Render only the bounded active pointer; never task/evidence/artifact bodies."""
-    pointer_path = Path(state_dir) / "active-task.json"
-    if not pointer_path.exists():
-        return ""
-    try:
-        value = json.loads(pointer_path.read_bytes().removeprefix(b"\xef\xbb\xbf"))
-        if not isinstance(value, dict) or set(value) != {
-            "task_id",
-            "handoff_path",
-            "state_revision",
-        }:
-            raise ValueError
-        root = Path(state_dir).resolve().parents[1]
-        handoff_path = root / str(value["handoff_path"])
-        packet = packet_root_from_handoff(handoff_path)
-        handoff = validate_handoff(packet, handoff_path)
-        if (
-            handoff["task_id"] != value["task_id"]
-            or handoff["state_revision"] != value["state_revision"]
-        ):
-            raise ValueError
-        return (
-            f"{TASK_HEADER}\n{handoff['task_id']} — phase {handoff['phase']}; lane {handoff['lane']}; "
-            f"revision {handoff['state_revision']}; next action: {handoff['next_action']}.\n"
-            f"Read and validate {value['handoff_path']}, then run /phase-gate before EXECUTE, REVIEW, or VERIFY."
-        )
-    except (OSError, ValueError, KeyError, HandoffError):
-        # An active pointer is a safety boundary, not optional context.  Never hide a stale
-        # pointer: the fresh session must stop and repair it before protected work proceeds.
-        return f"{TASK_HEADER}\nACTIVE HANDOFF INVALID — resume is blocked; repair or remove the active pointer."
-
-
 def assemble(
     budget_chars: int = 4000,
     derived_dir: Path = DERIVED_DIR,
@@ -203,16 +135,11 @@ def assemble(
 
     No clock is computed, so delete-and-regenerate remains byte-identical.
     """
-    task = _active_task_pointer(state_dir)
     sections = [
         ("agreements", _agreements_block(agreements_dir)),
         ("banner", BANNER),
         ("drift", _drift_summary()),
-        # D-05/TCP-15: this reserved slot is deliberately before all droppable summaries.
-        ("task", task),
         ("contracts", _contracts_summary(derived_dir)),
-        # D-11: droppable by design — deliberately absent from the never-drop tuple below.
-        ("docs", _docs_staleness_pointer(derived_dir)),
         ("repomap", _repo_map_topN(derived_dir)),
         ("active", _active_context_pointer(state_dir)),
     ]
@@ -222,7 +149,7 @@ def assemble(
         if not text:
             continue
         addition = len(text) + (1 if out else 0)
-        if name not in ("agreements", "banner", "drift", "task") and used + addition > budget_chars:
+        if name not in ("agreements", "banner", "drift") and used + addition > budget_chars:
             continue
         out.append(text)
         used += addition

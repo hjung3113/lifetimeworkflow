@@ -1,12 +1,12 @@
 """Coexistence proof for the Phase-4 gate wiring in ``.claude/settings.json`` (T-04-17/T-04-18).
 
-The four Phase-4 gates (contract_guard, secret_scan, commit_gate PreToolUse; format_on_write
-PostToolUse) are APPENDED to a settings.json that already carries GSD's own guards. The single
+The three Phase-4 gates (contract_guard, commit_gate PreToolUse; format_on_write PostToolUse)
+are APPENDED to a settings.json that already carries GSD's own guards. The single
 critical risk is silently clobbering a GSD guard on the shared config edit (Pitfall 1) — so this
 test asserts BOTH directions:
 
   * every pre-existing GSD command substring still resolves in its original event array, and
-  * each of the four new gate commands is registered under the correct event array with the
+  * each of the three new gate commands is registered under the correct event array with the
     expected matcher (written RED-first, so an un-wired or mis-wired gate fails loud).
 
 Parsed with stdlib ``json`` only — no harness imports — so it is a pure structural assertion on
@@ -80,12 +80,8 @@ def test_all_eleven_gsd_guards_survive() -> None:
 # (event, command-substring, expected-matcher) for each appended Phase-4 gate.
 _NEW_GATES = [
     ("PreToolUse", "tools.hooks.contract_guard", "Write|Edit"),
-    ("PreToolUse", "tools.hooks.secret_scan", "Read|Write|Edit"),
     ("PreToolUse", "tools.hooks.commit_gate", "Bash"),
     ("PostToolUse", "tools.hooks.format_on_write", "Write|Edit"),
-    ("PreToolUse", "tools.hooks.resume_gate", "Write|Edit|Bash"),
-    # ADR-0010 clause 3b layer 1 — the human-review ledger deny on the ordinary tool path.
-    ("PreToolUse", "tools.hooks.ledger_guard", "Write|Edit"),
 ]
 
 
@@ -112,7 +108,7 @@ def test_commit_gate_runs_from_hook() -> None:
 
 
 def test_expected_slot_counts() -> None:
-    """9 PreToolUse (4 GSD + 5 harness) and 4 PostToolUse (3 GSD + 1 harness)."""
+    """6 PreToolUse (4 GSD + 2 harness) and 4 PostToolUse (3 GSD + 1 harness)."""
     hooks = _load()["hooks"]
-    assert len(hooks["PreToolUse"]) == 9, "expected 9 PreToolUse slots (4 GSD + 5 harness gates)"
+    assert len(hooks["PreToolUse"]) == 6, "expected 6 PreToolUse slots (4 GSD + 2 harness gates)"
     assert len(hooks["PostToolUse"]) == 4, "expected 4 PostToolUse slots (3 GSD + 1 new gate)"

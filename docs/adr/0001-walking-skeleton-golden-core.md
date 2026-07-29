@@ -2,11 +2,11 @@
 
 *MADR 4.x · plane: constitution (human-owned, immutable, append-only)*
 
-- **Status:** accepted
+- **Status:** superseded by 0012
 - **Date:** 2026-07-08
 - **Deciders:** Phase 1 planning (Constitution + Golden Core)
 - **Supersedes:** —
-- **Superseded by:** —
+- **Superseded by:** [0012](0012-ci-and-merge-as-decision-authority.md)
 
 ## Context and Problem Statement
 

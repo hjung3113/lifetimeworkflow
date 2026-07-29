@@ -11,7 +11,7 @@ logic itself is proven .NET-free in test_compare_recorded.py.
 
 from __future__ import annotations
 
-from tools.golden_runner.runner import baseline_path, run_golden_case, verified_path
+from golden_runner.runner import baseline_path, run_golden_case, verified_path
 
 
 def test_value_regression_fails(

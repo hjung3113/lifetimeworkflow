@@ -13,10 +13,10 @@ discovery/draft-mode writes (ADOPT-05 clause 1) to a given task artifact root �
 `/adopt draft` (Plan 27-06's ``cli.py``) calls before writing ``inventory.json``/``plan.json``/
 ``manifest.json``.
 
-Two publish idioms, reused verbatim from ``tools.task_control.manager``'s already-audited sequence
-(``tempfile.mkstemp`` in the target's own directory -> write/flush/fsync -> publish -> directory
-fsync -> ``finally: os.unlink(tmp)``), each copied (not cross-package-imported) per 27-RESEARCH's
-"Don't Hand-Roll" guidance:
+Two publish idioms, each a complete, self-contained, already-inlined implementation of the same
+durable-write sequence (``tempfile.mkstemp`` in the target's own directory -> write/flush/fsync ->
+publish -> directory fsync -> ``finally: os.unlink(tmp)``), per 27-RESEARCH's "Don't Hand-Roll"
+guidance:
 
 * :func:`atomic_create` — ``os.link``-based; raises ``FileExistsError`` -> :class:`CollisionError`
   on an existing target. Never silently overwrites. Used for the ``create`` disposition, where a
@@ -50,34 +50,9 @@ from tools.harness_emit.merge import merge_settings, splice_managed_block
 from tools.harness_perms import resolve_path
 from tools.hooks.contract_guard import CONSTITUTION_GLOBS
 
-# The human-review ledger — a THIRD path-deny domain, disjoint from the constitution plane
-# (``CONSTITUTION_GLOBS``) and from the secret plane (``SECRET_PATH_GLOBS``). The boundary it
-# encodes: agents may PROPOSE registry rows in ``docs/doc-dependencies.toml`` (DOCSUP-07), but the
-# ledger is the docs plane's GREENNESS AUTHORITY — a disposition row in it is what makes a binding
-# FRESH — so only a human may author one. Deliberately NOT folded into ``CONSTITUTION_GLOBS``:
-# doing so would force ``GOLDEN_APPROVE_HUMAN`` onto every ordinary human review commit and break
-# the provably-disjoint-domain invariant documented at ``contract_guard.py:16-20``. Ratified
-# record: ADR-0010.
-#
-# IMPORTED as DATA from the PreToolUse gate that owns it (ADR-0010 clause 3b layer 1), never
-# re-declared — exactly as ``CONSTITUTION_GLOBS`` is imported above. Two copies of a deny list is
-# two chances for the tool path and the apply path to disagree about what the ledger is.
-from tools.hooks.ledger_guard import REVIEW_LEDGER_GLOBS
-
 
 class ConstitutionRefusal(ValueError):
     """Raised when a destination resolves onto the CODEOWNERS-gated constitution plane."""
-
-
-class ReviewLedgerRefusal(ValueError):
-    """Raised when a destination resolves onto the human-review ledger.
-
-    Deliberately its OWN type, NOT a subclass of :class:`ConstitutionRefusal`.
-    ``GOLDEN_APPROVE_HUMAN`` authorizes CONSTITUTION writes and must never be understood to
-    authorize a ledger disposition: there is no token that makes an agent-authored disposition
-    legitimate — a human edits the ledger directly, outside the agent session. Conflating the two
-    would teach an operator the wrong remedy.
-    """
 
 
 class PathEscapeError(ValueError):
@@ -216,20 +191,11 @@ def refuse_unsafe_destination(destination: str, target_root: str | Path) -> Path
             )
 
     # The `\` fold matches step 1's, so the pre-check and the classification see ONE normalization
-    # (IN-02). On POSIX `docs\.docs-review-ledger.toml` is a single file whose NAME contains a
-    # backslash — a different file, and harmless — but on Windows that spelling IS the ledger, and a
-    # deny domain that depends on which OS reads the manifest is not a deny domain.
+    # (IN-02). On POSIX `docs\glossary.md` is a single file whose NAME contains a backslash — a
+    # different file, and harmless — but on Windows that spelling IS `docs/glossary.md`, a
+    # constitution member, and a deny domain that depends on which OS reads the manifest is not a
+    # deny domain.
     relative = target_path.relative_to(resolved_root).as_posix().replace("\\", "/")
-    # Two disjoint domains, ONE normalization: both classifications run against the same resolved,
-    # lower-cased, target-root-relative path, through the same CONFIG-02 resolver — no sixth
-    # `_confine` spelling, and no way for a `.`/`..`/case/separator variant to be seen differently
-    # by one check than by the other.
-    if resolve_path(REVIEW_LEDGER_GLOBS, relative.lower()) == "deny":
-        raise ReviewLedgerRefusal(
-            f"'{destination}' is the human-review ledger (docs/.docs-review-ledger.toml) — only a "
-            "human may author a review disposition, and no token authorizes an agent to. Edit it "
-            "directly, outside the agent session; GOLDEN_APPROVE_HUMAN does NOT apply here."
-        )
     refuse_if_constitution(relative.lower())
 
     return target_path
@@ -238,10 +204,10 @@ def refuse_unsafe_destination(destination: str, target_root: str | Path) -> Path
 def atomic_create(path: Path, payload: bytes) -> None:
     """Create ``path`` exactly once via durable temp + hard-link publication.
 
-    Mirrors ``tools.task_control.manager._atomic_create``'s exact sequence, operating on raw
-    ``bytes`` rather than a JSON-serializable dict. ``os.link`` raises ``FileExistsError`` on an
-    existing target -> :class:`CollisionError`; ``os.replace`` (which silently overwrites) is never
-    used here.
+    Writes ``payload`` (raw ``bytes``) to a same-directory temp file, flushes and fsyncs it, then
+    publishes via ``os.link`` -> fsyncs the containing directory -> unlinks the temp file in a
+    ``finally``. ``os.link`` raises ``FileExistsError`` on an existing target ->
+    :class:`CollisionError`; ``os.replace`` (which silently overwrites) is never used here.
     """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -272,8 +238,10 @@ def atomic_create(path: Path, payload: bytes) -> None:
 def _atomic_replace(path: Path, payload: bytes) -> None:
     """Durably replace ``path`` with a same-directory temporary file.
 
-    Mirrors ``tools.task_control.manager._atomic_replace``'s exact sequence, bytes-based. Only used
-    by :func:`_apply_marker_merge`, where the target already exists by definition.
+    Writes ``payload`` (raw ``bytes``) to a same-directory temp file, flushes and fsyncs it, then
+    publishes via ``os.replace`` -> fsyncs the containing directory, unlinking the temp file on any
+    exception. Only used by :func:`_apply_marker_merge`, where the target already exists by
+    definition.
     """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -416,9 +384,9 @@ def apply_manifest(
     ``target_root``.
 
     Iterates ``dispositions[]`` ONLY, sorted by destination for deterministic output ordering.
-    ``ConstitutionRefusal`` and ``ReviewLedgerRefusal`` are caught per-record and bucketed into
-    ``"refused"`` — both are refusals, not faults, so a single refused destination does not abort
-    the rest of the apply cycle. Every other exception
+    ``ConstitutionRefusal`` is caught per-record and bucketed into ``"refused"`` — a refusal, not a
+    fault, so a single refused destination does not abort the rest of the apply cycle. Every other
+    exception
     (``ConcurrentDriftError``, ``UnknownDispositionError``, ``CollisionError``,
     ``PathEscapeError``, a malformed marker-capable destination) propagates immediately.
 
@@ -450,7 +418,7 @@ def apply_manifest(
                 payload=payloads.get(destination, b""),
                 block_body=block_bodies.get(destination, ""),
             )
-        except (ConstitutionRefusal, ReviewLedgerRefusal):
+        except ConstitutionRefusal:
             summary["refused"].append(destination)
             continue
         summary["applied" if result["status"] == "applied" else "skipped"].append(destination)

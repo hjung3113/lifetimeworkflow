@@ -57,6 +57,4 @@ the one shared core. Do not add a second canonicalizer (a divergent impl defeats
 > JSON *contract text* for the drift hash — they share only the word "canonical". Do not conflate.
 
 ## Related
-- `harness/skills/golden-debug/SKILL.md` — the decision tree when these invariants are violated and
-  a golden goes red.
 - `references/canonicalization-table.md` — the full rule table with rationale per axis.

@@ -1,5 +1,5 @@
 {
-  "_note": "CONFIG-02 permission data (D-03). Pure data — NO enforcement logic here. Consumed by tools/harness_perms/resolver.py (resolve_bash + resolve_path) and, in Phase 4, by the contract-guard / secret hooks that import that resolver verbatim. The 15 opencode permission keys each map to allow|ask|deny; `bash` is an INSERTION-ORDERED object encoding last-wins glob semantics (catch-all `*` FIRST, increasingly specific overrides after — never end with a broad `allow`, Pitfall P3). `path_deny_globs` are the constitution/secret path-scoped denies the resolver enforces (opencode's native `edit` key is not path-globbable, so path denies live here as data). The constitution subset is the FOUR members declared by docs/adr/0001-walking-skeleton-golden-core.md:48 — contracts/**, docs/adr/**, golden/** and the literal file docs/glossary.md; this data implements that accepted decision rather than defining it, so a member may not be added or dropped without a superseding ADR. docs/glossary.md is deliberately a literal path, not a docs/** tree: the plane is the glossary, not the docs directory, and it remains a HUMAN_CORPUS review target because constitution ownership (who may edit) and a review obligation (when a human owes a review) are orthogonal. `docs/.docs-review-ledger.toml` is a THIRD path-deny domain, distinct from constitution and from secret: it is the docs plane's greenness authority, so only a human may author a review disposition and no token (not even GOLDEN_APPROVE_HUMAN, which authorizes constitution writes) legitimizes an agent-authored one. Note it does NOT cover `docs/doc-dependencies.toml` — the registry stays agent-writable because DOCSUP-07 requires `/adopt` to PROPOSE rows into it.",
+  "_note": "CONFIG-02 permission data (D-03). Pure data — NO enforcement logic here. Consumed by tools/harness_perms/resolver.py (resolve_bash + resolve_path) and, in Phase 4, by the contract-guard / secret hooks that import that resolver verbatim. The 15 opencode permission keys each map to allow|ask|deny; `bash` is an INSERTION-ORDERED object encoding last-wins glob semantics (catch-all `*` FIRST, increasingly specific overrides after — never end with a broad `allow`, Pitfall P3). `path_deny_globs` are the constitution path-scoped denies the resolver enforces (opencode's native `edit` key is not path-globbable, so path denies live here as data). The constitution subset is THREE members — contracts/**, docs/adr/** and the literal file docs/glossary.md. docs/adr/0001-walking-skeleton-golden-core.md:48 declared FOUR; that declaration is superseded by docs/adr/0012-ci-and-merge-as-decision-authority.md clause (d) to the extent that golden/** leaves the constitution-plane core, and the relocated instance baselines are now ratified at the merge by the instance-scoped golden CODEOWNERS route rather than in-session. This data implements those accepted decisions rather than defining them, so a member may not be added or dropped without a superseding ADR. path_deny_globs is now an exact duplicate of contract_guard.CONSTITUTION_GLOBS with no independent production reader; the two are kept in sync by tools/harness_lint/tests/test_agents.py. docs/glossary.md is deliberately a literal path, not a docs/** tree: the plane is the glossary, not the docs directory, and it remains a HUMAN_CORPUS review target because constitution ownership (who may edit) and a review obligation (when a human owes a review) are orthogonal.",
 
   "read": "allow",
   "edit": "ask",
@@ -27,10 +27,6 @@
   "path_deny_globs": [
     "contracts/**",
     "docs/adr/**",
-    "golden/**",
-    "docs/glossary.md",
-    "*.env",
-    "**/*.env",
-    "docs/.docs-review-ledger.toml"
+    "docs/glossary.md"
   ]
 }

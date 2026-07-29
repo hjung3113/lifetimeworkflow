@@ -62,7 +62,12 @@ def test_components_passthrough() -> None:
 
 
 def test_pipeline_passthrough() -> None:
-    """The [pipeline] table carries the single generic source→sink `greeting` edge."""
-    edges = pipeline()["edges"]
-    assert len(edges) == 1
-    assert edges[0]["contract"] == "greeting"
+    """The passthrough resolves against the core default, which declares no edges of its own.
+
+    CER-08 (Phase 44) removed the core edge DATA; the reader stays, because an overlay supplies
+    its own edges through this same accessor. Pin the MECHANISM: it returns a mapping and its
+    `edges` view is an empty list on the core default.
+    """
+    table = pipeline()
+    assert isinstance(table, dict)
+    assert table.get("edges", []) == []

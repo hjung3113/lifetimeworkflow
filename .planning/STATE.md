@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.3
-milestone_name: Contract Graph, Brownfield Adoption, Living Docs
-status: Awaiting next milestone
-stopped_at: "v2.3 archived. Open: RAT-4, RAT-5, and the per-tool spelling of the constitution-plane write-denies (all non-blocking, in Deferred Items). Next: /gsd:new-milestone."
-last_updated: "2026-07-22T02:10:00.000Z"
-last_activity: 2026-07-22 — Milestone v2.3 completed and archived
+milestone: v2.5
+milestone_name: De-ceremony
+status: executing
+stopped_at: Phase 44 context gathered
+last_updated: "2026-07-28T15:14:24.529Z"
+last_activity: 2026-07-27 -- Phase 43 planning complete
 progress:
-  total_phases: 10
-  completed_phases: 10
-  total_plans: 43
-  completed_plans: 43
+  total_phases: 6
+  completed_phases: 5
+  total_plans: 18
+  completed_plans: 18
   percent: 100
 ---
 
@@ -21,20 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-22)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** None — v2.3 shipped 2026-07-22. Next milestone not yet scoped (`/gsd:new-milestone`).
+**Current focus:** Phase 42 — adoption-decoupling-install-set-repair
 
 ## Current Position
 
-Phase: Milestone v2.3 complete
-Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-07-22 — Milestone v2.3 completed and archived
+Phase: 42 (adoption-decoupling-install-set-repair) — COMPLETE
+Plan: 5 of 5 complete (all plans done)
+Status: Ready to execute
+Last activity: 2026-07-27 -- Phase 43 planning complete
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 28
+- Total plans completed: 30
 - Average duration: — min
 - Total execution time: 0.0 hours
 
@@ -50,6 +50,7 @@ Last activity: 2026-07-22 — Milestone v2.3 completed and archived
 | 16 | 6 | - | - |
 | 24 | 2 | - | - |
 | 25 | 5 | - | - |
+| 39 | 2 | - | - |
 
 **Recent Trend:**
 
@@ -142,6 +143,18 @@ Last activity: 2026-07-22 — Milestone v2.3 completed and archived
 | Phase 27.1 P01 | 4min | 2 tasks | 4 files |
 | Phase 27.1 P02 | 35min | 2 tasks | 4 files |
 | Phase 27.1 P03 | 25min | 2 tasks | 5 files |
+| Phase 39-decision-boundary-v2-5-a P01 | 12min | 1 tasks | 5 files |
+| Phase 39 P02 | 12min | 2 tasks | 1 files |
+| Phase 41 P01 | 12min | 2 tasks | 22 files |
+| Phase 41 P02 | 25min | 2 tasks | 8 files |
+| Phase 41 P03 | 40min | 2 tasks | 21 files |
+| Phase 41 P04 | ~20min | 2 tasks | 5 files |
+| Phase 41 P05 | 55min | 3 tasks | 20 files |
+| Phase 42 P01 | ~20min | 2 tasks | 4 files |
+| Phase 42 P03 | 15min | 2 tasks | 3 files |
+| Phase 42 P04 | 35min | 2 tasks | 2 files |
+| Phase 42 P02 | 25min | 2 tasks | 10 files |
+| Phase 42 P05 | 50min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -256,6 +269,24 @@ Recent decisions affecting current work:
 - [Phase ?]: _apply_marker_merge lock sidecar files (.NAME.lock) are expected persistent operational state, mirroring batch.py
 - [Phase 27.1]: D-02 upheld: check_valid's repo_root in _cmd_apply is the harness's own checkout root via a required --repo-root flag mirroring promote's, never the brownfield target.
 - [Phase 27.1]: 27.1-03: manifest.schema.json destination/path pattern constraint (WR-03) landed with hash rebaseline + both derived-plane artifacts in one human-ratified commit (f6be4f1); SC-5 seven-finding (plus symlink-read) disposition table closes Phase 27.1.
+- [Phase 39]: 39-01: ADR-0012 ratified as ONE unit (CI+merge authority, v2.5 deletion enumeration as intent-at-ratification, DEV/PRODUCT boundary operative rule, ADR-0001/0010 supersession, bash-residual-by-design, one-time-transition checkpoint clause); ADR-0011 formally accepted (Date 2026-07-26, Deciders kimhyojung, cites bc9a6d9); write path used HARNESS_DEV_BYPASS per explicit human choice at Task 1 checkpoint, not a fresh GOLDEN_APPROVE_HUMAN token.
+- [Phase 39]: RAT-4, RAT-5, and the per-tool deny-spelling gap recorded obsolete-by-deletion citing ADR-0012; v2.4 SEAL-05 withdrawn, not deferred
+- [Phase 41]: Unbind-before-delete (D-09): emptied all 8 [[binding]] rows + deleted the ledger in a standalone commit before deleting tools/docs_guard (6110 LOC), the registry file, and its derived page. contracts/harness/docs/doc-dependencies.schema.json deferred to Plan 04.
+- [Phase 41]: Fixed cli.py's ReviewLedgerRefusal catch clause as a Rule 1 auto-fix — an undocumented adoption_apply consumer of the deleted ledger_guard hook beyond apply.py itself
+- [Phase 42-01]: D-01/D-03 — deleted `tools/adoption_apply/approval.py` (the whole ADOPT-06 human-ratification gate: `promote`, `check_valid`, `HUMAN_TOKEN_ENV`, the one live `tools.task_control.manager.show` import) and `cli.py`'s `promote` subcommand + `check_valid` apply-refusal; `draft -> apply` now runs with no promotion step, review moves to the PR (ADR-0012). `test_cli.py` rewritten (5 tests deleted, 4 edited, dead helper/fixture/constants removed); 73 passed. CER-06 NOT yet marked complete — prose-only `task_control` references in `apply.py`/`batch.py` and the secret-pattern inline are Plans 02/03's job (frontmatter splits CER-06 across 42-01/02/03).
+- [Phase 41]: Added RETIRED_SIGNATURES to tools/harness_emit/merge.py so re-emit actually drops a formerly harness-owned settings.json hook group — Removing a signature from HARNESS_SIGNATURES alone left the stale ledger_guard group classified identically to a GSD/human group and preserved forever
+- [Phase 41]: Fixed harness/commands/refresh-memory.md's stranded tools.memory_regen.docs_staleness invocation while deleting the module — Rule 1 bug found via a repo-wide grep sweep before finalizing Task 2
+- [Phase 41-04]: Contract + CI fan-in job deletion: contracts/harness/docs/doc-dependencies.schema.json deleted with same-commit manifest rebaseline (D-02); CI docs-guard job + gate.needs entry deleted, verified by a ruamel.yaml-resolved parse (D-14, 11 entries, docs-guard absent); contracts-index derived plane regenerated as an in-scope consequence (17 -> 16 contracts), test_docs_sync_determinism.py left for Plan 05 per its explicit deferral.
+- [Phase 41]: RETIRED_SIGNATURES (merge.py) emptied — empirically verified transitional (re-emit + git status clean); mechanism kept for Phase 44's next PreToolUse-hook deletion
+- [Phase 41]: Residue sweep returns 34 justified exceptions, not zero: plan-mandated historical narrative, append-only ADR text, Phase-44-deferred deny-domains subsystem, and GSD-owned namespace collisions — none are leftovers of the enforced docs-review plane
+- [Phase 42]: [42-03] D-04/D-05: adoption_scan's 8 secret_patterns inlined byte-identical into scan.py's SECRET_CONTENT_PATTERNS — gate-registry.json left untouched (D-06) for Phase 44 to delete
+- [Phase ?]: D-07: exactly one blanket tools/**/* row added to _CATEGORY_GLOBS (not enumerated per-package), robust to future package deletions with zero edit here
+- [Phase ?]: D-08: fixture-install test authored RED-first and observed to fail against the pre-fix catalog before the tools glob row landed
+- [Phase ?]: Rule 1 auto-fix: plan's literal tools/** row text matches directories only under Path.glob; corrected to tools/**/* consistent with every sibling _CATEGORY_GLOBS row
+- [Phase 42]: D-02: deleted contracts/harness/adoption/approval.schema.json with a same-commit manifest rebaseline, reusing the Phase-41 procedure verbatim
+- [Phase 42]: D-10/D-11: reworded tools/adoption_apply/apply.py and batch.py docstrings to describe their already-inlined atomic-write sequences on their own terms, dropping every tools.task_control.manager reference
+- [Phase 42]: CER-06 and PROD-01 traceability rows set to Complete in REQUIREMENTS.md, matching their already-checked [x] boxes
+- [Phase 42]: harness/commands/adopt.md and harness/skills/brownfield-adoption/SKILL.md rewritten to a promote-free draft->apply->PR-review lifecycle, re-emitted via python -m tools.harness_emit
 
 ### Pending Todos
 
@@ -293,7 +324,7 @@ Items acknowledged and carried forward from previous milestone close:
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| testing (isolation) | DEF-05-02-1: 3 commit_gate drift-block tests leak the live GOLDEN_APPROVE_HUMAN token (missing delenv) → fail only when the session token is exported; green in CI. Suggested fix: add `monkeypatch.delenv("GOLDEN_APPROVE_HUMAN", raising=False)`. See phases/05-despecialization/deferred-items.md | open | 05-02 |
+| testing (isolation) | **RESOLVED 2026-07-22 (v2.4 DEBT-04).** Did not reproduce: the three named tests pass with the token unset AND exported. Repaired 2026-07-09 by `ccef8b4`, whose message names DEF-05-02-1; causality proven by mutation (neutering the autouse fixture and re-running with the token exported failed exactly those three). The RECORD was stale, not the code. Original text: DEF-05-02-1: 3 commit_gate drift-block tests leak the live GOLDEN_APPROVE_HUMAN token (missing delenv) → fail only when the session token is exported; green in CI. Suggested fix: add `monkeypatch.delenv("GOLDEN_APPROVE_HUMAN", raising=False)`. See phases/05-despecialization/deferred-items.md | open | 05-02 |
 
 Items acknowledged and deferred at the **v2.3 milestone close on 2026-07-22**. The pre-close
 artifact audit reported 2 open items (`verification_gaps`: phases 28 and 29, both `human_needed`);
@@ -304,19 +335,70 @@ ratification obligation and not an unbuilt or defective artifact.
 |----------|------|--------|-------------|
 | verification gap | Phase 28 `28-VERIFICATION.md` is `human_needed`. Its blocking item was RAT-2, discharged 2026-07-22 (`ad4e339`). What remains under it is RAT-4 below. | acknowledged | v2.3 close |
 | verification gap | Phase 29 `29-VERIFICATION.md` is `human_needed` at score 4/4 — the status is driven by the two decisions below, both of which the human answered at close, not by any failed criterion. 16/16 fan-in gates exit 0. | acknowledged | v2.3 close |
+| ratification | **RAT-5 — DISCHARGED 2026-07-22 in outcome only.** PR #4 merged the branch to `main` (`36fb372`), so ADR-0004/0005/0006/0007 now live on `main`. Two caveats, both recorded rather than smoothed over: (a) `reviewRequests` came back EMPTY on PR #4, empirically re-confirming that the CODEOWNERS gate cannot fire on a solo-authored PR — the ADRs reached `main` without a review ever being requested; (b) `gh pr merge --auto` did NOT arm auto-merge, because the repo has `allow_auto_merge: false`, so it fell back to an IMMEDIATE merge while CI was still `IN_PROGRESS`. CI subsequently went 13/13 green on exactly those commits (contract-check, core-suite, docs-guard, drift, emit-drift, gate, golden, both lang-tests, lifecycle-eval, setup, stale-derived, workspace), so the outcome is clean — but the merge was not gated on it. | discharged (see caveats) | v2.3 close |
 | ratification | **RAT-4** — the Phase-28 constitution-plane schema write (`contracts/harness/docs/doc-dependencies.schema.json`, plan 28-01, plus the WR-02 pattern rebaseline) landed via `HARNESS_DEV_BYPASS` per ADR-0007. A dev bypass is explicitly NOT a human ratification. Blocks nothing mechanically; it is an unclosed provenance obligation. CODEOWNERS at PR merge is the real gate. | open | v2.3 close |
-| ratification | **RAT-5** — ADR-0004/0005/0006/0007 unmerged to `main`. The durable repo-config fix landed (`f009306` restored `main` as the default branch and made the CI gate required on it), so the remaining half is the merge itself. Structural, not neglect: a solo-authored PR cannot fire a CODEOWNERS gate whose sole owner is the author. | open | v2.3 close |
-| security (harness-wide) | **Constitution-plane write-denies are spelled per-tool.** The ledger deny fires only on the `Write\|Edit` matcher (`.claude/settings.json:160-168`; `.opencode/plugin/ledger-guard.ts:70` returns early unless the tool is write/edit), while `harness/permission-matrix.json:9` grants `"uv *": "allow"` — so the same write spelled through bash resolves to `allow`. `contract_guard` shares the shape, so `contracts/**` and `golden/**` inherit the identical route. Pre-existing and recorded nowhere before the phase-29 re-verification found it. **Human decision at close: record only, repair in the next milestone** — repairing a gate during its own closeout is the wrong discipline, and the fix is harness-wide (a PreToolUse `Bash` hook that denies constitution-plane writes independent of spelling). Carry the ADR-0010 clause-3b wording correction with it. See `phases/29-.../deferred-items.md`. | open | v2.3 close |
+| security (harness-wide) | **Constitution-plane write-denies are spelled per-tool.** The ledger deny fires only on the `Write\|Edit` matcher (`.claude/settings.json:160-168`; `.opencode/plugin/ledger-guard.ts:70` returns early unless the tool is write/edit), while `harness/permission-matrix.json:9` grants `"uv *": "allow"` — so the same write spelled through bash resolves to `allow`. `contract_guard` shares the shape, so `contracts/**` and `golden/**` inherit the identical route. Pre-existing and recorded nowhere before the phase-29 re-verification found it. **Human decision at close: record only, repair in the next milestone** — repairing a gate during its own closeout is the wrong discipline, and the fix is harness-wide (a PreToolUse `Bash` hook that denies constitution-plane writes independent of spelling). **Corrected 2026-07-22 (external review):** the earlier claim that ADR-0010 clause 3b overclaims was wrong — clause 3b scopes layer 1 explicitly to `PreToolUse(Write|Edit)` and asserts no universal coverage. The defect is a MISSING FOURTH deny layer for bash; the remedy is a new layer plus a superseding ADR recording the residual, not a wording fix. See `phases/29-.../deferred-items.md`. | open | v2.3 close |
 | bookkeeping | 29-04 Task 4 closed as **discharged-via-Option-A**: its `done` condition presumed Option B's row replacement, but the human seeded all eight bindings in one round, so no row was replaced. SC-3 is the governing contract and holds. | resolved | v2.3 close |
 | nyquist / verification debt | Phase 27 has no `VERIFICATION.md`. Recorded by the v2.3 audit as debt and NOT back-filled — a closeout-authored verification of a long-finished phase claims an authority it cannot have. | open | v2.3 close |
+| verification debt | **RESOLVED 2026-07-22 (v2.4 DEBT-02).** Phase 27's `27-VERIFICATION.md` now exists, authored at closeout and stamped `not_independently_verified_in_phase`. It is deliberately NOT scored N/4: SC-2 is neither pass nor fail (green in-phase, reopened by the phase's own CR-01/02/03, closed only in 27.1) and SC-1 is split (invalidation proven; enforcement contradicted by CR-03, which says the write path never calls `check_valid`). A fraction would hide exactly the parts worth reading. | resolved | v2.4 P35 |
+| review debt (NEW) | **P27-IN-01 / P27-IN-02** — `27-REVIEW.md`'s two Info findings have NO disposition in any artifact, in any phase. Surfaced by the DEBT-02 sweep. **Do not conflate with 27.1's same-numbered findings — they are different items.** P27-IN-01: `apply.py`'s docstring security claim is broader than what the code proves. P27-IN-02: `_recompute_draft_hash` hashes bytes without validating schema shape. See `.planning/phases/35-carried-debt-dispositions-v2-4-b/deferred-items.md`. | open | v2.4 P35 |
+| testing (hermeticity, NEW) | `tools/adoption_apply/tests/test_cli.py::test_cli_draft_writes_into_batch_root` (and its sibling at :294) `monkeypatch.chdir` to the LIVE repo root and run the real `draft` scan over it. Any concurrent write anywhere in the tree changes what the scan sees, so the test is non-hermetic and fails intermittently under parallel agents — observed once as `1 failed, 1538 passed`, not reproducible with the tree quiet (3/3 isolated passes, 1543 passed full-suite). Latent since authored; only parallelism exposed it. Fix is to scan a fixture tree, not the repo. | open | v2.4 P34 |
+| lint (NEW) | `ruff format --check` is still not a gate — **17 files would reformat** (down from 25). DEBT-01 named `ruff check` only, and reformatting mid-milestone would collide with in-flight phases. Recorded in 34-CONTEXT D-08. | open | v2.4 P34 |
 | lint | `ruff check .` reports 617 pre-existing errors, ~180 in the vendored `docs/references/opencode-matt-workflows/**` tree missing from `extend-exclude`. `ruff check` is not a CI gate at all. Unchanged across v2.3; worth a decision, not a silent carry. | open | v2.3 close |
+| ratification | **RAT-4 — CLOSED 2026-07-26 (v2.5 P39, ADR-0012).** Disposition: obsolete-by-deletion, per `docs/adr/0012-ci-and-merge-as-decision-authority.md`. Every human-ratification gate this item assumed reviewer != author, but this repo has one owner — CI plus the merge are the decision authority per ADR-0012, so no separate ratification mechanism is owed. Not repaired, not reopened; the obligation itself is retired. | obsolete-by-deletion | v2.5 P39 |
+| ratification | **RAT-5 — CLOSED 2026-07-26 (v2.5 P39, ADR-0012).** Disposition: obsolete-by-deletion, per `docs/adr/0012-ci-and-merge-as-decision-authority.md`, for the same reason as RAT-4 above — the "discharged (see caveats)" record above stands unedited; this row only retires the underlying human-ratification-gate obligation itself, since every such gate assumed reviewer != author while this repo has one owner. | obsolete-by-deletion | v2.5 P39 |
+| security (harness-wide) | **Per-tool constitution-plane deny-spelling gap — CLOSED 2026-07-26 (v2.5 P39, ADR-0012).** Original finding: `harness/permission-matrix.json:9` grants `"uv *": "allow"`, bypassing the `Write\|Edit`-only PreToolUse matcher that spells the constitution-plane deny, so the same write resolves to `allow` when spelled through bash. Disposition: obsolete-by-deletion, per `docs/adr/0012-ci-and-merge-as-decision-authority.md` — ADR-0012 declares the bash surface a **permanent residual by design**, not a gap requiring a fourth deny layer; CI plus the merge are the decision authority, not an exhaustive in-session tool-spelling wall. | obsolete-by-deletion | v2.5 P39 |
+| ratification | **SEAL-05 — WITHDRAWN 2026-07-26 (v2.5 P39, ADR-0012).** v2.4's SEAL-05 ("portable ratification record" — a checkable provenance artifact independent of a git host assigning a reviewer) is explicitly withdrawn, not deferred, per CER-03 and `.planning/ROADMAP.md:339`. The RAT-4 disposition it was gated on is now closed above via ADR-0012, so the concept has no remaining purpose to carry forward. | withdrawn | v2.5 P39 |
 
 ## Session Continuity
 
-Last session: 2026-07-21
-Stopped at: Completed 29-05-PLAN.md Tasks 1–2; Task 3 blocked on human ratification
-Resume file: .planning/v2.3-MILESTONE-AUDIT.md
+Last session: 2026-07-29
+Stopped at: Milestone v2.5 close PR opened (#5) — CI green on all 11 jobs + `gate`, first CI run on
+any v2.5 work, which satisfies Phase 43 SC-1's CI-green half. Awaiting the four human-gated items
+and the merge. Do NOT run `/gsd:complete-milestone` before the merge.
+Resume file: .planning/.continue-here.md
+
+### Resuming from a fresh clone
+
+Everything needed to continue is committed. Read in this order:
+
+1. `.planning/ROADMAP.md` → the v2.5 section (Phases 39–46) and the "Ordering rules that must hold
+   inside every phase" list. Phases 39 and 40 are `[x]`; 41 is next. The DAG is strictly serial.
+
+2. `.planning/phases/40-self-gate-teardown/40-01-SUMMARY.md` → what Phase 40 deleted, the nine
+   verification commands with their observed output, and **the deletion-phase ordering constraint
+   that applies to 41, 43 and 44** (see below — this is the one thing worth reading before starting
+   any deletion).
+
+3. `docs/adr/0012-ci-and-merge-as-decision-authority.md` → the ratified authority for every v2.5
+   deletion. Cite it instead of re-litigating scope.
+
+**Carry-forward constraint (discovered executing Phase 40).** Deletion phases must run
+**delete → stage → commit → verify → amend-if-red**, not verify-before-commit. `tools/adoption_scan`
+derives its file set from git, not the filesystem (`destinations.py:217` runs `git ls-files`), so
+deleting a tracked file reds three tests until the deletion is staged (two of them) and committed
+(`test_dispositions.py::test_catalog_invariant_to_untracked_local_state`, which checks out HEAD into
+a temp worktree and is red by construction while the deletion is uncommitted). Measured across
+Phase 40: 3 failed unstaged → 1 staged → 0 committed. Do not "fix" `adoption_scan` — the test is
+correct.
+
+**Also carried:** a skill deletion still requires editing `tools/harness_lint/caps.py`
+`EXPECTED_SKILLS` and re-emitting in the same commit (ordering rule 6). Phase 40 removed only the
+`registry.lock` rewrite step, nothing else. Verified by dry-run: deleting a skill now produces 18
+failures, none from a registry-lock gate.
+
+### Phase 40 open item
+
+`/gsd:secure-phase 40` has **not** run and no `40-SECURITY.md` exists. `workflow.security_enforcement`
+is absent from config, which GSD treats as enabled, so the gate is formally outstanding. Substantively
+the phase has no security surface — it deletes a build-time consistency check and touches no request
+path, stored data, auth, or secret (see the PLAN's `<threat_model>`). Recorded as a known gap rather
+than silently waived; run the command if the formal artifact is wanted.
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- `/gsd:discuss-phase 41 --auto --chain` — Phase 41: Docs-Review Plane Removal. Note its extra
+  precondition: the 8 `[[binding]]` rows in `docs/doc-dependencies.toml` must be unbound **before**
+  deleting any source they name, or `tools.docs_guard` classifies `BROKEN` and reds the fan-in gate.
+
+- Optional: `/gsd:secure-phase 40` to close the formal security gate above.

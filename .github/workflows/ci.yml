@@ -41,6 +41,13 @@ jobs:
       matrix: ${{ steps.matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v7.0.0
+      # Runs on the runner's bare python3, BEFORE setup-uv, and deliberately so. If a tools/*
+      # directory is missing its pyproject.toml, uv cannot resolve the workspace at all and every
+      # later uv step dies with a raw resolver error that names the symptom, not the fix. This
+      # step turns that into one actionable line. It must never be rewritten to use `uv run` —
+      # a check for "uv is broken" cannot itself require uv.
+      - name: Workspace resolvability (no uv — must precede setup-uv)
+        run: python3 tools/harness_lint/workspace_check.py
       - uses: astral-sh/setup-uv@v8.3.2
       - name: Sync workspace (all packages — bare `uv sync` prunes tool-member deps)
         run: uv sync --all-packages
@@ -145,7 +152,7 @@ jobs:
   # ── golden ─────────────────────────────────────────────────────────────────────────────────
   # Golden/approval parity. Installs .NET 10 for REAL so the example's require_dotnet cases RUN
   # (this is where the .NET egress deferral finally executes on GitHub runners), then:
-  #   step 1 — root identity golden (converter-agnostic, .NET-free) via pytest tools/golden_runner
+  #   step 1 — the golden runner's own suite (converter-agnostic, .NET-free)
   #   step 2 — example .NET golden parity via pytest examples/log-parser/tests
   golden:
     runs-on: ubuntu-latest
@@ -157,8 +164,8 @@ jobs:
       - uses: astral-sh/setup-uv@v8.3.2
       - name: Sync workspace (all packages)
         run: uv sync --all-packages
-      - name: Golden — root identity (converter-agnostic)
-        run: uv run pytest tools/golden_runner
+      - name: Golden — runner identity (converter-agnostic)
+        run: uv run pytest examples/log-parser/golden_runner
       - name: Golden — example .NET parity (require_dotnet runs)
         run: uv run pytest examples/log-parser/tests
 
@@ -177,21 +184,39 @@ jobs:
       - name: Harness core suite (tools/ + libs/python — GEN-03/04 guards included)
         run: uv run pytest
 
-  # ── lifecycle-eval ────────────────────────────────────────────────────────────────────────
-  # Phase 23 composition coverage.  This invokes the fixture runner plus the focused
-  # integration/regression suite; it deliberately reuses (not reimplements) the existing
-  # schema, router, transition, context, evidence, handoff, resume, and emit gates above.
-  lifecycle-eval:
+  # ── lint ───────────────────────────────────────────────────────────────────────────────────
+  # DEBT-01. `ruff check` was carried as debt across three milestones and gated nothing: 617
+  # findings, zero CI jobs looking at them, and an advisory /lint command that was always red —
+  # which is worse than absent, because an operator learns to ignore it.
+  #
+  # This job does NOT run a bare `ruff check .`, and that is deliberate. 393 genuine findings
+  # remain (the 193 in the vendored docs/references/opencode-matt-workflows tree left via
+  # `extend-exclude`; ruff's safe autofixes took another 31). A bare check would make this job
+  # permanently red, i.e. exactly the same non-gate it replaces. It becomes a step when the
+  # baseline reaches zero, and not before.
+  #
+  # Instead the gate is a RATCHET: tools/ruff_baseline/baseline.json records the per-rule counts,
+  # and `python -m tools.ruff_baseline` fails when any rule class grows, or when a rule code
+  # appears that the baseline has never seen (absent means zero — so a ruff bump that adds a check
+  # under E/F/I/UP/B fails on first appearance rather than being silently absorbed).
+  #
+  # When this job goes red, the operator has exactly two legitimate moves:
+  #   * fix the new finding(s) it names — the normal case; or
+  #   * if findings went DOWN, record the shrink with `uv run python -m tools.ruff_baseline
+  #     --update`, which REFUSES (exit 3) to raise any count.
+  # Raising the baseline is not one of them. There is no flag for it; it requires hand-editing a
+  # committed JSON file, which is visible in review.
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.0
       - uses: astral-sh/setup-uv@v8.3.2
       - name: Sync workspace (all packages)
         run: uv sync --all-packages
-      - name: Evaluate ratification-pending lane fixtures
-        run: uv run python -m tools.lifecycle_eval.runner
-      - name: Lifecycle fixture execution and negative-fixture binding
-        run: uv run pytest tools/lifecycle_eval
+      - name: Ruff ratchet — no rule class may grow
+        run: uv run python -m tools.ruff_baseline
+      - name: Ruff baseline unit tests
+        run: uv run pytest tools/ruff_baseline -q
 
   # ── emit-drift ─────────────────────────────────────────────────────────────────────────────
   # Single-source dual-runtime re-emit-diff gate (EMIT-02, D-02). Re-runs the emitter and fails on
@@ -273,42 +298,6 @@ jobs:
             exit 1
           fi
 
-  # ── docs-guard ─────────────────────────────────────────────────────────────────────────────
-  # Human-doc review-obligation gate (DOCSUP-03/05). A SEPARATE job — never folded into `drift` —
-  # mirroring the emit-drift / stale-derived / workspace separate-job idiom, so a docs-review
-  # failure and a contract-drift failure stay distinguishable in the CI output.
-  #
-  # Exit codes, and what each means for the operator:
-  #   0 — clean. STALE_ADVISORY findings may be present on stderr and never change the code.
-  #   1 — BROKEN / STALE_REQUIRED / an uncovered- or binding-count regression. Fix the DOCS (review
-  #       the target document against its changed sources), or fix the LEDGER (a human re-records
-  #       both digests). The guard never raises `uncovered_max` or lowers `binding_min` itself.
-  #   3 — the registry or the ledger is INVALID. Fix the REGISTRY, not the docs.
-  #
-  # Contract-drift and golden stay LEADING and authoritative (D-13): a binding whose source is a
-  # currently-drifted contract reports SUPPRESSED here rather than failing a second time with a
-  # second remedy. When both are red, fix `drift` first.
-  #
-  # docs/doc-dependencies.toml is a .toml INSTANCE under docs/, so the `contract-check` job's
-  # schema/instance pairing does NOT cover it — tools.docs_guard is its only validator (D-16 / A7).
-  #
-  # Checkout stays at its DEFAULT depth — deepening it is unnecessary cost here, because
-  # `git show HEAD:./<path>` retrieves the previous committed ledger at depth 1, and the
-  # `unverified-disposition` degradation covers the genuinely history-free case. The derived staleness queue under .memory/derived/ is gitignored and is
-  # deliberately NOT regenerated, staged, or added to `stale-derived` — its content is a function of
-  # the files being edited, so gating on it would red every ordinary source commit.
-  docs-guard:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7.0.0
-      - uses: astral-sh/setup-uv@v8.3.2
-      - name: Sync workspace (all packages)
-        run: uv sync --all-packages
-      - name: Docs guard — registry validation + binding classification
-        run: uv run python -m tools.docs_guard
-      - name: Docs guard unit tests
-        run: uv run pytest tools/docs_guard tools/memory_regen/tests/test_docs_staleness.py -q
-
   # ── workspace ──────────────────────────────────────────────────────────────────────────────
   # Cross-repo (multi-repo workspace) gate (MREPO-03). A SEPARATE job — cross-repo drift/golden are
   # NOT folded into the per-repo `drift`/`golden` jobs (anti-pattern) — mirroring the emit-drift /
@@ -328,7 +317,7 @@ jobs:
       - name: Cross-repo drift — workspace members + edges
         run: uv run python -m tools.contract_drift.drift --workspace
       - name: Cross-repo golden + workspace gates
-        run: uv run pytest tools/workspace_config tools/harness_lint/tests/test_workspace_config.py tools/harness_lint/tests/test_core_no_workspace_member_dep.py tools/golden_runner/tests/test_workspace_golden.py tools/contract_drift/tests/test_workspace_drift.py
+        run: uv run pytest tools/workspace_config tools/harness_lint/tests/test_workspace_config.py tools/harness_lint/tests/test_core_no_workspace_member_dep.py examples/log-parser/golden_runner/tests/test_workspace_golden.py tools/contract_drift/tests/test_workspace_drift.py
 
   # ── gate ───────────────────────────────────────────────────────────────────────────────────
   # Fan-in. Depends on every upstream job; runs even when one fails (if: always()) and FAILS if
@@ -337,7 +326,7 @@ jobs:
   # here). needs.*.result values are workflow-computed enums (success/failure/cancelled/skipped),
   # NOT event input — safe to interpolate.
   gate:
-    needs: [setup, lang-tests, contract-check, drift, golden, core-suite, lifecycle-eval, emit-drift, stale-derived, docs-guard, workspace]
+    needs: [setup, lang-tests, contract-check, drift, golden, core-suite, lint, emit-drift, stale-derived, workspace]
     if: always()
     runs-on: ubuntu-latest
     steps:

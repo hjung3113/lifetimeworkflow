@@ -106,9 +106,9 @@ def test_ci_yml_false_positive_closed(repo_root: Path) -> None:
 
     Red-green proof: the OLD generic pattern DOES match the real false-positive line (proving the
     bug is real, not a fixture artifact), while the LIVE (currently-committed) ``_secret_pattern()``
-    must not classify the file as ``excluded: "secret-content"`` in the inventory. Until the
-    gate-registry.json fix lands, this second half of the assertion is expected to FAIL — that is
-    the intended red state for this task.
+    must not classify the file as ``excluded: "secret-content"`` in the inventory. The tightened
+    pattern landed in 26.1 (commit d6e9054), so both halves are green and stay green; this test is
+    the regression guard, not a pending red.
     """
     ci_yml = repo_root / ".github" / "workflows" / "ci.yml"
     text = ci_yml.read_text(encoding="utf-8")
@@ -208,8 +208,7 @@ def test_secret_patterns_1_branch_attribution() -> None:
     """SC-3/D-04: pin that the mixed-case-digit-less match comes from registry index 1, not one
     of the other 7 dedicated-shape branches — a structural attribution check, not a substitute
     for the live-consumer behavior assertions above."""
-    registry = json.loads(scan._GATE_REGISTRY_PATH.read_text(encoding="utf-8"))
-    branch_only = re.compile(registry["secret_patterns"][1], re.IGNORECASE)
+    branch_only = re.compile(scan.SECRET_CONTENT_PATTERNS[1], re.IGNORECASE)
     sec = "se" + "cret"
     fixture_value = sec + ": " + "".join(["ABCDEFGHIJKLMNO", "12345"])
     assert scan._secret_pattern().search(fixture_value)

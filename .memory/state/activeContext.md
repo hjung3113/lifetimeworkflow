@@ -1,5 +1,5 @@
 ---
-updated: "2026-07-16"
+updated: "2026-07-29"
 ---
 
 # activeContext — volatile session hint (COMMITTED)
@@ -11,15 +11,24 @@ updated: "2026-07-16"
 
 ## In flight
 
-- **Milestone v2.1 — MEM2 (Process Memory & Provenance Reframe)** started + roadmap written
-  (phases 12–16, 7/7 requirements mapped). No phase planned/executed yet. Nothing mid-edit.
-- SessionStart injection is live and emits the reframed working-agreements and data-provenance payload.
+- Route: small-change
+- Step: 3 of 3 — make the edit and run `/lint`
+- Next command: /verify-work
+
+**Milestone v2.5 — Phase 46 (Product Flow), the milestone's final phase.** Plans 01 and 02 landed
+(`439b416` four product routes in `harness/agents/orchestrator.md`; `4df76db` `harness/commands/flow.md`,
+17 → 18 commands). Plan 03 is in flight: the state round-trip above plus the eight-criterion
+verification record. Nothing mid-edit outside `.memory/state/`.
+
+The three lines above are the route state `/flow` §2 prescribes. They are written by `/checkpoint`
+and surfaced by `/orient`'s pointer payload — **no new state file, no new writer, no new reader**.
 
 ## Next
 
-- **`/gsd:plan-phase 12`** — Model + ADR + Doc Reframe (v2.1 A): scaffold `.memory/agreements/`
-  process tier, reword distrust framing to data-authority, ratify as ADR-0006. Then 13→14→15→16.
-- Design source of truth: `.planning/MEMORY-UPGRADE-PROPOSAL.md` (§7 operator refinements authoritative).
-- Kickoff open Qs still to settle at planning: Q1 gating strength, Q2 `/checkpoint` vs `/agree`,
-  Q4 inject budget, Q6 staleness threshold (Q3/Q5 already decided: per-guideline files; per-file retire).
-- Deferred (non-blocking): golden-comparator Batch B (H2/M1, ADR-0005), optional `/gsd:complete-milestone v1.0`.
+- Close Phase 46: `.planning/phases/46-product-flow/46-03-SUMMARY.md` carries the eight-criterion
+  record, the D-24 whole-phase LOC line, and the D-23 statement that no mutation-proof table is owed.
+- Then the **milestone-close PR** for v2.5, which owns the nine-item deferral list inherited from
+  Phase 45 (`45-06-SUMMARY.md`): `docs/glossary.md`, ADR-0008/ADR-0003 dangling citations, the
+  982-vs-live README counts, and D-24's branch-protection remedy.
+- v2.6 (phases 47–50) is scoped, not started: `/impact`, package facts, the `contract_graph` query
+  surface.

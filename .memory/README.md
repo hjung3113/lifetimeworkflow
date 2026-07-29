@@ -10,26 +10,31 @@ only to refine the plane declaration.
 
 | Plane | Location | Ownership | Tracked in git? | Regenerated? |
 |-------|----------|-----------|-----------------|--------------|
-| **CONSTITUTION** | `contracts/`, `docs/adr/`, `docs/glossary.md`, `golden/` | Human-owned, CODEOWNERS-gated | ✅ committed | ❌ never (hand-authored) |
+| **CONSTITUTION** | `contracts/`, `docs/adr/`, `docs/glossary.md` | Human-owned, CODEOWNERS-gated | ✅ committed | ❌ never (hand-authored) |
 | **DERIVED** | `.memory/derived/` | Machine-owned (`tools/memory_regen`) | ❌ **gitignored** | ✅ every session |
 | **STATE** | `.memory/state/` | Agent-authored volatile hints | ✅ committed | ❌ (small, survives sessions) |
 | **PROCESS** | `.memory/agreements/` | Human-authored via feedback (curated) | ✅ committed | ❌ never |
 
 ## (1) CONSTITUTION plane — human-owned, immutable-to-agents (MEM-01)
 
-The constitution plane is the **single source of truth**. Its four members are:
+The constitution plane is the **single source of truth**. Its three members are:
 
 - `contracts/` — JSON Schema (Draft 2020-12) + YAML specs. The canonical contract text.
 - `docs/adr/` — append-only Architecture Decision Records (supersede, never edit).
 - `docs/glossary.md` — the shared domain vocabulary.
-- `golden/` — approved equivalence baselines (`.verified`), promoted only by human `/golden-approve`.
+
+Approved equivalence baselines (`.verified`) are no longer a root `golden/` member: they live per
+instance at `examples/<instance>/golden/` and are promoted only by a human `GOLDEN_APPROVE_HUMAN`
+token ratified through the CODEOWNERS `/examples/*/golden/` route.
 
 **These files are human-owned and CODEOWNERS-gated. Agents MUST NOT write to them.**
 Contract changes are ratified by humans and accompanied by the golden / contract-drift gates.
 The membership above is **declared by** [ADR-0001](../docs/adr/0001-walking-skeleton-golden-core.md)
-§Decision, not by this file — this page restates it. The *runtime* enforcement is the
+§Decision, not by this file — this page restates it. ADR-0001's four-member membership is
+superseded by [ADR-0012](../docs/adr/0012-ci-and-merge-as-decision-authority.md) clause (d), which
+drops root `golden/`. The *runtime* enforcement is the
 `contract-guard` hook (`tools/hooks/contract_guard.py`), which **is built and live**: a
-PreToolUse(Write|Edit) onto any of the four members is denied unless a human `GOLDEN_APPROVE_HUMAN`
+PreToolUse(Write|Edit) onto any of the three members is denied unless a human `GOLDEN_APPROVE_HUMAN`
 token is set, and CODEOWNERS gates it again at merge. Phase 2 established the boundary in prose;
 Phase 4 made it non-bypassable.
 

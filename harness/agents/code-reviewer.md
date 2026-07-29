@@ -30,7 +30,7 @@ What to look for:
 - Boundary-invariant breaks (§4.3–4.6): BOM, CRLF, locale-dependent decimals, naive timezones,
   TSV escaping / `"" ≠ null` — the classic polyglot-equivalence defects.
 - Attempts to self-bless a golden, hand-edit derived plane, or write the constitution plane
-  (`contracts/`, `docs/adr/`, `golden/`).
+  (`contracts/`, `docs/adr/`, `docs/glossary.md`).
 
 Report findings with severity; do not validate that work was merely "done". Fixes are handed
 back to the scoped engineer personas — you do not apply them.

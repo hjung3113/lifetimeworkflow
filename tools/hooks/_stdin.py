@@ -1,6 +1,6 @@
 """Shared Claude hook-stdin adapter for the Phase-4 gates (thin, stdlib-only).
 
-Every Phase-4 gate (secret_scan here; contract-guard / boundary / stop gates in plans 03-05)
+Every Phase-4 gate (contract-guard / boundary / stop gates in plans 03-05)
 uses this one seam to translate Claude's untrusted hook stdin JSON into a typed record and back
 into a decision. Keeping it in `_stdin` means the gate modules never re-implement JSON plumbing
 and the plans can add sibling modules without touching each other's files.
@@ -48,10 +48,11 @@ def repo_relative(file_path: str, root: Path = _REPO_ROOT) -> str:
     """Best-effort normalize a hook ``file_path`` to a repo-root-relative POSIX path.
 
     Claude's Write/Edit ``tool_input.file_path`` is ABSOLUTE (``/…/contracts/x``), but the
-    constitution/secret deny globs (``contracts/**``, ``golden/**``, ``*.env``) are repo-relative
-    and matched with ``fnmatchcase``, which anchors at the string start — so an absolute path never
-    matches and the path-scoped deny silently no-ops. Normalizing here, at the one Claude-stdin
-    seam, lets the shared pure resolver keep seeing relative paths (its signature stays stable).
+    constitution deny globs (``contracts/**``, ``docs/adr/**``, ``docs/glossary.md``) are
+    repo-relative and matched with ``fnmatchcase``, which anchors at the string start — so an
+    absolute path never matches and the path-scoped deny silently no-ops. Normalizing here, at the
+    one Claude-stdin seam, lets the shared pure resolver keep seeing relative paths (its signature
+    stays stable).
 
     * Absolute path under ``root`` -> repo-relative POSIX string (``contracts/x``).
     * Absolute path OUTSIDE the repo -> returned unchanged (still absolute; simply won't match).

@@ -8,8 +8,8 @@ Semantics:
   * ``resolve_bash`` — opencode last-wins glob: iterate the authored (insertion-ordered) rules and
     keep the decision of the LAST pattern that matches the command line. The catch-all ``*`` is
     authored FIRST so specifics override it; never end the matrix with a broad ``allow`` (P3).
-  * ``resolve_path`` — path-scoped deny for the constitution/secret planes (``contracts/**``,
-    ``docs/adr/**``, ``golden/**``, ``*.env``): ``deny`` if any glob matches, else ``allow``.
+  * ``resolve_path`` — path-scoped deny for the constitution plane (``contracts/**``,
+    ``docs/adr/**``, ``docs/glossary.md``): ``deny`` if any glob matches, else ``allow``.
 
 Default posture is deny-by-caution: an unmatched command falls through to the ``default`` verb
 (``"ask"``), so nothing is silently allowed.

@@ -1,8 +1,8 @@
 """Regime B-json — signature-matched, order-preserving hook-group merge into .claude/settings.json.
 
 This is the single highest-risk surface in Phase 7 (T-07-09 / T-07-11 / Pitfall 4). The Phase 2/4
-harness hooks (``tools.hooks.format_on_write`` / ``contract_guard`` / ``secret_scan`` /
-``commit_gate``) + the ``memory-inject.sh`` injector are ALREADY hand-wired into the LIVE
+harness hooks (``tools.hooks.format_on_write`` / ``contract_guard`` / ``commit_gate``) + the
+``memory-inject.sh`` injector are ALREADY hand-wired into the LIVE
 ``.claude/settings.json`` and guarded by ``tools/memory_regen/tests/test_hook_wiring.py`` (exactly 4
 SessionStart groups). The MVP contract (Open Q2 / A5) is IDEMPOTENT COEXISTENCE:
 
@@ -112,6 +112,68 @@ def test_merge_is_idempotent() -> None:
     once = merge.merge_settings(parsed)
     twice = merge.merge_settings(copy.deepcopy(once))
     assert _serialize(once) == _serialize(twice)
+
+
+def _assert_retired_signature_is_dropped(signature: str) -> None:
+    """Reconstruct a stale checkout's group for ``signature`` and assert the re-emit drops it."""
+    parsed = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+    stale = copy.deepcopy(parsed)
+    stale["hooks"]["PreToolUse"].append(
+        {
+            "matcher": "Write|Edit|Bash",
+            "hooks": [{"type": "command", "command": f"uv run python -m {signature}"}],
+        }
+    )
+    before = len(stale["hooks"]["PreToolUse"])
+
+    merged = merge.merge_settings(stale)
+
+    assert signature not in json.dumps(merged), (
+        f"{signature} is listed in RETIRED_SIGNATURES but survived a re-emit — a stale checkout "
+        "would keep running a deleted module and deny every Write/Edit/Bash"
+    )
+    assert len(merged["hooks"]["PreToolUse"]) == before - 1
+    # Dropping the orphan must land back on the live bytes exactly.
+    assert _serialize(merged) == SETTINGS_PATH.read_text(encoding="utf-8")
+
+
+def test_retired_signature_group_is_dropped_from_a_stale_checkout() -> None:
+    """A retired harness hook is removed from a tree that still carries its group.
+
+    The emitting repo cannot observe this: once its own re-emit has landed, its settings.json no
+    longer holds the group, so the merge is idempotent and ``emit-drift`` stays green whether or not
+    ``RETIRED_SIGNATURES`` still lists the signature. Every OTHER checkout can — an adopted target,
+    a stale clone, a long-lived branch. There the group matches no current signature, falls through
+    as GSD/human-owned, and is kept verbatim pointing at a deleted module; the guard then exits
+    non-zero and PreToolUse denies every Write/Edit/Bash.
+
+    Phase 43 shipped with the tuple emptied and this branch uncovered, so a full green suite proved
+    nothing about it. The assertion reconstructs the stale group from the retired signature itself,
+    so it keeps biting for whatever signature is retired next.
+    """
+    assert merge.RETIRED_SIGNATURES, "no retired signature to exercise"
+    for signature in merge.RETIRED_SIGNATURES:
+        _assert_retired_signature_is_dropped(signature)
+
+
+def test_retired_signatures_are_permanent_tombstones() -> None:
+    """Every tombstone ever added stays listed — the tuple is append-only, never cleared.
+
+    The loop above only exercises what the tuple happens to list, so it stays GREEN when an entry is
+    deleted (mutation-proved). These membership pins are the assertions that red on the Phase-43
+    "clear the tuple after the re-emit" move (REVIEW.md CR-01) — the move that strands every OTHER
+    checkout while the emitting repo stays green.
+    """
+    # Phase 43 / CER-07 — the resume_gate lifecycle plane removal.
+    assert "tools.hooks.resume_gate" in merge.RETIRED_SIGNATURES, (
+        "tools.hooks.resume_gate was dropped from RETIRED_SIGNATURES — tombstones are permanent; "
+        "a checkout still carrying the pre-43 settings.json would invoke a deleted module"
+    )
+    # Phase 44 / CER-08 — the secret_scan non-goal surface removal.
+    assert "tools.hooks.secret_scan" in merge.RETIRED_SIGNATURES, (
+        "tools.hooks.secret_scan was dropped from RETIRED_SIGNATURES — tombstones are permanent; "
+        "a checkout still carrying the pre-44 settings.json would invoke a deleted module"
+    )
 
 
 def test_gsd_group_never_removed_even_when_sharing_event() -> None:

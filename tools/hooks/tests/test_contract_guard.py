@@ -1,14 +1,14 @@
 """RED->GREEN proof for the HOOK-04 contract-guard PreToolUse gate.
 
-Denies a Write/Edit to the CONSTITUTION plane (``contracts/**``, ``docs/adr/**``, ``golden/**``)
-unless a human-authorized ``GOLDEN_APPROVE_HUMAN`` token is present in env, and — even on an
+Denies a Write/Edit to the CONSTITUTION plane (``contracts/**``, ``docs/adr/**``,
+``docs/glossary.md``) unless a human-authorized ``GOLDEN_APPROVE_HUMAN`` token is present in env, and — even on an
 approved constitution write — denies a payload whose bytes fail the reused POLY-01 ``lint_bytes``
 (§4.3-4.6: BOM / CRLF), because the constitution plane must stay byte-pristine (D-04).
 
 Composition invariants (04-06):
   * CONSTITUTION-ONLY subset: the gate feeds the resolver ``["contracts/**", "docs/adr/**",
-    "golden/**"]`` — NOT the full matrix ``path_deny_globs`` union (which also carries ``*.env``,
-    secret_scan's domain). A ``*.env`` write is therefore never mislabeled "constitution plane".
+    "docs/glossary.md"]``, which is now identical to the matrix ``path_deny_globs`` — the matrix
+    carries no row this gate does not enforce.
   * Empty-string token does NOT bypass: ``approved`` is truthy ONLY on a non-empty, non-blank
     ``GOLDEN_APPROVE_HUMAN`` value (Q1 RESOLVED) — an agent must not fabricate it.
   * Allowed-path byte hygiene is NOT this gate's job: a BOM/CRLF payload into a non-constitution
@@ -20,6 +20,8 @@ from __future__ import annotations
 
 import io
 import json
+import subprocess
+from fnmatch import fnmatchcase
 from pathlib import Path
 
 import pytest
@@ -48,18 +50,12 @@ def test_unapproved_contracts_write_denied() -> None:
     assert out is not None
     assert out["hookSpecificOutput"]["permissionDecision"] == "deny"
     reason = out["hookSpecificOutput"]["permissionDecisionReason"]
-    assert "golden-approve" in reason
+    assert "GOLDEN_APPROVE_HUMAN" in reason
     assert "CODEOWNERS" in reason
 
 
 def test_unapproved_adr_write_denied() -> None:
     out = decide("docs/adr/0002-foo.md", "# ADR\nprose\n", approved=False)
-    assert out is not None
-    assert out["hookSpecificOutput"]["permissionDecision"] == "deny"
-
-
-def test_unapproved_golden_write_denied() -> None:
-    out = decide("golden/case/expected/x.tsv", "col1\tcol2\n", approved=False)
     assert out is not None
     assert out["hookSpecificOutput"]["permissionDecision"] == "deny"
 
@@ -121,7 +117,7 @@ def test_approved_constitution_with_bom_still_denied() -> None:
 
 
 def test_approved_constitution_with_crlf_still_denied() -> None:
-    out = decide("golden/case/expected/x.tsv", CRLF_CONTENT, approved=True)
+    out = decide("contracts/x.schema.json", CRLF_CONTENT, approved=True)
     assert out is not None
     assert out["hookSpecificOutput"]["permissionDecision"] == "deny"
 
@@ -267,11 +263,12 @@ def test_main_dev_bypass_source_path_no_note(monkeypatch: pytest.MonkeyPatch) ->
     assert err.strip() == ""
 
 
-# --- docs/glossary.md: the FOURTH constitution member (ADR-0001) --------------------------------
+# --- docs/glossary.md: a constitution member in its own right (ADR-0001, as amended) ------------
 #
-# `docs/adr/0001-walking-skeleton-golden-core.md:48` — accepted, unsuperseded — declares the
-# constitution plane as `contracts/`, `golden/`, `docs/adr/` AND `docs/glossary.md`. The Phase-4
-# gate shipped with only three; the glossary was agent-writable in every session until this fix.
+# `docs/adr/0001-walking-skeleton-golden-core.md:48` declares the constitution plane; ADR-0012
+# clause (d) supersedes it to the extent that `golden/**` leaves the constitution-plane core, so the
+# plane is `contracts/`, `docs/adr/` AND `docs/glossary.md`. The Phase-4 gate shipped without the
+# glossary; it was agent-writable in every session until that fix.
 #
 # Every row below names the LITERAL `docs/glossary.md`. A `docs/*.md` shaped fixture is forbidden
 # here: it would pass against a broad glob that also swallowed the how-to and explanation trees,
@@ -285,7 +282,7 @@ def test_unapproved_glossary_write_denied() -> None:
     assert out is not None, "docs/glossary.md is constitution plane per ADR-0001:48"
     assert out["hookSpecificOutput"]["permissionDecision"] == "deny"
     reason = out["hookSpecificOutput"]["permissionDecisionReason"]
-    assert "golden-approve" in reason
+    assert "GOLDEN_APPROVE_HUMAN" in reason
     assert "CODEOWNERS" in reason
 
 
@@ -327,7 +324,7 @@ def test_neighbouring_docs_paths_are_not_constitution() -> None:
         "docs/explanation/template-and-instances.md",
         "docs/tutorials/README.md",
         "docs/glossary-notes.md",
-        "docs/reference/doc-dependencies.md",
+        "docs/reference/deny-domains.md",
     ):
         assert decide(path, "# doc\n", approved=False) is None, (
             f"{path} is human-authored docs, NOT constitution plane"
@@ -358,12 +355,12 @@ def test_every_declared_plane_member_is_independently_enforced() -> None:
     probes = {
         "contracts/**": "contracts/x.schema.json",
         "docs/adr/**": "docs/adr/0002-foo.md",
-        "golden/**": "golden/case/expected/x.tsv",
         "docs/glossary.md": "docs/glossary.md",
     }
     assert set(cg.CONSTITUTION_GLOBS) == set(probes), (
-        "CONSTITUTION_GLOBS changed — ADR-0001:48 declares exactly these four members; "
-        "adding or removing one requires a superseding ADR, and this table must move with it"
+        "CONSTITUTION_GLOBS changed — ADR-0001:48 as superseded by ADR-0012 clause (d) declares "
+        "exactly these three members; adding or removing one requires a superseding ADR, and this "
+        "table must move with it"
     )
     original = list(cg.CONSTITUTION_GLOBS)
     try:
@@ -379,3 +376,47 @@ def test_every_declared_plane_member_is_independently_enforced() -> None:
             )
     finally:
         cg.CONSTITUTION_GLOBS[:] = original
+
+
+def _tracked_paths() -> list[str]:
+    """Every git-tracked path in this repo (``git ls-files``, ``shell=False``).
+
+    Same subprocess idiom as ``tools/harness_lint/tests/test_core_no_example_dep.py`` — the
+    established way to ground an assertion in the real index rather than a hand-kept list.
+    """
+    completed = subprocess.run(
+        ["git", "ls-files"],
+        cwd=_REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return [line.strip() for line in completed.stdout.splitlines() if line.strip()]
+
+
+def test_every_constitution_glob_matches_a_tracked_file() -> None:
+    """No ``CONSTITUTION_GLOBS`` member may match ZERO tracked files (ROADMAP SC-1, glob clause).
+
+    The sibling mutation proof above shows each member is INDEPENDENTLY enforced; it cannot show
+    that the member still has a subject. A glob whose tree is gone denies nothing while still
+    advertising a plane — the ``golden/**`` defect Phase 44 left behind, caught then by reading and
+    asserted here mechanically.
+
+    Matched with ``fnmatch.fnmatchcase``, the SAME matcher ``resolve_path`` (and therefore this
+    gate) uses at runtime, so a member that passes here is one the gate could actually act on.
+
+    SCOPE — deliberately NOT extended to ``tools/adoption_scan/scan.py``'s ``SECRET_PATH_GLOBS`` or
+    ``tools/adoption_scan/destinations.py``'s ``_CATEGORY_GLOBS``: their subject is a SCANNED
+    brownfield TARGET repository, not this checkout, so a zero-match there is correct behaviour and
+    asserting otherwise would be a false failure. Do not widen this test to them.
+    """
+    import tools.hooks.contract_guard as cg
+
+    globs = list(cg.CONSTITUTION_GLOBS)
+    assert globs, "CONSTITUTION_GLOBS is empty — the plane declaration itself is gone"
+    tracked = _tracked_paths()
+    dead = [g for g in globs if not any(fnmatchcase(p, g) for p in tracked)]
+    assert not dead, (
+        f"CONSTITUTION_GLOBS members matching ZERO git-tracked files: {dead} — a plane member with "
+        "no subject is a dead control; remove it (with a superseding ADR) or repoint it"
+    )

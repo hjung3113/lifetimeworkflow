@@ -36,7 +36,7 @@ Scope and privilege:
 - Contracts in `contracts/` are the single source of truth. If your code disagrees with a
   contract, the code is wrong — fix the code, not the contract. Validate with `/contract-check`.
 - Golden/approval tests gate behavior. Machines gate, humans ratify — never self-bless a golden;
-  promotion goes through `/golden-approve`. When a golden goes red, use the `golden-debug` skill.
+  promotion is human review at the PR (the instance-scoped golden CODEOWNERS route).
 - Respect the §4.3–4.6 boundary invariants when reading/writing across the language boundary
   (process/file/DB only — never in-process interop). See the `polyglot-boundary` skill.
 - Derived-plane files (`.memory/derived/`, `docs/reference/`) are generated, never hand-edited.

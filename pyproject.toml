@@ -31,7 +31,7 @@ package = false
 # tools/*      = repo-level Python tools (golden-runner, contract-hash/drift — later plans).
 # uv requires every dir matched by `members` to contain a pyproject.toml, so shell-only tool dirs
 # (tools/bootstrap) must be excluded or `uv sync` fails. components/* (.NET) are not members at all.
-members = ["libs/python", "tools/*"]
+members = ["libs/python", "tools/*", "examples/log-parser/golden_runner"]
 exclude = ["tools/bootstrap"]
 
 [tool.pytest.ini_options]
@@ -43,7 +43,10 @@ python_files = ["test_*.py", "*_test.py"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-extend-exclude = [".dotnet", ".venv", "bin", "obj"]
+# docs/references/opencode-matt-workflows = VENDORED third-party reference material, not this
+# repo's code to fix. It owned 193 of the 620 findings — including every E401 and both E722 —
+# and a gate that reports on code we do not own is a gate nobody acts on.
+extend-exclude = [".dotnet", ".venv", "bin", "obj", "docs/references/opencode-matt-workflows"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

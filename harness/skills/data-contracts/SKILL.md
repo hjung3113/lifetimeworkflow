@@ -31,7 +31,8 @@ core convention target.
 
 - **YAML spec** = human-readable skeleton. **Companion `.schema.json`** (JSON Schema Draft
   2020-12) = the validated, hashed source of truth.
-- `golden/` is a **separate top-level sibling**, not `contracts/golden/`.
+- The golden baseline directory is a **separate top-level sibling** within the instance overlay that
+  owns it — never nested under a `contracts/` tree.
 - Seeds are example placeholders (CONTRACT-01) — real domain values are Out of Scope. The point is
   to seed the plumbing that enforces contracts, not to fill them.
 

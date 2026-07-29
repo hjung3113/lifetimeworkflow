@@ -27,10 +27,10 @@ MANIFEST_PATH = CONTRACTS_DIR / ".hashes" / "manifest.json"
 
 # Glob confined to the contracts/ subtree — no path traversal outside the repo.
 SCHEMA_GLOB = "**/*.schema.json"
-DATA_CONTRACT_PATHS = (
-    Path("harness/task-control/transitions.json"),
-    Path("harness/task-control/gate-registry.json"),
-)
+# Retained extension seam: a ratified *data* contract (not a ``*.schema.json``) is hashed into the
+# drift manifest by naming it here. CER-08 removed the two entries this tuple used to carry, so it
+# is empty — the mechanism stays, the data does not.
+DATA_CONTRACT_PATHS: tuple[Path, ...] = ()
 
 
 def schema_hash(path: str | Path) -> str:

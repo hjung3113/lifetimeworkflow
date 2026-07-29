@@ -88,10 +88,7 @@ def splice_managed_block(existing_text: str, block_body: str) -> str:
 HARNESS_SIGNATURES: tuple[str, ...] = (
     "tools.hooks.format_on_write",
     "tools.hooks.contract_guard",
-    "tools.hooks.ledger_guard",
-    "tools.hooks.secret_scan",
     "tools.hooks.commit_gate",
-    "tools.hooks.resume_gate",
 )
 
 #: GSD-owned hook signatures — NEVER removed or reordered (defensive; they never match a harness
@@ -103,10 +100,58 @@ GSD_SIGNATURES: tuple[str, ...] = (
     "tools/bootstrap/install.sh",
 )
 
+#: Signatures the harness used to own but no longer emits. A plain signature-set diff (removing a
+#: signature from ``HARNESS_SIGNATURES`` alone) is NOT enough to delete its group on re-emit: a
+#: group whose command matches no *current* signature falls through as ``sig is None`` and is
+#: mistaken for a GSD/human group (kept verbatim forever) — silently defeating a deletion phase's
+#: whole point. Listing a signature here makes the retirement an explicit, re-emit-driven removal
+#: instead of requiring a hand-edit of the emitted ``.claude/settings.json`` (D-12).
+#:
+#: Entries are PERMANENT tombstones, never cleared once added. Clearing an entry after the emitting
+#: repo's own re-emit has landed looks harmless — that repo's settings.json no longer carries the
+#: group, so the merge is idempotent and ``emit-drift`` stays green — but it silently strands every
+#: OTHER checkout. Any tree still holding the pre-retirement ``settings.json`` (an adopted target, a
+#: stale clone, a long-lived branch) re-emits into a group that matches no current signature, keeps
+#: it verbatim as GSD/human-owned, and then runs a module that no longer exists: the guard exits
+#: non-zero, PreToolUse denies every Write/Edit/Bash, and the repair is locked behind the outage it
+#: caused. Reversal of Phase 43's D-06 (and of the same mistake in Phase 41), which specified
+#: emptying this tuple after the re-emit. Phase 44 / CER-08 appends ``tools.hooks.secret_scan``
+#: under the same rule: both entries stay listed permanently, and the tuple is only ever appended
+#: to — never cleared, never reordered.
+RETIRED_SIGNATURES: tuple[str, ...] = (
+    "tools.hooks.resume_gate",
+    "tools.hooks.secret_scan",
+)
+
 #: The canonical harness hook groups the emitter wires, per event. Key order inside each mapping is
 #: AUTHORED (matcher → hooks; type → command → timeout) and MUST match the live committed bytes so
 #: an in-place replace reproduces .claude/settings.json exactly. There is NO harness group in
 #: SessionStart — all 4 SessionStart slots are GSD/injector-owned (untouched by this merge).
+#
+#: Every guard command carries a two-clause shell PREFIX (:data:`_GUARD_PREFIX`) so the guard
+#: cannot take the whole session down and so a dev session can opt out of the guard wall. It is
+#: part of the emitted command string and MUST be reproduced byte-for-byte in .claude/settings.json.
+#
+#: Clause 1 — ``[ -n "$HARNESS_DEV_LIGHT" ] && exit 0``: a dev session that sets HARNESS_DEV_LIGHT
+#: (in the gitignored .claude/settings.local.json) skips the guard entirely. Enforcement then lives
+#: where it belongs for this contract-first repo — CI (contract-drift, golden, ruff) and CODEOWNERS
+#: at the PR to main — not on every in-editor keystroke. The deployed product and CI leave the flag
+#: unset and keep full enforcement.
+#
+#: Clause 2 — ``python3 tools/harness_lint/workspace_check.py >/dev/null 2>&1 || exit 0``: if the uv
+#: workspace cannot resolve (e.g. a tools/* dir was created without its pyproject.toml), EVERY
+#: ``uv run`` guard would otherwise die at workspace resolution — before its Python even starts —
+#: and, because a failing PreToolUse guard denies its tool, take Read/Write/Bash down repo-wide with
+#: the repair locked behind the outage. The bare-python3 workspace check (no uv, no deps) turns that
+#: into ALLOW-with-degrade: a guard must fail closed on a real deny, but must NOT block on tooling
+#: infrastructure that is not its concern. Proven not to weaken a real deny by the mutation tests in
+#: tools/harness_emit/tests/test_guard_prefix.py — a healthy workspace still runs the guard and a
+#: constitution write with no bypass still denies.
+_GUARD_PREFIX: str = (
+    '[ -n "$HARNESS_DEV_LIGHT" ] && exit 0; '
+    "python3 tools/harness_lint/workspace_check.py >/dev/null 2>&1 || exit 0; "
+)
+
 HARNESS_HOOK_GROUPS: dict[str, list[dict]] = {
     "PostToolUse": [
         {
@@ -114,7 +159,7 @@ HARNESS_HOOK_GROUPS: dict[str, list[dict]] = {
             "hooks": [
                 {
                     "type": "command",
-                    "command": "uv run python -m tools.hooks.format_on_write",
+                    "command": _GUARD_PREFIX + "uv run python -m tools.hooks.format_on_write",
                     "timeout": 30,
                 }
             ],
@@ -126,32 +171,7 @@ HARNESS_HOOK_GROUPS: dict[str, list[dict]] = {
             "hooks": [
                 {
                     "type": "command",
-                    "command": "uv run python -m tools.hooks.contract_guard",
-                    "timeout": 10,
-                }
-            ],
-        },
-        {
-            "matcher": "Read|Write|Edit",
-            "hooks": [
-                {
-                    "type": "command",
-                    "command": "uv run python -m tools.hooks.secret_scan",
-                    "timeout": 10,
-                }
-            ],
-        },
-        # ADR-0010 clause 3b layer 1 — the ordinary agent Write/Edit path for the human-review
-        # ledger. A THIRD deny domain, disjoint from contract_guard's constitution plane and
-        # secret_scan's *.env plane, with no token and no dev bypass. Deleting this group is what
-        # `test_ledger_guard_is_wired_into_pretooluse` exists to catch: without it the ADR's layer 1
-        # is inert data again.
-        {
-            "matcher": "Write|Edit",
-            "hooks": [
-                {
-                    "type": "command",
-                    "command": "uv run python -m tools.hooks.ledger_guard",
+                    "command": _GUARD_PREFIX + "uv run python -m tools.hooks.contract_guard",
                     "timeout": 10,
                 }
             ],
@@ -161,18 +181,10 @@ HARNESS_HOOK_GROUPS: dict[str, list[dict]] = {
             "hooks": [
                 {
                     "type": "command",
-                    "command": "uv run python -m tools.hooks.commit_gate --from-hook",
+                    "command": (
+                        _GUARD_PREFIX + "uv run python -m tools.hooks.commit_gate --from-hook"
+                    ),
                     "timeout": 120,
-                }
-            ],
-        },
-        {
-            "matcher": "Write|Edit|Bash",
-            "hooks": [
-                {
-                    "type": "command",
-                    "command": "uv run python -m tools.hooks.resume_gate",
-                    "timeout": 15,
                 }
             ],
         },
@@ -194,6 +206,7 @@ def merge_settings(
     existing: dict,
     harness_signatures: tuple[str, ...] = HARNESS_SIGNATURES,
     harness_groups: dict[str, list[dict]] = HARNESS_HOOK_GROUPS,
+    retired_signatures: tuple[str, ...] = RETIRED_SIGNATURES,
 ) -> dict:
     """Merge the harness hook groups into ``existing`` settings IN PLACE, order-preserving (Regime B-json).
 
@@ -201,7 +214,9 @@ def merge_settings(
     signature) is APPENDED-OR-REPLACED where it already appears — never duplicated, never sorted,
     never moved. GSD/human groups (no harness signature) are kept verbatim in their live position;
     a second harness group matching an already-placed signature is DROPPED (de-dup → no double-wire).
-    A harness group absent from ``existing`` is appended at the tail of its event list.
+    A harness group absent from ``existing`` is appended at the tail of its event list. A group
+    matching a ``retired_signatures`` entry is DROPPED outright — it is a formerly harness-owned
+    group whose signature was deliberately removed (a deletion phase), not a GSD/human group.
 
     Because the Phase 2/4 hooks are ALREADY committed in the live order, calling this on the parsed
     live ``.claude/settings.json`` reproduces it byte-for-byte from the FIRST emit (serialize with
@@ -228,6 +243,9 @@ def merge_settings(
         for group in existing_groups:
             sig = _group_signature(group, harness_signatures)
             if sig is None:
+                if _group_signature(group, retired_signatures) is not None:
+                    # A retired harness group — drop it, this is the deletion path (D-12).
+                    continue
                 # GSD/human group — keep verbatim, in place, never removed/reordered (T-07-02).
                 result.append(group)
             elif sig in desired_by_sig:

@@ -33,7 +33,7 @@ shapes; this skill is the map of the scenarios that consume them.
 
 The equivalence discipline: **an incremental run (live/rework/catchup) must be golden-equivalent to
 a full reprocess** over the same span. Carryover exists so that equivalence holds at run
-boundaries. Verify it with the golden runner (see the golden-testing skill).
+boundaries. Verify it with the golden runner.
 
 ## Seeds are placeholders
 

@@ -2,11 +2,11 @@
 
 *MADR 4.x · plane: constitution (human-owned, immutable, append-only)*
 
-- **Status:** accepted
+- **Status:** superseded by 0012
 - **Date:** 2026-07-22
 - **Deciders:** kimhyojung (CODEOWNERS)
 - **Supersedes:** —
-- **Superseded by:** —
+- **Superseded by:** [0012](0012-ci-and-merge-as-decision-authority.md)
 - **Complements:** [ADR-0009](0009-contract-relationship-graph-model.md) (the graph this model's impact
   ids consume), [ADR-0007](0007-constitution-gate-dev-enforce-decoupling.md) (the constitution gate
   and its dev/enforce decoupling, whose token semantics this record deliberately does NOT extend),

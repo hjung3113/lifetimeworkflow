@@ -42,5 +42,5 @@ wrong. So the contract entry is authored **before** any code exists.
 - **Order is load-bearing:** contract → (input, expected) data case → failing code stub. A rule that
   starts from code, or a stub authored green before the contract + data case exist, defeats the
   contract-first invariant (Pattern 4, T-03-26).
-- Only after the data case turns the failing stub green (via `/test` / `/golden`) is the rule done.
+- Only after the data case turns the failing stub green (via `/test`) is the rule done.
 - Stage new/edited files individually when committing; do not blanket-add the working tree.

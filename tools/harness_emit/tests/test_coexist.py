@@ -1,6 +1,6 @@
 """EMIT-02 command coexistence — the harness command surface must never collide with GSD (T-07-02).
 
-The emitter writes its 20 harness commands as TOP-LEVEL ``.claude/commands/*.md`` (Claude) and
+The emitter writes its 18 harness commands as TOP-LEVEL ``.claude/commands/*.md`` (Claude) and
 ``.opencode/command/*.md`` (opencode). GSD owns the ``.claude/commands/gsd/**`` subtree; the two
 sets must be provably DISJOINT — a harness command must never land under ``gsd/`` and a seeded
 ``gsd/`` fixture must survive an emit byte-for-byte and never be enumerated by the ownership
@@ -16,6 +16,7 @@ import json
 from pathlib import Path
 
 from tools.harness_emit import generate as harness_emit
+from tools.harness_emit.merge import _GUARD_PREFIX
 
 
 def _emit(tmp_path: Path, prior_manifest: dict | None = None) -> tuple[list[Path], Path]:
@@ -36,8 +37,8 @@ def _claude_commands(tmp_path: Path, written: list[Path]) -> list[Path]:
     return [p for p in written if commands_dir in p.parents and p.suffix == ".md"]
 
 
-def test_all_25_commands_emit_to_both_trees(tmp_path: Path) -> None:
-    """25 commands land in .opencode/command/*.md AND .claude/commands/*.md (top-level).
+def test_all_18_commands_emit_to_both_trees(tmp_path: Path) -> None:
+    """18 commands land in .opencode/command/*.md AND .claude/commands/*.md (top-level).
 
     Phase 9 adds /refresh-memory (the curator's local derived-freshness macro), taking the count
     from 17 → 18; Phase 10 adds /fan-out-synthesize (the context-economy fan-out entry point),
@@ -46,6 +47,14 @@ def test_all_25_commands_emit_to_both_trees(tmp_path: Path) -> None:
     Phase 20 adds /phase-gate, taking it 21 → 22; Phase 22 adds /handoff, taking it 22 → 23.
     Phase 27 adds `/adopt` (the brownfield-adoption composition entry point), taking it 23 → 24.
     Phase 29 adds `/docs-update` (the bounded human-doc review loop, DOCSUP-06), taking it 24 → 25.
+    Phase 36 adds `/discipline` (the read-only lane-discipline report, LANE-01), taking it 25 → 26.
+    Phase 41 deletes `/docs-update` (the docs-review plane removal, CER-05), taking it back 26 → 25.
+    Phase 43 deletes /intake, /phase-gate, /handoff, /discipline (the lifecycle-plane removal,
+    CER-07), taking it 25 → 21.
+    Phase 44 deletes the orphan migration-step command and the topology-trace command (the
+    non-goal surface removal, CER-08), taking it 21 → 19; CER-09 in the same phase retires the
+    golden command pair /golden and /golden-approve, taking it 19 → 17.
+    Phase 46 adds `/flow`, the product's named entry point (PROD-04), taking it 17 → 18.
 
     This count tracks the runtime-neutral SOURCE (``harness/commands/*.md``), NOT the committed
     ``.opencode/`` / ``.claude/`` trees: ``_emit`` projects into ``tmp_path``. So authoring a new
@@ -62,8 +71,8 @@ def test_all_25_commands_emit_to_both_trees(tmp_path: Path) -> None:
         if (tmp_path / ".opencode" / "command") in p.parents and p.suffix == ".md"
     ]
     claude_cmds = _claude_commands(tmp_path, written)
-    assert len(opencode_cmds) == 25, f"expected 25 opencode commands, got {len(opencode_cmds)}"
-    assert len(claude_cmds) == 25, f"expected 25 Claude commands, got {len(claude_cmds)}"
+    assert len(opencode_cmds) == 18, f"expected 18 opencode commands, got {len(opencode_cmds)}"
+    assert len(claude_cmds) == 18, f"expected 18 Claude commands, got {len(claude_cmds)}"
 
 
 def test_harness_commands_are_top_level_never_under_gsd(tmp_path: Path) -> None:
@@ -135,7 +144,7 @@ _SEED_SETTINGS = {
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m tools.hooks.format_on_write",
+                        "command": _GUARD_PREFIX + "uv run python -m tools.hooks.format_on_write",
                         "timeout": 30,
                     }
                 ],
@@ -147,17 +156,7 @@ _SEED_SETTINGS = {
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m tools.hooks.contract_guard",
-                        "timeout": 10,
-                    }
-                ],
-            },
-            {
-                "matcher": "Read|Write|Edit",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "uv run python -m tools.hooks.secret_scan",
+                        "command": _GUARD_PREFIX + "uv run python -m tools.hooks.contract_guard",
                         "timeout": 10,
                     }
                 ],
@@ -167,28 +166,9 @@ _SEED_SETTINGS = {
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m tools.hooks.commit_gate --from-hook",
+                        "command": _GUARD_PREFIX
+                        + "uv run python -m tools.hooks.commit_gate --from-hook",
                         "timeout": 120,
-                    }
-                ],
-            },
-            {
-                "matcher": "Write|Edit|Bash",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "uv run python -m tools.hooks.resume_gate",
-                        "timeout": 15,
-                    }
-                ],
-            },
-            {
-                "matcher": "Write|Edit",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "uv run python -m tools.hooks.ledger_guard",
-                        "timeout": 10,
                     }
                 ],
             },

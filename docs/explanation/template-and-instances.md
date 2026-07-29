@@ -31,7 +31,8 @@ Normalization spans the language boundary, so ADR-0002 splits it deliberately:
 
 - **Stays in core:** `libs/python/normalize` + `libs/normalize-spec.md` + `libs/normalize-fixtures`.
   The Python impl is the harness's own **language-neutral** §4.3–4.6 tooling — a uv workspace member
-  imported by core tools (`polyglot_lint`, `golden_runner`), and the shared `(raw, canonical)`
+  imported by the core tool `polyglot_lint` and, in the other direction, by the *instance*-side
+  golden runner that Phase 44 relocated into the overlay, and the shared `(raw, canonical)`
   fixture corpus cross-validates *any* language-side twin. "Core is language-neutral" keeps this in.
 - **Moves to the instance:** `libs/dotnet/Normalize*`. It is the *example's* language-side
   implementation — no core Python tool imports it, and it is **not** a uv member. Because it is .NET

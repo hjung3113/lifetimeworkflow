@@ -38,9 +38,11 @@ _ROUTING_TRIGGERS = ("use", "when")
 # NOT assert the target file exists (that is Task 3's phase-level integration test).
 _AGENT_SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
-# The eight golden-adjacent commands this plan authors (D-05 sequencing) MUST all be present.
+# The six golden-adjacent commands this plan authors (D-05 sequencing) MUST all be present.
+# Was eight: Phase 44 (CER-09) retired `golden` and `golden-approve` — promotion is review at
+# the PR (the `golden/` CODEOWNERS entry, ADR-0012), not an in-session human-gated command.
 EXPECTED_GOLDEN_ADJACENT = frozenset(
-    {"build", "test", "lint", "golden", "golden-approve", "adr", "checkpoint", "component"}
+    {"build", "test", "lint", "adr", "checkpoint", "component"}
 )
 
 
@@ -54,7 +56,7 @@ def _load(path: Path) -> dict:
 
 
 def test_golden_adjacent_commands_present() -> None:
-    """All eight golden-adjacent commands exist under harness/commands/ (D-05)."""
+    """All six golden-adjacent commands exist under harness/commands/ (D-05)."""
     names = {p.stem for p in _command_files()}
     missing = EXPECTED_GOLDEN_ADJACENT - names
     assert not missing, f"missing golden-adjacent commands: {sorted(missing)}"

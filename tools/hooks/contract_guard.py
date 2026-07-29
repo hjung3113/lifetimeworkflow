@@ -1,12 +1,12 @@
 """HOOK-04 contract-guard — PreToolUse(Write|Edit) gate for the constitution plane.
 
 "Machines gate, humans ratify" as a runtime fact (Pitfall P8/P11). Two composed deny paths on
-the CONSTITUTION plane (``contracts/**`` · ``docs/adr/**`` · ``golden/**`` · ``docs/glossary.md``):
+the CONSTITUTION plane (``contracts/**`` · ``docs/adr/**`` · ``docs/glossary.md``):
 
 1. **Access control** — a write to the constitution plane is DENIED unless a human-authorized
    ``GOLDEN_APPROVE_HUMAN`` token is present in env (agents are instructed never to fabricate it).
    An empty / whitespace-only value does NOT bypass (Q1 RESOLVED, T-04-06). The deny reason names
-   the ``/golden-approve`` + CODEOWNERS ratification path.
+   the ``GOLDEN_APPROVE_HUMAN`` + CODEOWNERS ratification path.
 
 2. **On-write byte hygiene** — even an APPROVED constitution write is DENIED if its payload bytes
    fail the reused POLY-01 :func:`tools.polyglot_lint.lint_bytes` (§4.3-4.6: BOM / CRLF). The
@@ -14,10 +14,10 @@ the CONSTITUTION plane (``contracts/**`` · ``docs/adr/**`` · ``golden/**`` · 
    normalizer — one §4.3-4.6 engine, reused.
 
 Composition invariants (04-06):
-  * CONSTITUTION-ONLY subset (W-1): this gate feeds the reused resolver ``CONSTITUTION_GLOBS`` —
-    NOT the full matrix ``path_deny_globs`` union (which also carries ``*.env``). ``*.env`` is
-    secret_scan's ``SECRET_PATH_GLOBS`` domain; the two gates' domains are provably disjoint, so a
-    ``.env`` write is never mislabeled "constitution plane" here.
+  * CONSTITUTION-ONLY subset (W-1): this gate feeds the reused resolver ``CONSTITUTION_GLOBS``.
+    That list and the matrix ``path_deny_globs`` are now IDENTICAL — the matrix carries no row this
+    gate does not enforce — and they are kept in sync by
+    ``tools/harness_lint/tests/test_agents.py``.
   * Allowed-path byte hygiene is NOT this gate's job: a BOM/CRLF payload into a non-constitution
     path returns ``None`` — general byte hygiene is format-on-write's PostToolUse auto-fix (04-04).
     contract-guard must not preempt it.
@@ -37,12 +37,14 @@ from tools.harness_perms import resolve_path
 from tools.hooks._stdin import dev_bypassed, emit_deny, parse_event, read_stdin, repo_relative
 from tools.polyglot_lint import lint_bytes
 
-# CONSTITUTION-ONLY subset — the human-owned, CODEOWNERS-gated plane. Deliberately EXCLUDES *.env
-# (secret_scan's SECRET_PATH_GLOBS domain) so the two gates are provably non-overlapping (W-1).
+# CONSTITUTION-ONLY subset — the human-owned, CODEOWNERS-gated plane. Deliberately EXCLUDES *.env,
+# which is outside this gate's domain (W-1).
 # Fed to the reused CONFIG-02 resolver (D-02) — no new glob matcher.
 #
-# The four members are DECLARED by `docs/adr/0001-walking-skeleton-golden-core.md:48` (accepted,
-# unsuperseded). This list implements that decision; it does not define it. Adding or removing a
+# The three members are DECLARED by `docs/adr/0001-walking-skeleton-golden-core.md:48` as amended by
+# `docs/adr/0012-ci-and-merge-as-decision-authority.md` clause (d), which supersedes ADR-0001's
+# four-member list to the extent that golden/** leaves the constitution-plane core. This list
+# implements that decision; it does not define it. Adding or removing a
 # member therefore requires a superseding ADR, never an edit here alone —
 # `test_every_declared_plane_member_is_independently_enforced` pins the set for that reason.
 #
@@ -50,10 +52,11 @@ from tools.polyglot_lint import lint_bytes
 # It is also a HUMAN_CORPUS member with a review binding (`normalize-spec-glossary`), which is not a
 # contradiction — constitution ownership controls WHO MAY EDIT, a review binding controls WHEN A
 # HUMAN OWES A REVIEW. `contract-graph-adr-0009` already pairs a `docs/adr/**` target the same way.
-CONSTITUTION_GLOBS = ["contracts/**", "docs/adr/**", "golden/**", "docs/glossary.md"]
+CONSTITUTION_GLOBS = ["contracts/**", "docs/adr/**", "docs/glossary.md"]
 
 # Human confirmation token; a NON-EMPTY value == human-authorized session. Reuses the existing
-# GOLDEN_APPROVE_HUMAN precedent (tools/golden_runner/approve.py) — agents must not fabricate it.
+# GOLDEN_APPROVE_HUMAN precedent, which now lives in the instance overlay's relocated
+# `golden_runner` approve script — agents must not fabricate it.
 APPROVAL_ENV = "GOLDEN_APPROVE_HUMAN"
 
 
@@ -72,8 +75,8 @@ def decide(file_path: str, content: str, approved: bool) -> dict | None:
 
     * Off the constitution plane -> ``None`` (allowed source path; BOM/CRLF hygiene is format-on-
       write's PostToolUse job — 04-04 — do NOT deny it here).
-    * On the constitution plane and NOT ``approved`` -> deny (access control; names the
-      ``/golden-approve`` + CODEOWNERS ratification path).
+    * On the constitution plane and NOT ``approved`` -> deny (access control; names the human
+      ``GOLDEN_APPROVE_HUMAN`` + CODEOWNERS ratification path).
     * On the constitution plane and ``approved`` but the payload bytes fail ``lint_bytes``
       (BOM/CRLF) -> deny (the plane must be byte-pristine even when access-approved, D-04).
     * On the constitution plane, approved, byte-pristine -> ``None`` (the bypass).
@@ -86,9 +89,9 @@ def decide(file_path: str, content: str, approved: bool) -> dict | None:
     if not approved:
         return emit_deny(
             f"contract-guard: '{file_path}' is on the constitution plane "
-            "(contracts/ · docs/adr/ · golden/ · docs/glossary.md); it is CODEOWNERS-gated and may "
-            "only be changed via /golden-approve with a human GOLDEN_APPROVE_HUMAN token. "
-            "Refusing the write."
+            "(contracts/ · docs/adr/ · docs/glossary.md); it is CODEOWNERS-gated and may only be "
+            "changed by a human who sets GOLDEN_APPROVE_HUMAN, ratified at the PR through "
+            "CODEOWNERS. Refusing the write."
         )
 
     violations = lint_bytes(content.encode("utf-8"))

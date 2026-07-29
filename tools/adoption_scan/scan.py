@@ -1,18 +1,20 @@
 """scan.py — confined, read-only, deterministic enumeration + exclusion classification + hashing.
 
 The reuse-at-function-level core recommended by D-07 (26-RESEARCH.md): assembled from four
-existing repo primitives, never a fresh scanning engine and never built on
-``tools/evidence/capture.py`` (which executes subprocesses and mutates task state, both forbidden
-here — see the plan's own must_haves.truths).
+existing repo primitives, never a fresh scanning engine and never built on any primitive that
+executes subprocesses or mutates task state — both are forbidden here (see the plan's own
+must_haves.truths), which is what keeps this module read-only and deterministic.
 
 1. Confined + symlink-guarded walk idiom — copied from ``tools/memory_regen/repo_map.py`` (the
    ``root_resolved not in resolved.parents`` containment check), never re-derived.
-2. Secret pattern set — read as DATA from
-   ``contracts/harness/task-control/gate-registry.json``'s ``secret_patterns`` array, the same
-   idiom as ``tools/evidence/capture.py::_sensitive_pattern`` (never retyped).
+2. Secret pattern set — owned locally as the ``SECRET_CONTENT_PATTERNS`` module-level tuple,
+   byte-identical to the Phase-42 task-control registry contract's ``secret_patterns``
+   array at the time it was inlined — that contract was deleted in Phase 44 (CER-08), which this
+   module is unaffected by (no filesystem read at scan time; see ``SECRET_PATH_GLOBS``
+   for the same "own the constant locally" idiom this module already used for secret-path globs).
 3. Last-wins glob resolution — ``tools.harness_perms.resolve_path`` for the secret-path check
-   (this module's OWN ``SECRET_PATH_GLOBS`` constant — not the hook-specific
-   ``tools.hooks.secret_scan.SECRET_PATH_GLOBS``, since ``scan.py`` is not a hook).
+   (this module's OWN ``SECRET_PATH_GLOBS`` constant, owned locally here since ``scan.py`` is
+   not a hook).
 4. ``hashlib.sha256`` for raw file bytes — never RFC-8785 (that is JSON schema canonicalization
    only, see ``tools.contract_hash``).
 
@@ -45,13 +47,28 @@ from tools.harness_perms import resolve_path
 
 # scan.py -> adoption_scan -> tools -> repo root (parents[2]).
 _REPO_ROOT = Path(__file__).resolve().parents[2]
-_GATE_REGISTRY_PATH = _REPO_ROOT / "contracts" / "harness" / "task-control" / "gate-registry.json"
 
 DEFAULT_MAX_FILE_BYTES = 256 * 1024
 
-# This plan's OWN secret-path glob constant (T-26-02 threat model) — deliberately NOT imported
-# from tools.hooks.secret_scan.SECRET_PATH_GLOBS, which is hook-specific.
+# This plan's OWN secret-path glob constant (T-26-02 threat model) — owned locally by this
+# module, never imported from a hook.
 SECRET_PATH_GLOBS = ["*.env", "**/*.env", "*.pem", "*.key", "id_rsa*", ".npmrc", ".netrc"]
+
+# This module's OWN secret-content pattern tuple (D-04/D-05, Phase 42 Plan 03) — inlined
+# byte-identical from the Phase-42 task-control registry contract's "secret_patterns"
+# array, which Phase 44 (CER-08) deleted. No filesystem read at scan time; follows the same
+# "own the constant locally" idiom as SECRET_PATH_GLOBS above.
+SECRET_CONTENT_PATTERNS: tuple[str, ...] = (
+    "AKIA[0-9A-Z]{16}",
+    "(?:api[_-]?key|secret|password|token)\\s*[:=]\\s*(?:(?=[^\\s]*(?-i:[A-Z]))(?=[^\\s]*(?-i:[a-z]))"
+    "|(?=[^\\s]*(?-i:[A-Z]))(?=[^\\s]*[0-9])|(?=[^\\s]*(?-i:[a-z]))(?=[^\\s]*[0-9]))[^\\s]{20,}",
+    "(?:ghp_|gho_|ghu_|ghs_|github_pat_)[A-Za-z0-9_-]+",
+    "sk-[A-Za-z0-9_-]{16,}",
+    "xox[bp]-[A-Za-z0-9-]+",
+    "-----BEGIN [A-Z ]*PRIVATE KEY-----",
+    "eyJ[A-Za-z0-9_-]{10,}\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+",
+    "Authorization:\\s*Bearer\\s+[^\\s]+",
+)
 
 # Path-segment denylists (exact segment match, never substring).
 _VENDOR_SEGMENTS = {
@@ -107,10 +124,8 @@ _CONTENT_PREFIX_BYTES = 64 * 1024
 
 @functools.lru_cache(maxsize=1)
 def _secret_pattern() -> re.Pattern[str]:
-    """Compile the committed ``secret_patterns`` registry, read as DATA (never retyped)."""
-    registry = json.loads(_GATE_REGISTRY_PATH.read_text(encoding="utf-8"))
-    patterns = registry["secret_patterns"]
-    return re.compile("(?:" + "|".join(patterns) + ")", re.IGNORECASE)
+    """Compile the locally-owned ``SECRET_CONTENT_PATTERNS`` tuple (never retyped elsewhere)."""
+    return re.compile("(?:" + "|".join(SECRET_CONTENT_PATTERNS) + ")", re.IGNORECASE)
 
 
 def _confined(path: Path, base_resolved: Path) -> bool:

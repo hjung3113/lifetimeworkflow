@@ -1,103 +1,102 @@
 # AGENTS.md — Root Rules (nearest-wins)
 
-> Canonical rules source for agents working in this repo. Per-package `AGENTS.md`
-> (e.g. `libs/python/AGENTS.md`, `libs/dotnet/AGENTS.md`) refine these for a subtree
-> and **resolve nearest-wins**. Non-negotiables are **restated** in each per-package
-> file — never inherited-only — because runtime merge semantics differ (Codex replaces
-> nested `AGENTS.md`; others concat). Prose here is advisory; the true backstop is the
-> non-ignorable SessionStart injector (Phase 2) plus Phase-4 hooks (contract-guard,
-> polyglot-boundary linter).
+> The rules an agent follows when developing in this repo. Per-package `AGENTS.md`
+> (`libs/python/AGENTS.md`, each instance's own) refine these for a subtree and resolve
+> **nearest-wins**; every one **restates** the non-negotiables rather than inheriting them,
+> because runtime merge semantics differ (Codex replaces nested `AGENTS.md`; others concat).
+> Prose is advisory — the backstop is the SessionStart injector plus the hooks
+> (contract-guard, polyglot-boundary linter).
 
-## Monorepo map
+## A. Non-negotiable rules
 
-This repo is a **reusable, contract-first polyglot agent-harness TEMPLATE**: a domain-neutral
-**harness core** plus one-or-more **instances** under `examples/<name>/`. The core depends on
-**NO** instance — a one-directional invariant enforced by the GEN-04 guard
-(`tools/harness_lint/tests/test_core_no_example_dep.py`); an instance depends on the core, never
-the reverse. **Language boundary = process / file / DB only — never in-process object passing**
-(A-model: CLI-spawn + exit codes).
+Breaking one of these is a defect, not a style choice. Each is enforced by a gate.
 
-```txt
-CORE — domain-neutral, stays on clone ───────────────────────────────────────────────
-contracts/    Constitution plane — the ACTIVE instance's contracts / generic default at root
-              (JSON Schema Draft 2020-12 + YAML specs). THE single source of truth.
-golden/       Constitution plane — approved equivalence baselines (.verified). Human-promoted only.
-docs/         Diátaxis docs (agent-writable) + docs/adr/ (append-only MADR, GATED)
-              + docs/glossary.md (ubiquitous language — constitution plane, GATED).
-libs/python/  The harness's language-neutral §4.3–4.6 normalization core — STAYS in core.  → see libs/python/AGENTS.md
-libs/         + normalize-spec.md (canonical rule spec) + normalize-fixtures/ (shared (raw,canonical) corpus).
-tools/        The reusable engine (Python): contract_hash, contract_drift, golden_runner,
-              harness_config, harness_lint, memory_regen, bootstrap.
-harness/      The reusable harness config: project.toml (language/instance slot), agents/, commands/,
-              skills/, permission-matrix.json.
-.memory/      Derived/volatile plane. state/ committed; derived/ gitignored + auto-regenerated (never hand-edit).
+1. **Contract-first.** `contracts/` is the single source of truth. **Code that disagrees with
+   the contract is wrong — fix the code, not the contract.** Changing a contract is a
+   deliberate act carrying the golden / contract-drift gate: a schema-hash move without a
+   paired golden update fails CI.
 
-INSTANCES — domain seeds, the demoted specifics ─────────────────────────────────────
-examples/<instance>/   A domain seed: its own contracts/, golden/, components/, language-side
-                       normalize twin, tests + manifest. Depends on the core; the core never
-                       depends on it. Reference instance = examples/log-parser/ (semiconductor
-                       equipment-log domain).  → see examples/log-parser/AGENTS.md
-```
+2. **Polyglot §4.3–4.6 boundary invariants.** Cross-language equivalence is checked **only
+   after** the shared canonicalization core runs — never a raw byte-diff. UTF-8 with **BOM
+   stripped**, forced **LF**, InvariantCulture `.` decimals, tolerance-aware float compare,
+   deterministic key/row ordering, **UTC** ISO-8601 timestamps, explicit TSV escape and a
+   null-vs-empty token. **Language boundary = process / file / DB only** — never in-process
+   object passing (A-model: CLI spawn + exit codes).
 
-The active language/toolchain set is a **DATA slot** in `harness/project.toml` (`[instance]` root +
-`[[languages]]`). The log-parser instance supplies **.NET 10** (parser/converter, CPU-bound) +
-**Python/uv** (scheduler/collector); those two talk only across process/file/DB boundaries. Cloning
-this repo as a fresh template = swap the instance under `examples/` + that config. **Domain
-specifics live with the instance** — see `examples/log-parser/{AGENTS.md,README.md}` and the
-`docs/explanation/template-and-instances.md` narrative.
+3. **Constitution plane is gated — machines gate, humans ratify.** Agents do **not** write to
+   `contracts/`, `docs/adr/`, or `docs/glossary.md` — three members.
+   [ADR-0012](docs/adr/0012-ci-and-merge-as-decision-authority.md) clause (d) supersedes
+   [ADR-0001](docs/adr/0001-walking-skeleton-golden-core.md) §Decision to the extent that
+   `golden/**` leaves the constitution-plane core. No agent self-blesses a golden baseline or
+   edits an ADR — ADRs are append-only, supersede-don't-edit. Instance goldens still exist and
+   are still human-ratified: the CODEOWNERS `/examples/*/golden/` route is the ratification
+   path. Enforced at
+   runtime: `tools/hooks/contract_guard.py` denies the write unless a human set
+   `GOLDEN_APPROVE_HUMAN`, and CODEOWNERS gates it again at merge. **Never edit the guard, the
+   token check, or a hook to get past a deny — stop and report instead.** The glossary is one
+   file, not the `docs/` tree; the rest of `docs/` is agent-writable.
 
-## Golden-path commands (Phase-1 tooling)
+4. **Derived plane is not hand-edited.** `.memory/derived/` (repo-map, contracts-index) is
+   regenerated by `tools/memory_regen`; delete + rerun must reproduce it byte-identically.
+   Decisions belong in append-only ADRs, not in `.memory/state/`.
+
+5. **Core never depends on an instance.** The harness core is domain- and language-neutral;
+   specialization lives only under `examples/<name>/`. One-directional, enforced by the GEN-04
+   guard (`tools/harness_lint/tests/test_core_no_example_dep.py`).
+
+6. **Lazy-load context.** Do not preload full contract bodies. Use the injected
+   contracts-index / repo-map **pointers** and open a specific contract only when the task
+   needs it. On a **data** conflict, `contracts/` and `docs/adr/` outrank volatile
+   `.memory/state/` — that decides which artifact wins a contradiction, nothing more.
+
+## B. How to work
+
+1. **Act when you have enough to act** — ask only when two readings would change the work.
+2. **Lead with the outcome** — what changed, passed, or failed goes in the first sentence.
+3. **Claim only what evidence supports** — command output, `file:line`, or a commit; unrun is "unrun".
+4. **Investigate means report, not repair** — present cause and fix, then wait for a go-ahead.
+5. **Verify before handing off** — run the gates that cover what you touched; a gate you skipped
+   is a gate that is red until proven otherwise.
+6. **Read the file before changing it**, and read the per-package `AGENTS.md` when — and only
+   when — you touch that package.
+
+## C. Golden-path commands
 
 | Task | Command |
 |------|---------|
 | Run all tests | `uv run pytest` |
 | Contract-drift gate (JCS SHA-256 over `contracts/**/*.schema.json`) | `bash tools/contract_drift/check.sh` (or `python -m tools.contract_drift.drift`) |
 | Contract hash baseline/manifest | `python -m tools.contract_hash.hash` |
-| Golden equivalence runner (normalize both sides, diff vs `.verified`) | `python -m tools.golden_runner.runner` |
-| Promote a golden baseline (human-gated) | `python -m tools.golden_runner.approve --approve --adr <id>` |
 | Regenerate derived memory (repo-map / contracts-index) | `python -m tools.memory_regen.repo_map` · `python -m tools.memory_regen.contracts_index` |
 | Assemble the SessionStart injection payload | `python -m tools.memory_regen.inject` |
 
-## Non-negotiable rules
+## D. Monorepo map
 
-1. **Contract-first.** `contracts/` is the single source of truth. **Code that disagrees
-   with the contract is wrong — fix the code, not the contract.** A contract change is a
-   deliberate act that carries a golden / contract-drift gate (schema-hash moves without a
-   paired golden update = CI fail).
+A reusable, contract-first polyglot agent-harness **template**: a domain-neutral **core** plus
+one-or-more **instances** under `examples/<name>/`.
 
-2. **Polyglot §4.3–4.6 boundary invariants.** Cross-language equivalence is only ever
-   checked **after** the shared canonicalization core runs — never a raw byte-diff. The
-   invariants: UTF-8 with **BOM stripped**, forced **LF**, InvariantCulture `.` decimals,
-   tolerance-aware float compare, deterministic key/row ordering, **UTC** ISO-8601
-   timestamps, explicit TSV escape + null-vs-empty token. Language boundary =
-   process/file/DB only (A-model); no in-process object passing.
+```txt
+CORE — domain-neutral, stays on clone ───────────────────────────────────────────────
+contracts/    Constitution plane. JSON Schema Draft 2020-12 + YAML specs. THE source of truth.
+docs/         Diátaxis docs (agent-writable) + docs/adr/ (append-only MADR, GATED)
+              + docs/glossary.md (ubiquitous language, GATED).
+libs/python/  Language-neutral §4.3–4.6 normalization core.        → libs/python/AGENTS.md
+libs/         + normalize-spec.md (rule spec) + normalize-fixtures/ (shared (raw,canonical) corpus).
+tools/        The engine (Python): contract_hash, contract_drift, harness_config,
+              harness_lint, memory_regen, bootstrap.
+harness/      Runtime-neutral config: project.toml (language/instance slot), agents/, commands/,
+              skills/, permission-matrix.json.  Emitted into .claude/ + .opencode/ — never hand-edit those.
+.memory/      state/ committed; derived/ gitignored + auto-regenerated.
 
-3. **Constitution plane is gated — machines gate, humans ratify.** Agents do **not** write
-   to `contracts/`, `docs/adr/`, `golden/`, or `docs/glossary.md` — the four members declared
-   by [ADR-0001](docs/adr/0001-walking-skeleton-golden-core.md) §Decision. These are
-   human-owned / CODEOWNERS-gated; no agent self-blesses a golden baseline or edits an ADR
-   (ADRs are append-only / supersede-not-edit). This is **enforced at runtime**, not advisory:
-   `tools/hooks/contract_guard.py` denies the write in-session unless a human
-   `GOLDEN_APPROVE_HUMAN` token is set, and CODEOWNERS gates it again at merge. The glossary is
-   a single file, not the `docs/` tree — the rest of `docs/` is agent-writable human prose.
+INSTANCES — the demoted domain specifics ────────────────────────────────────────────
+examples/<instance>/   Own contracts/, golden/, components/, language-side normalize twin, tests.
+                       Reference instance = examples/log-parser/.  → examples/log-parser/AGENTS.md
+```
 
-4. **Derived plane is not hand-edited.** `.memory/derived/` (repo-map, contracts-index) is
-   regenerated by `tools/memory_regen`. Delete + rerun reproduces it byte-identically. Never
-   hand-edit derived artifacts; decisions belong in append-only ADRs, not `.memory/state/`.
-
-5. **Lazy-load rule.** Do **not** preload full contract bodies into context. Use the injected
-   contracts-index / repo-map **pointers** and read a specific contract only when the task
-   needs it. This is the mechanism the SessionStart injector implements (~1k-token cap,
-   pointer-only, data-authority-banner-first). On a **data** conflict, `contracts/` and
-   `docs/adr/` are authoritative over volatile `.memory/state/` — this determines which
-   artifact wins a contradiction, not whether grounded work should be distrusted.
-
-## Working in a package
-
-Read the per-package `AGENTS.md` **only when you touch that package** (lazy-load). Each
-per-package file is self-sufficient: it carries its language-local commands **and** restates
-the non-negotiables above — contract-first, the §4.3–4.6 boundary invariants, and
-constitution-plane-is-gated (P11 backstop).
+The active language/toolchain set is a **DATA slot** in `harness/project.toml` (`[instance]` +
+`[[languages]]`) — the log-parser instance supplies .NET 10 (parser/converter) and Python/uv
+(scheduler/collector). Re-templating = swap the instance and that config. Narrative:
+`docs/explanation/template-and-instances.md`.
 
 <!-- BEGIN HARNESS-MANAGED (generated by tools.harness_emit — do not hand-edit) -->
 ## Harness-Emitted Runtime Surface
@@ -105,7 +104,7 @@ constitution-plane-is-gated (P11 backstop).
 This block is generated by `tools.harness_emit` from the runtime-neutral `harness/` source and projected into both runtime trees (`.opencode/` + `.claude/`). Do not hand-edit — a re-emit overwrites it. Everything OUTSIDE the HARNESS-MANAGED markers is preserved verbatim.
 
 - **Agents** (`.opencode/agent/` · `.claude/agents/`): code-reviewer, curator, explorer, orchestrator, python-engineer
-- **Commands** (`.opencode/command/` · `.claude/commands/`): add-language, adopt, adr, agree, build, checkpoint, component, contract-check, docs-sync, docs-update, fan-out-synthesize, golden, golden-approve, handoff, intake, lint, new-contract-rule, orient, phase-gate, pipeline, refresh-memory, review, strangler-step, test, verify-work
-- **Skills** (`.opencode/skill/` · `.claude/skills/`): brownfield-adoption, context-budget, data-contracts, docs-upkeep, fan-out-synthesize, gate-model, golden-debug, golden-testing, pipeline-map, polyglot-boundary, python-conventions, skill-creator, two-plane-memory
+- **Commands** (`.opencode/command/` · `.claude/commands/`): add-language, adopt, adr, agree, build, checkpoint, component, contract-check, docs-sync, fan-out-synthesize, flow, lint, new-contract-rule, orient, refresh-memory, review, test, verify-work
+- **Skills** (`.opencode/skill/` · `.claude/skills/`): brownfield-adoption, context-budget, data-contracts, fan-out-synthesize, polyglot-boundary, python-conventions, skill-creator, two-plane-memory
 - **Plugins** (`.opencode/plugin/`) + root `opencode.json` — see `tools/harness_emit/emit-manifest.json` for the full owned-path set.
 <!-- END HARNESS-MANAGED -->

@@ -1,21 +1,17 @@
 """Task-local adoption batch layout (ADOPT-04).
 
-An adoption batch is NOT a new task-control concept — it is a new *artifact kind* under the
-existing ``artifacts/<kind>/<run-id>/`` convention ``tools.task_control.manager.missing_artifacts``
-already enforces, with ``<batch-id>`` playing the role of ``<run-id>``. Zero changes land in
-``tools/task_control/manager.py`` or ``contracts/harness/task-control/transitions.json`` (D-01 —
-a batch is purely additive evidence, never a phase-transition gate).
+An adoption batch is a task-local *artifact kind* under the ``artifacts/<kind>/<run-id>/``
+convention, with ``<batch-id>`` playing the role of ``<run-id>``. A batch is purely additive
+evidence, never a phase-transition gate, and this module makes no changes to any other package's
+files or contracts (D-01).
 
 Per D-02, ``<batch-id>`` is content-derived from ``(target_ref, discover-time UTC date)`` so a
 same-day re-discover against an unchanged ``target_ref`` resumes the SAME batch directory without
 mutating it (SC-1's "안전하게 재개").
 
-This module carries its own copy of the atomic-create / CAS-guarded-replace idiom already audited
-in ``tools/task_control/manager.py`` (``_atomic_create`` / ``_cas_write``) rather than importing
-those private, underscore-prefixed functions across the package boundary — same sequence
-(``tempfile.mkstemp`` + ``os.link``/``os.replace`` + ``fcntl.flock``), independently copied per
-27-RESEARCH.md's "Don't Hand-Roll" guidance ("copy the function, don't import it across package
-boundaries if that creates an awkward dependency — but copy the EXACT sequence").
+This module implements its own atomic-create / CAS-guarded-replace idiom
+(``tempfile.mkstemp`` + ``os.link``/``os.replace`` + ``fcntl.flock``) as a complete,
+self-contained sequence, per 27-RESEARCH.md's "Don't Hand-Roll" guidance.
 """
 
 from __future__ import annotations
@@ -56,10 +52,9 @@ def _read_status_bytes(path: Path) -> bytes:
 def _atomic_create_status(path: Path, value: dict[str, Any]) -> None:
     """Create *path* exactly once via durable temp + hard-link publication.
 
-    Mirrors ``tools.task_control.manager._atomic_create`` exactly: same-directory temp file,
-    write/flush/fsync, publish via ``os.link`` (raises ``FileExistsError`` on an existing target —
-    the collision check, no separate ``exists()`` race), best-effort parent-directory fsync, always
-    unlink the temp name in ``finally``.
+    Same-directory temp file, write/flush/fsync, publish via ``os.link`` (raises
+    ``FileExistsError`` on an existing target — the collision check, no separate ``exists()``
+    race), best-effort parent-directory fsync, always unlink the temp name in ``finally``.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary = tempfile.mkstemp(
@@ -87,10 +82,7 @@ def _atomic_create_status(path: Path, value: dict[str, Any]) -> None:
 
 
 def _atomic_replace_status(path: Path, value: dict[str, Any]) -> None:
-    """Durably replace *path* with a same-directory temporary file.
-
-    Mirrors ``tools.task_control.manager._atomic_replace`` exactly.
-    """
+    """Durably replace *path* with a same-directory temporary file."""
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary = tempfile.mkstemp(
         prefix=f".{path.name}.", suffix=".tmp", dir=path.parent

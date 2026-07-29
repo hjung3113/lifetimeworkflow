@@ -31,7 +31,7 @@
   - Boundary-invariant breaks (§4.3–4.6): BOM, CRLF, locale-dependent decimals, naive timezones,
     TSV escaping / `"" ≠ null` — the classic polyglot-equivalence defects.
   - Attempts to self-bless a golden, hand-edit derived plane, or write the constitution plane
-    (`contracts/`, `docs/adr/`, `golden/`).
+    (`contracts/`, `docs/adr/`, `docs/glossary.md`).
   
   Report findings with severity; do not validate that work was merely "done". Fixes are handed
   back to the scoped engineer personas — you do not apply them.
@@ -61,7 +61,7 @@
   - Boundary-invariant breaks (§4.3–4.6): BOM, CRLF, locale-dependent decimals, naive timezones,
     TSV escaping / `"" ≠ null` — the classic polyglot-equivalence defects.
   - Attempts to self-bless a golden, hand-edit derived plane, or write the constitution plane
-    (`contracts/`, `docs/adr/`, `golden/`).
+    (`contracts/`, `docs/adr/`, `docs/glossary.md`).
   
   Report findings with severity; do not validate that work was merely "done". Fixes are handed
   back to the scoped engineer personas — you do not apply them.
@@ -102,7 +102,7 @@
     edit is lost on the next regeneration and is a lie in the meantime.
   - You never write source, and you never write the constitution plane. Attempts to self-bless a
     golden, hand-edit the derived plane, or write the constitution plane (`contracts/`, `docs/adr/`,
-    `golden/`) are out of bounds — that deny is global permission data enforced by the contract-guard
+    `docs/glossary.md`) are out of bounds — that deny is global permission data enforced by the contract-guard
     hook; this prose is the advisory restatement.
   
   Freshness is proven by machine-write + gate, not by trust: after regenerating, the tree is ready to
@@ -138,7 +138,7 @@
     edit is lost on the next regeneration and is a lie in the meantime.
   - You never write source, and you never write the constitution plane. Attempts to self-bless a
     golden, hand-edit the derived plane, or write the constitution plane (`contracts/`, `docs/adr/`,
-    `golden/`) are out of bounds — that deny is global permission data enforced by the contract-guard
+    `docs/glossary.md`) are out of bounds — that deny is global permission data enforced by the contract-guard
     hook; this prose is the advisory restatement.
   
   Freshness is proven by machine-write + gate, not by trust: after regenerating, the tree is ready to
@@ -215,8 +215,8 @@
   You are the **orchestrator** — the primary persona for this polyglot monorepo.
   
   Your job is to decompose a request into scoped subtasks and route each — by pipeline
-  **stage/component** as much as by language — to the specialist whose least-privilege scope
-  fits the work. The declared topology (`[[components]]` + `[pipeline]`) tells you which
+  **stage/component** first, then by language — to the specialist whose least-privilege scope fits
+  the work. The declared topology (`[[components]]` + the contract-relationship slot) tells you which
   component owns a stage and which upstream/downstream edge contracts a change touches:
   
   - **python-engineer** — scheduler/collector/`tools/` Python changes (`uv *`, `pytest *`).
@@ -241,7 +241,7 @@
   non-trivial request:
   
   1. **Orient** if cold — `/orient` regenerates the derived plane and prints the pointer payload.
-  2. **Classify the work shape** (table below) → pick the persona/command.
+  2. **Pick a route** (`## Routes` below) → exactly one of the four; the route names the command and the persona.
   3. **Budget the context (delegate vs inline)** — apply the `context-budget` skill: size the surface
      the request would pull in, and decide *where the reading happens*. A large surface that would
      balloon one context is fanned out via the `fan-out-synthesize` skill (`/fan-out-synthesize`) so
@@ -251,49 +251,250 @@
      worker absorbs its own repo's reading and you synthesize at the workspace level — no single context
      holds every repo. Making this an explicit, named step keeps the delegate-vs-inline decision
      observable and repeatable.
-  4. **Trace the topology** — read `[[components]]`/`[pipeline]` via `tools.harness_config`
-     (`components()` / `pipeline()`); identify which stage/component the request touches and its
-     upstream/downstream edge contracts, so you route to the owning component engineer (or the
-     language engineer when the component declares none) and know which contracts a change can break.
-     When the compiled graph is non-linear (branch, fan-in, or cycle), compute the affected set for a
-     change with `tools.contract_graph`'s `direct` / `reverse` / `transitive` queries (each returning
-     ids **and** connecting paths) instead of hand-walking `pipeline()["edges"]`, so routing to the
+  4. **Trace the topology** — read `[[components]]` and the declared contract relationships via
+     `tools.harness_config` (`components()` / `effective_relationships()`); identify which
+     stage/component the request touches and its upstream/downstream edge contracts, so you route to
+     the owning component engineer (or the language engineer when the component declares none) and
+     know which contracts a change can break. When the compiled graph is non-linear (branch, fan-in,
+     or cycle), compute the affected set for a change with `tools.contract_graph`'s `direct` /
+     `reverse` / `transitive` queries (each returning ids **and** connecting paths), so routing to the
      owning component/language engineer accounts for branch and cycle topologies too.
   5. **Decompose** into small, ordered, least-privilege subtasks; note each subtask's gate.
   6. **Delegate** each to its scoped specialist; you do not do the heavy edit.
   7. **Verify** — the engineer runs `/verify-work` (lint + test + contract-check + golden) and
      `/review` (read-only code-reviewer) before handoff. Persist with `/checkpoint`.
   
-  ## Routing decision table (work shape → persona / command)
+  ## Routes
   
-  Route on two dimensions: the **language boundary** (which toolchain) and the **pipeline
-  stage/component** (which declared component owns the work). When a request names or lands on a
-  pipeline stage/component, resolve the owner from the topology first, then fall back to language.
+  Four routes cover everything this harness ships: **small-change**, **bugfix**, **feature**,
+  **contract-change**. Pick **exactly one** before you touch anything, and read its five subsections in
+  order — *When to use*, *Steps*, *Repository evidence*, *Stop condition*, *Next command*. Every route
+  has the same five, in the same order, so you can pattern-match across them.
   
-  | Work shape | Route to | Entry command / skill |
-  |---|---|---|
-  | Onboard / resume cold | (self) | `/orient` |
-  | "Which component owns this stage?" / trace the topology | (self) | `/pipeline` |
-  | Change on a declared pipeline **stage/component** (parser / converter / scheduler / collector) | **owning component engineer** (`project.toml`) | `/pipeline`, then `/golden`, `/lint` |
-  | Stage/component change with **no declared component engineer** | **language engineer** (fallback) | `/pipeline`, `/lint` |
-  | Edge-contract change between two stages (upstream produces / downstream consumes) | **owning component engineer** | `/pipeline`, `/contract-check` |
-  | Scheduler / collector / `tools/` Python change | **python-engineer** | `/test`, `/lint` |
-  | An instance's parser/converter (native toolchain) change | **instance engineer** (`project.toml`) | `/golden`, `/lint` |
-  | Add a new instance language/toolchain | **python-engineer** | `/add-language` (derives from the engineer template) |
-  | Contract shape / validation change | **python-engineer** | `/contract-check`, `data-contracts` skill |
-  | New rule governed by a contract | **python-engineer** | `/new-contract-rule` |
-  | Golden went red | scoped engineer | `golden-debug` skill, `/golden` |
-  | Cross-language / §4.3–4.6 boundary question | scoped engineer | `polyglot-boundary` skill |
-  | Review written code | **code-reviewer** (read-only) | `/review` |
-  | "Is this allowed / why is it blocked?" | (self) | `gate-model` skill |
-  | "Should I delegate this or work inline?" | (self) | `context-budget` skill |
-  | Large surface to cover / would balloon one context | (self) fan out | `fan-out-synthesize` skill, `/fan-out-synthesize` |
-  | Analyze a multi-repo workspace / cover several member repos | (self) fan out, one read-only worker per member repo | `fan-out-synthesize` skill, `/fan-out-synthesize` |
-  | Locate code / map unfamiliar area | **explorer** | (read-only search) |
-  | Pre-handoff verification | scoped engineer | `/verify-work` |
-  | Persist session state | (self) | `/checkpoint` |
+  If no route fits, **stop and ask**. Do not improvise a fifth route and do not blend two.
   
-  Route native-toolchain changes to the instance-declared engineer; keep privilege where it belongs.
+  `research` is deliberately **not** a route: it terminates in a document rather than in a change, and
+  the `explorer` persona, the `fan-out-synthesize` skill (`/fan-out-synthesize`) and the
+  `context-budget` skill already cover it.
+  
+  *Next command* means the one literal command to run when the route's steps are done — never a menu.
+  
+  **Discipline:** red before green — nothing lands until a test that fails for the right reason exists.
+  
+  ### Delegation packet
+  
+  Every subtask you hand to a specialist carries these six fields. A subagent that receives all six
+  never has to go exploring, and a handoff that crosses a context boundary survives it.
+  
+  - **Objective** — one observable outcome, stated so someone else can check it without reading your
+    reasoning.
+  - **Starting context** — the exact paths the subagent needs, listed; it reads those and stops.
+  - **Write scope** — the files it may modify, and only those.
+  - **Repository evidence** — the computed facts from the route's evidence block, pasted in. The
+    subagent uses them; it does not recompute them.
+  - **Stop condition** — the literal condition under which it halts and returns instead of continuing.
+  - **Return format** — the completion contract below, verbatim.
+  
+  ### Completion contract
+  
+  Every specialist finishes with these six fields, in this order, one per line:
+  
+  ```text
+  Outcome
+  Artifacts or changes
+  Verification
+  Decisions and assumptions
+  Risks or unresolved items
+  Next command
+  ```
+  
+  ## Route: small-change
+  
+  **When to use** — a single-file edit whose shape you already know: a wording fix, a constant, a
+  message string, one function body, one doc line. No new concept, nothing under `contracts/`.
+  
+  **Steps**
+  
+  1. Resolve the owner from the evidence block below: route to the component engineer the instance
+     registers in `project.toml`, falling back to the language engineer (**python-engineer** for
+     `tools/` and the Python components) when the component declares none.
+  2. Hand that engineer a delegation packet whose *Write scope* names the one file.
+  3. The engineer makes the edit and runs `/lint`.
+  
+  **Discipline:** keep it the smallest change that works, and re-route rather than grow the scope.
+  
+  **Repository evidence**
+  
+  *The question:* which declared component owns the path you are about to touch, and which toolchain
+  and bash scope does that imply for the engineer you delegate to?
+  
+  *The calls that answer it today:*
+  
+  ```bash
+  uv run python -c "from tools.harness_config import components, languages, language_bash_scopes; print(components()); print(languages()); print(sorted(language_bash_scopes()))"
+  ```
+  
+  Read the owning component and its declared language out of `components()`, take that language's
+  toolchain from `languages()`, and take the commands its engineer is permitted to run from
+  `language_bash_scopes()`. Neither package exposes a module entry point, so always call them as a
+  library — `python -c` or a plain import.
+  
+  A single-command form of this block is planned; these calls are the interface it will preserve, so a
+  block written this way needs no rewrite when it lands.
+  
+  **Stop condition** — Stop when the change exceeds the write scope you declared, or a second file
+  outside it needs to change — re-route to `feature` rather than growing this one. Stop as well the
+  moment the edit turns out to touch an entry under `contracts/`: that is `contract-change`, not this
+  route.
+  
+  **Next command** — `/verify-work`
+  
+  ## Route: bugfix
+  
+  **When to use** — observed behaviour differs from what a contract, a test, or the documented intent
+  says it should be. There is a specific defect, and it can be reproduced.
+  
+  **Steps**
+  
+  1. If you do not already know where the defect lives, send **explorer** (read-only) to locate it.
+  2. Compute the evidence block below: which component owns the path, and which contracts consume the
+     thing being fixed.
+  3. Delegate to the owning engineer a packet whose **first** deliverable is a failing test — written
+     at the level the reverse-dependency answer indicates — and not the fix.
+  4. Only once that test fails for the right reason does the same engineer write the fix; then `/test`
+     and `/lint`.
+  5. `/review` — read-only **code-reviewer** — before handoff.
+  
+  **Discipline:** reproduce the defect as a failing test before changing any code.
+  
+  **Repository evidence**
+  
+  *The question:* who owns the path, **and** which contracts consume the thing being fixed — so the
+  failing test is written at the right level and the blast radius is known before the fix, not after.
+  
+  *The calls that answer it today:*
+  
+  ```bash
+  uv run python -c "from tools.harness_config import components; from tools.contract_graph import compile_graph, reverse; graph = compile_graph(); print(components()); print(reverse(graph, 'NODE'))"
+  ```
+  
+  `components()` gives the owner exactly as in `small-change`. `compile_graph()` then `reverse()` on
+  the node the defect sits under gives the consuming ids **and** the connecting paths: if a consumer
+  comes back, the failing test belongs at that boundary rather than inside the implementation. Both
+  packages are libraries with no module entry point — call them with `python -c`, never as a module.
+  
+  A single-command form of this block is planned; these calls are the interface it will preserve.
+  
+  **Stop condition** — Stop when the reproduction does not fail, or fails for a different reason than
+  the reported defect. You have not found the defect yet, and a fix written now is a guess: report
+  what you observed instead of widening the search.
+  
+  **Next command** — `/verify-work`
+  
+  ## Route: feature
+  
+  **When to use** — a capability that does not exist yet: a new step, a new component-level behaviour,
+  a new option carried through the pipeline. More than one file will change.
+  
+  **Steps**
+  
+  1. Name the concepts first, against the glossary and the declared contract ids. A feature that
+     invents a synonym for an existing concept is rename debt on day one.
+  2. Compute the evidence block below: the declared pipeline shape, and the upstream/downstream edges
+     the new capability lands between.
+  3. Apply the `context-budget` skill. If the surface would balloon one context, fan out with
+     `/fan-out-synthesize` so read-only workers absorb the reading and you synthesize compact returns.
+  4. Decompose into small, ordered, least-privilege subtasks, each with its own delegation packet and
+     its own gate.
+  5. Each subtask lands red-first: failing test, then code, then `/test` and `/lint`. If the capability
+     introduces a new language or toolchain to the instance, `/add-language` derives its engineer from
+     the template rather than hand-writing one.
+  6. `/review`, then `/verify-work`.
+  
+  **Discipline:** settle the vocabulary first — name the concepts against the glossary and the contract
+  ids before writing code.
+  
+  **Repository evidence**
+  
+  *The question:* what is the declared pipeline shape, and which upstream/downstream edges does the new
+  capability land between — so the feature is placed on the topology rather than bolted next to it?
+  
+  *The calls that answer it today:*
+  
+  ```bash
+  uv run python -c "from tools.harness_config import pipeline, components, effective_relationships; from tools.contract_graph import compile_graph, direct; graph = compile_graph(); print(pipeline()); print(components()); print(effective_relationships()); print(direct(graph, 'NODE'))"
+  ```
+  
+  `pipeline()` gives the declared stage order and `components()` the owner of each stage;
+  `effective_relationships()` gives the declared edges, and `direct()` on the node the capability
+  attaches to gives its immediate neighbours with the connecting paths. Those neighbours are the
+  subtasks' write-scope boundaries. Both packages are libraries with no module entry point.
+  
+  A single-command form of this block is planned; these calls are the interface it will preserve.
+  
+  **Stop condition** — Stop when a subtask needs to change an entry under `contracts/`. A feature does
+  not get to edit a contract in passing: park that subtask, run the `contract-change` route for the
+  edge, and resume afterwards.
+  
+  **Next command** — `/checkpoint`
+  
+  ## Route: contract-change
+  
+  **When to use** — the change lands on an entry under `contracts/`: a field, a shape, a validation
+  rule, or the relationship between two declared components. Typical triggers: the producing side now
+  emits something new, the consuming side must accept it, or a rule is simply wrong.
+  
+  This is the one route that is **not** repo-agnostic. It is driven by this monorepo's compiled
+  contract graph, and its order is fixed.
+  
+  **Steps**
+  
+  1. Locate the contract entry under `contracts/` that governs the behaviour — the entry, not the code
+     that reads it.
+  2. Compute the affected set from the evidence block below **before editing anything**: the direct,
+     reverse and transitive neighbourhoods of that contract node together with their connecting paths,
+     and the owning engineer on each side of the declared edge.
+  3. Change the **contract entry first**. It is the source of truth; code that disagrees with it is
+     the thing that is wrong. A new rule governed by a contract enters through `/new-contract-rule`.
+  4. Write the **failing case** next: a test that fails because the code has not caught up with the
+     edited entry. If it passes, the contract edit did not do what you think it did — go back to 1.
+  5. Only now change the code, one side of the edge at a time, delegating each side to its owning
+     engineer with its own packet and its own write scope.
+  6. Run `/contract-check`, then regenerate and inspect the golden pair for every component in the
+     affected set — the producing side and the consuming side both. A golden that moves on a side the
+     affected set did not name means the affected set was wrong: return to step 2.
+  
+  **Discipline:** contract entry first, then the failing case, then the code.
+  
+  **Repository evidence**
+  
+  *The question:* what is the **full** affected set of this contract edge — every node the change can
+  reach, the connecting path to each, and the engineer that owns each side of the declared edge?
+  
+  *The calls that answer it today:*
+  
+  ```bash
+  uv run python -c "from tools.harness_config import components, effective_relationships; from tools.contract_graph import compile_graph, direct, reverse, transitive; graph = compile_graph(); node = 'NODE'; print(direct(graph, node)); print(reverse(graph, node)); print(transitive(graph, node)); print(effective_relationships()); print(components())"
+  ```
+  
+  `direct()` gives the immediate neighbours, `reverse()` the consumers, and `transitive()` the whole
+  reachable set — each returning ids **and** the connecting paths. Read `transitive()` and its paths
+  rather than eyeballing the edge list: the compiled graph here is **not** guaranteed linear, and a
+  branch, a fan-in or a cycle puts nodes in the affected set that no single hop shows. The path is
+  what tells you the order to edit the sides in. `effective_relationships()` confirms the declared
+  edge you are changing, and `components()` names the owning engineer on each side, which is who each
+  per-side packet goes to. Both packages are libraries with no module entry point — call them with
+  `python -c`.
+  
+  A single-command form of this block is planned; these calls are the interface it will preserve, and
+  that command's affected-set answer is exactly the `transitive()`-plus-paths result above.
+  
+  **Stop condition** — Stop when the affected set from step 2 contains a component whose owning
+  engineer is not declared in `project.toml`, or when the transitive neighbourhood contains a cycle you
+  cannot order into a sequence of one-sided edits. Either means the change is larger than one route:
+  stop and ask rather than editing both sides of an edge at once.
+  
+  **Next command** — `/verify-work`
   
   ===== claude-agent/orchestrator =====
   ---
@@ -306,8 +507,8 @@
   You are the **orchestrator** — the primary persona for this polyglot monorepo.
   
   Your job is to decompose a request into scoped subtasks and route each — by pipeline
-  **stage/component** as much as by language — to the specialist whose least-privilege scope
-  fits the work. The declared topology (`[[components]]` + `[pipeline]`) tells you which
+  **stage/component** first, then by language — to the specialist whose least-privilege scope fits
+  the work. The declared topology (`[[components]]` + the contract-relationship slot) tells you which
   component owns a stage and which upstream/downstream edge contracts a change touches:
   
   - **python-engineer** — scheduler/collector/`tools/` Python changes (`uv *`, `pytest *`).
@@ -332,7 +533,7 @@
   non-trivial request:
   
   1. **Orient** if cold — `/orient` regenerates the derived plane and prints the pointer payload.
-  2. **Classify the work shape** (table below) → pick the persona/command.
+  2. **Pick a route** (`## Routes` below) → exactly one of the four; the route names the command and the persona.
   3. **Budget the context (delegate vs inline)** — apply the `context-budget` skill: size the surface
      the request would pull in, and decide *where the reading happens*. A large surface that would
      balloon one context is fanned out via the `fan-out-synthesize` skill (`/fan-out-synthesize`) so
@@ -342,49 +543,250 @@
      worker absorbs its own repo's reading and you synthesize at the workspace level — no single context
      holds every repo. Making this an explicit, named step keeps the delegate-vs-inline decision
      observable and repeatable.
-  4. **Trace the topology** — read `[[components]]`/`[pipeline]` via `tools.harness_config`
-     (`components()` / `pipeline()`); identify which stage/component the request touches and its
-     upstream/downstream edge contracts, so you route to the owning component engineer (or the
-     language engineer when the component declares none) and know which contracts a change can break.
-     When the compiled graph is non-linear (branch, fan-in, or cycle), compute the affected set for a
-     change with `tools.contract_graph`'s `direct` / `reverse` / `transitive` queries (each returning
-     ids **and** connecting paths) instead of hand-walking `pipeline()["edges"]`, so routing to the
+  4. **Trace the topology** — read `[[components]]` and the declared contract relationships via
+     `tools.harness_config` (`components()` / `effective_relationships()`); identify which
+     stage/component the request touches and its upstream/downstream edge contracts, so you route to
+     the owning component engineer (or the language engineer when the component declares none) and
+     know which contracts a change can break. When the compiled graph is non-linear (branch, fan-in,
+     or cycle), compute the affected set for a change with `tools.contract_graph`'s `direct` /
+     `reverse` / `transitive` queries (each returning ids **and** connecting paths), so routing to the
      owning component/language engineer accounts for branch and cycle topologies too.
   5. **Decompose** into small, ordered, least-privilege subtasks; note each subtask's gate.
   6. **Delegate** each to its scoped specialist; you do not do the heavy edit.
   7. **Verify** — the engineer runs `/verify-work` (lint + test + contract-check + golden) and
      `/review` (read-only code-reviewer) before handoff. Persist with `/checkpoint`.
   
-  ## Routing decision table (work shape → persona / command)
+  ## Routes
   
-  Route on two dimensions: the **language boundary** (which toolchain) and the **pipeline
-  stage/component** (which declared component owns the work). When a request names or lands on a
-  pipeline stage/component, resolve the owner from the topology first, then fall back to language.
+  Four routes cover everything this harness ships: **small-change**, **bugfix**, **feature**,
+  **contract-change**. Pick **exactly one** before you touch anything, and read its five subsections in
+  order — *When to use*, *Steps*, *Repository evidence*, *Stop condition*, *Next command*. Every route
+  has the same five, in the same order, so you can pattern-match across them.
   
-  | Work shape | Route to | Entry command / skill |
-  |---|---|---|
-  | Onboard / resume cold | (self) | `/orient` |
-  | "Which component owns this stage?" / trace the topology | (self) | `/pipeline` |
-  | Change on a declared pipeline **stage/component** (parser / converter / scheduler / collector) | **owning component engineer** (`project.toml`) | `/pipeline`, then `/golden`, `/lint` |
-  | Stage/component change with **no declared component engineer** | **language engineer** (fallback) | `/pipeline`, `/lint` |
-  | Edge-contract change between two stages (upstream produces / downstream consumes) | **owning component engineer** | `/pipeline`, `/contract-check` |
-  | Scheduler / collector / `tools/` Python change | **python-engineer** | `/test`, `/lint` |
-  | An instance's parser/converter (native toolchain) change | **instance engineer** (`project.toml`) | `/golden`, `/lint` |
-  | Add a new instance language/toolchain | **python-engineer** | `/add-language` (derives from the engineer template) |
-  | Contract shape / validation change | **python-engineer** | `/contract-check`, `data-contracts` skill |
-  | New rule governed by a contract | **python-engineer** | `/new-contract-rule` |
-  | Golden went red | scoped engineer | `golden-debug` skill, `/golden` |
-  | Cross-language / §4.3–4.6 boundary question | scoped engineer | `polyglot-boundary` skill |
-  | Review written code | **code-reviewer** (read-only) | `/review` |
-  | "Is this allowed / why is it blocked?" | (self) | `gate-model` skill |
-  | "Should I delegate this or work inline?" | (self) | `context-budget` skill |
-  | Large surface to cover / would balloon one context | (self) fan out | `fan-out-synthesize` skill, `/fan-out-synthesize` |
-  | Analyze a multi-repo workspace / cover several member repos | (self) fan out, one read-only worker per member repo | `fan-out-synthesize` skill, `/fan-out-synthesize` |
-  | Locate code / map unfamiliar area | **explorer** | (read-only search) |
-  | Pre-handoff verification | scoped engineer | `/verify-work` |
-  | Persist session state | (self) | `/checkpoint` |
+  If no route fits, **stop and ask**. Do not improvise a fifth route and do not blend two.
   
-  Route native-toolchain changes to the instance-declared engineer; keep privilege where it belongs.
+  `research` is deliberately **not** a route: it terminates in a document rather than in a change, and
+  the `explorer` persona, the `fan-out-synthesize` skill (`/fan-out-synthesize`) and the
+  `context-budget` skill already cover it.
+  
+  *Next command* means the one literal command to run when the route's steps are done — never a menu.
+  
+  **Discipline:** red before green — nothing lands until a test that fails for the right reason exists.
+  
+  ### Delegation packet
+  
+  Every subtask you hand to a specialist carries these six fields. A subagent that receives all six
+  never has to go exploring, and a handoff that crosses a context boundary survives it.
+  
+  - **Objective** — one observable outcome, stated so someone else can check it without reading your
+    reasoning.
+  - **Starting context** — the exact paths the subagent needs, listed; it reads those and stops.
+  - **Write scope** — the files it may modify, and only those.
+  - **Repository evidence** — the computed facts from the route's evidence block, pasted in. The
+    subagent uses them; it does not recompute them.
+  - **Stop condition** — the literal condition under which it halts and returns instead of continuing.
+  - **Return format** — the completion contract below, verbatim.
+  
+  ### Completion contract
+  
+  Every specialist finishes with these six fields, in this order, one per line:
+  
+  ```text
+  Outcome
+  Artifacts or changes
+  Verification
+  Decisions and assumptions
+  Risks or unresolved items
+  Next command
+  ```
+  
+  ## Route: small-change
+  
+  **When to use** — a single-file edit whose shape you already know: a wording fix, a constant, a
+  message string, one function body, one doc line. No new concept, nothing under `contracts/`.
+  
+  **Steps**
+  
+  1. Resolve the owner from the evidence block below: route to the component engineer the instance
+     registers in `project.toml`, falling back to the language engineer (**python-engineer** for
+     `tools/` and the Python components) when the component declares none.
+  2. Hand that engineer a delegation packet whose *Write scope* names the one file.
+  3. The engineer makes the edit and runs `/lint`.
+  
+  **Discipline:** keep it the smallest change that works, and re-route rather than grow the scope.
+  
+  **Repository evidence**
+  
+  *The question:* which declared component owns the path you are about to touch, and which toolchain
+  and bash scope does that imply for the engineer you delegate to?
+  
+  *The calls that answer it today:*
+  
+  ```bash
+  uv run python -c "from tools.harness_config import components, languages, language_bash_scopes; print(components()); print(languages()); print(sorted(language_bash_scopes()))"
+  ```
+  
+  Read the owning component and its declared language out of `components()`, take that language's
+  toolchain from `languages()`, and take the commands its engineer is permitted to run from
+  `language_bash_scopes()`. Neither package exposes a module entry point, so always call them as a
+  library — `python -c` or a plain import.
+  
+  A single-command form of this block is planned; these calls are the interface it will preserve, so a
+  block written this way needs no rewrite when it lands.
+  
+  **Stop condition** — Stop when the change exceeds the write scope you declared, or a second file
+  outside it needs to change — re-route to `feature` rather than growing this one. Stop as well the
+  moment the edit turns out to touch an entry under `contracts/`: that is `contract-change`, not this
+  route.
+  
+  **Next command** — `/verify-work`
+  
+  ## Route: bugfix
+  
+  **When to use** — observed behaviour differs from what a contract, a test, or the documented intent
+  says it should be. There is a specific defect, and it can be reproduced.
+  
+  **Steps**
+  
+  1. If you do not already know where the defect lives, send **explorer** (read-only) to locate it.
+  2. Compute the evidence block below: which component owns the path, and which contracts consume the
+     thing being fixed.
+  3. Delegate to the owning engineer a packet whose **first** deliverable is a failing test — written
+     at the level the reverse-dependency answer indicates — and not the fix.
+  4. Only once that test fails for the right reason does the same engineer write the fix; then `/test`
+     and `/lint`.
+  5. `/review` — read-only **code-reviewer** — before handoff.
+  
+  **Discipline:** reproduce the defect as a failing test before changing any code.
+  
+  **Repository evidence**
+  
+  *The question:* who owns the path, **and** which contracts consume the thing being fixed — so the
+  failing test is written at the right level and the blast radius is known before the fix, not after.
+  
+  *The calls that answer it today:*
+  
+  ```bash
+  uv run python -c "from tools.harness_config import components; from tools.contract_graph import compile_graph, reverse; graph = compile_graph(); print(components()); print(reverse(graph, 'NODE'))"
+  ```
+  
+  `components()` gives the owner exactly as in `small-change`. `compile_graph()` then `reverse()` on
+  the node the defect sits under gives the consuming ids **and** the connecting paths: if a consumer
+  comes back, the failing test belongs at that boundary rather than inside the implementation. Both
+  packages are libraries with no module entry point — call them with `python -c`, never as a module.
+  
+  A single-command form of this block is planned; these calls are the interface it will preserve.
+  
+  **Stop condition** — Stop when the reproduction does not fail, or fails for a different reason than
+  the reported defect. You have not found the defect yet, and a fix written now is a guess: report
+  what you observed instead of widening the search.
+  
+  **Next command** — `/verify-work`
+  
+  ## Route: feature
+  
+  **When to use** — a capability that does not exist yet: a new step, a new component-level behaviour,
+  a new option carried through the pipeline. More than one file will change.
+  
+  **Steps**
+  
+  1. Name the concepts first, against the glossary and the declared contract ids. A feature that
+     invents a synonym for an existing concept is rename debt on day one.
+  2. Compute the evidence block below: the declared pipeline shape, and the upstream/downstream edges
+     the new capability lands between.
+  3. Apply the `context-budget` skill. If the surface would balloon one context, fan out with
+     `/fan-out-synthesize` so read-only workers absorb the reading and you synthesize compact returns.
+  4. Decompose into small, ordered, least-privilege subtasks, each with its own delegation packet and
+     its own gate.
+  5. Each subtask lands red-first: failing test, then code, then `/test` and `/lint`. If the capability
+     introduces a new language or toolchain to the instance, `/add-language` derives its engineer from
+     the template rather than hand-writing one.
+  6. `/review`, then `/verify-work`.
+  
+  **Discipline:** settle the vocabulary first — name the concepts against the glossary and the contract
+  ids before writing code.
+  
+  **Repository evidence**
+  
+  *The question:* what is the declared pipeline shape, and which upstream/downstream edges does the new
+  capability land between — so the feature is placed on the topology rather than bolted next to it?
+  
+  *The calls that answer it today:*
+  
+  ```bash
+  uv run python -c "from tools.harness_config import pipeline, components, effective_relationships; from tools.contract_graph import compile_graph, direct; graph = compile_graph(); print(pipeline()); print(components()); print(effective_relationships()); print(direct(graph, 'NODE'))"
+  ```
+  
+  `pipeline()` gives the declared stage order and `components()` the owner of each stage;
+  `effective_relationships()` gives the declared edges, and `direct()` on the node the capability
+  attaches to gives its immediate neighbours with the connecting paths. Those neighbours are the
+  subtasks' write-scope boundaries. Both packages are libraries with no module entry point.
+  
+  A single-command form of this block is planned; these calls are the interface it will preserve.
+  
+  **Stop condition** — Stop when a subtask needs to change an entry under `contracts/`. A feature does
+  not get to edit a contract in passing: park that subtask, run the `contract-change` route for the
+  edge, and resume afterwards.
+  
+  **Next command** — `/checkpoint`
+  
+  ## Route: contract-change
+  
+  **When to use** — the change lands on an entry under `contracts/`: a field, a shape, a validation
+  rule, or the relationship between two declared components. Typical triggers: the producing side now
+  emits something new, the consuming side must accept it, or a rule is simply wrong.
+  
+  This is the one route that is **not** repo-agnostic. It is driven by this monorepo's compiled
+  contract graph, and its order is fixed.
+  
+  **Steps**
+  
+  1. Locate the contract entry under `contracts/` that governs the behaviour — the entry, not the code
+     that reads it.
+  2. Compute the affected set from the evidence block below **before editing anything**: the direct,
+     reverse and transitive neighbourhoods of that contract node together with their connecting paths,
+     and the owning engineer on each side of the declared edge.
+  3. Change the **contract entry first**. It is the source of truth; code that disagrees with it is
+     the thing that is wrong. A new rule governed by a contract enters through `/new-contract-rule`.
+  4. Write the **failing case** next: a test that fails because the code has not caught up with the
+     edited entry. If it passes, the contract edit did not do what you think it did — go back to 1.
+  5. Only now change the code, one side of the edge at a time, delegating each side to its owning
+     engineer with its own packet and its own write scope.
+  6. Run `/contract-check`, then regenerate and inspect the golden pair for every component in the
+     affected set — the producing side and the consuming side both. A golden that moves on a side the
+     affected set did not name means the affected set was wrong: return to step 2.
+  
+  **Discipline:** contract entry first, then the failing case, then the code.
+  
+  **Repository evidence**
+  
+  *The question:* what is the **full** affected set of this contract edge — every node the change can
+  reach, the connecting path to each, and the engineer that owns each side of the declared edge?
+  
+  *The calls that answer it today:*
+  
+  ```bash
+  uv run python -c "from tools.harness_config import components, effective_relationships; from tools.contract_graph import compile_graph, direct, reverse, transitive; graph = compile_graph(); node = 'NODE'; print(direct(graph, node)); print(reverse(graph, node)); print(transitive(graph, node)); print(effective_relationships()); print(components())"
+  ```
+  
+  `direct()` gives the immediate neighbours, `reverse()` the consumers, and `transitive()` the whole
+  reachable set — each returning ids **and** the connecting paths. Read `transitive()` and its paths
+  rather than eyeballing the edge list: the compiled graph here is **not** guaranteed linear, and a
+  branch, a fan-in or a cycle puts nodes in the affected set that no single hop shows. The path is
+  what tells you the order to edit the sides in. `effective_relationships()` confirms the declared
+  edge you are changing, and `components()` names the owning engineer on each side, which is who each
+  per-side packet goes to. Both packages are libraries with no module entry point — call them with
+  `python -c`.
+  
+  A single-command form of this block is planned; these calls are the interface it will preserve, and
+  that command's affected-set answer is exactly the `transitive()`-plus-paths result above.
+  
+  **Stop condition** — Stop when the affected set from step 2 contains a component whose owning
+  engineer is not declared in `project.toml`, or when the transitive neighbourhood contains a cycle you
+  cannot order into a sequence of one-sided edits. Either means the change is larger than one route:
+  stop and ask rather than editing both sides of an edge at once.
+  
+  **Next command** — `/verify-work`
   
   ===== opencode-agent/python-engineer =====
   ---
@@ -412,7 +814,7 @@
   - Contracts in `contracts/` are the single source of truth. If your code disagrees with a
     contract, the code is wrong — fix the code.
   - Golden/approval tests (syrupy) gate behavior. Machines gate, humans ratify — never self-bless
-    a golden; promotion goes through `/golden-approve`.
+    a golden; promotion is human review at the PR (the instance-scoped golden CODEOWNERS route).
   - Respect the §4.3–4.6 boundary invariants when reading/writing across the language boundary
     (process/file/DB only — never in-process interop with .NET).
   - Derived-plane files (`.memory/derived/`, `docs/reference/`) are generated, never hand-edited.
@@ -438,7 +840,7 @@
   - Contracts in `contracts/` are the single source of truth. If your code disagrees with a
     contract, the code is wrong — fix the code.
   - Golden/approval tests (syrupy) gate behavior. Machines gate, humans ratify — never self-bless
-    a golden; promotion goes through `/golden-approve`.
+    a golden; promotion is human review at the PR (the instance-scoped golden CODEOWNERS route).
   - Respect the §4.3–4.6 boundary invariants when reading/writing across the language boundary
     (process/file/DB only — never in-process interop with .NET).
   - Derived-plane files (`.memory/derived/`, `docs/reference/`) are generated, never hand-edited.
@@ -544,17 +946,16 @@
   ===== opencode-command/adopt =====
   ---
   # generated by tools.harness_emit — do not hand-edit
-  description: "Use when a human wants to bring an existing (brownfield) repository under this harness's contract-first conventions — discovers the target tree, drafts a task-local inventory/plan/ manifest batch, and applies dispositions safely, with promotion of the batch's decisions human-gated (exit 3 refusal without an explicit human flag and confirmation value). Invoke to discover, draft, apply, or promote an adoption batch; never to bypass the promotion gate."
+  description: "Use when a human wants to bring an existing (brownfield) repository under this harness's contract-first conventions — discovers the target tree and drafts a task-local inventory/plan/ manifest batch, then applies dispositions safely (atomic, collision-safe, refusing any constitution-plane destination before any write). Review of the batch's decisions happens at the PR, not inside this command. Invoke to discover, draft, or apply an adoption batch."
   agent: orchestrator
   subtask: true
   ---
   
-  # /adopt — brownfield adoption: discover, draft, apply, promote (human-gated)
+  # /adopt — brownfield adoption: discover, draft, apply
   
   Thin macro over the **already-coded** adoption pipeline. Do NOT re-implement discovery, drafting,
-  application, or promotion logic — `tools.adoption_scan` (discovery) and `tools.adoption_apply`
-  (task-local batch drafting, atomic/collision-safe apply, human-ratification promotion) already
-  encode the full workflow (ADOPT-04..07).
+  or application logic — `tools.adoption_scan` (discovery) and `tools.adoption_apply` (task-local
+  batch drafting, atomic/collision-safe apply) already encode the full workflow (ADOPT-04..07).
   
   ## Sub-verbs
   
@@ -578,59 +979,31 @@
   ### apply
   
   Apply a drafted batch's manifest dispositions against a target root — atomic, collision-safe,
-  idempotent; refuses any constitution-plane (`contracts/` · `docs/adr/` · `golden/`) destination
+  idempotent; refuses any constitution-plane (`contracts/` · `docs/adr/` · `docs/glossary.md`) destination
   before any write:
   
   !`python -m tools.adoption_apply apply $ARGUMENTS`
-  
-  ### promote
-  
-  Ratify a batch's reviewed decisions into `approval.json`:
-  
-  !`python -m tools.adoption_apply promote $ARGUMENTS`
-  
-  ## The human gate (refusal is the default)
-  
-  Promotion is **REFUSED** (`AdoptionApprovalRefused`, CLI **exit 3**) unless ALL of the following
-  are present:
-  
-  1. an explicit human `--approve` flag,
-  2. at least one reviewed `--decisions` entry, and
-  3. a `--confirm <value>` human confirmation value matching the `$GOLDEN_APPROVE_HUMAN` env var
-     — a value an agent is instructed **never** to fabricate.
-  
-  An agent running this command **cannot** self-approve: without the human confirmation value the
-  tool refuses and exits 3. A stored approval is bound to `(draft_hash, task_revision, git_ref)`,
-  recomputed fresh at every validity check — changing any one of the three independently
-  invalidates a prior approval, no partial credit. Affirmative promotion is a human-only action.
-  
-  Example (human-run):
-  
-  ```
-  python -m tools.adoption_apply promote --task-dir .workflow/tasks/T-0001 --batch-id <id> \
-    --repo-root . --approve --decisions decisions.json --confirm "$GOLDEN_APPROVE_HUMAN"
-  ```
   
   ## Notes
   
   - **No arbitrary command execution.** Every invocation above is a fixed `python -m
     tools.adoption_scan`/`tools.adoption_apply <sub-verb>` argv form; `$ARGUMENTS` is passed
     positionally, never woven into a shell string built from manifest/draft/scanned content.
-  - **Discovery is read-only**; `apply` never touches the constitution plane; `promote` never
-    self-approves. See `harness/skills/brownfield-adoption/SKILL.md` for the full lifecycle runbook.
+  - **Discovery is read-only**; `apply` never touches the constitution plane. Review of an applied
+    batch's decisions happens at the PR that carries it, not inside this command. See
+    `harness/skills/brownfield-adoption/SKILL.md` for the full discover/draft/review/apply runbook.
   
   ===== claude-command/adopt =====
   ---
   # generated by tools.harness_emit — do not hand-edit
-  description: "Use when a human wants to bring an existing (brownfield) repository under this harness's contract-first conventions — discovers the target tree, drafts a task-local inventory/plan/ manifest batch, and applies dispositions safely, with promotion of the batch's decisions human-gated (exit 3 refusal without an explicit human flag and confirmation value). Invoke to discover, draft, apply, or promote an adoption batch; never to bypass the promotion gate."
+  description: "Use when a human wants to bring an existing (brownfield) repository under this harness's contract-first conventions — discovers the target tree and drafts a task-local inventory/plan/ manifest batch, then applies dispositions safely (atomic, collision-safe, refusing any constitution-plane destination before any write). Review of the batch's decisions happens at the PR, not inside this command. Invoke to discover, draft, or apply an adoption batch."
   ---
   
-  # /adopt — brownfield adoption: discover, draft, apply, promote (human-gated)
+  # /adopt — brownfield adoption: discover, draft, apply
   
   Thin macro over the **already-coded** adoption pipeline. Do NOT re-implement discovery, drafting,
-  application, or promotion logic — `tools.adoption_scan` (discovery) and `tools.adoption_apply`
-  (task-local batch drafting, atomic/collision-safe apply, human-ratification promotion) already
-  encode the full workflow (ADOPT-04..07).
+  or application logic — `tools.adoption_scan` (discovery) and `tools.adoption_apply` (task-local
+  batch drafting, atomic/collision-safe apply) already encode the full workflow (ADOPT-04..07).
   
   ## Sub-verbs
   
@@ -654,46 +1027,19 @@
   ### apply
   
   Apply a drafted batch's manifest dispositions against a target root — atomic, collision-safe,
-  idempotent; refuses any constitution-plane (`contracts/` · `docs/adr/` · `golden/`) destination
+  idempotent; refuses any constitution-plane (`contracts/` · `docs/adr/` · `docs/glossary.md`) destination
   before any write:
   
   !`python -m tools.adoption_apply apply $ARGUMENTS`
-  
-  ### promote
-  
-  Ratify a batch's reviewed decisions into `approval.json`:
-  
-  !`python -m tools.adoption_apply promote $ARGUMENTS`
-  
-  ## The human gate (refusal is the default)
-  
-  Promotion is **REFUSED** (`AdoptionApprovalRefused`, CLI **exit 3**) unless ALL of the following
-  are present:
-  
-  1. an explicit human `--approve` flag,
-  2. at least one reviewed `--decisions` entry, and
-  3. a `--confirm <value>` human confirmation value matching the `$GOLDEN_APPROVE_HUMAN` env var
-     — a value an agent is instructed **never** to fabricate.
-  
-  An agent running this command **cannot** self-approve: without the human confirmation value the
-  tool refuses and exits 3. A stored approval is bound to `(draft_hash, task_revision, git_ref)`,
-  recomputed fresh at every validity check — changing any one of the three independently
-  invalidates a prior approval, no partial credit. Affirmative promotion is a human-only action.
-  
-  Example (human-run):
-  
-  ```
-  python -m tools.adoption_apply promote --task-dir .workflow/tasks/T-0001 --batch-id <id> \
-    --repo-root . --approve --decisions decisions.json --confirm "$GOLDEN_APPROVE_HUMAN"
-  ```
   
   ## Notes
   
   - **No arbitrary command execution.** Every invocation above is a fixed `python -m
     tools.adoption_scan`/`tools.adoption_apply <sub-verb>` argv form; `$ARGUMENTS` is passed
     positionally, never woven into a shell string built from manifest/draft/scanned content.
-  - **Discovery is read-only**; `apply` never touches the constitution plane; `promote` never
-    self-approves. See `harness/skills/brownfield-adoption/SKILL.md` for the full lifecycle runbook.
+  - **Discovery is read-only**; `apply` never touches the constitution plane. Review of an applied
+    batch's decisions happens at the PR that carries it, not inside this command. See
+    `harness/skills/brownfield-adoption/SKILL.md` for the full discover/draft/review/apply runbook.
   
   ===== opencode-command/adr =====
   ---
@@ -938,14 +1284,7 @@
   
   ## Steps
   
-  1. If an active task packet exists, first ensure its task/state/evidence/artifact revision is already
-     committed and `state.current_ref` is that `HEAD`. Generate the HANDOFF, then write only its task
-     ID/revision/path pointer to `.memory/state/active-task.json`;
-     never copy packet, evidence, artifact, contract, or log bodies into `.memory/state/`.
-  
-     !`uv run python -m tools.handoff generate .workflow/tasks/<task-id> && uv run python -m tools.handoff validate .workflow/tasks/<task-id> && uv run python -m tools.handoff activate .workflow/tasks/<task-id> --state-dir .memory/state`
-  
-  2. Update the committed state files with the current focus and progress:
+  1. Update the committed state files with the current focus and progress:
      - Write `updated: "YYYY-MM-DD"` in YAML frontmatter on **every** checkpoint for both
        `.memory/state/activeContext.md` and `.memory/state/progress.md`. The date must be quoted so
        it round-trips as a string rather than a YAML date object.
@@ -959,17 +1298,11 @@
      gitignored and regenerated by `python -m tools.memory_regen.inject` on SessionStart — do NOT
      hand-edit derived files here.
   
-  3. Stage **only** the state-plane files and the generated HANDOFF (never `git add -A`) and commit.
-     This commit is the publication trust root: it contains the exact HANDOFF/pointer bytes and its
-     parent is `state.current_ref`. When an active task pointer was updated, add both files explicitly:
+  2. Stage **only** the state-plane files (never `git add -A`) and commit:
   
      !`git add .memory/state/activeContext.md .memory/state/progress.md`
   
-     !`git add .memory/state/active-task.json` (only when it exists and was updated)
-  
-     !`git add .workflow/tasks/<task-id>/handoffs/revision-<n>.json` (only when an active task exists)
-  
-     !`git commit -m "checkpoint: publish volatile state and handoff" .memory/state/activeContext.md .memory/state/progress.md [and active-task.json + HANDOFF when present] && uv run python -m tools.handoff validate .workflow/tasks/<task-id>`
+     !`git commit -m "checkpoint: publish volatile state" .memory/state/activeContext.md .memory/state/progress.md`
   
   ## Notes
   
@@ -977,7 +1310,7 @@
   - Stage files individually — this command never blanket-adds the working tree.
   - Memory is not a changelog: durable decisions belong in append-only `docs/adr/`, completed history
     belongs in git, and `.memory/state/` stays tight.
-  - A checkpoint remains optional; when there is no active task, preserve the existing two-file flow.
+  - A checkpoint remains optional; the two-file flow is the whole flow.
   
   ===== claude-command/checkpoint =====
   ---
@@ -993,14 +1326,7 @@
   
   ## Steps
   
-  1. If an active task packet exists, first ensure its task/state/evidence/artifact revision is already
-     committed and `state.current_ref` is that `HEAD`. Generate the HANDOFF, then write only its task
-     ID/revision/path pointer to `.memory/state/active-task.json`;
-     never copy packet, evidence, artifact, contract, or log bodies into `.memory/state/`.
-  
-     !`uv run python -m tools.handoff generate .workflow/tasks/<task-id> && uv run python -m tools.handoff validate .workflow/tasks/<task-id> && uv run python -m tools.handoff activate .workflow/tasks/<task-id> --state-dir .memory/state`
-  
-  2. Update the committed state files with the current focus and progress:
+  1. Update the committed state files with the current focus and progress:
      - Write `updated: "YYYY-MM-DD"` in YAML frontmatter on **every** checkpoint for both
        `.memory/state/activeContext.md` and `.memory/state/progress.md`. The date must be quoted so
        it round-trips as a string rather than a YAML date object.
@@ -1014,17 +1340,11 @@
      gitignored and regenerated by `python -m tools.memory_regen.inject` on SessionStart — do NOT
      hand-edit derived files here.
   
-  3. Stage **only** the state-plane files and the generated HANDOFF (never `git add -A`) and commit.
-     This commit is the publication trust root: it contains the exact HANDOFF/pointer bytes and its
-     parent is `state.current_ref`. When an active task pointer was updated, add both files explicitly:
+  2. Stage **only** the state-plane files (never `git add -A`) and commit:
   
      !`git add .memory/state/activeContext.md .memory/state/progress.md`
   
-     !`git add .memory/state/active-task.json` (only when it exists and was updated)
-  
-     !`git add .workflow/tasks/<task-id>/handoffs/revision-<n>.json` (only when an active task exists)
-  
-     !`git commit -m "checkpoint: publish volatile state and handoff" .memory/state/activeContext.md .memory/state/progress.md [and active-task.json + HANDOFF when present] && uv run python -m tools.handoff validate .workflow/tasks/<task-id>`
+     !`git commit -m "checkpoint: publish volatile state" .memory/state/activeContext.md .memory/state/progress.md`
   
   ## Notes
   
@@ -1032,7 +1352,7 @@
   - Stage files individually — this command never blanket-adds the working tree.
   - Memory is not a changelog: durable decisions belong in append-only `docs/adr/`, completed history
     belongs in git, and `.memory/state/` stays tight.
-  - A checkpoint remains optional; when there is no active task, preserve the existing two-file flow.
+  - A checkpoint remains optional; the two-file flow is the whole flow.
   
   ===== opencode-command/component =====
   ---
@@ -1069,49 +1389,6 @@
     per-package rules or without a test harness is incomplete.
   - Stage new files individually when committing; do not blanket-add the working tree.
   
-  ## Mandated order (keep the three in sync) — when the package maps to a topology component
-  
-  If the new package is a declared **pipeline component** (it has a `[[components]]` entry in
-  `harness/project.toml` — an `id`/`stage`/`language` with `consumes`/`produces` edge contracts),
-  it also needs a per-component agent bound from the neutral template, the topology slot registered,
-  and the topology consistency gate (`tools/harness_lint/tests/test_pipeline_config.py`) kept green.
-  Like `/add-language`, the component agent is a **derivation of the neutral template**, not a
-  hand-authored persona: the core ships `harness/agents/templates/component-engineer.md`, and
-  `/component` fills it in from the component's declared topology entry.
-  
-  1. **Derive the component agent from the template.** Copy
-     `harness/agents/templates/component-engineer.md` into the active instance's own `agents/`
-     directory (the instance root is declared by `harness/project.toml [instance] root`) as
-     `<component>.md` — the frontmatter `name` equals the component `id`, because the conductor
-     resolver (`/pipeline`, `pipeline-map`) binds each stage to `agents/<id>.md`. Fill every
-     `<PLACEHOLDER>` from the component's `[[components]]` entry:
-     `<COMPONENT>` (`id`), `<STAGE>` (its ordinal in `[pipeline]`), `<LANG>`/`<TOOLCHAIN>`/`<TEST_CMD>`
-     (from the matching `[[languages]]` toolchain the `language` ref names), `<CONSUMES>`/`<PRODUCES>`
-     (its edge contracts), and `<BASH_SCOPE>` (the language's allow-scope). The agent lands in the
-     **instance**, not the core — so the core persona anti-sprawl set stays fixed.
-  
-  2. **Register/verify the component in the topology slot.** Ensure the component has a
-     `[[components]]` table (`id`, `stage`, `language`, `consumes`, `produces`) and that every edge it
-     participates in is present in the `[pipeline]` `edges` list — endpoints declared, and each
-     `contract` in the producer's `produces` AND the consumer's `consumes`.
-  
-  3. **Keep the topology consistency gate green.** Run `/test` (or
-     `tools/harness_lint/tests/test_pipeline_config.py`): every `component.language` must be a declared
-     `[[languages]].id`, component `id`s unique, and every edge well-formed. A silent divergence fails
-     the suite.
-  
-  ## Guard — component binding
-  
-  - **All three or none.** A component agent whose `<BASH_SCOPE>` is not its language's declared scope,
-    a `[[components]]` entry with no `[pipeline]` edge, or a `[pipeline]` edge naming an undeclared
-    endpoint red-flags the topology gate. Make the three edits together, then run `/test`.
-  - **Least privilege.** The derived component agent allows only its language's `<BASH_SCOPE>`;
-    everything else stays `ask`. Do not grant a broad bash allow.
-  - **Domain-neutral core stays neutral.** The derived agent and its content live in the instance; the
-    core template (`component-engineer.md`) must not gain instance/domain vocabulary.
-  - Validate the derived agent/template shape against the same rules the core personas follow
-    (subagent mode, valid permission keys, routing description) before committing.
-  
   ===== claude-command/component =====
   ---
   # generated by tools.harness_emit — do not hand-edit
@@ -1144,49 +1421,6 @@
   - The order is enforced: structure → self-sufficient AGENTS.md → tests. A member without its
     per-package rules or without a test harness is incomplete.
   - Stage new files individually when committing; do not blanket-add the working tree.
-  
-  ## Mandated order (keep the three in sync) — when the package maps to a topology component
-  
-  If the new package is a declared **pipeline component** (it has a `[[components]]` entry in
-  `harness/project.toml` — an `id`/`stage`/`language` with `consumes`/`produces` edge contracts),
-  it also needs a per-component agent bound from the neutral template, the topology slot registered,
-  and the topology consistency gate (`tools/harness_lint/tests/test_pipeline_config.py`) kept green.
-  Like `/add-language`, the component agent is a **derivation of the neutral template**, not a
-  hand-authored persona: the core ships `harness/agents/templates/component-engineer.md`, and
-  `/component` fills it in from the component's declared topology entry.
-  
-  1. **Derive the component agent from the template.** Copy
-     `harness/agents/templates/component-engineer.md` into the active instance's own `agents/`
-     directory (the instance root is declared by `harness/project.toml [instance] root`) as
-     `<component>.md` — the frontmatter `name` equals the component `id`, because the conductor
-     resolver (`/pipeline`, `pipeline-map`) binds each stage to `agents/<id>.md`. Fill every
-     `<PLACEHOLDER>` from the component's `[[components]]` entry:
-     `<COMPONENT>` (`id`), `<STAGE>` (its ordinal in `[pipeline]`), `<LANG>`/`<TOOLCHAIN>`/`<TEST_CMD>`
-     (from the matching `[[languages]]` toolchain the `language` ref names), `<CONSUMES>`/`<PRODUCES>`
-     (its edge contracts), and `<BASH_SCOPE>` (the language's allow-scope). The agent lands in the
-     **instance**, not the core — so the core persona anti-sprawl set stays fixed.
-  
-  2. **Register/verify the component in the topology slot.** Ensure the component has a
-     `[[components]]` table (`id`, `stage`, `language`, `consumes`, `produces`) and that every edge it
-     participates in is present in the `[pipeline]` `edges` list — endpoints declared, and each
-     `contract` in the producer's `produces` AND the consumer's `consumes`.
-  
-  3. **Keep the topology consistency gate green.** Run `/test` (or
-     `tools/harness_lint/tests/test_pipeline_config.py`): every `component.language` must be a declared
-     `[[languages]].id`, component `id`s unique, and every edge well-formed. A silent divergence fails
-     the suite.
-  
-  ## Guard — component binding
-  
-  - **All three or none.** A component agent whose `<BASH_SCOPE>` is not its language's declared scope,
-    a `[[components]]` entry with no `[pipeline]` edge, or a `[pipeline]` edge naming an undeclared
-    endpoint red-flags the topology gate. Make the three edits together, then run `/test`.
-  - **Least privilege.** The derived component agent allows only its language's `<BASH_SCOPE>`;
-    everything else stays `ask`. Do not grant a broad bash allow.
-  - **Domain-neutral core stays neutral.** The derived agent and its content live in the instance; the
-    core template (`component-engineer.md`) must not gain instance/domain vocabulary.
-  - Validate the derived agent/template shape against the same rules the core personas follow
-    (subagent mode, valid permission keys, routing description) before committing.
   
   ===== opencode-command/contract-check =====
   ---
@@ -1360,110 +1594,6 @@
     packages. The generator's determinism + reference-only confinement are pytest-covered
     (`tools/docs_sync/tests/test_docs_sync_determinism.py`).
   
-  ===== opencode-command/docs-update =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use when a source change may have left a human-authored document out of date, or when the docs-guard gate has gone red and you need to know what to do about it — re-runs the guard and routes its exit code to either a bounded edit of the bound target document or an exact review disposition for a human to ratify. Never edits an accepted decision record, a generated reference page, a contract or a golden; never authors a review-ledger row."
-  agent: python-engineer
-  subtask: true
-  ---
-  
-  # /docs-update — the bounded human-doc review loop
-  
-  Thin macro over the **already-coded** `tools.docs_guard` gate. Do NOT re-implement staleness
-  classification, digesting, coverage counting, or the drafting-exclusion set — the gate module
-  already encodes all four (DOCSUP-03/05), and `tools.docs_guard.exclusion_reason` is the single
-  tested classifier that says whether a target may be drafted into at all.
-  
-  ## Run the guard
-  
-  `$ARGUMENTS` is passed **positionally** to the module — never interpolated into a constructed shell
-  string, and never assembled from registry, ledger or document content:
-  
-  !`python -m tools.docs_guard $ARGUMENTS`
-  
-  The module's own flags (`--registry`, `--ledger`, `--root`) are the only accepted extras. There is
-  no second data source: the guard is **re-run** here, always. Its report is the input, and a
-  regenerated staleness pointer is not — a pointer file is a derived, gitignored session convenience
-  that is simply absent in a fresh clone, so reading one instead of the guard would report "nothing to
-  do" on a clean checkout. That is a false green, not a clean tree.
-  
-  ## Routing table
-  
-  | Exit | Meaning | Action |
-  |---|---|---|
-  | exit 0 | clean — no `BROKEN`, no `STALE_REQUIRED`, no failing coherence finding, uncovered within the ratchet | **STOP.** Nothing to do. `STALE_ADVISORY` blocks and warn/note findings appear on stderr and never change the code — do not chase them. |
-  | exit 1 | a `BROKEN` binding, a `STALE_REQUIRED` binding, a failing coherence finding, or an uncovered/binding-count regression | **The only working state.** For each enumerated binding, choose EITHER a bounded edit of that binding's target document OR the exact review disposition the report names, then route through `/review` and `/verify-work`. See `harness/skills/docs-upkeep/SKILL.md`. |
-  | exit 3 | the registry or the ledger is INVALID | **Refuse to draft anything.** This is a registry problem, not a documentation problem. Fix the malformed registry or ledger row and re-run. Editing a document here would be "fixing" the wrong artifact. |
-  
-  Exit 2 is argparse's stdlib usage error and is never produced deliberately; treat it as a
-  mis-invocation of this command, not as a finding.
-  
-  ## What this command never does
-  
-  - **Never restates contract drift or golden.** Those gates are **leading and authoritative**: this
-    command does not re-run `contract_drift.run_gate()` and does not repeat its findings. A binding
-    whose source is mid-drift renders as `SUPPRESSED (contract-drift leading)` and stops there — one
-    change must not produce two failures with two different remedies.
-  - **Never widens the corpus.** `UNCOVERED` documents and the coverage ratchets are out of scope;
-    raising a ratchet is a deliberate human edit.
-  - **Never authors a review-ledger row.** A binding is ratified by the human review commit that lands
-    its reviewed row (ADR-0010 §3b) — an agent that could bless a binding has self-approved it.
-  - **Never drafts into an excluded target.** Ask `tools.docs_guard.exclusion_reason` rather than
-    carrying a copy of the rule; the runtime write-side gates (`contract_guard`, the matrix path
-    denies) are the backstop, not the decision.
-  
-  ===== claude-command/docs-update =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use when a source change may have left a human-authored document out of date, or when the docs-guard gate has gone red and you need to know what to do about it — re-runs the guard and routes its exit code to either a bounded edit of the bound target document or an exact review disposition for a human to ratify. Never edits an accepted decision record, a generated reference page, a contract or a golden; never authors a review-ledger row."
-  ---
-  
-  # /docs-update — the bounded human-doc review loop
-  
-  Thin macro over the **already-coded** `tools.docs_guard` gate. Do NOT re-implement staleness
-  classification, digesting, coverage counting, or the drafting-exclusion set — the gate module
-  already encodes all four (DOCSUP-03/05), and `tools.docs_guard.exclusion_reason` is the single
-  tested classifier that says whether a target may be drafted into at all.
-  
-  ## Run the guard
-  
-  `$ARGUMENTS` is passed **positionally** to the module — never interpolated into a constructed shell
-  string, and never assembled from registry, ledger or document content:
-  
-  !`python -m tools.docs_guard $ARGUMENTS`
-  
-  The module's own flags (`--registry`, `--ledger`, `--root`) are the only accepted extras. There is
-  no second data source: the guard is **re-run** here, always. Its report is the input, and a
-  regenerated staleness pointer is not — a pointer file is a derived, gitignored session convenience
-  that is simply absent in a fresh clone, so reading one instead of the guard would report "nothing to
-  do" on a clean checkout. That is a false green, not a clean tree.
-  
-  ## Routing table
-  
-  | Exit | Meaning | Action |
-  |---|---|---|
-  | exit 0 | clean — no `BROKEN`, no `STALE_REQUIRED`, no failing coherence finding, uncovered within the ratchet | **STOP.** Nothing to do. `STALE_ADVISORY` blocks and warn/note findings appear on stderr and never change the code — do not chase them. |
-  | exit 1 | a `BROKEN` binding, a `STALE_REQUIRED` binding, a failing coherence finding, or an uncovered/binding-count regression | **The only working state.** For each enumerated binding, choose EITHER a bounded edit of that binding's target document OR the exact review disposition the report names, then route through `/review` and `/verify-work`. See `harness/skills/docs-upkeep/SKILL.md`. |
-  | exit 3 | the registry or the ledger is INVALID | **Refuse to draft anything.** This is a registry problem, not a documentation problem. Fix the malformed registry or ledger row and re-run. Editing a document here would be "fixing" the wrong artifact. |
-  
-  Exit 2 is argparse's stdlib usage error and is never produced deliberately; treat it as a
-  mis-invocation of this command, not as a finding.
-  
-  ## What this command never does
-  
-  - **Never restates contract drift or golden.** Those gates are **leading and authoritative**: this
-    command does not re-run `contract_drift.run_gate()` and does not repeat its findings. A binding
-    whose source is mid-drift renders as `SUPPRESSED (contract-drift leading)` and stops there — one
-    change must not produce two failures with two different remedies.
-  - **Never widens the corpus.** `UNCOVERED` documents and the coverage ratchets are out of scope;
-    raising a ratchet is a deliberate human edit.
-  - **Never authors a review-ledger row.** A binding is ratified by the human review commit that lands
-    its reviewed row (ADR-0010 §3b) — an agent that could bless a binding has self-approved it.
-  - **Never drafts into an excluded target.** Ask `tools.docs_guard.exclusion_reason` rather than
-    carrying a copy of the rule; the runtime write-side gates (`contract_guard`, the matrix path
-    denies) are the backstop, not the decision.
-  
   ===== opencode-command/fan-out-synthesize =====
   ---
   # generated by tools.harness_emit — do not hand-edit
@@ -1532,301 +1662,135 @@
   recovers their compact returns, and synthesizes them without re-opening the raw files it delegated
   away. The synthesized result is an ephemeral runtime value — it is not committed and not CI-gated.
   
-  ===== opencode-command/golden-approve =====
+  ===== opencode-command/flow =====
   ---
   # generated by tools.harness_emit — do not hand-edit
-  description: "Use when a human reviewer has approved a proposed golden baseline and wants to promote it — wraps the human-gated approval tool, which refuses (exit 3) without an explicit human flag, an ADR reference, and a confirmation token. Invoke only after a human sign-off, never by an agent."
+  description: "Use when starting or resuming any unit of product work — names the four routes (small-change, bugfix, feature, contract-change), picks one, and states the literal next step. Invoke when you do not know which route you are on."
   agent: orchestrator
+  subtask: false
   ---
   
-  # /golden-approve — human-gated golden promotion (no agent self-bless)
+  # /flow — the entry point: pick a route, record where you are, resume
   
-  Thin macro over the **already-coded** refusal gate. Do NOT re-implement approval logic —
-  `tools.golden_runner.approve` already encodes "machines gate, humans ratify" (CMD-03, P9).
+  One command for "what am I doing and what is the next literal step". It routes; it does not
+  execute. `/checkpoint` and `/orient` do the running.
   
-  ## Invocation
+  ## 1. Pick a route
   
-  The case id and human signals are taken from `$ARGUMENTS` and passed **positionally** to the
-  approve module (no shell-string construction from arguments):
+  Exactly one of four. If none fits, **stop and ask** — there is no fifth route, and do not blend
+  two. `research` is deliberately **not** a route: it ends in a document, not a change, and the
+  `explorer` persona plus `/fan-out-synthesize` already cover it.
   
-  !`python -m tools.golden_runner.approve $ARGUMENTS`
+  | Route | Use it when | Owner |
+  |-------|-------------|-------|
+  | `small-change` | one file, shape already known, nothing under `contracts/` | the component engineer the declared instance registers, else `python-engineer` |
+  | `bugfix` | observed behaviour differs from a contract, a test, or documented intent, and it reproduces | the engineer owning the path, after `explorer` locates it |
+  | `feature` | the capability does not exist yet and more than one file will change | `orchestrator` decomposes, then the owning engineers |
+  | `contract-change` | the change lands on an entry under `contracts/` | both sides of the declared edge, one at a time |
   
-  ## The human gate (refusal is the default)
+  The **steps** for each route live in `harness/agents/orchestrator.md`, under its `## Route:`
+  sections — one per route, each with *When to use*, *Steps*, *Repository evidence*, *Stop condition*,
+  *Next command*. That file is the authority; read the section for your route there and follow it. Do
+  not work from this table alone, and do not restate those steps anywhere else.
   
-  Promotion of `baseline.received.tsv` → the human-approved `baseline.verified.tsv` is **REFUSED**
-  (`GoldenApprovalRefused`, CLI **exit 3**) unless ALL of the following are present:
+  ## 2. Record where you are
   
-  1. an explicit human `--approve` flag,
-  2. an `--adr <id>` reference (every baseline change must cite a decision), and
-  3. a `--confirm <token>` human confirmation token matching the `$GOLDEN_APPROVE_HUMAN` env var
-     — a value an agent is instructed **never** to fabricate.
+  Three lines. Route, step, next command. They go in `.memory/state/activeContext.md` under
+  `## In flight` / `## Next`, and they are written by `/checkpoint`.
   
-  An agent running this command **cannot** self-approve: without the human token the tool refuses
-  and exits 3. Affirmative promotion is a human-only action (constitution-plane, CODEOWNERS-gated).
+  **There is no new state file, no new writer, and no new reader.** Do not create one.
   
-  Example (human-run):
+  Write literally this shape:
   
-  ```
-  python -m tools.golden_runner.approve value-regression --approve --adr 0002 --confirm "$GOLDEN_APPROVE_HUMAN"
-  ```
-  
-  ===== claude-command/golden-approve =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use when a human reviewer has approved a proposed golden baseline and wants to promote it — wraps the human-gated approval tool, which refuses (exit 3) without an explicit human flag, an ADR reference, and a confirmation token. Invoke only after a human sign-off, never by an agent."
-  ---
-  
-  # /golden-approve — human-gated golden promotion (no agent self-bless)
-  
-  Thin macro over the **already-coded** refusal gate. Do NOT re-implement approval logic —
-  `tools.golden_runner.approve` already encodes "machines gate, humans ratify" (CMD-03, P9).
-  
-  ## Invocation
-  
-  The case id and human signals are taken from `$ARGUMENTS` and passed **positionally** to the
-  approve module (no shell-string construction from arguments):
-  
-  !`python -m tools.golden_runner.approve $ARGUMENTS`
-  
-  ## The human gate (refusal is the default)
-  
-  Promotion of `baseline.received.tsv` → the human-approved `baseline.verified.tsv` is **REFUSED**
-  (`GoldenApprovalRefused`, CLI **exit 3**) unless ALL of the following are present:
-  
-  1. an explicit human `--approve` flag,
-  2. an `--adr <id>` reference (every baseline change must cite a decision), and
-  3. a `--confirm <token>` human confirmation token matching the `$GOLDEN_APPROVE_HUMAN` env var
-     — a value an agent is instructed **never** to fabricate.
-  
-  An agent running this command **cannot** self-approve: without the human token the tool refuses
-  and exits 3. Affirmative promotion is a human-only action (constitution-plane, CODEOWNERS-gated).
-  
-  Example (human-run):
-  
-  ```
-  python -m tools.golden_runner.approve value-regression --approve --adr 0002 --confirm "$GOLDEN_APPROVE_HUMAN"
+  ```text
+  - Route: contract-change
+  - Step: 3 of 5 — failing case
+  - Next command: /contract-check
   ```
   
-  ===== opencode-command/golden =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use when you need to verify polyglot equivalence for a golden case — runs the golden runner, which normalizes both sides via the shared §4-5 core and diffs against the human-approved baseline. Invoke after a converter/normalization change or when a golden goes red."
-  agent: python-engineer
-  subtask: true
-  ---
+  Run `/checkpoint` to persist them. Do that before a risky step and at the end of a session,
+  because the container is ephemeral and only the committed state plane survives it.
   
-  # /golden — run a golden case + normalized diff
+  ## 3. Resume
   
-  Thin macro over the **existing** golden runner. Do NOT re-implement golden/normalize/diff logic —
-  `tools.golden_runner.runner` already shares the §4-5 normalization core (a second comparator would
-  drift, Pitfall P4).
+  Run `/orient`. It regenerates the derived plane and prints the pointer payload. That payload
+  carries a **pointer** to `.memory/state/activeContext.md` — it never inlines the file's body. Open
+  the file the pointer names and read the three lines from §2: they tell you the route, the step you
+  stopped on, and the one command to run next. Then continue that route from that step.
   
-  ## Invocation
+  ## 4. Finish
   
-  The golden case id is taken from `$ARGUMENTS` and passed **positionally** to the runner module.
-  The runner spawns the .NET toy converter with `subprocess.run([list], shell=False)` — arguments are
-  never concatenated into a shell string (command-injection guard, T-03-13):
-  
-  !`python -m tools.golden_runner.runner $ARGUMENTS`
-  
-  ## Semantics
-  
-  - **exit 0** → PASS (normalized output equals the approved `.verified` baseline; repr-only diffs
-    are absorbed by the shared normalization core).
-  - **exit 1** → FAIL (a value regression); the runner writes a machine-proposed
-    `baseline.received.tsv` and **never** overwrites the human-approved `.verified` baseline (P9).
-  
-  To promote a proposed baseline after review, use `/golden-approve` — an agent must never self-bless.
+  Every handoff returns the six-field completion contract defined in the orchestrator's
+  `### Completion contract` section. Return it verbatim from there; it is not re-copied here.
   
   ## Notes
   
-  - The .NET spawn is presence-gated inside the runner; the normalize+diff path is proven without a
-    live .NET runtime.
+  - This command is a router: it carries no shell block and grants no new permission.
+  - One route at a time. Widening scope mid-route is the signal to stop and re-route, not to continue.
   
-  ===== claude-command/golden =====
+  ===== claude-command/flow =====
   ---
   # generated by tools.harness_emit — do not hand-edit
-  description: "Use when you need to verify polyglot equivalence for a golden case — runs the golden runner, which normalizes both sides via the shared §4-5 core and diffs against the human-approved baseline. Invoke after a converter/normalization change or when a golden goes red."
+  description: "Use when starting or resuming any unit of product work — names the four routes (small-change, bugfix, feature, contract-change), picks one, and states the literal next step. Invoke when you do not know which route you are on."
   ---
   
-  # /golden — run a golden case + normalized diff
+  # /flow — the entry point: pick a route, record where you are, resume
   
-  Thin macro over the **existing** golden runner. Do NOT re-implement golden/normalize/diff logic —
-  `tools.golden_runner.runner` already shares the §4-5 normalization core (a second comparator would
-  drift, Pitfall P4).
+  One command for "what am I doing and what is the next literal step". It routes; it does not
+  execute. `/checkpoint` and `/orient` do the running.
   
-  ## Invocation
+  ## 1. Pick a route
   
-  The golden case id is taken from `$ARGUMENTS` and passed **positionally** to the runner module.
-  The runner spawns the .NET toy converter with `subprocess.run([list], shell=False)` — arguments are
-  never concatenated into a shell string (command-injection guard, T-03-13):
+  Exactly one of four. If none fits, **stop and ask** — there is no fifth route, and do not blend
+  two. `research` is deliberately **not** a route: it ends in a document, not a change, and the
+  `explorer` persona plus `/fan-out-synthesize` already cover it.
   
-  !`python -m tools.golden_runner.runner $ARGUMENTS`
+  | Route | Use it when | Owner |
+  |-------|-------------|-------|
+  | `small-change` | one file, shape already known, nothing under `contracts/` | the component engineer the declared instance registers, else `python-engineer` |
+  | `bugfix` | observed behaviour differs from a contract, a test, or documented intent, and it reproduces | the engineer owning the path, after `explorer` locates it |
+  | `feature` | the capability does not exist yet and more than one file will change | `orchestrator` decomposes, then the owning engineers |
+  | `contract-change` | the change lands on an entry under `contracts/` | both sides of the declared edge, one at a time |
   
-  ## Semantics
+  The **steps** for each route live in `harness/agents/orchestrator.md`, under its `## Route:`
+  sections — one per route, each with *When to use*, *Steps*, *Repository evidence*, *Stop condition*,
+  *Next command*. That file is the authority; read the section for your route there and follow it. Do
+  not work from this table alone, and do not restate those steps anywhere else.
   
-  - **exit 0** → PASS (normalized output equals the approved `.verified` baseline; repr-only diffs
-    are absorbed by the shared normalization core).
-  - **exit 1** → FAIL (a value regression); the runner writes a machine-proposed
-    `baseline.received.tsv` and **never** overwrites the human-approved `.verified` baseline (P9).
+  ## 2. Record where you are
   
-  To promote a proposed baseline after review, use `/golden-approve` — an agent must never self-bless.
+  Three lines. Route, step, next command. They go in `.memory/state/activeContext.md` under
+  `## In flight` / `## Next`, and they are written by `/checkpoint`.
+  
+  **There is no new state file, no new writer, and no new reader.** Do not create one.
+  
+  Write literally this shape:
+  
+  ```text
+  - Route: contract-change
+  - Step: 3 of 5 — failing case
+  - Next command: /contract-check
+  ```
+  
+  Run `/checkpoint` to persist them. Do that before a risky step and at the end of a session,
+  because the container is ephemeral and only the committed state plane survives it.
+  
+  ## 3. Resume
+  
+  Run `/orient`. It regenerates the derived plane and prints the pointer payload. That payload
+  carries a **pointer** to `.memory/state/activeContext.md` — it never inlines the file's body. Open
+  the file the pointer names and read the three lines from §2: they tell you the route, the step you
+  stopped on, and the one command to run next. Then continue that route from that step.
+  
+  ## 4. Finish
+  
+  Every handoff returns the six-field completion contract defined in the orchestrator's
+  `### Completion contract` section. Return it verbatim from there; it is not re-copied here.
   
   ## Notes
   
-  - The .NET spawn is presence-gated inside the runner; the normalize+diff path is proven without a
-    live .NET runtime.
-  
-  ===== opencode-command/handoff =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Publish a deterministic immutable HANDOFF for one active task revision. Use before changing sessions; it records references and hashes, never a conversation transcript."
-  agent: orchestrator
-  ---
-  
-  # /handoff — immutable fresh-session snapshot
-  
-  1. Generate and validate the revision-bound snapshot. Do not hand-edit it or copy task, evidence,
-     artifact, contract, ADR, secret, or PII bodies into it.
-  
-     !`uv run python -m tools.handoff generate .workflow/tasks/<task-id>`
-  
-     !`uv run python -m tools.handoff validate .workflow/tasks/<task-id>`
-  
-  2. For a later session, read only its pointers, then validate it. A stale revision, ref, or
-     artifact is a failure: regenerate; never auto-correct a HANDOFF.
-  
-     !`uv run python -m tools.handoff fresh-session .workflow/tasks/<task-id>/handoffs/revision-<n>.json`
-  
-     `fresh-session` performs the same committed-HEAD validation as `validate`; it is not an
-     unverified extractor.
-  
-  3. Before EXECUTE, REVIEW, or VERIFY, run `/orient`: successful HANDOFF validation and
-     `/phase-gate` create the revision-bound resume attestation. The emitted PreToolUse gate blocks
-     mechanically identifiable mutations while that attestation is absent or stale.
-  
-  ===== claude-command/handoff =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Publish a deterministic immutable HANDOFF for one active task revision. Use before changing sessions; it records references and hashes, never a conversation transcript."
-  ---
-  
-  # /handoff — immutable fresh-session snapshot
-  
-  1. Generate and validate the revision-bound snapshot. Do not hand-edit it or copy task, evidence,
-     artifact, contract, ADR, secret, or PII bodies into it.
-  
-     !`uv run python -m tools.handoff generate .workflow/tasks/<task-id>`
-  
-     !`uv run python -m tools.handoff validate .workflow/tasks/<task-id>`
-  
-  2. For a later session, read only its pointers, then validate it. A stale revision, ref, or
-     artifact is a failure: regenerate; never auto-correct a HANDOFF.
-  
-     !`uv run python -m tools.handoff fresh-session .workflow/tasks/<task-id>/handoffs/revision-<n>.json`
-  
-     `fresh-session` performs the same committed-HEAD validation as `validate`; it is not an
-     unverified extractor.
-  
-  3. Before EXECUTE, REVIEW, or VERIFY, run `/orient`: successful HANDOFF validation and
-     `/phase-gate` create the revision-bound resume attestation. The emitted PreToolUse gate blocks
-     mechanically identifiable mutations while that attestation is absent or stale.
-  
-  ===== opencode-command/intake =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use to turn a proposed task into a deterministic task-control intake: score seven structured risk axes, run the policy router, and create the task packet using the resulting lane and requirements."
-  agent: orchestrator
-  subtask: true
-  ---
-  
-  # /intake — deterministic task-control entry point
-  
-  Use this command alongside the existing orchestrator topology and context-budget flow; it does not
-  replace either. The agent gathers structured facts and user decisions, but the router only computes
-  from the supplied JSON — it does not inspect the repository or make a language-model judgment.
-  
-  ## 1. Score the seven axes
-  
-  Record each as an integer `0..3`: `ambiguity`, `change_scope`, `data_security`, `reversibility`,
-  `impact`, `coordination`, and `context_pressure`. Record only known fact flags from the policy:
-  `auth_authorization`, `payment`, `secret_pii`, `destructive_data_change`, `unclear_rollback`,
-  `external_contract_break`, `constitution_plane_touch`, `golden_or_contract_mutation`, and
-  `repeated_constraint_violation`. Set `golden_or_contract_mutation` for any `golden/` or
-  `contracts/` mutation; it deterministically routes to CONTROLLED.
-  
-  ## 2. Route the structured input
-  
-  Pass an intake JSON object on standard input. Its `routing` member is the router input and its
-  `task` member supplies the immutable task intent. A human override may raise the lane with an audit
-  reason; it may never lower the computed lane.
-  
-  ``` !`shell`
-  uv run python -m tools.risk_router.intake --output .workflow/tasks/<task-id>
-  ```
-  
-  The command writes `task.json`, `state.json`, and `evidence.json`, then validates the packet. The
-  canonical router decision is stored in `task.json.risk_decision` (including policy hashes,
-  promotion reasons, override audit, requirements, and overlay provenance); its seven scores are
-  copied into `risk_inputs` and its lane into `lane`. Validate the generated Phase-18 packet with:
-  
-  ``` !`shell`
-  uv run python -m tools.task_packet.validate .workflow/tasks/<task-id>
-  ```
-  
-  ## 3. Apply only the returned matrix
-  
-  The decision JSON contains `required_artifacts` and `required_gates`. FAST requires only the task
-  packet plus lint and test; do not automatically add a detailed SPEC, PLAN, worktree, or double
-  review. Higher lanes require only the artifacts and gates returned by the policy. Constitution-plane
-  work still requires human ratification under the repository rules.
-  
-  ===== claude-command/intake =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use to turn a proposed task into a deterministic task-control intake: score seven structured risk axes, run the policy router, and create the task packet using the resulting lane and requirements."
-  ---
-  
-  # /intake — deterministic task-control entry point
-  
-  Use this command alongside the existing orchestrator topology and context-budget flow; it does not
-  replace either. The agent gathers structured facts and user decisions, but the router only computes
-  from the supplied JSON — it does not inspect the repository or make a language-model judgment.
-  
-  ## 1. Score the seven axes
-  
-  Record each as an integer `0..3`: `ambiguity`, `change_scope`, `data_security`, `reversibility`,
-  `impact`, `coordination`, and `context_pressure`. Record only known fact flags from the policy:
-  `auth_authorization`, `payment`, `secret_pii`, `destructive_data_change`, `unclear_rollback`,
-  `external_contract_break`, `constitution_plane_touch`, `golden_or_contract_mutation`, and
-  `repeated_constraint_violation`. Set `golden_or_contract_mutation` for any `golden/` or
-  `contracts/` mutation; it deterministically routes to CONTROLLED.
-  
-  ## 2. Route the structured input
-  
-  Pass an intake JSON object on standard input. Its `routing` member is the router input and its
-  `task` member supplies the immutable task intent. A human override may raise the lane with an audit
-  reason; it may never lower the computed lane.
-  
-  ``` !`shell`
-  uv run python -m tools.risk_router.intake --output .workflow/tasks/<task-id>
-  ```
-  
-  The command writes `task.json`, `state.json`, and `evidence.json`, then validates the packet. The
-  canonical router decision is stored in `task.json.risk_decision` (including policy hashes,
-  promotion reasons, override audit, requirements, and overlay provenance); its seven scores are
-  copied into `risk_inputs` and its lane into `lane`. Validate the generated Phase-18 packet with:
-  
-  ``` !`shell`
-  uv run python -m tools.task_packet.validate .workflow/tasks/<task-id>
-  ```
-  
-  ## 3. Apply only the returned matrix
-  
-  The decision JSON contains `required_artifacts` and `required_gates`. FAST requires only the task
-  packet plus lint and test; do not automatically add a detailed SPEC, PLAN, worktree, or double
-  review. Higher lanes require only the artifacts and gates returned by the policy. Constitution-plane
-  work still requires human ratification under the repository rules.
+  - This command is a router: it carries no shell block and grants no new permission.
+  - One route at a time. Widening scope mid-route is the signal to stop and re-route, not to continue.
   
   ===== opencode-command/lint =====
   ---
@@ -1973,7 +1937,7 @@
   - **Order is load-bearing:** contract → (input, expected) data case → failing code stub. A rule that
     starts from code, or a stub authored green before the contract + data case exist, defeats the
     contract-first invariant (Pattern 4, T-03-26).
-  - Only after the data case turns the failing stub green (via `/test` / `/golden`) is the rule done.
+  - Only after the data case turns the failing stub green (via `/test`) is the rule done.
   - Stage new/edited files individually when committing; do not blanket-add the working tree.
   
   ===== claude-command/new-contract-rule =====
@@ -2019,7 +1983,7 @@
   - **Order is load-bearing:** contract → (input, expected) data case → failing code stub. A rule that
     starts from code, or a stub authored green before the contract + data case exist, defeats the
     contract-first invariant (Pattern 4, T-03-26).
-  - Only after the data case turns the failing stub green (via `/test` / `/golden`) is the rule done.
+  - Only after the data case turns the failing stub green (via `/test`) is the rule done.
   - Stage new/edited files individually when committing; do not blanket-add the working tree.
   
   ===== opencode-command/orient =====
@@ -2037,21 +2001,13 @@
   orientation. It regenerates the **derived** plane (gitignored, safe to rebuild) and surfaces the
   capped, drift-aware, pointer-only payload — never full contract bodies (lazy-load, P13).
   
-  ## 1. Active HANDOFF first (fresh-session resume barrier)
-  
-  If `.memory/state/active-task.json` exists, it is a pointer only. Validate its HANDOFF and run the
-  existing Phase 20 gate before any EXECUTE, REVIEW, or VERIFY action. A stale pointer, state
-  revision, ref, or artifact must fail and be regenerated via `/handoff`; do not auto-correct it.
-  
-  !`test ! -f .memory/state/active-task.json || uv run python -m tools.handoff resume --state-dir .memory/state --repo-root .`
-  
-  ## 2. Regenerate the derived memory plane (never hand-edited)
+  ## 1. Regenerate the derived memory plane (never hand-edited)
   
   Delete-and-rebuild reproduces these byte-identically — they are derived, so regenerating is free.
   
   !`uv run python -m tools.memory_regen.repo_map && uv run python -m tools.memory_regen.contracts_index && uv run python -m tools.memory_regen.pointer_index`
   
-  ## 3. Print the orientation payload (the injector's own output)
+  ## 2. Print the orientation payload (the injector's own output)
   
   The same `assemble()` payload both runtimes honor: working-agreements directive → data-provenance
   banner → live contract-drift → contracts-index summary → repo map top-N → progress-log pointer.
@@ -2060,19 +2016,17 @@
   
   !`uv run python -m tools.memory_regen.inject`
   
-  ## 4. Read-order (golden path)
+  ## 3. Read-order (golden path)
   
   After the payload above, read in this order — shallow first, deep only on demand:
   
   1. **`AGENTS.md`** (root) — the nearest-wins rules + the golden-path command table. Read a
      per-package `AGENTS.md` only when you touch that package (lazy-load).
-  2. **Active HANDOFF**, when surfaced above — validate it, then run `/phase-gate`; it is the
-     highest-priority task pointer and does not authorize execution by itself.
-  3. **`.memory/state/activeContext.md`** — the session progress log; on a data conflict,
+  2. **`.memory/state/activeContext.md`** — the session progress log; on a data conflict,
      contracts/ADR win, and git holds the full completed history.
-  4. A specific **`contracts/`** schema — only when the task needs it (never preload all bodies).
-  5. The relevant **skill** for the work shape: `polyglot-boundary` (§4.3–4.6), `golden-debug` (red
-     golden), `data-contracts` (contracts/), `gate-model` (what's gated), `two-plane-memory` (planes),
+  3. A specific **`contracts/`** schema — only when the task needs it (never preload all bodies).
+  4. The relevant **skill** for the work shape: `polyglot-boundary` (§4.3–4.6),
+     `data-contracts` (contracts/), `two-plane-memory` (planes),
      `context-budget` (delegate-vs-inline), `fan-out-synthesize` (large-surface coverage).
   
   ## Notes
@@ -2096,21 +2050,13 @@
   orientation. It regenerates the **derived** plane (gitignored, safe to rebuild) and surfaces the
   capped, drift-aware, pointer-only payload — never full contract bodies (lazy-load, P13).
   
-  ## 1. Active HANDOFF first (fresh-session resume barrier)
-  
-  If `.memory/state/active-task.json` exists, it is a pointer only. Validate its HANDOFF and run the
-  existing Phase 20 gate before any EXECUTE, REVIEW, or VERIFY action. A stale pointer, state
-  revision, ref, or artifact must fail and be regenerated via `/handoff`; do not auto-correct it.
-  
-  !`test ! -f .memory/state/active-task.json || uv run python -m tools.handoff resume --state-dir .memory/state --repo-root .`
-  
-  ## 2. Regenerate the derived memory plane (never hand-edited)
+  ## 1. Regenerate the derived memory plane (never hand-edited)
   
   Delete-and-rebuild reproduces these byte-identically — they are derived, so regenerating is free.
   
   !`uv run python -m tools.memory_regen.repo_map && uv run python -m tools.memory_regen.contracts_index && uv run python -m tools.memory_regen.pointer_index`
   
-  ## 3. Print the orientation payload (the injector's own output)
+  ## 2. Print the orientation payload (the injector's own output)
   
   The same `assemble()` payload both runtimes honor: working-agreements directive → data-provenance
   banner → live contract-drift → contracts-index summary → repo map top-N → progress-log pointer.
@@ -2119,19 +2065,17 @@
   
   !`uv run python -m tools.memory_regen.inject`
   
-  ## 4. Read-order (golden path)
+  ## 3. Read-order (golden path)
   
   After the payload above, read in this order — shallow first, deep only on demand:
   
   1. **`AGENTS.md`** (root) — the nearest-wins rules + the golden-path command table. Read a
      per-package `AGENTS.md` only when you touch that package (lazy-load).
-  2. **Active HANDOFF**, when surfaced above — validate it, then run `/phase-gate`; it is the
-     highest-priority task pointer and does not authorize execution by itself.
-  3. **`.memory/state/activeContext.md`** — the session progress log; on a data conflict,
+  2. **`.memory/state/activeContext.md`** — the session progress log; on a data conflict,
      contracts/ADR win, and git holds the full completed history.
-  4. A specific **`contracts/`** schema — only when the task needs it (never preload all bodies).
-  5. The relevant **skill** for the work shape: `polyglot-boundary` (§4.3–4.6), `golden-debug` (red
-     golden), `data-contracts` (contracts/), `gate-model` (what's gated), `two-plane-memory` (planes),
+  3. A specific **`contracts/`** schema — only when the task needs it (never preload all bodies).
+  4. The relevant **skill** for the work shape: `polyglot-boundary` (§4.3–4.6),
+     `data-contracts` (contracts/), `two-plane-memory` (planes),
      `context-budget` (delegate-vs-inline), `fan-out-synthesize` (large-surface coverage).
   
   ## Notes
@@ -2141,323 +2085,6 @@
     re-verified.
   - This command only touches the **derived** plane; it never writes the constitution plane or
     `.memory/state/` (that is `/checkpoint`'s job).
-  
-  ===== opencode-command/phase-gate =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use when starting or resuming a task phase: fail closed on repository identity, state revision, required artifacts, blockers, and deterministic constraint-attestation coverage."
-  agent: orchestrator
-  ---
-  
-  # /phase-gate — verify task start conditions
-  
-  The orchestrator is the only transition requester. Before entering or resuming a phase, run:
-  
-  ```sh
-  python -m tools.task_control phase-gate .workflow/tasks/<task-id> --expected-revision <n> --repo-root <canonical-worktree-root>
-  ```
-  
-  Pass the expected baseline explicitly when resuming an externally supplied task snapshot:
-  
-  ```sh
-  python -m tools.task_control phase-gate .workflow/tasks/<task-id> --expected-revision <n> --baseline <commit>
-  ```
-  
-  The command fails closed and prints the deterministic refresh list if the worktree task path,
-  HEAD ref, baseline ancestry, state revision, required artifacts, blockers, source hashes, phase
-  coverage, planned-action mapping, or requested prohibited actions do not match. It checks only
-  attested IDs and hashes; it does not claim to establish an agent's understanding.
-  
-  `context-attestation.json` is task-local and contains a top-level `constraints` array. Each item
-  has `constraint_id`, `source_path`, `source_sha256`, `applies_to_phases`,
-  `prohibited_action_ids`, `required_evidence_ids`, and `planned_action_mapping`.
-  
-  Use `python -m tools.task_control attest <task-dir> --attestation <draft.json>` to create or
-  update it: the tool derives each source path and SHA-256 from `task.json` rather than trusting
-  the draft. Always pass the orchestrator's canonical worktree root to `--repo-root`.
-  
-  ===== claude-command/phase-gate =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use when starting or resuming a task phase: fail closed on repository identity, state revision, required artifacts, blockers, and deterministic constraint-attestation coverage."
-  ---
-  
-  # /phase-gate — verify task start conditions
-  
-  The orchestrator is the only transition requester. Before entering or resuming a phase, run:
-  
-  ```sh
-  python -m tools.task_control phase-gate .workflow/tasks/<task-id> --expected-revision <n> --repo-root <canonical-worktree-root>
-  ```
-  
-  Pass the expected baseline explicitly when resuming an externally supplied task snapshot:
-  
-  ```sh
-  python -m tools.task_control phase-gate .workflow/tasks/<task-id> --expected-revision <n> --baseline <commit>
-  ```
-  
-  The command fails closed and prints the deterministic refresh list if the worktree task path,
-  HEAD ref, baseline ancestry, state revision, required artifacts, blockers, source hashes, phase
-  coverage, planned-action mapping, or requested prohibited actions do not match. It checks only
-  attested IDs and hashes; it does not claim to establish an agent's understanding.
-  
-  `context-attestation.json` is task-local and contains a top-level `constraints` array. Each item
-  has `constraint_id`, `source_path`, `source_sha256`, `applies_to_phases`,
-  `prohibited_action_ids`, `required_evidence_ids`, and `planned_action_mapping`.
-  
-  Use `python -m tools.task_control attest <task-dir> --attestation <draft.json>` to create or
-  update it: the tool derives each source path and SHA-256 from `task.json` rather than trusting
-  the draft. Always pass the orchestrator's canonical worktree root to `--repo-root`.
-  
-  ===== opencode-command/pipeline =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use when you need to trace or visualize the pipeline dataflow and find the owning component agent — deterministically renders the declared [[components]]/[pipeline] topology (stage list + edge chain) from tools.harness_config and resolves each stage to its component agent file. Invoke to see the end-to-end flow or to check which stage owns a contract; there is no live runtime."
-  agent: orchestrator
-  subtask: true
-  ---
-  
-  # /pipeline — render the declared topology dataflow (no live runtime)
-  
-  The runtime-independent way to see how work flows through the harness. This command **renders
-  declared config** — the `[[components]]`/`[pipeline]` slot read via `tools.harness_config` — into a
-  stage list, an edge chain, and a stage→agent resolution. It executes **nothing**: a trace here is a
-  deterministic read of the topology data, not a run of the pipeline (RESEARCH Open Q#4).
-  
-  Core renders the generic default; an instance renders its own topology by pointing `load_project`
-  at its overlay path.
-  
-  ## 1. Load the active topology
-  
-  ```python
-  from tools.harness_config import components, pipeline, load_project
-  
-  # core default (generic source/sink line):
-  comps = components()
-  edges = pipeline()["edges"]
-  
-  # instance overlay — pass the instance config path:
-  cfg = load_project("<instance>/project.toml")
-  comps = components(cfg)
-  edges = pipeline(cfg)["edges"]
-  ```
-  
-  Both helpers are raw passthrough; the topology consistency gate
-  (`tools/harness_lint/tests/test_pipeline_config.py`) owns well-formedness, so this render trusts the
-  declared data as-is.
-  
-  ## 2. Print each component as a stage
-  
-  Sort `comps` by `stage` and print one line per component:
-  
-  ```
-  stage <stage>: <id> (<language>) consumes=[<consumes...>] produces=[<produces...>]
-  ```
-  
-  For the core default this reads:
-  
-  ```
-  stage 1: source (python) consumes=[] produces=[greeting]
-  stage 2: sink (python) consumes=[greeting] produces=[]
-  ```
-  
-  ## 3. Print the edge chain (the dataflow)
-  
-  Walk `edges` in order and print each directed hop with the contract that crosses it:
-  
-  ```
-  <from> -> <to> (<contract>)
-  ```
-  
-  For the core default:
-  
-  ```
-  source -> sink (greeting)
-  ```
-  
-  Each edge is a `{from, to, contract}` — a request flows from `from` to `to` carrying exactly that
-  one contract. Chain them tail-to-head to see the full path from entry stage to terminal sink.
-  
-  ## 4. Resolve each stage to its owning component agent
-  
-  Each stage `id` is owned by a component agent derived from
-  `harness/agents/templates/component-engineer.md`, living in the active instance's `agents/`
-  directory (declared by `harness/project.toml` `[instance] root`) as `<id>.md` — the derived agent's
-  `name` equals the component `id` (the `-engineer` suffix names the *template*, not the derived
-  per-component agents). For every component:
-  
-  1. Compute the expected agent path `<instance-root>/agents/<id>.md`.
-  2. Report `stage <id> -> <id>.md` when it exists.
-  3. **Flag any stage whose agent file is missing** — a stage with no bound owner is a topology gap
-     (`stage <id>: NO OWNING AGENT (<id>.md not found)`).
-  
-  The generic core default carries no derived instance agents, so on the core config every stage is
-  reported as an unbound gap by design — the concrete owners come from the instance overlay.
-  
-  ## 5. Render the general (branching / cyclic) graph as an indented tree
-  
-  Steps 2–3 are the render for a topology that IS a single chain — every stage has fan-out and fan-in
-  of exactly 1. Their example blocks above are the canonical linear output and are **unchanged**. When
-  the declared topology is **non-linear** (a stage fans out to several dependents, several stages fan
-  in to one, disconnected sub-graphs, or a legal cycle), render an **additional** view: the compiled
-  contract graph as an **indented tree** (D-01).
-  
-  ```python
-  from tools.contract_graph import compile_graph
-  
-  graph = compile_graph()          # or compile_graph(load_project("<instance>/project.toml"))
-  adjacency = graph["adjacency"]   # authority -> sorted[dependents]
-  ```
-  
-  Render rules:
-  
-  1. **Roots.** Start at each **authority with no incoming edge** (an authority that never appears as
-     another authority's dependent), in sorted order. For a fully cyclic graph that has **no** such
-     root, start at the lexicographically-first authority so the render is still deterministic.
-  2. **Indent one level per hop.** Print each node, then recurse into its sorted `adjacency` dependents
-     one indentation level deeper — authority above, dependents nested beneath it.
-  3. **Cycle marker (never recurse twice).** Track the visited set on the current root-to-node PATH
-     only (path-local, not a single global set — a global set would collapse legal diamonds/fan-in by
-     printing a shared dependent just once). If a dependent is already on the current path, print it as
-     a terminal `(cycle -> <node>)` marker **instead of** recursing into it again, so a legal cycle
-     terminates rather than looping. (This is the render's own path-local rule; it is stricter than
-     `tools.contract_graph.query.transitive`, which uses a global visited set because it only collects
-     the reachable id set, not a tree.)
-  
-  This tree view is the human-facing surface for branch/fan-in/cycle topologies; the linear
-  stage-list/edge-chain steps 2–3 remain the render whenever the graph is a single chain.
-  
-  ## Notes
-  
-  - **No execution.** This is a render of declared config; it never spawns a stage or runs any
-    stage implementation. To reason about the flow in prose, read `harness/skills/pipeline-map/SKILL.md`.
-  - **Read-only.** The command touches neither the constitution plane nor `.memory/state/`.
-  - **Core stays neutral.** Any example here uses the generic `source`/`sink` ids — never
-    instance/domain component names.
-  
-  ===== claude-command/pipeline =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use when you need to trace or visualize the pipeline dataflow and find the owning component agent — deterministically renders the declared [[components]]/[pipeline] topology (stage list + edge chain) from tools.harness_config and resolves each stage to its component agent file. Invoke to see the end-to-end flow or to check which stage owns a contract; there is no live runtime."
-  ---
-  
-  # /pipeline — render the declared topology dataflow (no live runtime)
-  
-  The runtime-independent way to see how work flows through the harness. This command **renders
-  declared config** — the `[[components]]`/`[pipeline]` slot read via `tools.harness_config` — into a
-  stage list, an edge chain, and a stage→agent resolution. It executes **nothing**: a trace here is a
-  deterministic read of the topology data, not a run of the pipeline (RESEARCH Open Q#4).
-  
-  Core renders the generic default; an instance renders its own topology by pointing `load_project`
-  at its overlay path.
-  
-  ## 1. Load the active topology
-  
-  ```python
-  from tools.harness_config import components, pipeline, load_project
-  
-  # core default (generic source/sink line):
-  comps = components()
-  edges = pipeline()["edges"]
-  
-  # instance overlay — pass the instance config path:
-  cfg = load_project("<instance>/project.toml")
-  comps = components(cfg)
-  edges = pipeline(cfg)["edges"]
-  ```
-  
-  Both helpers are raw passthrough; the topology consistency gate
-  (`tools/harness_lint/tests/test_pipeline_config.py`) owns well-formedness, so this render trusts the
-  declared data as-is.
-  
-  ## 2. Print each component as a stage
-  
-  Sort `comps` by `stage` and print one line per component:
-  
-  ```
-  stage <stage>: <id> (<language>) consumes=[<consumes...>] produces=[<produces...>]
-  ```
-  
-  For the core default this reads:
-  
-  ```
-  stage 1: source (python) consumes=[] produces=[greeting]
-  stage 2: sink (python) consumes=[greeting] produces=[]
-  ```
-  
-  ## 3. Print the edge chain (the dataflow)
-  
-  Walk `edges` in order and print each directed hop with the contract that crosses it:
-  
-  ```
-  <from> -> <to> (<contract>)
-  ```
-  
-  For the core default:
-  
-  ```
-  source -> sink (greeting)
-  ```
-  
-  Each edge is a `{from, to, contract}` — a request flows from `from` to `to` carrying exactly that
-  one contract. Chain them tail-to-head to see the full path from entry stage to terminal sink.
-  
-  ## 4. Resolve each stage to its owning component agent
-  
-  Each stage `id` is owned by a component agent derived from
-  `harness/agents/templates/component-engineer.md`, living in the active instance's `agents/`
-  directory (declared by `harness/project.toml` `[instance] root`) as `<id>.md` — the derived agent's
-  `name` equals the component `id` (the `-engineer` suffix names the *template*, not the derived
-  per-component agents). For every component:
-  
-  1. Compute the expected agent path `<instance-root>/agents/<id>.md`.
-  2. Report `stage <id> -> <id>.md` when it exists.
-  3. **Flag any stage whose agent file is missing** — a stage with no bound owner is a topology gap
-     (`stage <id>: NO OWNING AGENT (<id>.md not found)`).
-  
-  The generic core default carries no derived instance agents, so on the core config every stage is
-  reported as an unbound gap by design — the concrete owners come from the instance overlay.
-  
-  ## 5. Render the general (branching / cyclic) graph as an indented tree
-  
-  Steps 2–3 are the render for a topology that IS a single chain — every stage has fan-out and fan-in
-  of exactly 1. Their example blocks above are the canonical linear output and are **unchanged**. When
-  the declared topology is **non-linear** (a stage fans out to several dependents, several stages fan
-  in to one, disconnected sub-graphs, or a legal cycle), render an **additional** view: the compiled
-  contract graph as an **indented tree** (D-01).
-  
-  ```python
-  from tools.contract_graph import compile_graph
-  
-  graph = compile_graph()          # or compile_graph(load_project("<instance>/project.toml"))
-  adjacency = graph["adjacency"]   # authority -> sorted[dependents]
-  ```
-  
-  Render rules:
-  
-  1. **Roots.** Start at each **authority with no incoming edge** (an authority that never appears as
-     another authority's dependent), in sorted order. For a fully cyclic graph that has **no** such
-     root, start at the lexicographically-first authority so the render is still deterministic.
-  2. **Indent one level per hop.** Print each node, then recurse into its sorted `adjacency` dependents
-     one indentation level deeper — authority above, dependents nested beneath it.
-  3. **Cycle marker (never recurse twice).** Track the visited set on the current root-to-node PATH
-     only (path-local, not a single global set — a global set would collapse legal diamonds/fan-in by
-     printing a shared dependent just once). If a dependent is already on the current path, print it as
-     a terminal `(cycle -> <node>)` marker **instead of** recursing into it again, so a legal cycle
-     terminates rather than looping. (This is the render's own path-local rule; it is stricter than
-     `tools.contract_graph.query.transitive`, which uses a global visited set because it only collects
-     the reachable id set, not a tree.)
-  
-  This tree view is the human-facing surface for branch/fan-in/cycle topologies; the linear
-  stage-list/edge-chain steps 2–3 remain the render whenever the graph is a single chain.
-  
-  ## Notes
-  
-  - **No execution.** This is a render of declared config; it never spawns a stage or runs any
-    stage implementation. To reason about the flow in prose, read `harness/skills/pipeline-map/SKILL.md`.
-  - **Read-only.** The command touches neither the constitution plane nor `.memory/state/`.
-  - **Core stays neutral.** Any example here uses the generic `source`/`sink` ids — never
-    instance/domain component names.
   
   ===== opencode-command/refresh-memory =====
   ---
@@ -2478,11 +2105,9 @@
   The repo-map is session-ephemeral (PageRank churn is noise, D-02) — regenerated for local
   orientation, never committed, never gated. The pointer-index (`pointer-index.{json,md}`, the
   "what points to each memory item" reference-scan) is likewise gitignored-derived — rebuilt here,
-  never committed, never gated. The docs-staleness queue (`docs-staleness.md`, the human-doc review
-  obligations the SessionStart pointer counts) is the same kind: its content is a function of the
-  files you are editing, so it is session-ephemeral, never committed, never gated.
+  never committed, never gated.
   
-  !`uv run python -m tools.memory_regen.repo_map && uv run python -m tools.memory_regen.pointer_index && uv run python -m tools.memory_regen.docs_staleness`
+  !`uv run python -m tools.memory_regen.repo_map && uv run python -m tools.memory_regen.pointer_index`
   
   ## 2. Committed-derived (the gated set — commit after)
   
@@ -2500,7 +2125,7 @@
   ## Notes
   
   - This command only touches the **derived** plane; it never writes the constitution plane
-    (`contracts/`, `docs/adr/`, `golden/`) or `.memory/state/`.
+    (`contracts/`, `docs/adr/`, `docs/glossary.md`) or `.memory/state/`.
   - It invokes ONLY `tools.memory_regen.*` + `tools.docs_sync` — no inline derivation (D-06). A second
     index/hash impl would silently diverge from the drift gate.
   
@@ -2521,11 +2146,9 @@
   The repo-map is session-ephemeral (PageRank churn is noise, D-02) — regenerated for local
   orientation, never committed, never gated. The pointer-index (`pointer-index.{json,md}`, the
   "what points to each memory item" reference-scan) is likewise gitignored-derived — rebuilt here,
-  never committed, never gated. The docs-staleness queue (`docs-staleness.md`, the human-doc review
-  obligations the SessionStart pointer counts) is the same kind: its content is a function of the
-  files you are editing, so it is session-ephemeral, never committed, never gated.
+  never committed, never gated.
   
-  !`uv run python -m tools.memory_regen.repo_map && uv run python -m tools.memory_regen.pointer_index && uv run python -m tools.memory_regen.docs_staleness`
+  !`uv run python -m tools.memory_regen.repo_map && uv run python -m tools.memory_regen.pointer_index`
   
   ## 2. Committed-derived (the gated set — commit after)
   
@@ -2543,14 +2166,14 @@
   ## Notes
   
   - This command only touches the **derived** plane; it never writes the constitution plane
-    (`contracts/`, `docs/adr/`, `golden/`) or `.memory/state/`.
+    (`contracts/`, `docs/adr/`, `docs/glossary.md`) or `.memory/state/`.
   - It invokes ONLY `tools.memory_regen.*` + `tools.docs_sync` — no inline derivation (D-06). A second
     index/hash impl would silently diverge from the drift gate.
   
   ===== opencode-command/review =====
   ---
   # generated by tools.harness_emit — do not hand-edit
-  description: "Use when a change is written and you want an adversarial read-only review — surfaces the working diff and secret-scan posture, then routes to the code-reviewer persona for severity-classified findings. Invoke before /verify-work or a commit, so review is an executable step, not a wish."
+  description: "Use when a change is written and you want an adversarial read-only review — surfaces the working diff, then routes to the code-reviewer persona for severity-classified findings. Invoke before /verify-work or a commit, so review is an executable step, not a wish."
   agent: code-reviewer
   subtask: true
   ---
@@ -2567,16 +2190,7 @@
   
   !`git --no-pager diff --stat HEAD; echo '---'; git --no-pager diff HEAD`
   
-  ## 2. Secret-scan posture (defense-in-depth, informational)
-  
-  Secret leakage is *enforced* on write by the `tools.hooks.secret_scan` PreToolUse hook (it blocks a
-  write whose content matches a secret pattern) — this command does not duplicate that gate. For the
-  review, eyeball the changed files for anything credential-shaped so a secret in an *already-tracked*
-  file (which the on-write hook would not re-scan) still surfaces:
-  
-  !`git diff --name-only HEAD | sed 's/^/changed: /'; echo '--- scan the diff above for tokens/keys/passwords; the on-write hook gates new writes.'`
-  
-  ## 3. Route to the code-reviewer
+  ## 2. Route to the code-reviewer
   
   Hand the diff above to the **code-reviewer** persona (read-only, adversarial). Ask for findings
   **classified by severity** (blocker / major / minor / nit), each with file:line and a concrete fix
@@ -2586,25 +2200,19 @@
   - **Contract-first** — does code disagree with a `contracts/` schema? The code is wrong, not the
     contract.
   - **Least privilege / gates** — any new broad permission, any attempt to write the constitution
-    plane or self-bless a golden (see `gate-model`).
+    plane or self-bless a golden.
   - **Simplicity / reuse** — re-implementation of an existing `tools/` capability (forbidden).
   
-  ## 4. Return findings to the scoped engineer
+  ## 3. Return findings to the scoped engineer
   
   The reviewer returns the classified list; the **scoped engineer** (python-engineer or an
   instance-declared engineer) applies the fixes. Re-run `/review` until no blocker/major remains, then
   `/verify-work`. The reviewer does not commit and does not fix — separation of duties is the point.
-  When the review belongs to an active task packet, record each result only through
-  `python -m tools.evidence.capture add-finding` after the read-only review completes; do **not** edit
-  `evidence.json` directly. Each finding requires its `blocker`/`major`/`minor`/`nit` severity, its
-  `open`/`resolved`/`accepted` disposition, and (for resolved or accepted) an `E-*` capture reference.
-  Do not put diff text, credentials, or PII in findings; the adapter refuses sensitive plaintext and
-  records only a redaction report. An open blocker or major finding prevents COMPLETE.
   
   ===== claude-command/review =====
   ---
   # generated by tools.harness_emit — do not hand-edit
-  description: "Use when a change is written and you want an adversarial read-only review — surfaces the working diff and secret-scan posture, then routes to the code-reviewer persona for severity-classified findings. Invoke before /verify-work or a commit, so review is an executable step, not a wish."
+  description: "Use when a change is written and you want an adversarial read-only review — surfaces the working diff, then routes to the code-reviewer persona for severity-classified findings. Invoke before /verify-work or a commit, so review is an executable step, not a wish."
   ---
   
   # /review — diff → read-only reviewer → classified findings
@@ -2619,16 +2227,7 @@
   
   !`git --no-pager diff --stat HEAD; echo '---'; git --no-pager diff HEAD`
   
-  ## 2. Secret-scan posture (defense-in-depth, informational)
-  
-  Secret leakage is *enforced* on write by the `tools.hooks.secret_scan` PreToolUse hook (it blocks a
-  write whose content matches a secret pattern) — this command does not duplicate that gate. For the
-  review, eyeball the changed files for anything credential-shaped so a secret in an *already-tracked*
-  file (which the on-write hook would not re-scan) still surfaces:
-  
-  !`git diff --name-only HEAD | sed 's/^/changed: /'; echo '--- scan the diff above for tokens/keys/passwords; the on-write hook gates new writes.'`
-  
-  ## 3. Route to the code-reviewer
+  ## 2. Route to the code-reviewer
   
   Hand the diff above to the **code-reviewer** persona (read-only, adversarial). Ask for findings
   **classified by severity** (blocker / major / minor / nit), each with file:line and a concrete fix
@@ -2638,118 +2237,14 @@
   - **Contract-first** — does code disagree with a `contracts/` schema? The code is wrong, not the
     contract.
   - **Least privilege / gates** — any new broad permission, any attempt to write the constitution
-    plane or self-bless a golden (see `gate-model`).
+    plane or self-bless a golden.
   - **Simplicity / reuse** — re-implementation of an existing `tools/` capability (forbidden).
   
-  ## 4. Return findings to the scoped engineer
+  ## 3. Return findings to the scoped engineer
   
   The reviewer returns the classified list; the **scoped engineer** (python-engineer or an
   instance-declared engineer) applies the fixes. Re-run `/review` until no blocker/major remains, then
   `/verify-work`. The reviewer does not commit and does not fix — separation of duties is the point.
-  When the review belongs to an active task packet, record each result only through
-  `python -m tools.evidence.capture add-finding` after the read-only review completes; do **not** edit
-  `evidence.json` directly. Each finding requires its `blocker`/`major`/`minor`/`nit` severity, its
-  `open`/`resolved`/`accepted` disposition, and (for resolved or accepted) an `E-*` capture reference.
-  Do not put diff text, credentials, or PII in findings; the adapter refuses sensitive plaintext and
-  records only a redaction report. An open blocker or major finding prevents COMPLETE.
-  
-  ===== opencode-command/strangler-step =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use when migrating exactly one legacy path behind the trusted golden net — strangler-extract a single path only, refused outright when no captured legacy golden baseline exists for it. Invoke for one incremental migration step on the instance's language side; requires /golden parity green."
-  agent: orchestrator
-  subtask: true
-  ---
-  
-  # /strangler-step — extract ONE legacy path behind the golden net
-  
-  Thin macro over the **runnable** baseline-refusal gate. Do NOT re-implement the refusal logic —
-  `tools.strangler_guard` already encodes the "machines gate, humans ratify" discipline (it mirrors
-  `tools.golden_runner.approve`'s exit-3 refusal). A strangler extraction with no trusted equivalence
-  reference silently regresses (Pitfall P10 / T-03-24), so the gate runs **first** and aborts the step.
-  
-  ## Step 0 — refuse without a captured baseline (gate FIRST)
-  
-  The target legacy path is taken from `$ARGUMENTS` and passed **positionally** to the guard. It is
-  invoked as a list-form subprocess CLI — arguments are never concatenated into a shell string
-  (command-injection guard, T-03-27):
-  
-  !`python -m tools.strangler_guard $ARGUMENTS`
-  
-  - **exit 0** → a captured legacy golden `.verified` baseline exists for the path; proceed to Step 1.
-  - **exit 3 (REFUSED)** → **STOP.** No baseline = no equivalence reference. Capture a legacy golden
-    baseline first (run `/golden` on the case, then human `/golden-approve`), then re-run this step.
-    The gate never fabricates a baseline — an agent must not route around the refusal (P10).
-  
-  ## Step 1 — extract ONE path only
-  
-  - Extract **a single legacy path** — the one named in `$ARGUMENTS`. One step = one path. Do **not**
-    batch multiple paths, and do **not** attempt a big-bang rewrite (the `/rewrite-legacy` anti-feature
-    is forbidden by construction, T-03-25).
-  - Keep the change minimal and reviewable: strangle the one seam, leave the rest of the legacy path
-    in place for subsequent steps.
-  
-  ## Step 2 — /golden parity is MANDATORY (D-05, success criterion 4)
-  
-  - After the extraction, run `/golden` for the captured case and require it **green** (normalized
-    parity against the human-approved `.verified` baseline via the shared §4-5 core).
-  - A red `/golden` means the extraction changed behavior — the step is **not accepted**. Fix until
-    parity is restored, or revert. Never self-bless a new baseline to make the step pass (that is a
-    human-only `/golden-approve` action, P9).
-  
-  ## Anti-features (forbidden)
-  
-  - **Multi-path / big-bang extraction** — one path per step, always parity-gated.
-  - **Migrating without a baseline** — the runnable gate above refuses it (non-zero exit).
-  - **Agent self-approving a baseline** to get to green — promotion is human-only (`/golden-approve`).
-  
-  ===== claude-command/strangler-step =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  description: "Use when migrating exactly one legacy path behind the trusted golden net — strangler-extract a single path only, refused outright when no captured legacy golden baseline exists for it. Invoke for one incremental migration step on the instance's language side; requires /golden parity green."
-  ---
-  
-  # /strangler-step — extract ONE legacy path behind the golden net
-  
-  Thin macro over the **runnable** baseline-refusal gate. Do NOT re-implement the refusal logic —
-  `tools.strangler_guard` already encodes the "machines gate, humans ratify" discipline (it mirrors
-  `tools.golden_runner.approve`'s exit-3 refusal). A strangler extraction with no trusted equivalence
-  reference silently regresses (Pitfall P10 / T-03-24), so the gate runs **first** and aborts the step.
-  
-  ## Step 0 — refuse without a captured baseline (gate FIRST)
-  
-  The target legacy path is taken from `$ARGUMENTS` and passed **positionally** to the guard. It is
-  invoked as a list-form subprocess CLI — arguments are never concatenated into a shell string
-  (command-injection guard, T-03-27):
-  
-  !`python -m tools.strangler_guard $ARGUMENTS`
-  
-  - **exit 0** → a captured legacy golden `.verified` baseline exists for the path; proceed to Step 1.
-  - **exit 3 (REFUSED)** → **STOP.** No baseline = no equivalence reference. Capture a legacy golden
-    baseline first (run `/golden` on the case, then human `/golden-approve`), then re-run this step.
-    The gate never fabricates a baseline — an agent must not route around the refusal (P10).
-  
-  ## Step 1 — extract ONE path only
-  
-  - Extract **a single legacy path** — the one named in `$ARGUMENTS`. One step = one path. Do **not**
-    batch multiple paths, and do **not** attempt a big-bang rewrite (the `/rewrite-legacy` anti-feature
-    is forbidden by construction, T-03-25).
-  - Keep the change minimal and reviewable: strangle the one seam, leave the rest of the legacy path
-    in place for subsequent steps.
-  
-  ## Step 2 — /golden parity is MANDATORY (D-05, success criterion 4)
-  
-  - After the extraction, run `/golden` for the captured case and require it **green** (normalized
-    parity against the human-approved `.verified` baseline via the shared §4-5 core).
-  - A red `/golden` means the extraction changed behavior — the step is **not accepted**. Fix until
-    parity is restored, or revert. Never self-bless a new baseline to make the step pass (that is a
-    human-only `/golden-approve` action, P9).
-  
-  ## Anti-features (forbidden)
-  
-  - **Multi-path / big-bang extraction** — one path per step, always parity-gated.
-  - **Migrating without a baseline** — the runnable gate above refuses it (non-zero exit).
-  - **Agent self-approving a baseline** to get to green — promotion is human-only (`/golden-approve`).
   
   ===== opencode-command/test =====
   ---
@@ -2808,7 +2303,7 @@
   ===== opencode-command/verify-work =====
   ---
   # generated by tools.harness_emit — do not hand-edit
-  description: "Use before handing off or committing a unit of work — runs the in-session composite gate: lint, full tests, contract validation + drift, and the golden cases. Invoke as the pre-handoff self-verify, distinct from Phase-6 CI (non-session) and /checkpoint (state persistence)."
+  description: "Use before handing off or committing a unit of work — runs the in-session composite gate: lint, full tests, contract validation + drift, and derived freshness. Invoke as the pre-handoff self-verify, distinct from Phase-6 CI (non-session) and /checkpoint (state persistence)."
   agent: orchestrator
   subtask: true
   ---
@@ -2824,13 +2319,7 @@
   - **`/checkpoint`** — persists `.memory/state/` so work survives the container. Orthogonal: verify
     proves correctness, checkpoint saves context.
   
-  Run the five gates in order; stop at the first hard failure and fix before proceeding.
-  When an active `.workflow/tasks/<id>/` packet exists, capture each gate's **existing command**
-  through `python -m tools.evidence.capture capture --task-dir <task-dir> --gate <gate> -- <existing argv>`.
-  The adapter is only a child-process recorder: keep the five commands below, their order, and their
-  presence-safe behavior unchanged. Record the observed `PASSED`, `FAILED`, `SKIPPED`, or `BLOCKED`
-  result; never convert an announced skip into a pass. Attach the applicable `AC-*` IDs to the capture.
-  Use `--source ci` only for a CI-produced reference, otherwise retain the default `local` source.
+  Run the four gates in order; stop at the first hard failure and fix before proceeding.
   
   ## 1. Lint + format + polyglot boundary (`/lint`)
   
@@ -2844,18 +2333,7 @@
   
   !`uv run python -m tools.contract_drift.drift`
   
-  ## 4. Golden cases (`/golden`) — .NET-gated + presence-safe
-  
-  Runs every discoverable golden case through the normalized-equivalence comparator. Golden
-  equivalence spawns the instance's converter, so it is **.NET-presence-gated** (like `/test` and
-  `/lint`): an absent SDK is an announced skip, never a hard failure (BOOT-01 egress deferral). The
-  domain-neutral core/template ships no converter — so in the bare template this step legitimately
-  skips. **Presence-safe** on both axes: zero golden cases OR absent SDK → a no-op that exits 0. A red
-  when it DOES run is a signal — do not edit `.verified`; use the `golden-debug` skill.
-  
-  !`shopt -s nullglob; cases=(golden/*/); if [ ${#cases[@]} -eq 0 ]; then echo 'SKIP: no golden cases — no-op (exit 0).'; elif [ ! -x "$HOME/.dotnet/dotnet" ]; then echo "SKIP: .NET SDK not found at \$HOME/.dotnet/dotnet — golden equivalence needs the instance converter; skipping (non-fatal). Run 'bash tools/bootstrap/install.sh' once egress is allowed."; else fail=0; for d in "${cases[@]}"; do c=$(basename "$d"); echo "golden: $c"; uv run python -m tools.golden_runner.runner "$c" || fail=1; done; [ "$fail" -eq 0 ] || { echo 'FAIL: golden red — use golden-debug, do NOT edit .verified.'; exit 1; }; fi`
-  
-  ## 5. Derived freshness (mirror of the CI stale-derived gate) — presence-safe
+  ## 4. Derived freshness (mirror of the CI stale-derived gate) — presence-safe
   
   Regenerates the committed-derived set (`docs/reference/**` + `contracts-index.md`) and fails if the
   tree is stale — the in-session preview of the CI `stale-derived` gate. Invokes ONLY the existing
@@ -2867,15 +2345,15 @@
   
   ## Notes
   
-  - All five must be green before handoff. The .NET side of lint/test is presence-gated (announced
+  - All four must be green before handoff. The .NET side of lint/test is presence-gated (announced
     skip when the SDK is absent — BOOT-01 egress deferral), so this stays runnable in-container.
   - Green here is a *preview*, not a substitute for CI + human ratification of any constitution-plane
-    change (see `gate-model`).
+    change.
   
   ===== claude-command/verify-work =====
   ---
   # generated by tools.harness_emit — do not hand-edit
-  description: "Use before handing off or committing a unit of work — runs the in-session composite gate: lint, full tests, contract validation + drift, and the golden cases. Invoke as the pre-handoff self-verify, distinct from Phase-6 CI (non-session) and /checkpoint (state persistence)."
+  description: "Use before handing off or committing a unit of work — runs the in-session composite gate: lint, full tests, contract validation + drift, and derived freshness. Invoke as the pre-handoff self-verify, distinct from Phase-6 CI (non-session) and /checkpoint (state persistence)."
   ---
   
   # /verify-work — in-session pre-handoff composite gate
@@ -2889,13 +2367,7 @@
   - **`/checkpoint`** — persists `.memory/state/` so work survives the container. Orthogonal: verify
     proves correctness, checkpoint saves context.
   
-  Run the five gates in order; stop at the first hard failure and fix before proceeding.
-  When an active `.workflow/tasks/<id>/` packet exists, capture each gate's **existing command**
-  through `python -m tools.evidence.capture capture --task-dir <task-dir> --gate <gate> -- <existing argv>`.
-  The adapter is only a child-process recorder: keep the five commands below, their order, and their
-  presence-safe behavior unchanged. Record the observed `PASSED`, `FAILED`, `SKIPPED`, or `BLOCKED`
-  result; never convert an announced skip into a pass. Attach the applicable `AC-*` IDs to the capture.
-  Use `--source ci` only for a CI-produced reference, otherwise retain the default `local` source.
+  Run the four gates in order; stop at the first hard failure and fix before proceeding.
   
   ## 1. Lint + format + polyglot boundary (`/lint`)
   
@@ -2909,18 +2381,7 @@
   
   !`uv run python -m tools.contract_drift.drift`
   
-  ## 4. Golden cases (`/golden`) — .NET-gated + presence-safe
-  
-  Runs every discoverable golden case through the normalized-equivalence comparator. Golden
-  equivalence spawns the instance's converter, so it is **.NET-presence-gated** (like `/test` and
-  `/lint`): an absent SDK is an announced skip, never a hard failure (BOOT-01 egress deferral). The
-  domain-neutral core/template ships no converter — so in the bare template this step legitimately
-  skips. **Presence-safe** on both axes: zero golden cases OR absent SDK → a no-op that exits 0. A red
-  when it DOES run is a signal — do not edit `.verified`; use the `golden-debug` skill.
-  
-  !`shopt -s nullglob; cases=(golden/*/); if [ ${#cases[@]} -eq 0 ]; then echo 'SKIP: no golden cases — no-op (exit 0).'; elif [ ! -x "$HOME/.dotnet/dotnet" ]; then echo "SKIP: .NET SDK not found at \$HOME/.dotnet/dotnet — golden equivalence needs the instance converter; skipping (non-fatal). Run 'bash tools/bootstrap/install.sh' once egress is allowed."; else fail=0; for d in "${cases[@]}"; do c=$(basename "$d"); echo "golden: $c"; uv run python -m tools.golden_runner.runner "$c" || fail=1; done; [ "$fail" -eq 0 ] || { echo 'FAIL: golden red — use golden-debug, do NOT edit .verified.'; exit 1; }; fi`
-  
-  ## 5. Derived freshness (mirror of the CI stale-derived gate) — presence-safe
+  ## 4. Derived freshness (mirror of the CI stale-derived gate) — presence-safe
   
   Regenerates the committed-derived set (`docs/reference/**` + `contracts-index.md`) and fails if the
   tree is stale — the in-session preview of the CI `stale-derived` gate. Invokes ONLY the existing
@@ -2932,32 +2393,34 @@
   
   ## Notes
   
-  - All five must be green before handoff. The .NET side of lint/test is presence-gated (announced
+  - All four must be green before handoff. The .NET side of lint/test is presence-gated (announced
     skip when the SDK is absent — BOOT-01 egress deferral), so this stays runnable in-container.
   - Green here is a *preview*, not a substitute for CI + human ratification of any constitution-plane
-    change (see `gate-model`).
+    change.
   
   ===== skill/brownfield-adoption =====
   ---
   # generated by tools.harness_emit — do not hand-edit
   name: brownfield-adoption
-  description: "Use when you need to bring an existing (brownfield) repository under this harness's contract-first conventions — teaches the discover, draft, human review, promote, apply lifecycle for an UNKNOWN target tree whose contracts are not yet known, backed by tools.adoption_scan and tools.adoption_apply. Consult when planning how to onboard a repo, not when the contracts already exist and only need authoring or checking."
+  description: "Use when you need to bring an existing (brownfield) repository under this harness's contract-first conventions — teaches the discover, draft, apply lifecycle for an UNKNOWN target tree whose contracts are not yet known, backed by tools.adoption_scan and tools.adoption_apply. Review of an applied batch happens at the PR (ADR-0012), not as a gated stage inside the pipeline. Consult when planning how to onboard a repo, not when the contracts already exist and only need authoring or checking."
   ---
   
   # brownfield-adoption
   
   **Why this is a new skill, not an extension of an existing one:** none of this harness's other
-  skills (`python-conventions`, `golden-testing`, `data-contracts`, `skill-creator`, `golden-debug`,
-  `polyglot-boundary`, `gate-model`, `two-plane-memory`, `pipeline-map`, `fan-out-synthesize`,
-  `context-budget`) own the discover→draft→review→promote→apply adoption lifecycle. The closest
-  candidates — `data-contracts` and `gate-model` — are about authoring or checking contracts already
+  skills (`python-conventions`, `data-contracts`, `skill-creator`,
+  `polyglot-boundary`, `two-plane-memory`, `fan-out-synthesize`,
+  `context-budget`) own the discover→draft→apply adoption lifecycle. The closest
+  candidate — `data-contracts` — is about authoring or checking contracts already
   known to exist, not about discovering an UNKNOWN brownfield tree and proposing what its contracts
   might be. That is a genuinely disjoint routing trigger, so a new skill directory is justified
   (skill-creator Step 0).
   
-  This skill teaches the five-stage adoption runbook: a target repository is scanned read-only, a
-  task-local batch drafts what would change, a human reviews and decides, promotion ratifies those
-  decisions, and only then is the batch safely applied to the target.
+  This skill teaches the three-stage adoption runbook: a target repository is scanned read-only, a
+  task-local batch drafts what would change, and the batch is then safely applied to the target — no
+  gated review stage sits between draft and apply, and no `decisions` (or similar) artifact is
+  produced or consumed anywhere in the pipeline. Review happens where every other change in this
+  harness is reviewed: at the PR that carries the applied batch (ADR-0012).
   
   ## Stage 1: discover
   
@@ -2977,36 +2440,18 @@
   the batch root — `tools.adoption_apply.apply.refuse_if_outside_root` refuses both a direct
   out-of-root write and a `..`-traversal escape attempt.
   
-  ## Stage 3: human review
-  
-  The drafted `manifest.json` lists every destination's proposed disposition. A human reviews it and
-  records a `decisions` list — this is a judgement call the workflow requires a human for; nothing in
-  `tools.adoption_apply` may substitute for it.
-  
-  ## Stage 4: promote
-  
-  `tools.adoption_apply.approval.promote` ratifies the reviewed decisions into `approval.json` — or
-  **refuses by default** (`AdoptionApprovalRefused`, CLI exit 3) unless an explicit human `--approve`
-  flag, at least one decision, and a human confirmation value matching `$GOLDEN_APPROVE_HUMAN` are
-  all present, mirroring `/golden-approve`'s "machines gate, humans ratify" contract. The stored
-  approval binds `(draft_hash, task_revision, git_ref)`, each recomputed fresh at every validity
-  check (`tools.adoption_apply.approval.check_valid`) — changing any single element independently
-  invalidates the approval.
-  
-  ## Stage 5: apply
+  ## Stage 3: apply
   
   `tools.adoption_apply.apply.apply_manifest` applies the batch's dispositions against a target
   root: atomic and collision-safe (`create` never silently overwrites), idempotent (a second apply
   against an unchanged target is a no-op), and structurally refuses every constitution-plane
-  (`contracts/` · `docs/adr/` · `golden/`) destination before any filesystem write — independent of
+  (`contracts/` · `docs/adr/` · `docs/glossary.md`) destination before any filesystem write — independent of
   any Claude tool-call hook, since a bare CLI/CI invocation has no hook in the loop at all.
   
   ## Related
   
   - `harness/commands/adopt.md` — the `/adopt` command invokes each stage's module by a fixed
     `python -m tools.adoption_scan`/`tools.adoption_apply <sub-verb>` argv form.
-  - `harness/skills/gate-model/SKILL.md` — the general refuse-by-default human-gate pattern this
-    skill's promotion stage instantiates.
   - `harness/skills/data-contracts/SKILL.md` — authoring/checking contracts already known to exist,
     the disjoint sibling concern this skill does not cover.
   
@@ -3084,7 +2529,8 @@
   
   - **YAML spec** = human-readable skeleton. **Companion `.schema.json`** (JSON Schema Draft
     2020-12) = the validated, hashed source of truth.
-  - `golden/` is a **separate top-level sibling**, not `contracts/golden/`.
+  - The golden baseline directory is a **separate top-level sibling** within the instance overlay that
+    owns it — never nested under a `contracts/` tree.
   - Seeds are example placeholders (CONTRACT-01) — real domain values are Out of Scope. The point is
     to seed the plumbing that enforces contracts, not to fill them.
   
@@ -3111,108 +2557,6 @@
   ## Deeper reference
   
   Keep a walkthrough of adding a schema field under `references/`. See `contracts/README.md`.
-  
-  ===== skill/docs-upkeep =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  name: docs-upkeep
-  description: "Use when the human-doc review gate reports an obligation and you must discharge it — teaches how to read a docs-guard binding block, decide between a bounded edit of the bound target document and an exact review disposition a human then ratifies, and which targets are structurally undraftable. Consult when a source change has left a prose document behind; not when authoring a contract, a decision record, or a generated page."
-  ---
-  
-  # docs-upkeep
-  
-  **Why this is a new skill, not an extension of an existing one:** none of this harness's twelve
-  other skills (`python-conventions`, `golden-testing`, `data-contracts`, `skill-creator`,
-  `golden-debug`, `polyglot-boundary`, `gate-model`, `two-plane-memory`, `pipeline-map`,
-  `fan-out-synthesize`, `context-budget`, `brownfield-adoption`) owns the human-doc **review
-  obligation**. The three closest candidates are each disjoint: `data-contracts` authors and checks
-  contracts — the constitution artifacts this skill is forbidden to touch; `two-plane-memory` owns the
-  derived half of the tree, which this skill excludes rather than maintains; and `gate-model` is the
-  general refuse-by-default gate pattern that this skill *instantiates* on one specific plane. That is
-  a genuinely disjoint routing trigger, so a new skill directory is justified (skill-creator Step 0).
-  
-  This skill teaches one loop: read the guard, choose an edit or a disposition, and hand the
-  ratification to a human.
-  
-  ## Stage 1: read the guard
-  
-  `/docs-update` runs `python -m tools.docs_guard` and the report is the ONLY input. Each binding
-  block carries a fixed column order — state, sources with digest prefix, graph impact, target
-  document with digest prefix, severity, allowed dispositions, the reviewed row, the digest delta,
-  and one `reason` + `remediation` pair per finding. The remediation line is authoritative: it is a
-  constant in the gate module, and the loop follows it rather than re-deriving a fix.
-  
-  Read the exit code, not the prose: `0` stops, `1` is the working state, `3` means the registry or
-  ledger is invalid and no document should be edited at all.
-  
-  ## Stage 2: choose an edit OR a disposition
-  
-  For each binding the report enumerates at exit 1, pick exactly one:
-  
-  - **A bounded edit** of that binding's `target` document — bring the prose back in line with the
-    changed sources, touching that document and nothing else. "Bounded" is literal: the binding names
-    the document, and the edit stays inside it.
-  - **An exact disposition** drawn from the binding's own `dispositions` list — when the document is
-    in fact still correct, or when the correct remediation is elsewhere (a superseding decision record
-    through `/adr`, a restored file for a broken binding, a repaired selector).
-  
-  Never invent a third option, and never edit a document that the report did not enumerate.
-  
-  ## Stage 3: check the target is draftable
-  
-  Before drafting, ask the classifier — do not consult memory or prose:
-  
-  ```
-  from tools.docs_guard import exclusion_reason
-  exclusion_reason("docs/how-to/task-lifecycle.md")   # -> None: draftable
-  ```
-  
-  It returns exactly one of `"accepted-adr"`, `"derived-plane"`, `"constitution-plane"`, or `None`,
-  and each reason carries a different remediation: an accepted decision record is superseded through
-  `/adr` and never revised in place; a derived file is regenerated by its emitter; a constitution file
-  goes through the human approval path. The function IMPORTS every glob list from its home, so this
-  skill deliberately spells no glob of its own — a second copy would fork.
-  
-  Path normalization matters: the classifier resolves and lowers the candidate, so an alternate
-  spelling of an excluded path still classifies. A target that escapes the repo root raises rather
-  than answering "draftable".
-  
-  `tools/hooks/contract_guard.py` and the permission matrix's path denies remain the runtime
-  **write-side** backstops. This classifier is the **decision** layer — it tells you not to draft; it
-  is not what stops the write.
-  
-  ## Stage 4: record the review — a human, never the agent
-  
-  The agent may draft the edit and may propose the wording of a review row. **Only a human may author
-  the ledger disposition** (ADR-0010 §3b): the ledger, not the registry, decides greenness, and a
-  binding is ratified by the human review commit that lands its reviewed row. A binding cannot be
-  blessed in the same change that introduces it — a first-seen binding reports
-  `first_seen-unratified` by design, and that is not a defect to work around.
-  
-  Route the drafted change through `/review` and then `/verify-work`. Re-run `/docs-update` afterwards
-  to confirm the obligation closed.
-  
-  ## Why the loop is bounded
-  
-  Four properties, each of which is what keeps this from becoming an open-ended documentation rewrite:
-  
-  1. **It acts only on the enumerated set** — the `BROKEN` and `STALE_REQUIRED` bindings the guard
-     printed at exit 1, and nothing adjacent.
-  2. **It never expands coverage.** Uncovered documents stay uncovered; raising `uncovered_max` (or
-     lowering `binding_min`) is a deliberate human edit, and the gate never does it for you.
-  3. **It never chases advisory work.** `STALE_ADVISORY` blocks and warn/note findings go to stderr
-     and do not change the exit code. Acting on them turns a bounded loop into a backlog.
-  4. **One pass, and re-running is safe.** The guard is read-only, so a second run over an unchanged
-     tree reports the same thing — idempotent by construction.
-  
-  ## Related
-  
-  - `harness/commands/docs-update.md` — the thin command that runs the gate by a fixed
-    `python -m tools.docs_guard` argv form and routes its exit code.
-  - `harness/skills/gate-model/SKILL.md` — the general machines-gate/humans-ratify pattern whose
-    refuse-by-default shape stage 4 instantiates.
-  - `harness/skills/two-plane-memory/SKILL.md` — the constitution-vs-derived map behind the
-    `derived-plane` and `constitution-plane` exclusion reasons.
   
   ===== skill/fan-out-synthesize =====
   ---
@@ -3288,349 +2632,6 @@
   - `harness/agents/orchestrator.md` — the primary conductor that decomposes, dispatches, and
     synthesizes the recovered summaries.
   
-  ===== skill/gate-model =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  name: gate-model
-  description: "Use when a write is blocked or you need to reason about what is gated and why — maps the constitution plane, the machines-gate/humans-ratify rule, the exit-3 refusals, the hook surface, and the path denies. Consult when an edit to contracts/adr/golden/glossary is refused or a golden won't self-promote."
-  ---
-  
-  # gate-model
-  
-  Why the harness stops you, as a map instead of a surprise. Every gate here exists to keep one
-  invariant true: **machines gate, humans ratify.** An agent may propose a change to the
-  single-source-of-truth planes, but only a human ratifies it. When a write is refused, find it below
-  to know the reason and the sanctioned path forward.
-  
-  ## The constitution plane (human-owned, path-denied)
-  
-  Four members are the single source of truth and are **not agent-writable** — three trees and one
-  file, declared by [ADR-0001](../../../docs/adr/0001-walking-skeleton-golden-core.md) §Decision:
-  
-  - `contracts/**` — the contract schemas + instances (single source of truth for shapes/conventions).
-  - `docs/adr/**` — Architecture Decision Records (append-only; supersede, never edit).
-  - `golden/**` — the human-approved equivalence baselines.
-  - `docs/glossary.md` — the ubiquitous-language definitions. A **single file**, not the `docs/` tree:
-    the rest of `docs/` is agent-writable human prose.
-  
-  These four are the CONSTITUTION entries in `path_deny_globs` in
-  `harness/permission-matrix.json` (pure data; the resolver in `tools/harness_perms` enforces them, and
-  the Phase-4 hooks import that resolver verbatim). opencode's native `edit` key is not path-globbable,
-  so the path denies live here as data. The ADR declares the membership and this data implements it —
-  adding or dropping a member needs a **superseding ADR**, not an edit to the matrix.
-  
-  > **Gated ≠ unwatched.** A constitution member can also carry a doc-review binding: ownership
-  > controls *who may edit*, a binding controls *when a human owes a review*. `docs/glossary.md` and
-  > `docs/adr/0009-*` are both gated **and** review-bound. The two are orthogonal, not contradictory.
-  
-  ## The other two deny domains (disjoint from the constitution plane)
-  
-  `path_deny_globs` carries three domains, not one, and conflating them teaches the wrong remedy:
-  
-  - **secret** — `*.env` and `**/*.env`. Environment files never enter the tree; the remedy is to move
-    the value out of the repo, not to reach for a token. Enforced on content as well by `secret_scan`.
-  - **review ledger** — `docs/.docs-review-ledger.toml`. This is the docs plane's **greenness
-    authority**: a `[[reviewed]]` row is what makes a doc-dependency binding FRESH, so only a HUMAN may
-    author a review disposition, directly and outside an agent session. **No token legitimizes an
-    agent-authored one** — `GOLDEN_APPROVE_HUMAN` authorizes constitution writes and does not apply
-    here, and none should be invented. Agents may instead propose rows in `docs/doc-dependencies.toml`,
-    which is deliberately NOT denied: that changes what is WATCHED, never what is GREEN (ADR-0010
-    clause 3b).
-  
-  ## The hook surface (in-session enforcement)
-  
-  | Hook (`tools/hooks/…`) | Gates | Effect |
-  |---|---|---|
-  | `contract_guard` | writes to the constitution plane | blocks the write (PreToolUse), unless a human `GOLDEN_APPROVE_HUMAN` token is set |
-  | `ledger_guard` | writes to `docs/.docs-review-ledger.toml` | blocks the write (PreToolUse), honouring **neither** `GOLDEN_APPROVE_HUMAN` **nor** `HARNESS_DEV_BYPASS` — unlike `contract_guard`, this domain has no opt-out at all |
-  | `secret_scan` | writes whose content matches a secret pattern | blocks the write |
-  | `polyglot_lint` (POLY-01) | `*.tsv` wire files breaching §4.3–4.6 | fails loud (on-write + `/lint` + commit-gate — one engine, three sites) |
-  | `commit_gate` | a commit while contract-drift / golden / polyglot is red | blocks (exit 2 from the hook wrapper), unless ratified by the token |
-  | `format_on_write` | style/format drift | auto-fixes on write |
-  
-  ## Exit-3 refusals (proposals a human must ratify)
-  
-  Two tools **refuse** rather than proceed when an agent tries to self-bless:
-  
-  - `tools/golden_runner/approve.py` (`/golden-approve`) — refuses (exit 3) without an explicit human
-    `--approve` + `--adr <id>` + token. Promoting `.received` → `.verified` is a human act.
-  - `tools/strangler_guard` — refuses to advance a strangler step without its required baseline.
-  
-  ## The ratification token
-  
-  `GOLDEN_APPROVE_HUMAN` is the human-set escape hatch: a non-empty value in the environment (set by a
-  human in a gitignored `.claude/settings.local.json`, removed after) turns a constitution-plane
-  `FAIL` into a ratified `WARN`. An agent must never set it. Its presence is what distinguishes
-  "machine tried to write the plane" (blocked) from "human ratified this write" (allowed).
-  
-  ## Reasoning from a block
-  
-  1. **Which plane?** contracts/adr/golden → constitution, path-denied, needs human ratification.
-     `docs/.docs-review-ledger.toml` → the review ledger, path-denied with no token path at all; the
-     human writes it themselves. `*.env` → secret; remove the value.
-  2. **Which signal?** drift hash moved → pair a golden update + ADR; golden red → use `golden-debug`;
-     secret hit → remove the secret; polyglot red → fix the §4.3–4.6 violation.
-  3. **Is a token involved?** If a write "should" be allowed, it is because a human set
-     `GOLDEN_APPROVE_HUMAN` — not because the agent may self-approve.
-  
-  ## Related
-  - `harness/skills/two-plane-memory/SKILL.md` — the plane the gates protect vs the derived plane.
-  - `harness/skills/golden-testing/SKILL.md` + `golden-debug` — the golden promotion + red-golden path.
-  
-  ===== skill/golden-debug =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  name: golden-debug
-  description: "Use when a golden/approval snapshot goes red and you must find WHY — walks the 7 canonicalization axes (BOM, newlines, decimal/culture, float tolerance, row ordering, timezone, TSV escape/null) as a decision tree, telling you how to tell which axis caused the diff and which side to fix."
-  ---
-  
-  # golden-debug
-  
-  A red golden is a *signal*, not a chore. It means one of two things: the code regressed (fix the
-  code), or behavior intentionally changed (capture a data case, get human approval + an ADR). This
-  skill is the decision procedure for the hardest, highest-value work in this repo — telling a
-  representation diff apart from a real value regression.
-  
-  Equivalence here is **normalized-equivalence**, never a byte-diff: both sides pass through the
-  shared §4.3–4.6 canonicalization core (`libs/normalize-spec.md`, `libs/python/normalize`) *before*
-  they are compared. So a red almost always means one canonicalization axis was missed on one side.
-  
-  ## First: reproduce and read the two sides
-  
-  - Re-run the case: `uv run python -m tools.golden_runner.runner <case>`.
-  - The runner writes the machine-proposed baseline to `golden/<case>/expected/baseline.received.tsv`
-    on FAIL; the approved truth is `golden/<case>/expected/baseline.verified.tsv`. Diff *those two*
-    to see the exact cells that moved. **Do not edit `.verified`** to make red go away.
-  - Ask the one question that routes everything below: **is the moved cell a different representation
-    of the same value, or a different value?** Representation diff → a missed axis (fix normalization).
-    Value diff → a real regression (fix the producing code) or an intended change (data case + ADR).
-  
-  ## The 7-axis decision tree
-  
-  Walk these in order; the first that matches the moved cells is almost always the cause. Each axis:
-  the *tell* (how to know it's this one) → the *fix side*. Full detail + the canonical rule table is
-  in `references/canonicalization-axes.md`.
-  
-  1. **Encoding / BOM (R1).** *Tell:* the very first column/cell is off (a stray `﻿`/`EF BB BF`
-     glued to it), only on the first row. *Fix:* strip the BOM on read (`utf-8-sig` / emit without a
-     BOM) — a producer re-introduced one.
-  2. **Newlines (R2).** *Tell:* whole-file or trailing-cell diff with `\r` present; row counts look
-     right but every line mismatches. *Fix:* force LF before compare — a producer emitted CRLF/lone CR.
-  3. **Decimal & culture (R3).** *Tell:* numbers differ only as `1,5` vs `1.5`, or `1.50` vs `1.5`, or
-     `100.0` vs `100`. *Fix:* InvariantCulture `.` + trailing-zero trim; parse with decimal types,
-     never a float round-trip.
-  4. **Float compare tolerance (R4).** *Tell:* numbers agree to many digits and differ only in the
-     last (e.g. `...0000001`). *Fix:* this is a *compare* concern — the runner compares with tolerance
-     (`1e-9`); if a last-digit diff flipped red, the tolerance path was bypassed, not the data.
-  5. **Key / row ordering.** *Tell:* the *set* of rows is identical but their order differs. *Fix:*
-     deterministic sort before diff — an unordered producer must not cause a false red.
-  6. **Timezone / datetime (R5).** *Tell:* timestamps differ by a fixed offset (e.g. +09:00), or one
-     side carries `Z`/offset and the other is naive. *Fix:* convert to UTC, emit fixed ISO-8601
-     `yyyy-MM-ddTHH:mm:ssZ`; assume UTC when an input is naive.
-  7. **TSV escape / null-vs-empty (R6/R7).** *Tell:* a cell has a raw tab/newline shifting columns, or
-     an empty cell on one side vs the null token (`\N`) on the other. *Fix:* apply the agreed escape;
-     keep `"" ≠ null` — the null token canonicalizes to the `<NULL>` sentinel, an empty string stays
-     `""`.
-  
-  If NONE of the 7 axes explains the diff, treat it as a **real value change**: either the producing
-  code regressed (fix the code and the golden goes green on its own) or the behavior changed on
-  purpose.
-  
-  ## When the change is intentional (not a normalization miss)
-  
-  - Express the new behavior as a **data case** (`(input, expected)`), not a code special-case.
-  - Promotion is human-gated: `/golden-approve` wraps `tools.golden_runner.approve` and **refuses**
-    (exit 3) without an explicit human `--approve` + `--adr <id>` + token. `golden/` is a
-    constitution-plane sibling of `contracts/` — CODEOWNERS-gated, never agent-writable.
-  - Never hand-promote `.received` → `.verified` yourself; that self-blesses a golden.
-  
-  ## Deeper reference
-  - `references/canonicalization-axes.md` — the 7 axes with the canonical rule, the discriminator, and
-    the fix side, cross-referenced to `libs/normalize-spec.md` R1–R7 and the `CLAUDE.md`
-    Golden-Equivalence Comparator table.
-  - `harness/skills/polyglot-boundary/SKILL.md` — the §4.3–4.6 invariants these axes enforce.
-  
-  ===== skill/golden-testing =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  name: golden-testing
-  description: "Use when running, diffing, or promoting golden/approval snapshots across the .NET and Python sides. Covers the tools.golden_runner run + normalized-equivalence compare (no byte-diff), the Verify.XunitV3 / syrupy `.received`/`.verified` workflow, and the human-gated /golden-approve promotion — machines gate, humans ratify."
-  ---
-  
-  # golden-testing
-  
-  How cross-language equivalence is proven in this repo. Golden testing is the linchpin that lets a
-  .NET rewrite and the legacy/Python behavior be declared equivalent — but only through a
-  canonicalizing comparator, never a naive `diff`.
-  
-  ## The discipline: normalized-equivalence, not byte-diff
-  
-  A raw `diff` fails on exactly the polyglot bugs this project exists to catch — BOM, CRLF,
-  locale decimals, float last-digit repr, unordered rows, timezone kind. Equivalence is compared
-  **only after** the shared §4.3–4.6 canonicalization core:
-  
-  - UTF-8 BOM stripped · forced LF · InvariantCulture `.` decimals · tolerance-aware float compare ·
-    deterministic key/row ordering · UTC ISO-8601 timestamps · explicit TSV escape + null token.
-  
-  Representation-only differences PASS; a value regression FAILs. This is the run/compare contract
-  of `tools.golden_runner.runner`.
-  
-  ## Running
-  
-  - Run a case: `uv run python -m tools.golden_runner.runner <case>`. It spawns the .NET converter
-    (subprocess, `shell=False`, absolute dotnet path), normalizes both sides through the one shared
-    core, and diffs against the approved `.verified`.
-  - .NET-side snapshots use **Verify.XunitV3** (`.received`/`.verified`); Python-side determinism
-    uses **syrupy** (`.ambr`, `--snapshot-update`).
-  
-  ## Promotion — machines gate, humans ratify
-  
-  - Never let an agent self-bless a golden. Promotion is `/golden-approve`, which wraps
-    `tools.golden_runner.approve` and **refuses** (exit 3) without an explicit human
-    `--approve` + `--adr <id>` + token.
-  - `golden/` is a top-level constitution-plane sibling of `contracts/` — CODEOWNERS-gated, never
-    agent-writable.
-  
-  ## When a golden goes red
-  
-  Golden red is a signal, not a chore: either the code regressed (fix the code) or the behavior
-  intentionally changed (capture a data case, get human approval + ADR). Do not update `.verified`
-  to make red go away.
-  
-  ## Deeper reference
-  
-  Put a worked run-and-approve transcript under `references/`. See `CLAUDE.md`
-  §"Golden-Equivalence Comparator" for the full canonicalization rule table.
-  
-  ===== skill/pipeline-map =====
-  ---
-  # generated by tools.harness_emit — do not hand-edit
-  name: pipeline-map
-  description: "Use when you need to trace a request across the pipeline dataflow, see which stage produces or consumes a given contract, or find the component agent that owns a stage — reads the declared [[components]]/[pipeline] topology via tools.harness_config. Consult when routing by stage instead of by language, or when an edge's contract does not line up end to end."
-  ---
-  
-  # pipeline-map
-  
-  How work flows through the harness as a **map instead of a guess**. The topology is declared data,
-  not runtime state: a set of `[[components]]` stages joined by `[pipeline]` edges, each edge carrying
-  one contract. This skill teaches how to read that slot, follow a request from stage to stage, and
-  resolve any stage to the component agent that owns it. There is **no live execution** here — a trace
-  is a deterministic read of declared config.
-  
-  ## The topology slot
-  
-  The declared topology lives in `harness/project.toml` and is read through
-  `tools.harness_config`. The core ships a generic default (a `source` → `sink` line); an instance
-  overlay supplies its own concrete stages by passing its config path to `load_project(...)`.
-  
-  Two shapes matter:
-  
-  - **`[[components]]`** — one table per stage. Fields:
-    - `id` — the stage's unique name (the routing key).
-    - `stage` — its ordinal position in the flow (1-based).
-    - `language` — which declared `[[languages]]` toolchain implements it.
-    - `produces` — the contracts this stage emits (list).
-    - `consumes` — the contracts this stage requires as input (list).
-  - **`[pipeline]`** — the wiring. `edges` is a list of `{from, to, contract}`: a directed hop from
-    one component `id` to another, naming the single contract that crosses that boundary.
-  
-  An edge is well-formed only when both endpoints are declared components AND its `contract` appears
-  in `from.produces` and in `to.consumes`. That end-to-end match is what makes the dataflow
-  traceable; the consistency gate (`tools/harness_lint/tests/test_pipeline_config.py`) fails loud when
-  it breaks.
-  
-  ## Reading it via the loader
-  
-  ```python
-  from tools.harness_config import components, pipeline, load_project
-  
-  # core default:
-  comps = components()          # -> list[dict] with id/stage/language/produces/consumes
-  edges = pipeline()["edges"]   # -> list[{from, to, contract}]
-  
-  # instance overlay:
-  cfg = load_project("path/to/instance/project.toml")
-  comps = components(cfg)
-  edges = pipeline(cfg)["edges"]
-  ```
-  
-  Both helpers are raw passthrough — they return the declared tables unchanged. No enforcement lives
-  in the loader; the gate owns well-formedness.
-  
-  ## Tracing a request across stages
-  
-  Follow the flow deterministically, sorting components by `stage`:
-  
-  1. **Find the entry.** The first stage (lowest `stage`, or the component that appears only as an
-     edge `from` and never a `to`) is where a request originates.
-  2. **Walk the edges.** From the current component `id`, find each edge whose `from` equals it. The
-     edge's `contract` is what crosses the boundary; `to` is the next stage. Repeat until you reach a
-     component that is never an edge `from` (the terminal sink).
-  3. **Read the contract at each hop.** The edge names one contract — that is the exact shape handed
-     from producer to consumer. To know its fields, open the matching schema under `contracts/`
-     (lazy-load: only the contract on the hop you care about).
-  
-  To answer "which stage handles contract X?": scan `produces` for the emitter and `consumes` for the
-  receiver — the edge whose `contract == X` names both.
-  
-  ## Rendering non-linear graphs
-  
-  A single-chain topology (every stage fan-out and fan-in = 1) reads perfectly as the flat stage
-  list plus edge chain above. But the declared graph can be **non-linear** — one stage fanning out to
-  several dependents, several stages fanning in to one, disconnected sub-graphs, or a legal cycle. For
-  those, render the compiled contract graph as an **indented tree** (D-01) instead of a flat chain:
-  
-  - Compile the graph with `tools.contract_graph.compile_graph` and read its `adjacency` map
-    (authority → sorted dependents).
-  - **Root** at each authority with no incoming edge, in sorted order; for a fully cyclic graph with no
-    such root, start at the lexicographically-first authority so the render stays deterministic.
-  - **Indent one level per hop** — an authority sits above its dependents, each dependent nested one
-    level deeper, recursing along the sorted `adjacency` edges.
-  - **Terminate a cycle** with an explicit `(cycle -> <node>)` marker: track the visited set on the
-    current root-to-node PATH only (path-local — NOT a single global set, which would collapse legal
-    diamonds/fan-in) and, when a dependent is already on that path, print the marker instead of
-    recursing into it again, so a legal cycle never loops. This path-local rule is stricter than
-    `tools.contract_graph.query.transitive`'s global visited set (that query only collects the
-    reachable id set, not a tree).
-  
-  `/pipeline` (see **Related**) is the render entry point that prints this tree; use the flat stage
-  list/edge chain only when the graph is a single chain.
-  
-  ## Resolving a stage to its owning component agent
-  
-  Each `[[components]]` stage is implemented by a **component agent** derived from the neutral
-  template `harness/agents/templates/component-engineer.md`. The derived agent lives in the active
-  instance's own `agents/` directory (the instance root is declared by `harness/project.toml`
-  `[instance] root`) as `<id>.md` — the derived agent's `name` equals the component `id` (the
-  `-engineer` suffix names the *template*, not the derived per-component agents).
-  
-  To find the owner of a stage:
-  
-  1. Take the component `id`.
-  2. Look for `<id>.md` under the instance's `agents/` directory.
-  3. If it is missing, the stage has no bound owner — that is a gap to report (the `/pipeline` command
-     flags exactly this).
-  
-  Routing by stage (not by language) means: identify the stage a request belongs to from the
-  contract it carries, then dispatch to that stage's `<id>` agent.
-  
-  ## Reasoning from the map
-  
-  - **"Where does this contract come from?"** → the component whose `produces` lists it.
-  - **"What breaks if I change this edge's contract?"** → the `from` producer and the `to` consumer
-    both, plus the `contracts/` schema — change all together or the gate goes red.
-  - **"Who do I route this to?"** → resolve the stage `id` → `<id>.md` in the instance.
-  - **"Is the flow complete?"** → every non-terminal component is some edge's `from`; every
-    non-entry component is some edge's `to`. A dangling stage is a topology gap.
-  
-  ## Related
-  
-  - `harness/commands/pipeline.md` — the `/pipeline` command renders this trace deterministically.
-  - `harness/commands/component.md` + `harness/agents/templates/component-engineer.md` — how a stage's
-    owning agent is derived and registered.
-  - `harness/skills/two-plane-memory/SKILL.md` — the config slot is constitution-plane data, not
-    derived state.
-  
   ===== skill/polyglot-boundary =====
   ---
   # generated by tools.harness_emit — do not hand-edit
@@ -3691,8 +2692,6 @@
   > JSON *contract text* for the drift hash — they share only the word "canonical". Do not conflate.
   
   ## Related
-  - `harness/skills/golden-debug/SKILL.md` — the decision tree when these invariants are violated and
-    a golden goes red.
   - `references/canonicalization-table.md` — the full rule table with rationale per axis.
   
   ===== skill/python-conventions =====
@@ -3719,7 +2718,7 @@
   ## Quality gates
   
   - **Tests:** `uv run pytest` (full) or `uv run pytest libs/python -x -q` (scoped). Prove
-    determinism of derived artifacts with **syrupy** snapshots (see golden-testing).
+    determinism of derived artifacts with **syrupy** snapshots.
   - **Lint + format:** **ruff** (lint AND format — replaces black/isort/flake8). One config in
     `pyproject.toml`.
   - **Types:** **pyright** (LSP-native), not mypy.
@@ -3727,7 +2726,7 @@
   
   ## Idioms
   
-  - Invoke tools by module path (`python -m tools.golden_runner.runner`), not by file path — it
+  - Invoke tools by module path (`python -m tools.contract_drift.drift`), not by file path — it
     keeps the uv workspace import graph honest.
   - Subprocess spawns use a list argv with `shell=False` — never build a shell string from
     arguments (command-injection guard).
@@ -3736,8 +2735,8 @@
   
   ## Non-negotiables
   
-  Contract-first; never write the constitution plane (`contracts/`, `docs/adr/`, `golden/`) from
-  Python; derived plane (`.memory/derived/`) is regenerated, never hand-edited. See
+  Contract-first; never write the constitution plane (`contracts/`, `docs/adr/`, `docs/glossary.md`)
+  from Python; derived plane (`.memory/derived/`) is regenerated, never hand-edited. See
   `libs/python/AGENTS.md` for the self-sufficient per-package rules.
   
   ## Deeper reference
@@ -3805,13 +2804,13 @@
   
   ## Plane 1 — Constitution (human-owned, gated, the source of truth)
   
-  - **What:** `contracts/**`, `docs/adr/**`, `golden/**`, plus the language-neutral spec
+  - **What:** `contracts/**`, `docs/adr/**`, `docs/glossary.md`, plus the language-neutral spec
     `libs/normalize-spec.md`.
   - **Rule:** human-owned / CODEOWNERS-gated. Agents do **not** write it. Code that disagrees with a
     contract is the code that is wrong. ADRs are append-only (supersede, never edit).
   - **Committed?** Yes — it *is* the versioned truth.
   - **Changed how?** Only through the gated path: schema-drift + a paired golden update + an ADR, with
-    human ratification (see the `gate-model` skill). Never a silent tweak.
+    human ratification. Never a silent tweak.
   
   ## Plane 2 — Derived / volatile (machine-owned, regenerated)
   
@@ -3861,7 +2860,6 @@
   that capped, pointer-only, data-authority-banner-first payload — never a full schema body.
   
   ## Related
-  - `harness/skills/gate-model/SKILL.md` — how the constitution plane is enforced.
   - `/orient` — regenerate + surface the derived plane. `/checkpoint` — persist the committed state tier.
   - `/refresh-memory` — regenerate the FULL derived set (incl. the committed-derived tier) before
     handoff; the local counterpart of the CI `stale-derived` gate.
@@ -3922,8 +2920,7 @@
       "websearch": "ask"
     },
     "plugin": [
-      "harness/plugins/session-inject.ts",
-      "harness/plugins/resume-gate.ts"
+      "harness/plugins/session-inject.ts"
     ],
     "small_model": "provider/explorer-tier"
   }

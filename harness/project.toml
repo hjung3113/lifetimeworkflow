@@ -45,19 +45,21 @@ persona = "harness/agents/python-engineer.md"
 test_paths = ["examples/log-parser/tests"]
 
 # BEGIN PIPE-01 topology
-# PIPE-01 pipeline-topology DATA slot — the GENERIC-DEFAULT topology every later plan reads
-# (conductor routing, /pipeline trace, instance overlay). Pure DATA, no enforcement (mirrors the
+# PIPE-01 component DATA slot — the GENERIC-DEFAULT component set every later plan reads
+# (conductor routing, instance overlay). Pure DATA, no enforcement (mirrors the
 # [[languages]] posture above). This is the domain-NEUTRAL default: a two-stage source→sink line
 # carrying the generic `greeting` contract (the tracked sample schema contracts/sample/greeting.schema.json).
 # The concrete multi-component topology is supplied by an
 # INSTANCE overlay (Plan 04), NOT here — the core must stay generic (GEN-04).
 #
+# CER-08 (Phase 44) removed the core `[pipeline]` edge DATA: the core default declares no edges.
+# `pipeline()` survives as a reader mechanism, and an instance overlay supplies its own edges.
+#
 # Consumers:
 #   * tools/harness_config/loader.py — `components()` + `pipeline()` passthrough helpers.
-#   * tools/harness_lint/tests/test_pipeline_config.py — the topology CONSISTENCY gate: every
-#     component.language must be a declared [[languages]].id, and every [pipeline] edge must be
-#     well-formed (endpoints declared, contract in the from-component's produces AND the
-#     to-component's consumes). A malformed topology fails the suite loud.
+#   * tools/harness_lint/tests/test_pipeline_config.py — the component CONSISTENCY gate: every
+#     component.language must be a declared [[languages]].id and component ids are unique.
+#     A malformed component set fails the suite loud.
 #
 # Each `component.language` MUST match a declared [[languages]].id above (`python` is valid).
 [[components]]
@@ -74,10 +76,6 @@ language = "python"
 produces = []
 consumes = ["greeting"]
 
-[pipeline]
-edges = [
-  { from = "source", to = "sink", contract = "greeting" },
-]
 # END PIPE-01 topology
 
 # BEGIN CONTRACT-GRAPH topology-relationships

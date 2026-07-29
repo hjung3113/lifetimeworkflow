@@ -1,121 +1,50 @@
 {
   "version": "1.0",
-  "timestamp": "2026-07-21T16:40:15.430Z",
-  "phase": "29",
-  "phase_name": "docs-drive-loop-adoption-integration-closeout-v2-3-c",
-  "phase_dir": ".planning/phases/29-docs-drive-loop-adoption-integration-closeout-v2-3-c",
-  "plan": 5,
-  "task": 5,
-  "total_tasks": 5,
-  "status": "paused",
-  "milestone": "v2.3",
-  "milestone_status": "ratifications_discharged_docs_guard_green",
+  "timestamp": "2026-07-29T01:21:20.968Z",
+  "phase": "46",
+  "phase_name": "Product Flow",
+  "phase_dir": ".planning/phases/46-product-flow",
+  "plan": 3,
+  "task": 2,
+  "total_tasks": 2,
+  "status": "milestone_complete",
+  "milestone": "v2.5",
+  "milestone_status": "all_8_phases_complete_16_of_16_requirements_gates_green",
   "completed_tasks": [
-    {
-      "id": 1,
-      "name": "VALIDATION.md for phases 27.2 and 28 (the audit's only nyquist gap)",
-      "status": "done",
-      "commit": "150a28e",
-      "note": "both carry `authored: at-closeout` and say so in their own opening note; corrected in cd9f76a after a second artifact pass"
-    },
-    {
-      "id": 2,
-      "name": "emit-drift CI gate made untracked-safe (15-REVIEW CR-01)",
-      "status": "done",
-      "commit": "6448a26",
-      "note": "bare `git diff` was blind to a NEWLY emitted artifact; 29-03 hit it live with four untracked files. RED proven first: 2 of 7 failed for the stated reasons"
-    },
-    {
-      "id": 3,
-      "name": "Quick task 20260722-glossary-constitution-plane-drift (A/B/C)",
-      "status": "done",
-      "commit": "732a0d5, 6d74a50, 378f8ba, f98d63a, 27acf96",
-      "note": "ADR-0001:48 declares a FOUR-member constitution plane; Phase 4 enforced three. 1480 -> 1500 passed, 4 mutation proofs"
-    },
-    {
-      "id": 4,
-      "name": "RAT-2 — ADR-0010 ratified",
-      "status": "done",
-      "commit": "ad4e339",
-      "note": "BY THE HUMAN, outside an agent session. registry._adr_status now returns accepted"
-    },
-    {
-      "id": 5,
-      "name": "RAT-1 + RAT-3 — first docs/.docs-review-ledger.toml authored",
-      "status": "done",
-      "commit": "c32c08d",
-      "note": "BY THE HUMAN. docs_guard exit 1 -> 0, 8/8 FRESH. The last red gate of v2.3"
-    },
-    {
-      "id": 6,
-      "name": "RAT-5 repo-config half — default branch back to main + gate required on it",
-      "status": "done",
-      "commit": "f009306",
-      "note": "CODEOWNERS could never fire while the default branch was the feature branch"
-    }
+    {"id": 1, "name": "Phase 39 — Decision Boundary (CER-01/02/03)", "status": "done", "commit": "pre-session"},
+    {"id": 2, "name": "Phase 40 — Self-Gate Teardown (CER-04)", "status": "done", "commit": "45364d7", "note": "work shipped earlier but was never recorded; closed retroactively this session on direct evidence, with the absent VERIFICATION.md recorded rather than backfilled"},
+    {"id": 3, "name": "Phase 41 — Docs-Review Plane Removal (CER-05)", "status": "done", "commit": "pre-session"},
+    {"id": 4, "name": "Phase 42 — Adoption Decoupling + Install-Set Repair (CER-06, PROD-01)", "status": "done", "commit": "pre-session"},
+    {"id": 5, "name": "Phase 43 — Lifecycle Plane Removal (CER-07)", "status": "done", "commit": "7b72e6e", "note": "-12,383 LOC. Four verification passes, twelve blockers. Review then found the RETIRED_SIGNATURES defect that would have bricked every stale checkout; fixed in 4b3f440"},
+    {"id": 6, "name": "Phase 44 — Non-Goal Surface Removal (CER-08/09)", "status": "done", "commit": "5b13c92", "note": "-6,067 LOC. Two replays; the first found 6 of 10 commits ending red"},
+    {"id": 7, "name": "Phase 45 — Projection Repair (CER-10/11)", "status": "done", "commit": "41d0c92", "note": "constitution plane 4 members -> 3; the declaration had fourteen copies"},
+    {"id": 8, "name": "Phase 46 — Product Flow (PROD-02..05)", "status": "done", "commit": "1658247", "note": "+1,341 LOC, the milestone's only net addition. Four routes + /flow"}
   ],
   "remaining_tasks": [
-    {
-      "id": 7,
-      "name": "/gsd:verify-phase 29",
-      "status": "not_started",
-      "why": "29-VERIFICATION.md is the last missing one. The audit's nyquist table lists 29 as `exists (VALIDATION) / MISSING (VERIFICATION)`"
-    },
-    {
-      "id": 8,
-      "name": "/gsd:complete-milestone",
-      "status": "not_started",
-      "why": "moves committed history; deliberately not automated inside plan 29-05"
-    },
-    {
-      "id": 9,
-      "name": "PR to main — discharges RAT-4 and the RAT-5 merge together",
-      "status": "not_started",
-      "why": "614 commits ahead of origin/main; 7 ADRs unmerged (0004-0010). 28-01-SUMMARY says the schema write's ratification is picked up BY the CODEOWNERS review, so RAT-4 is not a separate act"
-    },
-    {
-      "id": 10,
-      "name": "ruff: 617 pre-existing errors",
-      "status": "not_started",
-      "why": "NEW finding this session, predates the work (identical count at 39ae6ad). ~180 are in the vendored docs/references/opencode-matt-workflows/** tree missing from [tool.ruff] extend-exclude — that subset is a 5-minute fix. The rest are v2.2 tools/task_control + tools/evidence and deserve their own task"
-    }
+    {"id": 9, "name": "Milestone-close PR", "status": "not_started", "why": "ci.yml is pull_request-only, so CI has NEVER run on any of this work. This PR is the milestone's entire CI evidence and the only way to satisfy Phase 43 SC-1's CI-green half."},
+    {"id": 10, "name": "Resolve the human-gated items during PR review", "status": "not_started"},
+    {"id": 11, "name": "/gsd:complete-milestone + cleanup", "status": "not_started"},
+    {"id": 12, "name": "v2.6 Minimal Monorepo Core (phases 47-50)", "status": "not_started", "why": "scoped in ROADMAP, not started. Smallest goal-complete subset = all of v2.5 + 47 + 49."}
   ],
-  "blockers": [],
+  "blockers": [
+    {"description": "Phase 43 SC-1's CI-green half was never satisfiable in-repo: ci.yml triggers on pull_request only and this repo does one PR per milestone.", "type": "external", "workaround": "All 11 CI job commands were run locally at Phase 44 close and each exited 0; gate.needs resolves to 10 with no dangling entry. Live at pause: core 881 + instance 31, emit-drift / stale-derived / contract-drift / ruff-ratchet all green."}
+  ],
   "human_actions_pending": [
-    {
-      "action": "Review and merge the PR to main once it is opened",
-      "context": "RAT-4 + RAT-5. Not blocking anything in-session. Note that `gate` is now a REQUIRED status check on main and `strict: true`, so the PR must be up to date; enforce_admins is false so the owner is never locked out",
-      "blocking": false
-    }
+    {"action": "Decide what to do about D-24 — CODEOWNERS is advisory on this repo", "context": "MEASURED: branch protection on main requires the `gate` check (strict) but has NO required_pull_request_reviews block, and enforce_admins is false. So CODEOWNERS auto-requests @hjung3113 as reviewer without being able to block a merge. This matters more after Phase 45, which removed the last IN-SESSION control on golden self-blessing (ratified by ADR-0012 clause (d)) — the practical control is now the owner reading their own PR. CORRECTION TO MY EARLIER ADVICE: I twice recommended `gh api ... require_code_owner_reviews=true` as the remedy. That is NOT straightforwardly available. .github/CODEOWNERS:18-23 and the v2.3 handoff both record that GitHub forbids self-approval, so in a solo repo where the sole code owner is also the PR author the requirement cannot be satisfied without a second account with access, or a per-merge admin waiver. This was already considered and deliberately declined during v2.3 RAT-5. Real options: (a) accept the residual as documented — the status quo, and consistent with ADR-0012 making CI and the merge the authority; (b) add a second account; (c) consider a machine-side check on golden baseline diffs in v2.6, noting that v2.5's no-growth constraint forbade exactly that and is now closed.", "blocking": false},
+    {"action": "Author a new ADR superseding ADR-0008; decide ADR-0003's citation", "context": "ADR-0008 still reads Status: Accepted / Superseded by: -- while Phase 43 deleted the plane it governs; ADR-0012 supersedes 0001 and 0010 but never mentions 0008. Repo precedence is 'accepted ADRs win a data conflict against code', so it currently tells agents the deletion was the error. Separately ADR-0003:95 and ADR-0008:50 cite files from an append-only plane, so deleting those targets creates permanently uncorrectable dangling references — which is why Phase 45 kept next-milestone-task-control-plane.md with a history header and corrected component-engineer.md rather than deleting either. Supersede-don't-edit means a NEW ADR: human-gated.", "blocking": false},
+    {"action": "Apply the two docs/glossary.md line replacements quoted verbatim in 45-05-SUMMARY.md (:20 and :23)", "context": "Deferred untouched. glossary.md is itself constitution plane, so the write needs GOLDEN_APPROVE_HUMAN — which must never be forged — and HARNESS_DEV_BYPASS was refused because bypassing the gate to tidy the plane it protects would make the gate decorative. Do NOT touch :13, :19, :21; the plan's claimed third defect at :19 does not exist (verified).", "blocking": false},
+    {"action": "Decide the stale test-count claims in both READMEs", "context": "README.md:12 (badge), README.md:107 and README.ko.md:60 advertise a 982-test suite against a live 881. Left unchanged deliberately — D-06 scopes staleness to deleted modules/commands/paths, not counts — but they are wrong.", "blocking": false}
   ],
   "decisions": [
-    {
-      "decision": "docs/glossary.md stays constitution-plane; the ENFORCEMENT was brought up to ADR-0001, not the other way round",
-      "rationale": "ADR-0001:48 is accepted and unsuperseded. Two Claude audits recommended the opposite repair by citing ADR-0010, which was still Status: proposed. An unratified record cannot override a ratified one. codex sol (medium) caught the inversion",
-      "phase": "quick/20260722"
-    },
-    {
-      "decision": "Constitution ownership and review obligation are ORTHOGONAL and this is now written into three surfaces",
-      "rationale": "Ownership controls WHO MAY EDIT; a binding controls WHEN A HUMAN OWES A REVIEW. contract-graph-adr-0009 already pairs a docs/adr/** target the same way — a counterexample that was in the same registry and had already been read when the wrong recommendation was made",
-      "phase": "quick/20260722"
-    },
-    {
-      "decision": "The glossary is a LITERAL path everywhere, never docs/**",
-      "rationale": "A broad glob would deny the whole human-doc tree and still satisfy every glossary row. Negative controls in three modules go red if someone 'fixes' it that way",
-      "phase": "quick/20260722"
-    },
-    {
-      "decision": "Did NOT enable 'Require review from Code Owners' on main; required the `gate` status check instead",
-      "rationale": "Solo repo: the sole code owner is also the PR author, GitHub forbids self-approval, and it would need an admin waiver per merge. .github/CODEOWNERS:14-19 recorded that trap. The machine half is enforceable without ceremony; the human half is already enforced in-session by the ledger/contract/golden hooks",
-      "phase": "RAT-5"
-    },
-    {
-      "decision": "Refused to author the ledger or ratify ADR-0010, three times, including via bash and via delegating to another agent",
-      "rationale": "bash WOULD have worked — the hooks bind tool calls, not shells. That is exactly why the rule is about holding it rather than being stopped by it. ledger_guard honours NO token, unlike contract_guard which has HARNESS_DEV_BYPASS; Phase 28 removed that door deliberately. A self-blessed row and an honest seed row are byte-identical, so the committing hand is the only record",
-      "phase": "RAT-1"
-    }
+    {"decision": "Removed golden/** from the constitution plane rather than repointing it at the relocated baselines", "rationale": "ADR-0012 clause (d) already superseded ADR-0001's four-member list 'to the extent that golden/** leaves the constitution-plane core', and explicitly named this transitional state — contract_guard and its pinned test would KNOWINGLY still enforce it until Phase 44's code move. The repo's own record decided it; no new ADR needed. Phase 44's contrary reasoning ('widening would be surface growth') reached a defensible outcome by the wrong route.", "phase": "45"},
+    {"decision": "Made RETIRED_SIGNATURES a permanent append-only tombstone tuple", "rationale": "Phase 43 shipped with it cleared and 982 tests green. The emitting repo cannot observe the defect — its own settings.json no longer carries the group, so the merge is idempotent and emit-drift stays green — but every OTHER checkout re-emits into an orphan group invoking a deleted module, PreToolUse then denies every Write/Edit/Bash, and the repair is locked behind the outage. Reverses Phase 43's own D-06 and Phase 41's identical mistake.", "phase": "43"},
+    {"decision": "Deleted commit_gate's golden-parity component as part of CER-09", "rationale": "commit_gate.py:42 imported tools.golden_runner.runner, so after the relocation the core suite died at collection, and repointing the import at the instance is hard-failed by GEN-04. A pre-commit golden-parity check is exactly the in-session gate ADR-0012 replaces with CI and the merge. Recorded as a scope extension in the ROADMAP rather than absorbed silently.", "phase": "44"},
+    {"decision": "Corrected SC-5 rather than deleting format_on_write::resolve_dotnet", "rationale": "A replay proved 'the core contains no .NET resolution' unachievable: format_on_write shells `dotnet format`, a language-toolchain concern legitimate in a polyglot template core, whereas CER-09's ADR-0002(b) ground is that .NET PARITY EVIDENCE belongs in the instance.", "phase": "44"},
+    {"decision": "Switched verification from reading-based passes to scratch-clone commit replay", "rationale": "Phase 43 spent three reading passes (~570k tokens) that each declared the defect set closed and were each wrong; a replay then falsified a per-commit greenness claim all three had accepted. Phases 44-46 went straight to replay at roughly a quarter the cost for strictly better coverage. Execution still caught things replay missed.", "phase": "44"},
+    {"decision": "Closed Phase 40 retroactively on direct evidence rather than backfilling a verification", "rationale": "Its work shipped in 45364d7 but no VERIFICATION.md was ever written, the roadmap read 'Not started', and CER-04 was unchecked while fully satisfied. All four criteria verify against the live tree. Had this stayed unnoticed the milestone audit would have blocked on a requirement that shipped weeks earlier.", "phase": "40"},
+    {"decision": "Recorded Phase 44's SC-6 as NOT MET AS WORDED rather than narrowing the criterion", "rationale": "README.ko.md:79 labels harness/task-control/, a directory Phase 43 deleted. Calling a stale live diagram 'legitimate history' would be precisely the self-description defect this milestone exists to remove. Narrowing an over-matching PROXY to test a criterion as written is legitimate; restating the CRITERION to match an observation is not.", "phase": "44"}
   ],
   "uncommitted_files": [],
-  "next_action": "Run /gsd:verify-phase 29. Its VERIFICATION.md is the last missing nyquist artifact; the audit lists 29 as VALIDATION-present / VERIFICATION-missing. Then /gsd:complete-milestone, then open the PR to main.",
-  "context_notes": "The defect that dominated this session is the one this repo keeps rediscovering, but in a new shape: not a control that ships green while bypassable, but a control that was never built while four documents said it was. docs/glossary.md was agent-writable for two weeks. The tell was that the DOCUMENTS were right and the CODE was wrong — the opposite of the usual direction, which is why two audits nearly repaired it backwards by deleting the true sentence. Check ADR status fields before citing one as authority: accepted beats proposed, and I used a proposed record as if it were binding. Second lesson, on delegation: I spawned parallel extraction agents, got impatient when they were slow, read the artifacts myself by grep, and committed. That direct read was wrong in three places and the late-arriving delegate caught all three — all three errors made a phase look greener than it was. Grep summaries of PLAN files miss `<task type=\"checkpoint:human-verify\">` declarations. Read task type declarations directly or wait for the delegate. Third: terra's plan ordered A->B->C->ADR->ledger and I did not know why until the end — repointing a binding BEFORE the first ledger exists avoids the amber cycle entirely, because first_seen-unratified compares against the previous COMMITTED ledger and there was none. Trust a plan's ordering even when its reason is not stated. Mechanical: `git commit -- <paths>` puts -m BEFORE the -- or git reads the message as a pathspec; I gave the user a broken command from this exact mistake."
+  "next_action": "Open the milestone-close PR for branch claude/data-pipeline-harness-8aypct. It is the first time CI will run on any of this work (ci.yml is pull_request-only), and it is where the four human-gated items above get resolved. Do NOT run /gsd:complete-milestone before the PR — it moves committed history.",
+  "context_notes": "Milestone v2.5 is COMPLETE — this is a clean boundary, not a mid-task pause. 8/8 phases, 16/16 requirements, tree clean at 1658247. Net effect: ~25k LOC of self-verification machinery removed, constitution plane narrowed 4 -> 3 by ratified decision, human-authored gates five -> zero, and the deployed product gained four routes plus /flow (commands 17 -> 18, +0 everything else). THE LESSON THAT MATTERS MOST is in memory as checks-that-cannot-fail: six distinct guards across these phases passed while the thing they guarded was absent — RETIRED_SIGNATURES[0] reading one entry, a test asserting [] == [], a loop over an emptied edge list, a deny row with no enforcer, a glob matching zero paths, and three Phase-46 predicates passing on prose elsewhere in the same file. The normal gates verify that declared things EXIST, never that declarations still MEAN something. Whenever a plan adds or edits an assertion, mutation-test it. Second lesson: reading plans does not find interaction defects — Phase 44's GOLDEN_DIR and Phase 46's 'table below' were each two individually-correct changes whose combination broke, invisible to review and to a green suite. Third, mechanical and embarrassing: the v2.3 handoff ALREADY recorded that `git commit -- <paths>` needs -m before the --, and two agents lost commits to it again this session; separately `git commit -- <pathspec>` rejects paths git does not yet know, so the milestone's only additive commit aborted outright until an explicit `git add` was added."
 }

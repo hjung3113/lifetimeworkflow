@@ -5,15 +5,13 @@ a repo-qualified ``repo:stage`` endpoint parses into ``(member, stage)`` and the
 spans two distinct members (from-member != to-member). A bare ``stage`` (no colon) stays a
 single-repo endpoint, backward-compatible with the Phase-8 core topology.
 
-The generalization lives ONLY in the workspace layer. This test also pins the anti-regression
-invariant (Pattern 5): the Phase-8 core ``harness/project.toml`` ``[pipeline]`` edges are UNCHANGED —
-their endpoints carry NO repo qualifier (no ``:``). The core single-repo default is not generalized;
-only the workspace manifest edges cross repos.
+The generalization lives ONLY in the workspace layer; only workspace manifest edges cross repos.
+CER-08 (Phase 44) removed the core default edge DATA, and with it the companion check that pinned
+those core endpoints as unqualified — it had no subject left to assert against.
 """
 
 from __future__ import annotations
 
-from tools.harness_config import load_project, pipeline
 from tools.workspace_config import edges, load_workspace, split_endpoint
 
 
@@ -43,19 +41,3 @@ def test_fixture_edge_crosses_repo_boundary() -> None:
     assert from_member != to_member, (
         f"edge {edge!r} does not cross a repo boundary: from-member == to-member ({from_member!r})"
     )
-
-
-def test_core_pipeline_edges_stay_single_repo() -> None:
-    """Anti-regression (Pattern 5): the Phase-8 core ``harness/project.toml`` ``[pipeline]`` edges are
-    UNCHANGED — every endpoint is a bare stage carrying NO ``:`` repo qualifier. The generalization
-    lives only in the workspace layer, never the core default topology."""
-    core_edges = pipeline(load_project()).get("edges", [])
-    assert core_edges, "core [pipeline] must declare at least one edge (default topology)"
-    for edge in core_edges:
-        for endpoint in (edge["from"], edge["to"]):
-            assert ":" not in endpoint, (
-                f"core edge {edge!r} endpoint {endpoint!r} carries a repo qualifier — the Phase-8 "
-                f"single-repo topology must stay unchanged (only workspace edges cross repos)"
-            )
-            # split_endpoint agrees the core endpoint has no repo half.
-            assert split_endpoint(endpoint)[0] is None, endpoint

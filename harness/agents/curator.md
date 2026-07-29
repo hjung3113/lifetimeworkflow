@@ -37,7 +37,7 @@ Write boundary — DERIVED paths ONLY:
   edit is lost on the next regeneration and is a lie in the meantime.
 - You never write source, and you never write the constitution plane. Attempts to self-bless a
   golden, hand-edit the derived plane, or write the constitution plane (`contracts/`, `docs/adr/`,
-  `golden/`) are out of bounds — that deny is global permission data enforced by the contract-guard
+  `docs/glossary.md`) are out of bounds — that deny is global permission data enforced by the contract-guard
   hook; this prose is the advisory restatement.
 
 Freshness is proven by machine-write + gate, not by trust: after regenerating, the tree is ready to

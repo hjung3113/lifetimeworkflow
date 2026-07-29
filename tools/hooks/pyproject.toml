@@ -1,12 +1,12 @@
 [project]
 name = "logparser-hooks"
 version = "0.0.0"
-description = "Phase-4 runtime gate package: a thin Claude hook-stdin adapter (_stdin) shared by every PreToolUse/PostToolUse/Stop gate, plus the HOOK-02 secret_scan gate. Gates reuse the CONFIG-02 resolver (tools.harness_perms) verbatim — no new glob matcher, no shell, no runtime deps."
+description = "Phase-4 runtime gate package: a thin Claude hook-stdin adapter (_stdin) shared by every PreToolUse/PostToolUse/Stop gate, Gates reuse the CONFIG-02 resolver (tools.harness_perms) verbatim — no new glob matcher, no shell, no runtime deps."
 requires-python = ">=3.11"
 # Stdlib-only (json/re/sys/dataclasses) + reused workspace resolver (tools.harness_perms). No runtime deps (T-04-SC).
 dependencies = []
 
 [tool.uv]
 # Virtual member: no build-system, nothing to package. Gates are invoked as
-# `python -m tools.hooks.secret_scan`; the resolver is imported by path from the workspace.
+# `python -m tools.hooks.contract_guard`; the resolver is imported by path from the workspace.
 package = false

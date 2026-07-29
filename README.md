@@ -9,7 +9,7 @@ responsibility-split **polyglot** monorepo — where "how we develop here" lives
 **skills, commands, and hooks**, not tribal knowledge.
 
 [![CI](https://img.shields.io/badge/CI-fan--in%20gate-2ea44f)](.github/workflows/ci.yml)
-[![tests](https://img.shields.io/badge/tests-904%20passing-2ea44f)](#-quickstart)
+[![tests](https://img.shields.io/badge/tests-982%20passing-2ea44f)](#-quickstart)
 [![runtimes](https://img.shields.io/badge/runtimes-opencode%20%2B%20Claude%20Code-blue)](#-single-source--dual-runtime)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](harness/project.toml)
 [![Python](https://img.shields.io/badge/Python-3.11%2B%20(uv)-3776AB)](pyproject.toml)
@@ -52,13 +52,12 @@ truth** and turns every guardrail into something executable:
 |---|---|---|
 | 📜 | **Contract-first gate** | JSON Schema (Draft 2020-12) contracts + an RFC 8785 (JCS) schema-hash **drift gate** — a contract change without a paired golden update fails CI. |
 | 🥇 | **Golden equivalence** | Legacy↔new comparison via **normalized** equivalence (BOM/CRLF/decimal-locale/timezone/float-tolerance canonicalized), never a naïve byte-diff. |
-| 🧠 | **Two-plane memory** | Human-owned *constitution* (`contracts/`, `docs/adr/`, `golden/`) vs auto-regenerated *derived* (`repo-map`, `contracts-index`, `docs/reference/`) — with a **self-maintaining curator** + CI freshness gate. |
+| 🧠 | **Two-plane memory** | Human-owned *constitution* (`contracts/`, `docs/adr/`, `docs/glossary.md`) vs auto-regenerated *derived* (`repo-map`, `contracts-index`, `docs/reference/`) — with a **self-maintaining curator** + CI freshness gate. |
 | 🔁 | **Single-source → dual-runtime** | Author once in `harness/`; emit **byte-identical** to `.opencode/` **and** `.claude/`, enforced by a non-bypassable `emit-drift` CI job. |
 | 🌐 | **Polyglot boundary** | Language boundary = process/file/DB only (never in-process object passing); a boundary linter enforces the §4.3–4.6 canonicalization invariants on wire files. |
-| 🪝 | **Runtime hooks** | `contract-guard`, `polyglot-lint`, `format-on-write`, `secret-scan`, `commit-gate` — prose advice made enforceable. |
+| 🪝 | **Runtime hooks** | `contract-guard`, `polyglot-lint`, `format-on-write`, `commit-gate` — prose advice made enforceable. |
 | 🧩 | **Multi-repo workspace** | `workspace.toml` declares member repos + cross-repo edges; drift/golden gates and pipeline topology extend across repo boundaries. |
-| 🚦 | **Adaptive Task Control Plane** *(v2.2)* | Deterministic **risk router** (7-axis score → FAST/STANDARD/STRICT/CONTROLLED lanes, escalate-only overlays), **atomic state manager** (flock + revision CAS), fail-closed **`/phase-gate`**, **forgery-detecting evidence** (HEAD-committed trust root), and immutable **HANDOFF** + gated fresh-session resume. Low ceremony for small work, fail-closed for high risk. |
-| 🚦 | **CI fan-in** | A multi-job matrix (`setup, lang-tests, contract-check, drift, golden, core-suite, emit-drift, stale-derived, workspace, lifecycle-eval, gate`) all green before merge. |
+| 🚦 | **CI fan-in** | A multi-job matrix (`setup, lang-tests, contract-check, drift, golden, core-suite, lint, emit-drift, stale-derived, workspace, gate`) all green before merge. |
 
 ## 🏗 Architecture
 
@@ -77,11 +76,11 @@ flowchart LR
 
     subgraph CONST["Constitution plane (human-owned, gated)"]
       K["contracts/*.schema.json"]
-      G["golden/"]
       D["docs/adr/"]
+      GL["docs/glossary.md"]
     end
     K -->|RFC 8785 hash| DRIFT["contract-drift gate"]
-    K -->|normalized compare| GOLD["golden runner"]
+    K -->|normalized compare| GOLD["golden runner (instance overlay)"]
 
     subgraph DERIVED["Derived plane (machine-regenerated)"]
       RM[".memory/derived/repo-map"]
@@ -105,7 +104,7 @@ secondary **Claude Code**.
 # 1. Sync the uv workspace (root pyproject.toml + all tools/ + libs/python members)
 uv sync --all-packages
 
-# 2. Run the full harness test suite  (904 passing)
+# 2. Run the full harness test suite  (982 passing)
 uv run pytest -q
 
 # 3. Re-emit the runtime surfaces from harness/ source, then prove it's byte-identical
@@ -115,21 +114,12 @@ git diff --exit-code -- .opencode .claude/agents .claude/commands .claude/skills
 # 4. Validate contracts + the schema-hash drift gate
 uv run python -m tools.contract_drift.drift            # single-repo
 uv run python -m tools.contract_drift.drift --workspace # across workspace.toml members
-
-# 5. Run a golden equivalence case (normalized, not byte-diff)
-uv run python -m tools.golden_runner.runner
 ```
 
-Common developer flows are packaged as **commands/skills** (emitted to both runtimes): `/orient`,
-`/verify-work`, `/golden`, `/golden-approve`, `/contract-check`, `/refresh-memory`,
-`/fan-out-synthesize`, `/pipeline`, and the v2.2 task-control surface `/intake`, `/phase-gate`,
-`/handoff`, `/checkpoint`, `/review`.
-
-```bash
-# Task Control Plane (v2.2): route a task to a risk lane, then prove the lifecycle
-uv run python -m tools.risk_router            # 7-axis score → FAST/STANDARD/STRICT/CONTROLLED
-uv run python -m tools.lifecycle_eval.runner  # run all 20 ratified lane fixtures through the real E2E path
-```
+Common developer flows are packaged as **commands/skills** (emitted to both runtimes):
+`/add-language`, `/adopt`, `/adr`, `/agree`, `/build`, `/checkpoint`, `/component`,
+`/contract-check`, `/docs-sync`, `/fan-out-synthesize`, `/flow`, `/lint`, `/new-contract-rule`,
+`/orient`, `/refresh-memory`, `/review`, `/test`, and `/verify-work`.
 
 ## 📁 Repository layout
 
@@ -144,9 +134,8 @@ opencode.json        # GENERATED wholesale config (15-key permission block)
 workspace.toml       # multi-repo manifest: members + cross-repo edges (pure DATA)
 
 contracts/           # constitution plane — JSON Schema contracts (single source of truth)
-golden/              # constitution plane — approved equivalence baselines
 docs/                # Diátaxis (tutorials/how-to/reference/explanation) + adr/ + glossary
-tools/               # Python tooling: harness_emit, contract_drift, golden_runner, memory_regen,
+tools/               # Python tooling: harness_emit, contract_drift, memory_regen,
                      #   docs_sync, polyglot_lint, harness_lint, workspace_config, hooks, …
 libs/                # language-neutral normalize core + fixtures (Python side)
 components/          # component packages
@@ -168,8 +157,9 @@ AGENTS.md CLAUDE.md  # nearest-wins agent rules (partly HARNESS-MANAGED, spliced
   **fail loud at emit time**, never truncate.
 - **GEN-04 no-dependency** — the core never imports or path-references an `examples/` instance or a
   `workspace.toml` member; a guard test proves the single-direction dependency.
-- **Machines gate, humans ratify** — `/golden-approve` refuses to promote a baseline without an
-  explicit human flag + ADR reference + confirmation token.
+- **Machines gate, humans ratify** — a baseline is promoted only when a human sets the
+  `GOLDEN_APPROVE_HUMAN` token, and CODEOWNERS routes `/examples/*/golden/` to a human reviewer at
+  merge. No agent self-blesses a golden baseline.
 
 ## 🗺 Roadmap
 
@@ -202,22 +192,12 @@ reframe (priority-0 working-agreements directive + data-scoped provenance banner
 path with an anti-invent provenance guard · emit round-trip gates · local memory web UI.
 </details>
 
-<details open>
-<summary><b>✅ v2.2 — Adaptive Task Control Plane (Phases 18–23)</b></summary>
+<details>
+<summary><b>🗑 v2.2 — Adaptive Task Control Plane (Phases 18–23) — shipped, removed in v2.5</b></summary>
 
-- **A · Task Packet Contract** — `.workflow/tasks/` packets + `task/state/evidence/handoff` schemas
-  + validator + transition matrix.
-- **B · Deterministic Risk Router** — `risk-policy.toml` 7-axis scoring, FAST/STANDARD/STRICT/
-  CONTROLLED cuts, escalate-only overlays, reason-code promotions, `/intake`.
-- **C · Atomic State Manager** — flock + revision CAS, interrupted-write recovery, phase-oriented
-  required-artifact gate, fail-closed `/phase-gate` + `context-attestation`.
-- **D · Evidence Bundle Adapters** — wrap (never reimplement) existing gates into forgery-detecting
-  evidence: gate-argv registry, HEAD-committed trust root, secret/PII refusal, criterion trace.
-- **E · Handoff + Fresh-Session Resume** — immutable HANDOFF snapshot + `resume_gate` PreToolUse
-  hook (revision-bound attestation) + pointer-only SessionStart injection.
-- **F · Lifecycle Evaluation** — 20 human-ratified lane fixtures + 12 negative/stress fixtures, an
-  execution-proving E2E runner, CI `lifecycle-eval` leaf, `docs/how-to/task-lifecycle.md`, and the
-  ratified **ADR-0008** (namespace · authority · lifecycle · overlay).
+Shipped in v2.2 across Phases 18–23 (six phases, ADR-0008 ratified) and **removed in its entirety
+in v2.5 under CER-07**, which retired the plane as unearned ceremony. Nothing from it remains in
+the repository; this entry is kept as milestone history only.
 </details>
 
 Development is driven by the **GSD** workflow (`.planning/` + `/gsd:*` commands). Start a new

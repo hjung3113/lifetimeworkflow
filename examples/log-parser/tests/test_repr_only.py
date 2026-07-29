@@ -11,7 +11,7 @@ logic itself is proven .NET-free in test_compare_recorded.py.
 
 from __future__ import annotations
 
-from tools.golden_runner.runner import run_golden_case
+from golden_runner.runner import run_golden_case
 
 
 def test_repr_only_passes(require_dotnet, golden_out, example_golden_dir, toy_converter_project):

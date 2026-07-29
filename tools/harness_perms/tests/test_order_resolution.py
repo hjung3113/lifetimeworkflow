@@ -6,7 +6,8 @@ Phase-4 success criterion 4 requires a first-class proof that the *shipped* matr
   * **no trailing catch-all allow** (Anti-Pattern P3) — the LAST matching rule for a benign unknown
     command is the catch-all ``ask``, and there is no rule authored after the specifics that
     re-broadens the surface to ``allow``;
-  * **constitution-plane deny** — edits under ``contracts/**``, ``docs/adr/**``, ``golden/**`` deny;
+  * **constitution-plane deny** — edits under ``contracts/**``, ``docs/adr/**`` and the literal
+    ``docs/glossary.md`` deny;
   * **``rm -rf`` deny** — the destructive command is denied.
 
 This is a *proof* suite: it loads the SAME real matrix the runtime hooks load
@@ -111,11 +112,8 @@ def test_git_push_asks_and_rm_rf_denies(matrix: dict) -> None:
         "contracts/x.schema.json",
         "contracts/log-specs/eqp.schema.json",
         "docs/adr/0007-decision.md",
-        "golden/repr-only/expected/baseline.verified.tsv",
-        # The fourth constitution member (ADR-0001:48) — a literal file, not a tree.
+        # A constitution member that is a literal file, not a tree (ADR-0001:48).
         "docs/glossary.md",
-        "config/prod.env",
-        "components/collector/.env",
     ],
 )
 def test_constitution_and_secret_paths_denied(matrix: dict, path: str) -> None:

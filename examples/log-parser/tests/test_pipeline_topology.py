@@ -102,31 +102,32 @@ def test_pipeline_edges_well_formed() -> None:
 
 # The stage->agent resolution CONVENTION lives in the core (domain-neutral) docs; the concrete agents
 # live in THIS instance. A drift between the two (core documents one filename pattern, the instance
-# ships another) silently breaks `/pipeline` — it reports "NO OWNING AGENT" for every stage while all
-# gates stay green. This example-leg guard reads the core docs (example->core is the ALLOWED direction;
-# GEN-04 only forbids core->example) and pins both sides to the `<id>.md` convention so future drift
-# fails loud. Regression: gap surfaced by Phase-8 verification (08-05 documented `<id>-engineer.md`
-# while 08-04 shipped `<id>.md`).
+# ships another) silently breaks stage->owner resolution — every stage reports "NO OWNING AGENT"
+# while all gates stay green. This example-leg guard reads the core doc (example->core is the ALLOWED
+# direction; GEN-04 only forbids core->example) and pins both sides to the `<id>.md` convention so
+# future drift fails loud. Regression: gap surfaced by Phase-8 verification (08-05 documented
+# `<id>-engineer.md` while 08-04 shipped `<id>.md`).
+#
+# Phase 44 (CER-08) deleted the `/pipeline` command and the `pipeline-map` skill this tuple used to
+# name. The surviving core carrier of the convention is the neutral component-agent template, which
+# each per-component agent in this instance is derived from — so it is the right doc to pin.
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_CORE_RESOLUTION_DOCS = (
-    _REPO_ROOT / "harness" / "commands" / "pipeline.md",
-    _REPO_ROOT / "harness" / "skills" / "pipeline-map" / "SKILL.md",
-)
+_CORE_RESOLUTION_DOCS = (_REPO_ROOT / "harness" / "agents" / "templates" / "component-engineer.md",)
 
 
 def test_core_resolution_convention_matches_instance_agents() -> None:
     """The core-documented stage->agent path convention resolves to this instance's real agents.
 
     Computes, per the `<id>.md` convention the core docs declare, the owning-agent path for every
-    stage and asserts the file exists — the exact resolution `/pipeline` performs. Also asserts the
-    core docs no longer carry the stale `<id>-engineer.md` stage-resolution token, so reintroducing
-    the mismatch fails here instead of silently producing an all-gaps trace.
+    stage and asserts the file exists — the exact resolution a topology trace performs. Also asserts
+    that the core doc no longer carries the stale `<id>-engineer.md` stage-resolution token, so
+    reintroducing the mismatch fails here instead of silently producing an all-gaps trace.
     """
     for comp in components(_overlay()):
         owner = _AGENTS_DIR / f"{comp['id']}.md"  # the documented `<id>.md` convention
         assert owner.is_file(), (
             f"stage {comp['id']!r}: core `<id>.md` convention resolves to {owner}, which does not "
-            f"exist — /pipeline would report NO OWNING AGENT (core-vs-instance naming drift)"
+            f"exist — a topology trace would report NO OWNING AGENT (core-vs-instance naming drift)"
         )
     for doc in _CORE_RESOLUTION_DOCS:
         text = doc.read_text()

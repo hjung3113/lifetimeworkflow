@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from tools.golden_runner.runner import compare, received_path, verified_path
+from golden_runner.runner import compare, received_path, verified_path
 
 _RECORDED = Path(__file__).resolve().parent / "recorded"
 # The relocated domain golden tree lives beside this test under examples/log-parser/golden/.

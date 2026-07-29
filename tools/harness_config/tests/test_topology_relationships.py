@@ -51,21 +51,38 @@ def test_accessor_is_raw_passthrough() -> None:
 # --- lowering (TOPO-03, D-04) ---------------------------------------------------------------------
 
 
-def test_lowers_linear_default_to_single_relationship() -> None:
-    """The unedited source→sink/greeting edge lowers with zero config edits."""
-    rels = effective_relationships(load_project())
-    assert len(rels) == 1
-    rel = rels[0]
-    assert rel["id"] == "pipeline/greeting/source->sink"
-    assert rel["contract"] == "greeting"
-    assert rel["authority"] == "source"
-    assert rel["dependents"] == ["sink"]
-
-
 def test_output_is_deterministic() -> None:
-    """Two calls on the same cfg yield byte-identical (==) output."""
-    cfg = load_project()
-    assert effective_relationships(cfg) == effective_relationships(cfg)
+    """Two calls on the same cfg yield byte-identical (==) output.
+
+    Subjected to a SYNTHETIC cfg carrying two explicit records (the shape
+    ``test_accessor_is_raw_passthrough`` builds), not to ``load_project()``: the generic-default
+    project config declares no relationships, so lowering it returns ``[]`` and the assertion
+    degenerated to ``[] == []`` — determinism over nothing. The non-emptiness assertion below is
+    what stops it from silently draining again.
+    """
+    cfg = {
+        "pipeline": {"edges": []},
+        "contract_graph": {
+            "relationships": [
+                {
+                    "id": "explicit/widget/a->b",
+                    "contract": "widget",
+                    "authority": "a",
+                    "dependents": ["b"],
+                },
+                {
+                    "id": "explicit/gadget/c->d",
+                    "contract": "gadget",
+                    "authority": "c",
+                    "dependents": ["d"],
+                },
+            ]
+        },
+    }
+    first = effective_relationships(cfg)
+    assert first, "subject drained to [] — re-subject this test, do not let it assert [] == []"
+    assert len(first) == 2
+    assert first == effective_relationships(cfg)
 
 
 def test_output_is_stable_sorted_by_id() -> None:

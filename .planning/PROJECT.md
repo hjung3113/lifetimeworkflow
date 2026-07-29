@@ -25,14 +25,148 @@ hope — a registry + committed ledger + a guard that fails on BROKEN/STALE_REQU
 ADR-0009 and ADR-0010.
 
 v1.0 (1–8) + v2.0 (9–11) + v2.1 (12–17) + v2.3 (24–29) are archived under `.planning/milestones/`;
-v2.2 (18–23) is recorded in `MILESTONES.md` with its phase dirs left in place. **No milestone is
-currently in progress** — run `/gsd:new-milestone` to scope the next one.
+v2.2 (18–23) is recorded in `MILESTONES.md` with its phase dirs left in place. **v2.4 closed PARTIAL
+on 2026-07-26** (34–37 shipped; 30 partial; 31/32/33 cut; 38 landed as code) and **v2.5 De-ceremony is
+now in progress** — see the Current Milestone section.
 
 Two provenance obligations stay open across the boundary (RAT-4, RAT-5) plus one recorded
 harness-wide finding: constitution-plane write-denies are spelled per *tool*, so a write through
 `bash."uv *"` is not denied the way the same write through `Write`/`Edit` is. All three are carried
-in `STATE.md` under *Deferred Items*, with the third deliberately scheduled for repair in the next
-milestone rather than during its own closeout.
+in `STATE.md` under *Deferred Items*. **v2.5 phase 39 closes all three as obsolete-by-deletion, not by
+mechanism** — they are one finding with one cause (every human-ratification gate here assumes
+reviewer ≠ author, and this repo has one owner), and the planes they guard are deleted in phases 41
+and 44.
+
+**Phase 39 complete 2026-07-26** — ADR-0012 (*CI and the Merge as Decision Authority*) is ratified
+and accepted: CI fan-in + the merge to `main` are the decision authority, the v2.5 deletion
+enumeration is recorded as intent-at-ratification, the DEV/PRODUCT boundary carries an operative
+rule (no product capability may be declined because GSD covers it — only a named shipped artifact
+may cover it), ADR-0001's constitution-member list is superseded and ADR-0010 retires, the bash
+surface is declared a permanent residual by design, and the phase's own human checkpoint is a
+one-time transition creating no standing gate. ADR-0011 is formally accepted alongside it. RAT-4,
+RAT-5, and the per-tool deny-spelling gap are recorded `obsolete-by-deletion`; v2.4's SEAL-05 is
+`withdrawn`. Requirements CER-01/02/03 validated in Phase 39.
+
+## Current Milestone: v2.5 De-ceremony
+
+**Goal:** stop the harness from verifying itself and start it serving its stated purpose. Four
+milestones of gate machinery grew a surface where the *harness's own integrity* is the subject and the
+monorepo is the pretext. v2.5 deletes ~16k LOC of that machinery, reduces the gates a **human must
+personally author** from 5 kinds to **0** (the human's only act becomes reviewing and merging a PR),
+and — the round-3 correction — gives the **product** an honest lifecycle, because GSD governs only
+this dev checkout and is never shipped.
+
+**The purpose all scope is now measured against (owner's restatement):** a monorepo of several
+related, closely-coupled projects, where ① each package's conventions stay consistent, ② the
+interface contracts between packages stay consistent, ③ an LLM working in the repo understands
+cross-project relationships better than it would in a generic repo, and ④ the thing stays
+maintainable long-horizon. **Nothing more.**
+
+**Binding constraint (owner, verbatim in intent):** 절대 만들고자 하는 목적 이상으로 불필요한 검증
+게이트나 보안 등으로 프로젝트 규모를 **확장하지 말 것** — never expand scope beyond the purpose by
+adding verification gates, security layers, or ceremony. Default answer to "should we also gate X?" is
+**NO**; the surface may not grow without retiring at least as much. This constraint governs every
+future phase of this project, not just v2.5.
+
+**The DEV / PRODUCT boundary (ratified in this milestone's ADR-0012):** the **DEV** scope is this
+checkout — Claude Code + GSD (`.planning/**`, `.claude/get-shit-done/**`, `/gsd:*`) — which is never
+installed. The **PRODUCT** scope is what `tools/adoption_scan/destinations.py::_CATEGORY_GLOBS`
+installs into a target monorepo, run on opencode (and Claude Code) by a **weaker in-house model**.
+Operative rule: *no product capability may be deleted or declined on the ground that GSD covers it* —
+GSD is not there; only a **named shipped artifact** may cover it.
+
+**Target features (8 phases, 계속 번호 39–46):**
+- **A. Decision + teardown** *(phases 39–41)* — one human-ratified **ADR-0012** making CI + the merge
+  the authority and ratifying the DEV/PRODUCT boundary; then the self-gates come down in
+  dependency order: `skill_registry` + `registry.lock`, then the whole docs-review plane
+  (`tools/docs_guard` 6110 LOC + the ledger + `ledger_guard`), which is what turns the CI fan-in green.
+- **B. Plane removal** *(phases 42–44)* — adoption decoupled from task-control **and the install set
+  repaired** (`_CATEGORY_GLOBS` ships no `tools/**` today, so every emitted command and the shipped CI
+  are broken in a target repo); the 8-package task-control lifecycle plane deleted whole; the
+  non-goal surface deleted (`secret_scan`, `deny-domains`, `memory_ui`, strangler, the pipeline
+  metaphor, `gate-model`) with the golden stack **relocated** to `examples/log-parser/`.
+- **C. Repair + the product's lifecycle** *(phases 45–46)* — re-emit both runtime trees, rebaseline
+  hashes/snapshots/`caps.py`, scrub prose that names deleted surfaces; then author the product
+  lifecycle where it already lives: `harness/agents/orchestrator.md` (which already declares itself
+  the only planner in the deployed harness) gains **4 routes** — `small-change · bugfix · feature ·
+  contract-change` — the delegation-packet fields, the six-field completion contract, and resume via
+  `.memory/state/activeContext.md`, plus **one** new command `/flow`. **+1 command, +0 everything
+  else**; no router agent, no state machine, no gate.
+
+**Key context (ratified design):** `.planning/research/v2.5-scoping-FINAL.md`, produced by a
+three-round two-model panel (`gpt-5.6-sol` high × `claude-opus-5` high — independent review →
+cross-rebuttal → dev/product re-derivation) over a Claude-authored brief, with `gpt-5.6-terra` medium
+supplying the factual carry-forward dossier. The panel **overruled the brief** on six counts, each
+line-cited: the docs-guard severity flip provably cannot work (`guard.py:383-399` classifies `BROKEN`
+before staleness and `cli.py:6-13` exits 1 on `BROKEN` regardless of severity, and every deletion in
+this milestone produces `BROKEN`); import **zero** matt-flow artifacts (§0 budget + the vendored routes
+hard-require `.opencode/workflows/scripts/*.sh` that the emitter owns); mattpocock upstream skills are
+**not** a product dependency, even optionally (the vendored contract says *stop*, not degrade);
+`.flow/state.md` is a second control plane over `.memory/state/activeContext.md`; the golden stack
+violates ADR-0002(b) by holding .NET code in the core; and `harness-author` is admissible only under
+hard constraints (one skill, absorbs `skill-creator`, zero new packages/commands/contracts).
+
+**OUT of scope — carried to v2.6 (phases 47–50):** manifest-derived package facts (③); per-package
+convention profiles (①); the `/impact` command over the existing `contract_graph` queries (②③);
+`harness-author` + managed adopt/upgrade (④, and its (b) half does not start without a real
+multi-package target). Smallest goal-complete subset = all of v2.5 + phases 47 + 49. Also out,
+permanently: any gate whose purpose is to prove the harness cannot bypass itself; any security control
+not motivated by a threat this repo faces; any human-must-**author** step.
+
+## Partially Shipped Milestone: v2.4 Gate Right-Sizing, Carried Debt, Lane Discipline
+
+> ⚠ **CLOSED PARTIAL 2026-07-26.** Phases **34–37 complete and verified** (1683 passed / 8 snapshots):
+> ruff as a required CI gate, the carried-debt dispositions, discipline skills + adversarial panel,
+> capability routing + `registry.lock`. Phase **30** landed its contract pair only (`27ee704`, human);
+> plans 30-02/03/04 were never written or executed — and v2.5 **cuts** them, because
+> `deny-domains.json`'s own `_note` says no hook reads it and a drift test over it would prove a file
+> equals itself. Phases **31/32 were cut by ADR-0011**; phase **33 never started** and is cut
+> (`secret_scan` is deleted outright in v2.5-44, so SEAL-04 is moot, and SEAL-05's portable
+> ratification record is exactly the mechanism v2.5 replaces with a recorded decision). Phase **38**
+> (gate right-sizing, DEREG-01) **landed as code** in `bc9a6d9` but was never formalized as a phase —
+> and its ADR-0011 is still `proposed` with empty `Date`/`Deciders`. **v2.5 phase 39 discharges that
+> bookkeeping**: it accepts ADR-0011, records that its code preceded its ratification, and closes
+> RAT-4 / RAT-5 / the per-tool deny spelling as *obsolete by deletion* rather than by mechanism —
+> all three being one finding with one cause: every human-ratification gate here assumes reviewer ≠
+> author, and this repo has one owner. Two drafted docs-review ledger rows remain unlanded; phase 41
+> deletes the plane that wants them.
+
+**Goal (re-pivoted 2026-07-26, ADR-0011):** originally "make every declared gate actually fire". The
+human found that reading of "enforce" had over-regulated the dev inner loop — the in-session guard
+wall slowed development and deadlocked the session twice. Re-scoped to **right-size the gates:
+dev-light, CI-strong.** Enforcement's authoritative home is CI + CODEOWNERS (which serve the real
+goal — consistency + long-horizon maintainability); the in-session guards degrade instead of
+deadlocking and a dev session opts out via `HARNESS_DEV_LIGHT`. Carried debt and lane discipline
+stay in scope; SEAL-02/03 (adding MORE in-session denies) are cut.
+
+**Target features (8 phases, 계속 번호 30–37):**
+- **A. Gate Integrity** *(SEAL-01..05, phases 30–33)* — a deny-domain REGISTRY (constitution /
+  secret / review-ledger declared separately with owner, bypass semantics, covered tool surfaces and
+  runtime adapters, plus per-domain drift tests) → a ratified threat model and **chosen enforcement
+  posture** for the uncovered bash surface → implementation of that posture in both runtimes with
+  live negative controls → `secret_scan` reading its patterns from the contract, RAT-4's disposition
+  and a portable ratification record.
+- **B. Carried Debt** *(DEBT-01..04, phases 34–35)* — `ruff check` becomes a required CI gate with a
+  ratcheting baseline; phase-27 verification disposition; compile-the-graph-once (28 IN-03);
+  `DEF-05-02-1` verified and closed.
+- **C. Lane Discipline** *(LANE-01..04, phases 36–37)* — the v2.2 TCP-F carry: discipline skills
+  wired into the task lifecycle, a STRICT+ adversarial review panel as a declared lane requirement,
+  specialist allowlist + capability-neutral routing, and skill `registry.lock` + adapter CI.
+
+**Key context (ratified design):** `.planning/research/v2.4-scoping-FINAL.md`. Scoped by one codex
+sol review pass (low effort, read-only, line-cited) over a Claude-authored draft — NOT the full
+sol-vs-fable debate panel used for v2.2/v2.3, by explicit instruction. The review corrected three
+claims this repo had made about itself, most importantly withdrawing the v2.3 close's accusation
+that ADR-0010 clause 3b "overclaims" (it does not; it scopes layer 1 explicitly to
+`PreToolUse(Write|Edit)`, so the defect is a MISSING FOURTH LAYER — corrected by `455b366`).
+**Recorded deviation:** the reviewer advised cutting Themes C *and* D and shipping five phases; the
+human kept C and cut D, accepting the stated sizing risk.
+
+**OUT of scope (Theme D, carried explicitly to the next milestone):** impact-driven task-evidence
+policy (EVOL-01, needs its own ADR); contract versioning/compatibility engine (EVOL-02); `examples/**`
+instance-local docs-registry overlay (EVOL-03); TCP-F05 signed external attestation + STRICT
+rollback. Also out: repairing GitHub's trust model (branch protection, reviewer eligibility) — the
+harness may define a portable ratification record, not fix CODEOWNERS for a solo owner.
 
 ## Shipped Milestone: v2.3 Contract Graph, Brownfield Adoption, Living Docs
 
@@ -152,7 +286,14 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
+*Last updated: 2026-07-26 — milestone **v2.5 De-ceremony** (phases 39-46) started via `/gsd:new-milestone`. Design ratified by a three-round two-model panel (`gpt-5.6-sol` high x `claude-opus-5` high, factual dossier by `gpt-5.6-terra` medium) over a Claude-authored brief: `.planning/research/v2.5-scoping-FINAL.md`; research skipped (design complete). v2.4 closed PARTIAL — 34-37 shipped, 30 partial, 31/32/33 cut, 38 landed as code (`bc9a6d9`) and formalized by v2.5 phase 39. Phase directories for 30/34-37 deliberately NOT cleared (they hold the drafts and verification records phase 39 discharges).*
+
+<details>
+<summary>Previous footer — v2.3 close (2026-07-22)</summary>
+
 *Last updated: 2026-07-22 after the v2.3 milestone. Shipped 10 phases / 43 plans / 58 tasks over 3 days and 310 commits; 21/21 requirements validated; 16/16 fan-in gates exit 0. Closed with 8 acknowledged deferred items (see `STATE.md`), of which the load-bearing three are RAT-4, RAT-5, and the per-tool spelling of the constitution-plane write-denies. No milestone is in progress — next step is `/gsd:new-milestone`.*
+
+</details>
 
 <details>
 <summary>Previous footer — v2.3 start (2026-07-19)</summary>
