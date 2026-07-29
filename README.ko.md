@@ -57,7 +57,7 @@
 # 1. uv 워크스페이스 동기화 (루트 pyproject.toml + 모든 tools/ + libs/python 멤버)
 uv sync --all-packages
 
-# 2. 전체 하네스 테스트 스위트 (982 통과)
+# 2. 전체 하네스 테스트 스위트 (881 통과)
 uv run pytest -q
 
 # 3. harness/ 소스에서 런타임 표면 재방출 후 byte-identical 확인

@@ -9,7 +9,7 @@ responsibility-split **polyglot** monorepo — where "how we develop here" lives
 **skills, commands, and hooks**, not tribal knowledge.
 
 [![CI](https://img.shields.io/badge/CI-fan--in%20gate-2ea44f)](.github/workflows/ci.yml)
-[![tests](https://img.shields.io/badge/tests-982%20passing-2ea44f)](#-quickstart)
+[![tests](https://img.shields.io/badge/tests-881%20passing-2ea44f)](#-quickstart)
 [![runtimes](https://img.shields.io/badge/runtimes-opencode%20%2B%20Claude%20Code-blue)](#-single-source--dual-runtime)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](harness/project.toml)
 [![Python](https://img.shields.io/badge/Python-3.11%2B%20(uv)-3776AB)](pyproject.toml)
@@ -104,7 +104,7 @@ secondary **Claude Code**.
 # 1. Sync the uv workspace (root pyproject.toml + all tools/ + libs/python members)
 uv sync --all-packages
 
-# 2. Run the full harness test suite  (982 passing)
+# 2. Run the full harness test suite  (881 passing)
 uv run pytest -q
 
 # 3. Re-emit the runtime surfaces from harness/ source, then prove it's byte-identical
