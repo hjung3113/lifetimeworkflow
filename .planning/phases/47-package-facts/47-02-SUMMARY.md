@@ -108,3 +108,13 @@ None - no external service configuration required.
 ---
 *Phase: 47-package-facts*
 *Completed: 2026-07-30*
+
+## Self-Check: PASSED
+
+- FOUND: tools/memory_regen/package_facts.py
+- FOUND: tools/memory_regen/tests/test_package_facts.py
+- FOUND: tools/memory_regen/tests/__snapshots__/test_package_facts.ambr
+- FOUND: .planning/phases/47-package-facts/47-02-SUMMARY.md
+- FOUND commit: b9252ea (feat)
+- FOUND commit: 2fb246f (test)
+- FOUND commit: 5a1a916 (docs: plan summary)
