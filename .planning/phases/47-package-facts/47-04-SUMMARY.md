@@ -127,3 +127,12 @@ None - no external service configuration required.
 ---
 *Phase: 47-package-facts*
 *Completed: 2026-07-30*
+
+## Self-Check: PASSED
+
+- FOUND: tools/contract_graph/ownership.py
+- FOUND: tools/contract_graph/tests/test_ownership.py
+- FOUND: .planning/phases/47-package-facts/47-04-SUMMARY.md
+- FOUND commit: 24062d2 (feat)
+- FOUND commit: bee0a00 (test)
+- FOUND commit: 5018da0 (docs: plan summary)
