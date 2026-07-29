@@ -401,7 +401,7 @@ EVOL-02).
 | 44. Non-Goal Surface Removal | v2.5 | 6/6 | Complete   | 2026-07-29 |
 | 45. Projection Repair | v2.5 | 6/6 | Complete   | 2026-07-29 |
 | 46. Product Flow | v2.5 | 3/3 | Complete   | 2026-07-29 |
-| 47. Package Facts | v2.6 | — | Not started | - |
+| 47. Package Facts | v2.6 | 0/5 | Planned | - |
 | 48. Convention Profiles | v2.6 | — | Not started | - |
 | 49. Contract Impact | v2.6 | — | Not started | - |
 | 50a. Harness Authoring | v2.6 | — | Not started | - |
