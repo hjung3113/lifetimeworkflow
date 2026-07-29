@@ -30,7 +30,7 @@ it names what it retires.
 - [x] **MONO-03**: `[[components]]` in `harness/project.toml` becomes an **override slot** layered
   over the derived facts — a declared component overrides the derived record for the same package,
   and every existing config (core + `examples/log-parser/`) stays valid with no edit.
-- [ ] **MONO-04**: The package graph feeds `contract_graph` so a contract can be attributed to the
+- [x] **MONO-04**: The package graph feeds `contract_graph` so a contract can be attributed to the
   package that owns it. **Report-only: this phase adds no gate and no CI job.**
 
 ### Convention Profiles (Phase 48)
@@ -98,7 +98,7 @@ multi-package target) — see `ROADMAP.md` § *Phase Numbering* and the v2.6 rec
 | MONO-01 | Phase 47 | Complete |
 | MONO-02 | Phase 47 | Complete |
 | MONO-03 | Phase 47 | Complete |
-| MONO-04 | Phase 47 | Pending |
+| MONO-04 | Phase 47 | Complete |
 | MONO-05 | Phase 48 | Pending |
 | MONO-06 | Phase 48 | Pending |
 | MONO-07 | Phase 48 | Pending |
