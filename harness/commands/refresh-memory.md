@@ -24,10 +24,11 @@ never committed, never gated.
 
 ## 2. Committed-derived (the gated set — commit after)
 
-`docs/reference/**` + `contracts-index.md` are the committed-derived set the stale-derived gate
-guards. Regenerate both, then `git add` + commit them so the tree stays fresh.
+`docs/reference/**`, `contracts-index.md`, and `package-facts.md` are the committed-derived set the
+stale-derived gate guards. Regenerate all three, then `git add` + commit them so the tree stays
+fresh.
 
-!`uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index`
+!`uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index && uv run python -m tools.memory_regen.package_facts`
 
 ## 3. Refresh the SessionStart payload
 

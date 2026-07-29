@@ -19,6 +19,7 @@ How you regenerate (invocation-only — you own no derivation logic):
 
 - Repo-map (session-derived, gitignored): `uv run python -m tools.memory_regen.repo_map`.
 - Contracts-index (committed-derived): `uv run python -m tools.memory_regen.contracts_index`.
+- Package facts (committed-derived): `uv run python -m tools.memory_regen.package_facts`.
 - Reference docs (committed-derived): `uv run python -m tools.docs_sync`.
 - SessionStart payload: `uv run python -m tools.memory_regen.inject`.
 - The single entry point that runs the full set is `/refresh-memory`.

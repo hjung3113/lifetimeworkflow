@@ -88,6 +88,7 @@
   
   - Repo-map (session-derived, gitignored): `uv run python -m tools.memory_regen.repo_map`.
   - Contracts-index (committed-derived): `uv run python -m tools.memory_regen.contracts_index`.
+  - Package facts (committed-derived): `uv run python -m tools.memory_regen.package_facts`.
   - Reference docs (committed-derived): `uv run python -m tools.docs_sync`.
   - SessionStart payload: `uv run python -m tools.memory_regen.inject`.
   - The single entry point that runs the full set is `/refresh-memory`.
@@ -124,6 +125,7 @@
   
   - Repo-map (session-derived, gitignored): `uv run python -m tools.memory_regen.repo_map`.
   - Contracts-index (committed-derived): `uv run python -m tools.memory_regen.contracts_index`.
+  - Package facts (committed-derived): `uv run python -m tools.memory_regen.package_facts`.
   - Reference docs (committed-derived): `uv run python -m tools.docs_sync`.
   - SessionStart payload: `uv run python -m tools.memory_regen.inject`.
   - The single entry point that runs the full set is `/refresh-memory`.
@@ -2111,10 +2113,11 @@
   
   ## 2. Committed-derived (the gated set — commit after)
   
-  `docs/reference/**` + `contracts-index.md` are the committed-derived set the stale-derived gate
-  guards. Regenerate both, then `git add` + commit them so the tree stays fresh.
+  `docs/reference/**`, `contracts-index.md`, and `package-facts.md` are the committed-derived set the
+  stale-derived gate guards. Regenerate all three, then `git add` + commit them so the tree stays
+  fresh.
   
-  !`uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index`
+  !`uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index && uv run python -m tools.memory_regen.package_facts`
   
   ## 3. Refresh the SessionStart payload
   
@@ -2152,10 +2155,11 @@
   
   ## 2. Committed-derived (the gated set — commit after)
   
-  `docs/reference/**` + `contracts-index.md` are the committed-derived set the stale-derived gate
-  guards. Regenerate both, then `git add` + commit them so the tree stays fresh.
+  `docs/reference/**`, `contracts-index.md`, and `package-facts.md` are the committed-derived set the
+  stale-derived gate guards. Regenerate all three, then `git add` + commit them so the tree stays
+  fresh.
   
-  !`uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index`
+  !`uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index && uv run python -m tools.memory_regen.package_facts`
   
   ## 3. Refresh the SessionStart payload
   
