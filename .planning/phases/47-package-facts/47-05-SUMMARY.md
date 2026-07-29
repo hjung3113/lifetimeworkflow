@@ -154,3 +154,17 @@ None - no external service configuration required.
 ---
 *Phase: 47-package-facts*
 *Completed: 2026-07-30*
+
+## Self-Check: PASSED
+
+- FOUND: .github/workflows/ci.yml
+- FOUND: .gitignore
+- FOUND: tools/harness_lint/tests/test_ci_stale_derived.py
+- FOUND: harness/commands/refresh-memory.md
+- FOUND: harness/agents/curator.md
+- FOUND: .memory/derived/package-facts.md
+- FOUND: tools/harness_emit/tests/__snapshots__/test_emit_determinism.ambr
+- FOUND: .planning/phases/47-package-facts/47-05-SUMMARY.md
+- FOUND commit: 746e087 (feat)
+- FOUND commit: e510a46 (docs)
+- FOUND commit: bc71ecc (docs: plan summary)
