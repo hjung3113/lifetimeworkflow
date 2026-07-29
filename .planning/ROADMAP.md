@@ -25,12 +25,18 @@ file keeps only the milestone-level index so it stays constant-size as milestone
   2026-07-26**: 34–37 shipped; 30 partial; 31/32/33 cut; 38 landed as code `bc9a6d9`, formalized by
   v2.5 phase 39)
 - ✅ **v2.5 De-ceremony** — Phases 39–46 (shipped 2026-07-30)
-- 📋 **v2.6 Minimal Monorepo Core** — Phases 47–50 (scoped, not started)
+- 🚧 **v2.6 Minimal Monorepo Core** — Phases 47, 48, 49, 50a, 50b (**in progress**, started
+  2026-07-30)
 
 ## Phases
 
 **Phase Numbering:** integer phases (1, 2, 3) are planned milestone work; decimal phases (26.1,
 27.2) are urgent insertions, and appear between their surrounding integers in numeric order.
+**Letter-suffixed phases (50a, 50b) are new in v2.6 and mean something different:** they are a
+**split** of one *already scoped* phase into an independently shippable half and a half held behind a
+hard external precondition. A split is decided at kickoff, not inserted mid-flight, and the halves
+keep the parent's number. Spell them `50a` / `50b` — never `50.1` / `50.2`, which would read as
+insertions.
 
 <details>
 <summary>✅ v1.0 Harness Core (Phases 1–8) — SHIPPED 2026-07-12</summary>
@@ -189,33 +195,117 @@ Net: 33/33 plans, 171 commits, **−27,398 LOC** outside `.planning/`; human-aut
 
 </details>
 
-### 📋 v2.6 Minimal Monorepo Core (Phases 47–50) — SCOPED, NOT STARTED
+### 🚧 v2.6 Minimal Monorepo Core (Phases 47, 48, 49, 50a, 50b) — IN PROGRESS
 
-Smallest goal-complete subset = all of v2.5 **+ 47 + 49**. ① is already covered by the lint adapters +
+Requirements: `.planning/REQUIREMENTS.md` (MONO-01..12, 12/12 mapped). **No research round** — the
+design was settled by the v2.5 scoping panel and every phase cites this repo's own code rather than an
+external ecosystem, so `.planning/research/` holds nothing for v2.6 by decision.
+
+**Goal:** close gap ③ of the owner's four-part purpose — *an LLM working in this repo understands
+cross-project relationships better than it would in a generic repo*. Smallest goal-complete subset =
+all of v2.5 **+ 47 + 49**; the owner chose all five. ① is already covered by the lint adapters +
 nearest-wins `AGENTS.md` + `/component`; ② by `contracts/` + `contract_hash`/`contract_drift` +
 `contract_graph` + CI; ④ by append-only ADR + the derived plane + ADR-0011's CI-strong posture. The
 genuine gap is ③.
 
-- [ ] **Phase 47: Package Facts** — extend `adoption_scan/detect.py`'s manifest detection
-  (`:41-47,100-121`) into a committed **derived** package + dependency graph feeding `contract_graph`;
-  `[[components]]` demoted to an override slot. **Report-only, no gate.** (MONO-01)
-- [ ] **Phase 48: Convention Profiles** — nearest-wins per-package convention data + language→lint/test
-  mapping, populated by `/component` step 2. (MONO-02)
-- [ ] **Phase 49: Contract Impact** — one `/impact` command over `contract_graph.query`'s existing
-  `direct`/`reverse`/`transitive` (`query.py:29,39,55`) + package facts; fills phase 46's evidence
-  slot. On demand only, **no SessionStart injection**. (MONO-03)
-- [ ] **Phase 50: `harness-author` + Managed Adopt/Upgrade** — (a) `harness-author`: one skill, Q&A
-  with grounded `path:line` defaults, **absorbs `skill-creator`** (net skills ±0), zero new
-  packages/commands/contracts, output runtime-neutral under `harness/` only; **presupposes PROD-01**.
-  (b) simplified `/adopt` as a managed install/update with one manifest + conflict report — **does not
-  start without a real multi-package target**. (MONO-04)
+> **Binding constraint (carried from v2.5, governs every criterion below):** never expand scope beyond
+> the purpose by adding verification gates, security layers, or ceremony. Default answer to "should we
+> also gate X?" is **NO**; the surface may not grow without retiring at least as much. Concretely for
+> this milestone: **47 and 49 are gate-free by design** (no new CI job, no new gate), **48 adds no new
+> command**, **50a is net ±0 on skills** (8 → 8, `harness-author` absorbs `skill-creator`), and
+> **nothing is injected into SessionStart**.
 
-**DAG:** `47 → {48, 49}`; `50` needs `48` and, for its (b) half, a real target.
+- [ ] **Phase 47: Package Facts** *(v2.6)* — extend `tools/adoption_scan/detect.py`'s manifest
+  detection (`:41-47,100-121`, which today records manifest *existence* and parses no dependencies)
+  into a committed **derived** package + dependency graph that feeds `contract_graph`;
+  `[[components]]` in `harness/project.toml` is demoted to an **override slot** layered over the
+  derived facts. **Report-only: no gate, no CI job.** (MONO-01, MONO-02, MONO-03, MONO-04)
+  **Success criteria:**
+  1. One committed derived artifact lists every package in this checkout with its manifest path,
+     language and package id; deleting it and regenerating from a clean tree yields a byte-identical
+     file.
+  2. Every dependency edge in that artifact is parsed from the manifests themselves (`pyproject.toml`,
+     `package.json`, `go.mod`, `Cargo.toml`, `*.csproj`) — no hand-maintained dependency list exists
+     anywhere in the tree, and removing a dependency from a fixture manifest removes exactly that edge
+     on regeneration.
+  3. A `[[components]]` entry overrides the derived record for the same package, and both live configs
+     (core `harness/project.toml` + `examples/log-parser/`) still load with **zero edits**.
+  4. Given a contract path, `contract_graph` reports the package that owns it, using the package facts.
+  5. The phase adds no gate and no CI job: `ci.yml`'s job set and `gate.needs` are unchanged from the
+     phase's base commit, and the derived artifact's freshness rides the **existing** `stale-derived`
+     job rather than a new one.
+- [ ] **Phase 48: Convention Profiles** *(v2.6)* — nearest-wins per-package convention data whose
+  lint/test commands are derived from the existing `[[languages]]` slot, populated by `/component`
+  step 2 inside its existing mandated order. **No new command.** (MONO-05, MONO-06, MONO-07)
+  **Success criteria:**
+  1. Asking "which conventions apply here?" from a path inside a package returns that package's
+     profile, and from a path with no enclosing package returns the repo-wide default — demonstrated
+     on a nested case where the inner answer differs from the enclosing one.
+  2. A profile never restates a lint or test command literal: the commands it reports come from
+     `[[languages]]` in `harness/project.toml`, so editing the language config changes the reported
+     commands with no profile edited.
+  3. Running `/component` produces a convention profile for the new package as part of step 2, in its
+     existing structure → AGENTS.md → tests order.
+  4. The command count is unchanged (`/component` extended, nothing added), and no gate or CI job is
+     added.
+- [ ] **Phase 49: Contract Impact** *(v2.6)* — one `/impact <contract>` command over
+  `contract_graph.query`'s existing `direct`/`reverse`/`transitive` (`query.py:29,39,55`) plus the
+  Phase-47 package facts; fills phase 46's evidence slot in the `contract-change` route. **On demand
+  only — no SessionStart injection, no gate, no CI job.** (MONO-08, MONO-09)
+  **Success criteria:**
+  1. `/impact <contract>` reports the affected **contracts** and the affected **packages**, covering
+     direct, reverse and transitive relations.
+  2. No second traversal engine exists: the affected sets come from `contract_graph.query`'s existing
+     three functions and the Phase-47 package facts.
+  3. Nothing is injected: the SessionStart injector's assembled output is byte-identical with and
+     without this phase, and no CI job or hook references `/impact`.
+  4. The `contract-change` route in `harness/agents/orchestrator.md` names `/impact` as the evidence
+     step it previously left unfilled, and the emit round-trip to both runtimes is byte-clean.
+- [ ] **Phase 50a: Harness Authoring** *(v2.6 — SPLIT half (a), ships independently)* — one
+  `harness-author` skill: Q&A with defaults cited as `path:line` from this checkout, output
+  runtime-neutral under `harness/` only (the emitter projects it), **absorbing `skill-creator`** for
+  net skills ±0. Presupposes PROD-01 (shipped in v2.5 phase 42). (MONO-10, MONO-11)
+  **Success criteria:**
+  1. `harness-author` exists as a skill and its offered defaults are cited as `path:line` locations
+     that resolve in this checkout.
+  2. Its output lands under `harness/` only; `.opencode/` and `.claude/` change solely through
+     re-emit, and the emit round-trip is byte-clean.
+  3. `skill-creator` no longer exists and everything it did is reachable through `harness-author`; the
+     skill count is **8 before and 8 after**.
+  4. Zero new packages under `tools/`, zero new commands, zero new contracts.
+- [ ] **Phase 50b: Managed Adopt / Upgrade** *(v2.6 — SPLIT half (b), blocked on an external
+  precondition)* — simplified `/adopt` as a managed install/update over one manifest that **reports
+  conflicts** rather than silently overwriting a target repo's files. (MONO-12)
+  **Hard precondition:** a **real multi-package target repo**. None exists in this checkout. If none
+  exists when the phase is reached, 50b is recorded **BLOCKED and carried** — it does not stall the
+  milestone, which closes on 47 · 48 · 49 · 50a.
+  **Success criteria:**
+  1. One manifest records what the harness installed into the target, so a later run can tell managed
+     files from target-owned files.
+  2. Re-running `/adopt` against an already-adopted target **updates** managed files from that
+     manifest instead of re-installing, and is a no-op when nothing changed.
+  3. A managed file the target has since diverged from its recorded baseline is **reported as a
+     conflict and left untouched** — never silently overwritten.
+  4. The phase's precondition is discharged on the record: either a named real multi-package target
+     repo is cited, or the phase is marked BLOCKED and carried with that reason.
+
+**DAG:** `47 → {48, 49}`. `50a` needs `48`. `50b` needs `48` **and** a real multi-package target repo
+— a hard *external* precondition, not a code dependency, which is why it cannot be scheduled away.
+
+**Recorded deviation from the v2.5 panel's sketch:** the panel scoped four phases (47–50). At v2.6
+kickoff the owner **split phase 50 into `50a` and `50b`**, because 50b explicitly does not start
+without a real multi-package target and no such target exists in this checkout. Splitting lets 50a
+ship and 50b block cleanly, rather than one phase stalling the milestone. This is the repo's first
+letter-suffixed split (see *Phase Numbering* above); decimal numbering was **not** used because
+`50.1`/`50.2` are reserved for urgent insertions and would misdescribe this.
 
 ### 📋 Carried to a later milestone
 
 - **EVOL-02** contract versioning / compatibility engine — the only survivor; still a standalone
   engine needing its own ADR.
+- **D-24** CODEOWNERS advisory on this repo — re-openable as a machine-side check on golden baseline
+  diffs, unblocked by ADR-0012 but out of v2.6: adding a gate contradicts the no-growth constraint
+  unless something retires with it. Stays a documented residual.
 - **Obsoleted by v2.5, recorded so they are not re-adopted:** **EVOL-01** (impact-driven task-evidence
   policy) and **TCP-F05** (signed external attestation + STRICT rollback) die with the task-control
   plane deleted in phase 43; **EVOL-03** (`examples/**` instance-local docs-registry overlay) dies with
@@ -258,10 +348,11 @@ genuine gap is ③.
 | 44. Non-Goal Surface Removal | v2.5 | 6/6 | Complete   | 2026-07-29 |
 | 45. Projection Repair | v2.5 | 6/6 | Complete   | 2026-07-29 |
 | 46. Product Flow | v2.5 | 3/3 | Complete   | 2026-07-29 |
-| 47. Package Facts | v2.6 | — | Scoped | - |
-| 48. Convention Profiles | v2.6 | — | Scoped | - |
-| 49. Contract Impact | v2.6 | — | Scoped | - |
-| 50. harness-author + Managed Adopt | v2.6 | — | Scoped | - |
+| 47. Package Facts | v2.6 | — | Not started | - |
+| 48. Convention Profiles | v2.6 | — | Not started | - |
+| 49. Contract Impact | v2.6 | — | Not started | - |
+| 50a. Harness Authoring | v2.6 | — | Not started | - |
+| 50b. Managed Adopt / Upgrade | v2.6 | — | Not started | - |
 
 Per-phase plan counts for v1.0–v2.2 are preserved in the milestone archives under
 `.planning/milestones/`; they are not restated here so this table stays a fixed size.

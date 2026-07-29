@@ -6,7 +6,7 @@ status: planning
 last_updated: "2026-07-29T16:39:41.948Z"
 last_activity: 2026-07-29
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-30)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** v2.6 Minimal Monorepo Core (phases 47–50) — started 2026-07-30, defining requirements. All four phases in scope; phase 50 split into 50a (`harness-author`) and 50b (managed adopt/upgrade, blocks on a real multi-package target).
+**Current focus:** v2.6 Minimal Monorepo Core (phases 47, 48, 49, 50a, 50b) — roadmap created 2026-07-30; 12/12 requirements (MONO-01..12) mapped. Phase 47 (Package Facts) is next. Phase 50 is split: 50a (`harness-author`) ships independently, 50b (managed adopt/upgrade) blocks on a real multi-package target repo.
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-07-29 — Milestone v2.6 started
+Phase: 47 — Package Facts (not started)
+Plan: — (no plans yet — next step is `/gsd:plan-phase 47`)
+Status: Roadmap created — 5 phases (47, 48, 49, 50a, 50b), 12/12 requirements mapped
+Last activity: 2026-07-30 — v2.6 roadmap created; phase 50 split into 50a/50b
 
 ## Performance Metrics
 

@@ -1,7 +1,7 @@
 # Requirements: v2.6 Minimal Monorepo Core
 
 **Defined:** 2026-07-30
-**Milestone:** v2.6 Minimal Monorepo Core (phases 47–50)
+**Milestone:** v2.6 Minimal Monorepo Core (phases 47, 48, 49, 50a, 50b)
 **Core Value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·전환 리스크를 하네스가 자동으로
 강제·검증한다 — 그리고 이 강제 구조가 특정 도메인·언어에 묶이지 않고 어느 프로젝트에나 재사용된다.
 
@@ -89,7 +89,9 @@ it names what it retires.
 
 ## Traceability
 
-Filled during roadmap creation.
+Verified at roadmap creation (2026-07-30): **12/12 mapped, each requirement to exactly one phase, no
+orphans, no duplicates.** Phase 50 is split into `50a` (ships) and `50b` (blocked on a real
+multi-package target) — see `ROADMAP.md` § *Phase Numbering* and the v2.6 recorded deviation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
