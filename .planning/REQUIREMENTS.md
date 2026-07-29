@@ -27,7 +27,7 @@ it names what it retires.
   (`pyproject.toml`, `package.json`, `go.mod`, `Cargo.toml`, `*.csproj`) by extending
   `tools/adoption_scan/detect.py`'s existing `detect_manifests` (`:41-47,100-121`), which today
   records manifest existence but parses no dependencies. No hand-maintained dependency list.
-- [ ] **MONO-03**: `[[components]]` in `harness/project.toml` becomes an **override slot** layered
+- [x] **MONO-03**: `[[components]]` in `harness/project.toml` becomes an **override slot** layered
   over the derived facts — a declared component overrides the derived record for the same package,
   and every existing config (core + `examples/log-parser/`) stays valid with no edit.
 - [ ] **MONO-04**: The package graph feeds `contract_graph` so a contract can be attributed to the
@@ -97,7 +97,7 @@ multi-package target) — see `ROADMAP.md` § *Phase Numbering* and the v2.6 rec
 |-------------|-------|--------|
 | MONO-01 | Phase 47 | Complete |
 | MONO-02 | Phase 47 | Complete |
-| MONO-03 | Phase 47 | Pending |
+| MONO-03 | Phase 47 | Complete |
 | MONO-04 | Phase 47 | Pending |
 | MONO-05 | Phase 48 | Pending |
 | MONO-06 | Phase 48 | Pending |
