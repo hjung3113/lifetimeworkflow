@@ -99,3 +99,12 @@ None - no external service configuration required.
 ---
 *Phase: 47-package-facts*
 *Completed: 2026-07-29*
+
+## Self-Check: PASSED
+
+- FOUND: tools/adoption_scan/detect.py
+- FOUND: tools/adoption_scan/tests/test_detect.py
+- FOUND: .planning/phases/47-package-facts/47-01-SUMMARY.md
+- FOUND commit: 83ad913 (feat)
+- FOUND commit: 2c55f07 (test)
+- FOUND commit: cee642a (docs: plan summary)
