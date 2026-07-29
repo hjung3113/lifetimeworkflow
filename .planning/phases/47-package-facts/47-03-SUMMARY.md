@@ -123,3 +123,16 @@ None - no external service configuration required.
 ---
 *Phase: 47-package-facts*
 *Completed: 2026-07-30*
+
+## Self-Check: PASSED
+
+- FOUND: tools/harness_config/loader.py
+- FOUND: tools/harness_config/__init__.py
+- FOUND: tools/harness_config/tests/test_effective_packages.py
+- FOUND: tools/harness_lint/tests/test_package_facts_override.py
+- FOUND: examples/log-parser/tests/test_package_facts_override_instance.py
+- FOUND: .planning/phases/47-package-facts/deferred-items.md
+- FOUND: .planning/phases/47-package-facts/47-03-SUMMARY.md
+- FOUND commit: fb224d3 (feat)
+- FOUND commit: adc4eac (test)
+- FOUND commit: 0ac082b (docs: plan summary)
