@@ -28,10 +28,11 @@ four routes (`small-change · bugfix · feature · contract-change`) plus `/flow
 Closed out by **ADR-0013**, which retires ADR-0008 and ratifies the rule that a path cited by an
 accepted ADR is corrected or marked historical, never deleted. Archived to `.planning/milestones/v2.5-*`.
 
-**Next: v2.6 Minimal Monorepo Core (phases 47–50)** — scoped in ROADMAP, not started. The smallest
-goal-complete subset is v2.5 + 47 + 49. D-24 (CODEOWNERS advisory on this repo) is accepted as a
-documented residual and is re-openable here as a machine-side check on golden baseline diffs, which
-v2.5's no-growth constraint forbade and which is now unblocked.
+**v2.6 Minimal Monorepo Core (phases 47–50) started 2026-07-30** — see the Current Milestone section
+below. All four phases are in scope by the owner's decision, with phase 50 split into 50a
+(`harness-author`) and 50b (managed adopt/upgrade, which blocks on a real multi-package target).
+D-24 (CODEOWNERS advisory on this repo) stays a documented residual — re-openable as a machine-side
+check on golden baseline diffs, but **not** taken up in v2.6.
 
 <details>
 <summary>Previous state — v2.3 and the v2.4/v2.5 transition</summary>
@@ -68,6 +69,52 @@ RAT-5, and the per-tool deny-spelling gap are recorded `obsolete-by-deletion`; v
 `withdrawn`. Requirements CER-01/02/03 validated in Phase 39.
 
 </details>
+
+## Current Milestone: v2.6 Minimal Monorepo Core
+
+**Goal:** close gap ③ of the owner's four-part purpose — *an LLM working in this repo understands
+cross-project relationships better than it would in a generic repo* — by deriving package facts from
+the manifests that already exist, giving each package a nearest-wins convention profile, and making
+contract impact queryable on demand. ①②④ are already covered (see below); ③ is the genuine gap.
+
+**Target features (4 phases, 계속 번호 47–50):**
+- **Phase 47 — Package Facts (MONO-01):** extend `adoption_scan/detect.py`'s manifest detection
+  (`:41-47,100-121`) into a committed **derived** package + dependency graph feeding `contract_graph`;
+  `[[components]]` demoted to an override slot. **Report-only, no gate.**
+- **Phase 48 — Convention Profiles (MONO-02):** nearest-wins per-package convention data +
+  language→lint/test mapping, populated by `/component` step 2.
+- **Phase 49 — Contract Impact (MONO-03):** one `/impact` command over `contract_graph.query`'s
+  existing `direct`/`reverse`/`transitive` (`query.py:29,39,55`) + package facts; fills phase 46's
+  evidence slot. On demand only, **no SessionStart injection**.
+- **Phase 50 — `harness-author` + Managed Adopt/Upgrade (MONO-04), split at kickoff:**
+  **50a** `harness-author` — one skill, Q&A with grounded `path:line` defaults, **absorbs
+  `skill-creator`** (net skills ±0), zero new packages/commands/contracts, output runtime-neutral
+  under `harness/` only; presupposes PROD-01 (shipped in v2.5 phase 42).
+  **50b** simplified `/adopt` as a managed install/update with one manifest + conflict report —
+  **does not start without a real multi-package target**, and blocks rather than stalling the
+  milestone if none exists.
+
+**DAG:** `47 → {48, 49}`; `50a` and `50b` both need `48`, and `50b` additionally needs a real target.
+
+**Coverage rationale (why only ③):** ① per-package convention consistency is already served by the
+lint adapters + nearest-wins `AGENTS.md` + `/component`; ② inter-package contract consistency by
+`contracts/` + `contract_hash`/`contract_drift` + `contract_graph` + CI; ④ long-horizon
+maintainability by the append-only ADR plane + the derived plane + ADR-0011's CI-strong posture.
+
+**Binding constraint (carried from v2.5, governs every phase):** 절대 만들고자 하는 목적 이상으로
+불필요한 검증 게이트나 보안 등으로 프로젝트 규모를 **확장하지 말 것**. Default answer to "should we
+also gate X?" is **NO**; the surface may not grow without retiring at least as much. Phases 47 and 49
+are gate-free by design, and 50a is net-±0 on skills by construction.
+
+**Key context:** scope carried forward verbatim from `.planning/research/v2.5-scoping-FINAL.md`'s
+OUT-of-scope section, which named these four as v2.6 at ratification. No new research round — the
+design was settled by the v2.5 panel. Owner chose all four phases over the smallest goal-complete
+subset (47 + 49), accepting the stated 50b sizing risk, which is why 50 is split.
+
+**OUT of scope:** **EVOL-02** (contract versioning / compatibility engine — a standalone engine
+needing its own ADR); **D-24** (CODEOWNERS advisory / machine-side golden-baseline-diff check —
+stays a documented residual); any gate whose purpose is to prove the harness cannot bypass itself;
+any security control not motivated by a threat this repo faces; any human-must-**author** step.
 
 ## Shipped Milestone: v2.5 De-ceremony
 
@@ -308,7 +355,14 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
+*Last updated: 2026-07-30 — milestone **v2.6 Minimal Monorepo Core** (phases 47-50) started via `/gsd:new-milestone`. Scope carried verbatim from the v2.5 panel's OUT-of-scope section; research skipped (design already settled). Owner chose all four phases over the smallest goal-complete subset (47 + 49), so phase 50 is split into 50a (`harness-author`, ships) and 50b (managed adopt/upgrade, blocks on a real multi-package target). D-24 and EVOL-02 stay out. v2.5 shipped and archived 2026-07-30 to `.planning/milestones/v2.5-*`.*
+
+<details>
+<summary>Previous footer — v2.5 start (2026-07-26)</summary>
+
 *Last updated: 2026-07-26 — milestone **v2.5 De-ceremony** (phases 39-46) started via `/gsd:new-milestone`. Design ratified by a three-round two-model panel (`gpt-5.6-sol` high x `claude-opus-5` high, factual dossier by `gpt-5.6-terra` medium) over a Claude-authored brief: `.planning/research/v2.5-scoping-FINAL.md`; research skipped (design complete). v2.4 closed PARTIAL — 34-37 shipped, 30 partial, 31/32/33 cut, 38 landed as code (`bc9a6d9`) and formalized by v2.5 phase 39. Phase directories for 30/34-37 deliberately NOT cleared (they hold the drafts and verification records phase 39 discharges).*
+
+</details>
 
 <details>
 <summary>Previous footer — v2.3 close (2026-07-22)</summary>
