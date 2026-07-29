@@ -299,6 +299,59 @@ ship and 50b block cleanly, rather than one phase stalling the milestone. This i
 letter-suffixed split (see *Phase Numbering* above); decimal numbering was **not** used because
 `50.1`/`50.2` are reserved for urgent insertions and would misdescribe this.
 
+#### Phase 47: Package Facts
+
+**Goal:** An agent asking *"what packages exist here, what do they depend on, and which package owns
+this contract?"* gets one **derived, committed, machine-built** answer instead of reading 24 manifests
+or trusting a hand-written `[[components]]` table. This is the base of gap ③ — 48 and 49 both read it.
+
+**Requirements:** MONO-01, MONO-02, MONO-03, MONO-04
+
+**Scope** (measured 2026-07-30 against this checkout):
+
+- **Extend `tools/adoption_scan/detect.py`, do not fork it.** `_MANIFEST_KIND_BY_NAME`
+  (`detect.py:41-47`) recognizes `pyproject.toml` · `package.json` · `go.mod` · `Cargo.toml`, plus the
+  `*.csproj` suffix special-case at `detect.py:107-108`. `detect_manifests` (`detect.py:100-121`)
+  records `path`/`kind`/`classification`/`evidence` — **manifest existence only, zero dependency
+  parsing**. MONO-02's edges come from adding dependency extraction per manifest kind here, on the
+  same D-02 `observed` evidence ladder the module already enforces.
+- **One committed derived artifact** listing every package with manifest path, language and package
+  id. `git ls-files` finds **24** recognized manifests today (1 `package.json`, 3 `.csproj`, 20
+  `pyproject.toml`). Derived-plane rules apply unchanged: generator under `tools/`, never hand-edited,
+  byte-identical on regeneration from a clean tree.
+- **`[[components]]` becomes an override slot, not the source.** Two live configs must keep loading
+  with **zero edits**: the core generic default (`harness/project.toml` — `source`/`sink`, both
+  `python`) and the instance overlay (`examples/log-parser/project.toml:34-63` — `parser`/`converter`
+  (dotnet) + `scheduler`/`collector` (python)). A declared component overrides the derived record for
+  the same package; it does not delete or contradict it silently.
+- **Contract → owning package attribution** lands in `tools/contract_graph`, reusing the existing
+  compiler/query surface (`compile.py`, `query.py`) — no second graph engine.
+- **No gate, no CI job.** `ci.yml`'s job set (`setup · lang-tests · contract-check · drift · golden ·
+  core-suite · lint · emit-drift · stale-derived · workspace`) and `gate.needs` (`ci.yml:329`) are
+  unchanged from this phase's base commit. Freshness rides the **existing** `stale-derived` job
+  (`ci.yml:271`), which today regenerates `docs/reference` + `.memory/derived/contracts-index.md` —
+  the new artifact joins that regen command and that diff check, adding no job.
+
+**Non-goals:** a dependency *policy* (allowed/forbidden edges), any hand-maintained package list, any
+SessionStart injection of the package graph, version/compatibility resolution (that is carried
+EVOL-02).
+
+**Success Criteria** (what must be TRUE):
+
+1. One committed derived artifact lists every package in this checkout with its manifest path,
+   language and package id; deleting it and regenerating from a clean tree yields a byte-identical
+   file.
+2. Every dependency edge in that artifact is parsed from the manifests themselves (`pyproject.toml`,
+   `package.json`, `go.mod`, `Cargo.toml`, `*.csproj`) — no hand-maintained dependency list exists
+   anywhere in the tree, and removing a dependency from a fixture manifest removes exactly that edge
+   on regeneration.
+3. A `[[components]]` entry overrides the derived record for the same package, and both live configs
+   (core `harness/project.toml` + `examples/log-parser/project.toml`) still load with **zero edits**.
+4. Given a contract path, `contract_graph` reports the package that owns it, using the package facts.
+5. The phase adds no gate and no CI job: `ci.yml`'s job set and `gate.needs` are unchanged from the
+   phase's base commit, and the derived artifact's freshness rides the **existing** `stale-derived`
+   job rather than a new one.
+
 ### 📋 Carried to a later milestone
 
 - **EVOL-02** contract versioning / compatibility engine — the only survivor; still a standalone
