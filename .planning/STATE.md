@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.6
 milestone_name: Minimal Monorepo Core
 status: executing
-stopped_at: Completed 47-01-PLAN.md
-last_updated: "2026-07-29T18:01:30.682Z"
+stopped_at: Completed 47-02-PLAN.md
+last_updated: "2026-07-29T18:07:04.373Z"
 last_activity: 2026-07-29
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 5
-  completed_plans: 1
-  percent: 20
+  completed_plans: 2
+  percent: 40
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-30)
 ## Current Position
 
 Phase: 47 (Package Facts) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-07-29
 
@@ -156,6 +156,7 @@ Last activity: 2026-07-29
 | Phase 42 P02 | 25min | 2 tasks | 10 files |
 | Phase 42 P05 | 50min | 2 tasks | 8 files |
 | Phase 47 P01 | 12min | 2 tasks | 2 files |
+| Phase 47 P02 | 25min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -289,6 +290,8 @@ Recent decisions affecting current work:
 - [Phase 42]: CER-06 and PROD-01 traceability rows set to Complete in REQUIREMENTS.md, matching their already-checked [x] boxes
 - [Phase 42]: harness/commands/adopt.md and harness/skills/brownfield-adoption/SKILL.md rewritten to a promote-free draft->apply->PR-review lifecycle, re-emitted via python -m tools.harness_emit
 - [Phase 47-01]: detect_dependencies helpers take only (text); Cargo.toml parser scoped to path dependencies only, registry deps dropped never fabricated
+- [Phase 47-02]: package.json language column defaults to javascript (no signal in .claude/package.json), per CONTEXT.md A3
+- [Phase 47-02]: Dependency edge resolution (path normalize, self-ref drop, dedup, sort) lives in build_facts(), detect_dependencies() stays a pure parser
 
 ### Pending Todos
 
@@ -356,8 +359,8 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-29T18:01:30.677Z
-Stopped at: Completed 47-01-PLAN.md
+Last session: 2026-07-29T18:07:04.368Z
+Stopped at: Completed 47-02-PLAN.md
 any v2.5 work, which satisfies Phase 43 SC-1's CI-green half. Awaiting the four human-gated items
 and the merge. Do NOT run `/gsd:complete-milestone` before the merge.
 Resume file: None
