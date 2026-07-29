@@ -54,6 +54,18 @@ _KIND_LANGUAGE: dict[str, str] = {
 
 _GO_MODULE_DIRECTIVE = re.compile(r"(?m)^module\s+(\S+)")
 
+_PEP503_SEPARATORS = re.compile(r"[-_.]+")
+
+
+def _normalize_pep503(name: str) -> str:
+    """PEP 503 "Normalized Names": case-fold, collapse runs of ``-_.`` to a single ``-``.
+
+    Comparison-only helper — never used as a rendered id. ``Foo_Bar``, ``foo-bar`` and
+    ``foo.bar`` are the same distribution name to any real resolver (pip/uv); WR-02
+    (47-REVIEW.md).
+    """
+    return _PEP503_SEPARATORS.sub("-", name).lower()
+
 
 def _is_excluded(path: str) -> bool:
     """True when ``path`` contains the consecutive segments ``("tests", "fixtures")`` anywhere.
@@ -150,6 +162,16 @@ def build_facts(manifest_paths: list[dict] | None = None, repo_root: Path = _REP
     manifest_by_path = {pkg["manifest"]: pkg for pkg in packages}
     id_by_manifest = {pkg["manifest"]: pkg["id"] for pkg in packages}
     manifest_by_id = {pkg["id"]: pkg["manifest"] for pkg in packages}
+    kind_by_manifest = {record["path"]: record["kind"] for record in manifest_paths}
+    # WR-02 (47-REVIEW.md): a PEP 503-normalized index, scoped to pyproject.toml packages only
+    # (Python's own name-equivalence rule; other manifest kinds have their own conventions and
+    # must not be folded together). Rendered ids stay each manifest's declared name — this index
+    # is comparison-only, never surfaced.
+    manifest_by_normalized_pyproject_id = {
+        _normalize_pep503(pkg["id"]): pkg["manifest"]
+        for pkg in packages
+        if kind_by_manifest.get(pkg["manifest"]) == "pyproject.toml"
+    }
 
     edges: set[tuple[str, str, str]] = set()
     for record in manifest_paths:
@@ -170,6 +192,10 @@ def build_facts(manifest_paths: list[dict] | None = None, repo_root: Path = _REP
                 target_id = dep["name"]
                 if target_id in manifest_by_id:
                     target_manifest = manifest_by_id[target_id]
+                elif kind == "pyproject.toml":
+                    target_manifest = manifest_by_normalized_pyproject_id.get(
+                        _normalize_pep503(target_id)
+                    )
 
             if target_manifest is None:
                 continue

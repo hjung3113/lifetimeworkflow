@@ -145,6 +145,35 @@ def test_pyproject_dependency_add_remove_round_trip(tmp_path: Path) -> None:
     assert facts_after["edges"] == []
 
 
+def test_pyproject_dependency_matches_declared_name_across_pep503_variants(tmp_path: Path) -> None:
+    """WR-02 (47-REVIEW.md): a Python package's declared ``[project].name`` and a dependant's
+    bare-name reference to it are the SAME distribution per PEP 503/508 even when they differ
+    only by hyphen/underscore casing (``widget_core`` vs ``widget-core``) — matching must
+    normalize both sides for comparison, while the rendered id stays the manifest's own
+    DECLARED name (unchanged visible artifact ids)."""
+    (tmp_path / "widget-core").mkdir()
+    (tmp_path / "widget-core" / "pyproject.toml").write_text(
+        '[project]\nname = "widget_core"\nversion = "0.1.0"\ndependencies = []\n',
+        encoding="utf-8",
+    )
+    (tmp_path / "widget-app").mkdir()
+    (tmp_path / "widget-app" / "pyproject.toml").write_text(
+        '[project]\nname = "widget-app"\nversion = "0.1.0"\ndependencies = ["widget-core"]\n',
+        encoding="utf-8",
+    )
+    manifests = [
+        _widget_manifest("widget-core/pyproject.toml", "pyproject.toml"),
+        _widget_manifest("widget-app/pyproject.toml", "pyproject.toml"),
+    ]
+
+    facts = package_facts.build_facts(manifest_paths=manifests, repo_root=tmp_path)
+    assert {"from": "widget-app", "to": "widget_core", "kind": "runtime"} in facts["edges"]
+    # rendered id stays the manifest's own declared name — normalization is comparison-only.
+    ids = {pkg["id"] for pkg in facts["packages"]}
+    assert "widget_core" in ids
+    assert "widget-core" not in ids
+
+
 def test_package_json_dependency_add_remove_round_trip(tmp_path: Path) -> None:
     (tmp_path / "widget-core").mkdir()
     (tmp_path / "widget-core" / "package.json").write_text(
