@@ -29,9 +29,20 @@ import re
 import subprocess
 import sys
 import tomllib
+import xml.etree.ElementTree as ET
 from pathlib import Path, PurePosixPath
 
 from tools.adoption_scan import detect
+
+# WR-03 (47-REVIEW.md): exceptions raised by the per-kind manifest parsers this module and
+# detect.py feed (encoding failures included) — caught per-manifest so one malformed file
+# degrades gracefully instead of aborting the whole regeneration run.
+_MANIFEST_PARSE_ERRORS = (
+    UnicodeDecodeError,
+    tomllib.TOMLDecodeError,
+    json.JSONDecodeError,
+    ET.ParseError,
+)
 
 # --- paths (derived plane; this artifact is committed-derived, not gitignored) -----------------
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -102,6 +113,12 @@ def discover_manifests(repo_root: Path = _REPO_ROOT) -> list[dict]:
     return [record for record in manifests if not _is_excluded(record["path"])]
 
 
+def _fallback_id(manifest_path: str) -> str:
+    """The directory-name id used when a manifest's declared name is absent OR unreadable."""
+    parent = PurePosixPath(manifest_path).parent
+    return "." if str(parent) == "." else parent.name
+
+
 def _package_id(manifest_path: str, kind: str, text: str) -> str:
     """Return the manifest's own declared package name, falling back to its directory name."""
     name: str | None = None
@@ -119,8 +136,7 @@ def _package_id(manifest_path: str, kind: str, text: str) -> str:
 
     if name:
         return name
-    parent = PurePosixPath(manifest_path).parent
-    return "." if str(parent) == "." else parent.name
+    return _fallback_id(manifest_path)
 
 
 def build_facts(manifest_paths: list[dict] | None = None, repo_root: Path = _REPO_ROOT) -> dict:
@@ -142,16 +158,32 @@ def build_facts(manifest_paths: list[dict] | None = None, repo_root: Path = _REP
     if manifest_paths is None:
         manifest_paths = discover_manifests(repo_root)
 
-    texts: dict[str, str] = {}
+    texts: dict[str, str | None] = {}
     packages: list[dict] = []
     for record in manifest_paths:
         path = record["path"]
-        text = (repo_root / path).read_text(encoding="utf-8")
-        texts[path] = text
         kind = record["kind"]
+        try:
+            text = (repo_root / path).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            print(f"package_facts: skipping unreadable manifest {path}: {exc}", file=sys.stderr)
+            text = None
+
+        package_id: str | None = None
+        if text is not None:
+            try:
+                package_id = _package_id(path, kind, text)
+            except _MANIFEST_PARSE_ERRORS as exc:
+                # WR-03 (47-REVIEW.md): a malformed manifest degrades for THIS file only — the
+                # package is still listed (directory-name fallback), the failure surfaces on
+                # stderr, and the run continues rather than crashing whole-generator-wide.
+                print(f"package_facts: failed to parse manifest {path}: {exc}", file=sys.stderr)
+                package_id = None
+
+        texts[path] = text
         packages.append(
             {
-                "id": _package_id(path, kind, text),
+                "id": package_id if package_id is not None else _fallback_id(path),
                 "manifest": path,
                 "dir": str(PurePosixPath(path).parent),
                 "language": _KIND_LANGUAGE[kind],
@@ -177,8 +209,15 @@ def build_facts(manifest_paths: list[dict] | None = None, repo_root: Path = _REP
     for record in manifest_paths:
         path = record["path"]
         kind = record["kind"]
+        text = texts[path]
+        if text is None:
+            continue  # unreadable manifest already reported above; no edges to/from it
         from_id = id_by_manifest[path]
-        deps = detect.detect_dependencies(path, kind, texts[path])
+        try:
+            deps = detect.detect_dependencies(path, kind, text)
+        except _MANIFEST_PARSE_ERRORS as exc:
+            print(f"package_facts: failed to parse dependencies in {path}: {exc}", file=sys.stderr)
+            continue
         for dep in deps:
             target_manifest: str | None = None
             if "path" in dep:

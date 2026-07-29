@@ -284,6 +284,35 @@ def test_cargo_toml_path_dependency_add_remove_round_trip(tmp_path: Path) -> Non
     assert facts_after["edges"] == []
 
 
+def test_malformed_manifest_does_not_crash_generator(tmp_path: Path, capsys) -> None:
+    """WR-03 (47-REVIEW.md): a syntactically malformed manifest degrades for that ONE file
+    instead of crashing the whole regeneration — the package is still listed (falling back to
+    its directory name, since the declared name could not be parsed) and the parse failure
+    surfaces on stderr rather than being silently swallowed."""
+    (tmp_path / "widget-broken").mkdir()
+    (tmp_path / "widget-broken" / "pyproject.toml").write_text(
+        "[project\nname = not valid toml\n", encoding="utf-8"
+    )
+    (tmp_path / "widget-app").mkdir()
+    (tmp_path / "widget-app" / "pyproject.toml").write_text(
+        '[project]\nname = "widget-app"\nversion = "0.1.0"\ndependencies = []\n',
+        encoding="utf-8",
+    )
+    manifests = [
+        _widget_manifest("widget-broken/pyproject.toml", "pyproject.toml"),
+        _widget_manifest("widget-app/pyproject.toml", "pyproject.toml"),
+    ]
+
+    facts = package_facts.build_facts(manifest_paths=manifests, repo_root=tmp_path)
+    ids = {pkg["id"] for pkg in facts["packages"]}
+    assert "widget-broken" in ids, "the package must still be listed from what is known"
+    assert "widget-app" in ids
+    captured = capsys.readouterr()
+    assert "widget-broken/pyproject.toml" in captured.err, (
+        "the parse failure must surface on stderr, not be silently swallowed"
+    )
+
+
 def test_unresolvable_dependency_is_dropped_not_fabricated(tmp_path: Path) -> None:
     (tmp_path / "widget-app").mkdir()
     (tmp_path / "widget-app" / "pyproject.toml").write_text(
