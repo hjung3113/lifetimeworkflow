@@ -283,11 +283,22 @@ def _dependencies_from_package_json(text: str) -> list[dict]:
     return entries
 
 
+# IN-01 (47-REVIEW.md): legacy (pre-SDK-style) .csproj files declare this default xmlns on the
+# <Project> root, which puts every child element into that namespace; an unqualified `findall`
+# then silently matches nothing.
+_LEGACY_MSBUILD_NAMESPACE = "http://schemas.microsoft.com/developer/msbuild/2003"
+
+
 def _dependencies_from_csproj(text: str) -> list[dict]:
     """Parse ``<ProjectReference Include="...">`` elements; each is a path-based reference."""
     root = ET.fromstring(text)
+    matches = root.findall(".//ProjectReference")
+    if not matches:
+        # Fallback for legacy-style project files that declare the default MSBuild 2003
+        # namespace on <Project> (IN-01, 47-REVIEW.md).
+        matches = root.findall(f".//{{{_LEGACY_MSBUILD_NAMESPACE}}}ProjectReference")
     entries: list[dict] = []
-    for element in root.findall(".//ProjectReference"):
+    for element in matches:
         include = element.get("Include")
         if include is None:
             continue

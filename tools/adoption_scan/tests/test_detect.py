@@ -153,6 +153,27 @@ def test_csproj_project_reference_is_path_based() -> None:
     assert entry["kind"] == "runtime"
 
 
+def test_csproj_project_reference_legacy_msbuild_namespace_fallback() -> None:
+    """IN-01 (47-REVIEW.md): legacy (pre-SDK-style) .csproj files commonly declare
+    ``xmlns="http://schemas.microsoft.com/developer/msbuild/2003"`` on the ``<Project>`` root,
+    which puts every child element (including ``ProjectReference``) into that namespace. An
+    unqualified ``findall`` then silently matches nothing; the parser must fall back to the
+    legacy MSBuild namespace when the unqualified search returns no results."""
+    text = (
+        '<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"'
+        ' DefaultTargets="Build" ToolsVersion="4.0">\n'
+        "  <ItemGroup>\n"
+        '    <ProjectReference Include="../widget-core/widget-core.csproj" />\n'
+        "  </ItemGroup>\n"
+        "</Project>\n"
+    )
+    entries = detect.detect_dependencies("widget-app/widget-app.csproj", "*.csproj", text)
+    assert len(entries) == 1
+    entry = entries[0]
+    assert entry["path"] == "../widget-core/widget-core.csproj"
+    assert entry["kind"] == "runtime"
+
+
 def test_csproj_project_reference_backslash_separators_normalized() -> None:
     """WR-01 (47-REVIEW.md): a Windows-style backslash ``Include`` path (MSBuild accepts it on
     any OS, and Visual-Studio-authored .csproj files commonly emit it) must normalize to
