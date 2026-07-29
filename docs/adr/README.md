@@ -34,10 +34,11 @@ be silently rewritten (DOCS-02).
 | [0005](0005-golden-comparator-structural-only.md) | Golden Comparator Is Structural-Only Pending Column-Aware Canonicalization | accepted |
 | [0006](0006-process-memory-channel-and-provenance-reframe.md) | Memory Model: PROCESS/Agreements Channel + Provenance→Data-Authority Reframe | accepted |
 | [0007](0007-constitution-gate-dev-enforce-decoupling.md) | Constitution-Gate Dev/Enforce Decoupling (Secure-Default HARNESS_DEV_BYPASS) | accepted |
-| [0008](0008-task-control-plane-lifecycle.md) | Task Control Plane Namespace, Authority, Lifecycle, and Overlay | accepted |
+| [0008](0008-task-control-plane-lifecycle.md) | Task Control Plane Namespace, Authority, Lifecycle, and Overlay | superseded by 0013 |
 | [0009](0009-contract-relationship-graph-model.md) | Contract-Relationship Graph Model: Compiler, Affected-Set Queries, and Conductor Rendering Contract | accepted |
 | [0010](0010-human-docs-review-obligation-model.md) | Human-Docs Review Obligation Model: Plane Split, Agent-Authority Boundary, Digest, Disposition Coherence, and Ratchets | superseded by 0012 |
 | [0011](0011-gate-right-sizing-dev-light-ci-strong.md) | Gate right-sizing — dev-light, CI-strong | accepted |
 | [0012](0012-ci-and-merge-as-decision-authority.md) | CI and the Merge as Decision Authority | accepted |
+| [0013](0013-task-control-plane-retirement.md) | Task-Control-Plane Retirement and the Append-Only Citation Rule | accepted |
 
 *Add a row per ADR. Do not remove rows — mark superseded records in the Status column.*

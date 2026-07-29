@@ -2,11 +2,11 @@
 
 *MADR 4.x · plane: constitution (human-owned, immutable, append-only)*
 
-- **Status:** Accepted — ratified by human/CODEOWNERS.
+- **Status:** superseded by 0013
 - **Date:** 2026-07-19
 - **Deciders:** kimhyojung (CODEOWNERS)
 - **Supersedes:** —
-- **Superseded by:** —
+- **Superseded by:** [0013](0013-task-control-plane-retirement.md)
 - **Complements:** [ADR-0003](0003-pipeline-topology-slot-and-instance-overlay.md), [ADR-0006](0006-process-memory-channel-and-provenance-reframe.md), [ADR-0007](0007-constitution-gate-dev-enforce-decoupling.md)
 
 ## Context and Problem Statement

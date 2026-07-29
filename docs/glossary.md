@@ -17,10 +17,10 @@
 | **Two canonicalizers (never conflated)** | (a) an **RFC 8785 / JCS** hasher (Python-only) over `.schema.json` files, for contract-text drift; (b) the **§4.3–4.6 TSV comparator** (dual-language, cross-validated by shared fixtures), for data equivalence. JSON contract text and TSV data use different canonicalizers. |
 | **RFC 8785 / JCS** | JSON Canonicalization Scheme — deterministic serialization (sorted keys, normalized whitespace/numbers) of a `.schema.json` so it can be SHA-256 hashed reproducibly for the drift gate. |
 | **Contract-drift gate** | The gate that recomputes the JCS SHA-256 of each contract schema (including the materialized §4-5 conventions schema) and fails when a hash moves without a paired golden update; classifies the change breaking vs non-breaking. |
-| **`.received` / `.verified`** | The two-file golden split: `.received` is machine-proposed output; `.verified` is the human-promoted, approved baseline. Promotion is the `/golden-approve` step. |
+| **`.received` / `.verified`** | The two-file golden split: `.received` is machine-proposed output; `.verified` is the human-promoted, approved baseline. Promotion requires a human `GOLDEN_APPROVE_HUMAN` ratification, gated again by CODEOWNERS at merge. |
 | **Machines gate, humans ratify** | Automation may propose (`.received`) and block, but only a human promotes a baseline to `.verified`. No agent self-blesses a golden (Pitfall P9). |
 | **A-model boundary** | The polyglot boundary shape used by this project: Python spawns the .NET CLI via `subprocess` (`shell=False`), exchanging data by **output file + exit code** — process/file/DB only, never in-process object passing. |
-| **Constitution plane** | Human-owned, gated source of truth: `contracts/`, `golden/`, `docs/adr/`, `docs/glossary.md`. Changed only through review (CODEOWNERS) and the golden/drift gates. |
+| **Constitution plane** | Human-owned, gated source of truth: `contracts/`, `docs/adr/`, `docs/glossary.md` (ADR-0001's fourth member, root `golden/`, is superseded by ADR-0012 clause (d); instance baselines live at `examples/<instance>/golden/`). Changed only through review (CODEOWNERS) and the golden/drift gates. |
 | **Derived plane** | Auto-regenerated, never hand-edited artifacts (e.g. `.memory/` repo-map, contracts-index, `docs/reference/`). Rebuilt from the constitution plane; editing by hand is forbidden (added Phase 2+). |
 
 ## Domain terms (seeded from parserimprove GLOSSARY; expand as contracts land)
