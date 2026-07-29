@@ -352,6 +352,54 @@ EVOL-02).
    phase's base commit, and the derived artifact's freshness rides the **existing** `stale-derived`
    job rather than a new one.
 
+#### Phase 48: Convention Profiles
+
+**Goal:** An agent working anywhere in the tree can ask *"which conventions apply here?"* and get the
+**nearest-wins** answer — the enclosing package's profile, not the repo-wide default — without any
+profile restating a lint or test command the language config already owns. Phase 47 answered *what
+packages exist*; this answers *what rules apply where*.
+
+**Requirements:** MONO-05, MONO-06, MONO-07
+
+**Scope** (measured 2026-07-30 against this checkout):
+
+- **Nearest-wins resolution over the Phase-47 package facts.** `.memory/derived/package-facts.md` +
+  `tools/memory_regen/package_facts.py` (`build_facts`, `discover_manifests`) already give every
+  package's directory; `tools/contract_graph/ownership.py`'s `owning_package()` already implements
+  segment-based nearest-enclosing-package lookup. This phase reuses that resolution rather than
+  writing a second path-matcher.
+- **Commands are DERIVED, never restated.** `harness/project.toml`'s `[[languages]]` rows own
+  `test` and `format` (plus `bash_scope`, `test_paths`); `tools/harness_config/loader.py` already
+  exposes them via `languages()`. A profile names its language and inherits the commands — editing
+  `[[languages]]` must change what every profile reports, with no profile edited. That is the
+  falsifiable form of MONO-06.
+- **Prose rules stay where they already live.** 7 `AGENTS.md` files are tracked (3 of them adoption
+  test fixtures); the nearest-wins AGENTS.md convention shipped in Phase 2 and is unchanged. The
+  profile is the *machine-readable* answer that sits alongside it, not a replacement — and it must
+  not fork the two into disagreeing sources.
+- **`/component` is EXTENDED, not joined.** `harness/commands/component.md` (35 lines) declares a
+  mandated order — structure → self-sufficient `AGENTS.md` → tests. The profile is populated inside
+  **step 2**, keeping that order intact. Live command count is **18** and must be 18 after.
+- **No gate, no CI job.** As with Phase 47, `ci.yml`'s job set and `gate.needs` stay byte-unchanged,
+  and any derived output rides the existing `stale-derived` job.
+
+**Non-goals:** a convention *enforcement* gate (this milestone forbids adding gates); per-package
+prose generation that would compete with `AGENTS.md`; any new command; SessionStart injection of
+profiles.
+
+**Success Criteria** (what must be TRUE):
+
+1. Asking "which conventions apply here?" from a path inside a package returns that package's
+   profile, and from a path with no enclosing package returns the repo-wide default — demonstrated
+   on a nested case where the inner answer differs from the enclosing one.
+2. A profile never restates a lint or test command literal: the commands it reports come from
+   `[[languages]]` in `harness/project.toml`, so editing the language config changes the reported
+   commands with no profile edited.
+3. Running `/component` produces a convention profile for the new package as part of step 2, in its
+   existing structure → AGENTS.md → tests order.
+4. The command count is unchanged (`/component` extended, nothing added), and no gate or CI job is
+   added.
+
 ### 📋 Carried to a later milestone
 
 - **EVOL-02** contract versioning / compatibility engine — the only survivor; still a standalone
