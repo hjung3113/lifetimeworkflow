@@ -13,14 +13,15 @@ without that ordering hazard (mirrors tools/harness_config + tools/harness_lint)
 
 from __future__ import annotations
 
-__all__ = ["compile_graph", "direct", "reverse", "transitive"]
+__all__ = ["compile_graph", "direct", "reverse", "transitive", "owning_package"]
 
-# Which submodule owns each lazily re-exported name (compiler vs. query layer).
+# Which submodule owns each lazily re-exported name (compiler vs. query vs. ownership layer).
 _SOURCE_MODULE = {
     "compile_graph": "compile",
     "direct": "query",
     "reverse": "query",
     "transitive": "query",
+    "owning_package": "ownership",
 }
 
 
