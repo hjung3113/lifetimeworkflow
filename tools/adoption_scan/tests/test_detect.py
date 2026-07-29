@@ -173,6 +173,16 @@ def test_csproj_project_reference_backslash_separators_normalized() -> None:
     assert entry["kind"] == "runtime"
 
 
+def test_package_json_null_dependencies_does_not_raise() -> None:
+    """IN-02 (47-REVIEW.md): ``"dependencies": null`` is valid JSON (occasionally emitted by
+    hand-edited or programmatic package.json files); ``.get()``'s default only applies when the
+    key is absent, not when it is present-but-null, so a naive ``for name in data.get(...,
+    {})`` raises ``TypeError`` on iteration. Must degrade to no entries instead."""
+    text = json.dumps({"dependencies": None, "devDependencies": None})
+    entries = detect.detect_dependencies("package.json", "package.json", text)
+    assert entries == []
+
+
 def test_go_mod_require_block_and_single_line_both_parsed() -> None:
     text = (
         "module widget-app\n\n"
