@@ -352,9 +352,11 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-28T15:14:24.520Z
-Stopped at: Phase 44 context gathered
-Resume file: .planning/phases/44-non-goal-surface-removal/44-CONTEXT.md
+Last session: 2026-07-29
+Stopped at: Milestone v2.5 close PR opened (#5) — CI green on all 11 jobs + `gate`, first CI run on
+any v2.5 work, which satisfies Phase 43 SC-1's CI-green half. Awaiting the four human-gated items
+and the merge. Do NOT run `/gsd:complete-milestone` before the merge.
+Resume file: .planning/.continue-here.md
 
 ### Resuming from a fresh clone
 
