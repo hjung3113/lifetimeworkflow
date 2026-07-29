@@ -197,6 +197,59 @@ def effective_relationships(cfg: dict | None = None) -> list[dict]:
     return sorted(merged, key=lambda rel: rel["id"])
 
 
+def effective_packages(cfg: dict | None = None, facts: dict | None = None) -> list[dict]:
+    """Layer ``[[components]]`` over the derived package-facts graph (MONO-03).
+
+    Field-level merge: the derived package record (from ``package_facts.build_facts()``) is the
+    BASE, every field present on a declared ``[[components]]`` entry with the same ``id``
+    OVERWRITES the same-named base field, and any field present on only one side (base-only
+    ``manifest``/``dir``, or component-only ``stage``/``produces``/``consumes``) survives into the
+    merged record unchanged — nothing is silently deleted from either side.
+
+    ONE deliberate divergence from :func:`effective_relationships`'s raise-on-mismatch posture: a
+    ``[[components]]`` entry with no matching derived package id stays DECLARED-ONLY and never
+    raises — no fabricated ``manifest``/``dir``/``language`` fields are synthesized for it. Both
+    the core config and the example instance's overlay must keep loading with zero edits even
+    though none of their declared component ids match a real manifest-derived package id in this
+    checkout today; that "no match -> declared-only, no error" behavior is the load-bearing proof
+    here, not an edge case.
+
+    Any derived package with no overriding ``[[components]]`` entry passes through unchanged.
+
+    ``facts`` defaults to a lazy call to ``tools.memory_regen.package_facts.build_facts()`` (an
+    in-function import, mirroring ``compile_graph``'s deferred ``from tools.harness_config import
+    load_project`` — avoids a heavy/circular import at module load).
+
+    The merged+declared-only+passthrough set is stable-sorted by ``id`` (mirrors
+    ``effective_relationships``'s ``sorted(merged, key=lambda rel: rel["id"])``).
+    """
+    if cfg is None:
+        cfg = load_project()
+    if facts is None:
+        from tools.memory_regen.package_facts import build_facts
+
+        facts = build_facts()
+
+    by_id: dict[str, dict] = {pkg["id"]: dict(pkg) for pkg in facts["packages"]}
+
+    merged: list[dict] = []
+    seen_ids: set[str] = set()
+    for comp in components(cfg):
+        comp_id = comp["id"]
+        seen_ids.add(comp_id)
+        if comp_id in by_id:
+            record = {**by_id[comp_id], **comp}
+        else:
+            record = dict(comp)
+        merged.append(record)
+
+    for pkg_id, pkg in by_id.items():
+        if pkg_id not in seen_ids:
+            merged.append(pkg)
+
+    return sorted(merged, key=lambda pkg: pkg["id"])
+
+
 def language_bash_scopes(cfg: dict | None = None) -> set[str]:
     """Return the derived set of bash allow-scopes: union of ``languages[*].bash_scope`` + implicit
     ``"pytest *"``. This is the set the permission-matrix language allow-scopes must equal."""
