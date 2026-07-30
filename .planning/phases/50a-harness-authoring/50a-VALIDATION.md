@@ -39,14 +39,14 @@ created: 2026-07-30
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 50a-01-* | 01 | 1 | MONO-10 | — | N/A | structural | `uv run pytest tools/harness_lint/tests/test_skill_citations.py -x` | ❌ W0 | ⬜ pending |
+| 50a-01-* | 01 | 1 | MONO-10 | — | N/A | structural | `uv run pytest tools/harness_lint/tests/test_harness_author.py -x` | ❌ W0 | ⬜ pending |
 | 50a-02-* | 02 | 2 | MONO-10, MONO-11 | — | N/A | structural + emit round-trip | `uv run pytest tools/harness_lint tools/harness_emit -q`; then `uv run python -m tools.harness_emit` twice | ✅ extend | ⬜ pending |
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] `tools/harness_lint/tests/test_skill_citations.py` — every `path:line` citation in a skill body
+- [ ] `tools/harness_lint/tests/test_harness_author.py` — every `path:line` citation in a skill body
       (outside fenced code blocks) resolves to a tracked file, and where a name anchor is cited the
       name is present. Mechanical template: `test_core_no_example_dep.py:80-96`. **No prior art
       exists — this is new test code.**

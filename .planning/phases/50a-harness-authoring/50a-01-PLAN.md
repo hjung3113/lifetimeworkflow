@@ -224,8 +224,8 @@ def test_core_has_no_example_dependency() -> None:
 </task>
 
 <task type="auto">
-  <name>Task 2: Author harness-author and absorb skill-creator (the one atomic change)</name>
-  <files>harness/skills/harness-author/SKILL.md, harness/skills/skill-creator/SKILL.md, tools/harness_lint/caps.py, harness/skills/brownfield-adoption/SKILL.md</files>
+  <name>Task 2: Author harness-author, absorb skill-creator, regenerate the derived plane — ONE atomic task and ONE commit</name>
+  <files>harness/skills/harness-author/SKILL.md, harness/skills/skill-creator/SKILL.md, tools/harness_lint/caps.py, harness/skills/brownfield-adoption/SKILL.md, tools/harness_emit/emit-manifest.json, tools/harness_emit/tests/__snapshots__/test_emit_determinism.ambr, .opencode/skill/harness-author/SKILL.md, .opencode/skill/skill-creator/SKILL.md, .claude/skills/harness-author/SKILL.md, .claude/skills/skill-creator/SKILL.md, AGENTS.md</files>
   <read_first>
     - harness/skills/skill-creator/SKILL.md (whole file, 46 lines — the source being absorbed
       verbatim in substance, widened in scope)
@@ -277,9 +277,36 @@ def test_core_has_no_example_dependency() -> None:
     `EXPECTED_SKILLS` (`caps.py:122-138`) continuing its existing phase-by-phase narration convention,
     naming Phase 50a's absorption; in `harness/skills/brownfield-adoption/SKILL.md`, replace the
     `skill-creator` token in the sibling-skill enumeration (line 15) with `harness-author`, and replace
-    the closing citation `(skill-creator Step 0)` (line 21) with `(harness-author Step 0)`. Per
-    CONTEXT.md's "one change" decision, do not commit or leave any of these four file changes partial
-    relative to each other.
+    the closing citation `(skill-creator Step 0)` (line 21) with `(harness-author Step 0)`.
+
+    **The `caps.py` docstring addendum must NOT contain the literal substring `skill-creator`** — the
+    docstring lives inside `tools/`, which is a scan root of this task's own
+    `test_no_tracked_reference_to_skill_creator`. Phrase it by role instead (e.g. "the prior
+    skills-only meta-authoring skill"), otherwise the task's own gate correctly goes red.
+
+    THEN, IN THE SAME TASK (merged from the former Task 3 — the plan-checker found that a separate
+    task would auto-commit an intermediate state whose emitted trees are stale, which is exactly the
+    red intermediate CONTEXT.md's "one change" decision forbids; `generate.py:361-362`'s
+    `validate.check_skill_set` also raises before any write on a mismatched set):
+
+    Run `python -m tools.harness_emit` from the repo root. This regenerates both emitted skill copies
+    (`.opencode/skill/harness-author/SKILL.md` + `.claude/skills/harness-author/SKILL.md` created; the
+    two `skill-creator` emitted copies pruned by `manifest.prune_then_write` — do NOT `git rm` them by
+    hand), `tools/harness_emit/emit-manifest.json` (GENERATED — never hand-edit), and `AGENTS.md`'s
+    HARNESS-MANAGED skills line. Then run
+    `uv run pytest tools/harness_emit/tests/test_emit_determinism.py --snapshot-update` to regenerate
+    `tools/harness_emit/tests/__snapshots__/test_emit_determinism.ambr` (the 5 lines that embedded the
+    old name), and inspect that diff to confirm only the name change is present — no unrelated content
+    drift. Re-run `python -m tools.harness_emit` a second time and confirm `git status` shows no
+    further changes (idempotency — MONO-10 criterion 2). Run `uv run pytest -q` and confirm zero
+    failures. Confirm zero growth: `git ls-files harness/skills/*/SKILL.md | wc -l` == 8;
+    `test_command_count_is_stable` still passes at 19; `git status --porcelain -- 'tools/*/pyproject.toml'
+    'contracts/'` shows no new package or contract files.
+
+    Stage everything — the new skill, the deleted `skill-creator/` directory, `caps.py`,
+    `brownfield-adoption/SKILL.md`, the regenerated manifest, snapshot, both emitted trees and
+    `AGENTS.md` — and land it as ONE commit. Task 1's RED-test commit stays separate; that one is
+    intentionally red-only and self-contained.
   </action>
   <acceptance_criteria>
     - `harness/skills/skill-creator/` no longer exists on disk (`test -d harness/skills/skill-creator`
@@ -289,16 +316,25 @@ def test_core_has_no_example_dependency() -> None:
     - `grep -c 'skill-creator' harness/skills/brownfield-adoption/SKILL.md` returns `0`.
     - `grep -c '"skill-creator"' tools/harness_lint/caps.py` returns `0` and
       `grep -c '"harness-author"' tools/harness_lint/caps.py` returns `1`.
+    - `python -m tools.harness_emit` exits 0 and, run a second consecutive time, produces no further
+      `git diff` in `.opencode/`, `.claude/`, `opencode.json`, `AGENTS.md`, `CLAUDE.md`, or
+      `tools/harness_emit/emit-manifest.json`.
+    - `find .opencode .claude -iname '*skill-creator*'` returns no results; `find .opencode .claude
+      -iname '*harness-author*'` returns exactly 2 `SKILL.md` paths.
+    - `uv run pytest -q` reports zero failures.
+    - `git ls-files harness/skills/*/SKILL.md | wc -l` reports `8`.
   </acceptance_criteria>
   <verify>
-    <automated>uv run pytest tools/harness_lint/tests/test_harness_author.py tools/harness_lint/tests/test_skills.py -q</automated>
+    <automated>python -m tools.harness_emit && git diff --exit-code -- .opencode .claude opencode.json AGENTS.md CLAUDE.md tools/harness_emit/emit-manifest.json && uv run pytest -q</automated>
   </verify>
-  <done>All four tests in test_harness_author.py pass; test_skills.py::test_expected_skills_present_no_sprawl
-  passes with the new 8-name set (harness-author replacing skill-creator).</done>
+  <done>All four tests in test_harness_author.py pass; test_expected_skills_present_no_sprawl passes with
+  the new 8-name set; both runtime trees carry harness-author and no longer carry the absorbed skill;
+  manifest and snapshot regenerated and idempotent; full suite green; skills==8, commands==19, no new
+  packages/contracts; the whole absorption landed in ONE commit.</done>
 </task>
 
-<task type="auto">
-  <name>Task 3: Regenerate the derived plane, prove idempotency and zero-growth, commit</name>
+<task type="auto" skip="merged-into-task-2">
+  <name>Task 3 (MERGED INTO TASK 2 — do not execute separately)</name>
   <files>tools/harness_emit/emit-manifest.json, tools/harness_emit/tests/__snapshots__/test_emit_determinism.ambr, .opencode/skill/harness-author/SKILL.md, .opencode/skill/skill-creator/SKILL.md, .claude/skills/harness-author/SKILL.md, .claude/skills/skill-creator/SKILL.md, AGENTS.md</files>
   <read_first>
     - tools/harness_emit/generate.py:320-458 (the `emit()` spine — validate-then-write,
