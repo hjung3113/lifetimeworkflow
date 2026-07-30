@@ -174,3 +174,12 @@ None - no external service configuration required.
 ---
 *Phase: 49-contract-impact*
 *Completed: 2026-07-30*
+
+## Self-Check: PASSED
+
+- FOUND: tools/contract_graph/impact.py
+- FOUND: tools/contract_graph/tests/test_impact.py
+- FOUND: .planning/phases/49-contract-impact/49-01-SUMMARY.md
+- FOUND commit: 4199110 (Task 1)
+- FOUND commit: 7d12815 (Task 2)
+- FOUND commit: de8fd55 (this docs commit)
