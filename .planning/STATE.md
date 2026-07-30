@@ -4,13 +4,13 @@ milestone: v2.6
 milestone_name: Minimal Monorepo Core
 status: verifying
 stopped_at: Completed 49-01-PLAN.md — impact.py reporter + tests
-last_updated: "2026-07-30T03:44:33.007Z"
+last_updated: "2026-07-30T04:50:45.694Z"
 last_activity: 2026-07-30
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
+  total_phases: 4
+  completed_phases: 4
+  total_plans: 11
+  completed_plans: 11
   percent: 100
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-30)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 49 — Contract Impact
+**Current focus:** Phase 50a — Harness Authoring
 
 ## Current Position
 
-Phase: 49 (Contract Impact) — EXECUTING
-Plan: 2 of 2
+Phase: 50a (Harness Authoring) — EXECUTING
+Plan: 1 of 1
 Status: Phase complete — ready for verification
 Last activity: 2026-07-30
 
@@ -165,6 +165,7 @@ Last activity: 2026-07-30
 | Phase 48 P03 | 15min | 2 tasks | 5 files |
 | Phase 49 P01 | 25min | 2 tasks | 2 files |
 | Phase 49 P02 | 35 | 3 tasks | 11 files |
+| Phase 50a P01 | 12min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -308,6 +309,8 @@ Recent decisions affecting current work:
 - [Phase 49]: 49-01 impact.py's refusal report has a structurally different key set (no traversal keys) than a resolved report; owners dict keyed by the FULL node_set (start node + all traversal ids); contract_owner is None on both bare-node-id resolution and an unenclosed owning_package() lookup, never fabricates.
 - [Phase 49]: The contract-change route names /impact; the other three routes' single-command forward-references stay open for a future phase
 - [Phase 49]: test_coexist.py's hardcoded command count (18) was a Rule-1 fix, same guard class as test_commands.py, broken by this plan's own change
+- [Phase 50a]: Task 3 pre-merged into Task 2 (plan-authored) to avoid a red intermediate emit state — generate.py's check_skill_set raises before any write on a mismatched skill set
+- [Phase 50a]: caps.py docstring addendum and harness-author's own description avoid the literal skill-creator string, phrasing the absorption by role instead — both files live inside the new dangling-reference gate's own scan scope
 
 ### Pending Todos
 
@@ -375,7 +378,7 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-30T03:43:51.172Z
+Last session: 2026-07-30T04:50:05.657Z
 Stopped at: Completed 49-01-PLAN.md — impact.py reporter + tests
 any v2.5 work, which satisfies Phase 43 SC-1's CI-green half. Awaiting the four human-gated items
 and the merge. Do NOT run `/gsd:complete-milestone` before the merge.

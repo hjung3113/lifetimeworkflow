@@ -53,10 +53,10 @@ it names what it retires.
 
 ### Harness Authoring (Phase 50a)
 
-- [ ] **MONO-10**: A developer can author a new harness artifact through a `harness-author` skill
+- [x] **MONO-10**: A developer can author a new harness artifact through a `harness-author` skill
   that asks grounded questions and offers defaults cited as `path:line` from this checkout, writing
   its output **runtime-neutral under `harness/` only** (the emitter projects it).
-- [ ] **MONO-11**: `harness-author` **absorbs `skill-creator`**, keeping the skill count net ±0
+- [x] **MONO-11**: `harness-author` **absorbs `skill-creator`**, keeping the skill count net ±0
   (8 → 8), and adds zero new packages, commands, or contracts.
 
 ### Managed Adopt / Upgrade (Phase 50b)
@@ -104,6 +104,6 @@ multi-package target) — see `ROADMAP.md` § *Phase Numbering* and the v2.6 rec
 | MONO-07 | Phase 48 | Complete |
 | MONO-08 | Phase 49 | Complete |
 | MONO-09 | Phase 49 | Complete |
-| MONO-10 | Phase 50a | Pending |
-| MONO-11 | Phase 50a | Pending |
+| MONO-10 | Phase 50a | Complete |
+| MONO-11 | Phase 50a | Complete |
 | MONO-12 | Phase 50b | Pending |

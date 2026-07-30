@@ -261,7 +261,7 @@ genuine gap is ③.
      without this phase, and no CI job or hook references `/impact`.
   4. The `contract-change` route in `harness/agents/orchestrator.md` names `/impact` as the evidence
      step it previously left unfilled, and the emit round-trip to both runtimes is byte-clean.
-- [ ] **Phase 50a: Harness Authoring** *(v2.6 — SPLIT half (a), ships independently)* — one
+- [x] **Phase 50a: Harness Authoring** *(v2.6 — SPLIT half (a), ships independently)* — one (completed 2026-07-30)
   `harness-author` skill: Q&A with defaults cited as `path:line` from this checkout, output
   runtime-neutral under `harness/` only (the emitter projects it), **absorbing `skill-creator`** for
   net skills ±0. Presupposes PROD-01 (shipped in v2.5 phase 42). (MONO-10, MONO-11)
@@ -543,7 +543,7 @@ single-file shape today.
 | 47. Package Facts | v2.6 | 5/5 | Complete   | 2026-07-29 |
 | 48. Convention Profiles | v2.6 | 3/3 | Complete   | 2026-07-30 |
 | 49. Contract Impact | v2.6 | 2/2 | Complete   | 2026-07-30 |
-| 50a. Harness Authoring | v2.6 | — | Not started | - |
+| 50a. Harness Authoring | v2.6 | 1/1 | Complete   | 2026-07-30 |
 | 50b. Managed Adopt / Upgrade | v2.6 | — | Not started | - |
 
 Per-phase plan counts for v1.0–v2.2 are preserved in the milestone archives under
