@@ -106,4 +106,4 @@ multi-package target) — see `ROADMAP.md` § *Phase Numbering* and the v2.6 rec
 | MONO-09 | Phase 49 | Complete |
 | MONO-10 | Phase 50a | Complete |
 | MONO-11 | Phase 50a | Complete |
-| MONO-12 | Phase 50b | Pending |
+| MONO-12 | Phase 50b | **BLOCKED** — carried (no real multi-package target repo) |

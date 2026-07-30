@@ -25,8 +25,8 @@ file keeps only the milestone-level index so it stays constant-size as milestone
   2026-07-26**: 34–37 shipped; 30 partial; 31/32/33 cut; 38 landed as code `bc9a6d9`, formalized by
   v2.5 phase 39)
 - ✅ **v2.5 De-ceremony** — Phases 39–46 (shipped 2026-07-30)
-- 🚧 **v2.6 Minimal Monorepo Core** — Phases 47, 48, 49, 50a, 50b (**in progress**, started
-  2026-07-30)
+- ✅ **v2.6 Minimal Monorepo Core** — Phases 47, 48, 49, 50a shipped 2026-07-30; **50b BLOCKED and
+  carried** (no real multi-package target repo — MONO-12 carried, see the Carried section)
 
 ## Phases
 
@@ -273,9 +273,20 @@ genuine gap is ③.
   3. `skill-creator` no longer exists and everything it did is reachable through `harness-author`; the
      skill count is **8 before and 8 after**.
   4. Zero new packages under `tools/`, zero new commands, zero new contracts.
-- [ ] **Phase 50b: Managed Adopt / Upgrade** *(v2.6 — SPLIT half (b), blocked on an external
-  precondition)* — simplified `/adopt` as a managed install/update over one manifest that **reports
+- [⛔] **Phase 50b: Managed Adopt / Upgrade** *(v2.6 — SPLIT half (b), **BLOCKED and carried
+  2026-07-30**)* — simplified `/adopt` as a managed install/update over one manifest that **reports
   conflicts** rather than silently overwriting a target repo's files. (MONO-12)
+
+  > **BLOCKED 2026-07-30 — precondition undischarged, recorded per criterion 4.** No real
+  > multi-package target repo exists for this work. What this checkout has is synthetic only: the
+  > three adoption fixtures (`tools/adoption_apply/tests/fixtures/{polyglot-single,client-server,
+  > partial-collision-crlf}`) and the in-repo 2-member demo workspace declared in `workspace.toml`
+  > (`tests/fixtures/workspace/member-{a,b}`). Unrelated repositories on the developer's machine were
+  > deliberately **not** used: `/adopt` writes into its target, so pointing it at a repo outside this
+  > project's scope is an outward-facing change nobody authorized. Decision taken by the owner at the
+  > phase boundary: record BLOCKED and carry **MONO-12**, rather than manufacture a nominal target
+  > that would satisfy criterion 4 only on paper. v2.6 closes on **47 · 48 · 49 · 50a**.
+  > **To unblock:** name a real multi-package target repo, then re-plan this phase against it.
   **Hard precondition:** a **real multi-package target repo**. None exists in this checkout. If none
   exists when the phase is reached, 50b is recorded **BLOCKED and carried** — it does not stall the
   milestone, which closes on 47 · 48 · 49 · 50a.
@@ -493,6 +504,12 @@ single-file shape today.
 
 ### 📋 Carried to a later milestone
 
+- **MONO-12** managed `/adopt` install/update over one manifest with conflict reporting — **carried
+  out of v2.6 with phase 50b BLOCKED** (2026-07-30). Blocked on a hard *external* precondition, not on
+  code: no real multi-package target repo. Unblock by naming one, then re-plan phase 50b against it.
+  All three of its success criteria (manifest records managed files; re-run updates instead of
+  re-installing and is a no-op when unchanged; a diverged managed file is reported as a conflict and
+  left untouched) remain as specified.
 - **EVOL-02** contract versioning / compatibility engine — the only survivor; still a standalone
   engine needing its own ADR.
 - **D-24** CODEOWNERS advisory on this repo — re-openable as a machine-side check on golden baseline
@@ -544,7 +561,7 @@ single-file shape today.
 | 48. Convention Profiles | v2.6 | 3/3 | Complete   | 2026-07-30 |
 | 49. Contract Impact | v2.6 | 2/2 | Complete   | 2026-07-30 |
 | 50a. Harness Authoring | v2.6 | 1/1 | Complete   | 2026-07-30 |
-| 50b. Managed Adopt / Upgrade | v2.6 | — | Not started | - |
+| 50b. Managed Adopt / Upgrade | v2.6 | — | **BLOCKED** — no real multi-package target repo; MONO-12 carried | 2026-07-30 |
 
 Per-phase plan counts for v1.0–v2.2 are preserved in the milestone archives under
 `.planning/milestones/`; they are not restated here so this table stays a fixed size.
