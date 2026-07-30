@@ -1380,7 +1380,12 @@
   2. **Self-sufficient per-package AGENTS.md** — write `components/<name>/AGENTS.md` that
      **RESTATES the non-negotiables verbatim** (contract-first, §4.3–4.6 boundary invariants,
      constitution-plane-is-gated, derived-not-hand-edited). Codex replaces nested AGENTS.md rather
-     than concatenating, so the file must be self-sufficient — never inherit-only (P11).
+     than concatenating, so the file must be self-sufficient — never inherit-only (P11). As part of
+     this same step, regenerate the derived package-facts artifact (`uv run python -m
+     tools.memory_regen.package_facts`) and assert the newly scaffolded package now resolves its
+     own convention profile — e.g. `python -c "from tools.harness_config import conventions_for;
+     print(conventions_for('components/<name>/...'))"` should report the new package's own id, not
+     fall through to the repo-wide default.
   
   3. **Test harness** — add the test scaffold (Python `tests/` + a failing placeholder test, or the
      .NET xunit.v3 test project) so the member is verifiable from creation.
@@ -1388,7 +1393,8 @@
   ## Guard
   
   - The order is enforced: structure → self-sufficient AGENTS.md → tests. A member without its
-    per-package rules or without a test harness is incomplete.
+    per-package rules or without a test harness is incomplete. The profile-regeneration and
+    `conventions_for` resolution check belongs inside step 2 — it is not a new step.
   - Stage new files individually when committing; do not blanket-add the working tree.
   
   ===== claude-command/component =====
@@ -1413,7 +1419,12 @@
   2. **Self-sufficient per-package AGENTS.md** — write `components/<name>/AGENTS.md` that
      **RESTATES the non-negotiables verbatim** (contract-first, §4.3–4.6 boundary invariants,
      constitution-plane-is-gated, derived-not-hand-edited). Codex replaces nested AGENTS.md rather
-     than concatenating, so the file must be self-sufficient — never inherit-only (P11).
+     than concatenating, so the file must be self-sufficient — never inherit-only (P11). As part of
+     this same step, regenerate the derived package-facts artifact (`uv run python -m
+     tools.memory_regen.package_facts`) and assert the newly scaffolded package now resolves its
+     own convention profile — e.g. `python -c "from tools.harness_config import conventions_for;
+     print(conventions_for('components/<name>/...'))"` should report the new package's own id, not
+     fall through to the repo-wide default.
   
   3. **Test harness** — add the test scaffold (Python `tests/` + a failing placeholder test, or the
      .NET xunit.v3 test project) so the member is verifiable from creation.
@@ -1421,7 +1432,8 @@
   ## Guard
   
   - The order is enforced: structure → self-sufficient AGENTS.md → tests. A member without its
-    per-package rules or without a test harness is incomplete.
+    per-package rules or without a test harness is incomplete. The profile-regeneration and
+    `conventions_for` resolution check belongs inside step 2 — it is not a new step.
   - Stage new files individually when committing; do not blanket-add the working tree.
   
   ===== opencode-command/contract-check =====
