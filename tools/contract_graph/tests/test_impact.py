@@ -1,0 +1,250 @@
+"""MONO-08 impact-reporter tests — the five behaviors, all on synthetic fixtures.
+
+The live graph is EMPTY on this checkout (``compile_graph()`` on the default core config returns
+``{"relationships": [], "adjacency": {}, "diagnostics": []}`` — CER-08 removed the core
+``[pipeline].edges``). Every real contract therefore hits clean-refusal today, so the traversal and
+composition behaviour cannot be exercised against the live tree at all — every fixture here is a
+hand-built synthetic ``cfg`` dict, mirroring ``test_compile.py``'s domain-neutral ``"a"``/``"b"``/
+``"widget"`` idiom. Never a literal instance-directory path (GEN-04).
+
+Five behaviors covered, one section each:
+
+1. Traversal reuse over a multi-hop fixture — ``report()``'s direct/reverse/transitive values are
+   the SAME as calling ``query.py``'s three functions directly on the same compiled graph.
+2. Affected-package attribution — a node in the affected set with a matching ``facts`` package
+   entry appears in ``affected_packages``.
+3. No-second-traversal-engine structural check — extended per the plan-checker's strengthened
+   requirement to ALSO catch a ``for``-over-``adjacency`` re-implementation and any locally-defined
+   recursive function, not just a ``while``-shaped re-implementation. Mutation-tested against two
+   synthetic violation stubs (a while-frontier stub and a for-over-adjacency stub) to prove the
+   check itself is not a check that cannot fail.
+4. Three-way distinguishable outcomes — refused / resolved-but-isolated / resolved-with-affected-set
+   are asserted to differ (or match) by KEY SET, never by prose alone.
+5. Determinism — two calls to ``report()`` on the same graph + contract_path are byte-identical.
+"""
+
+from __future__ import annotations
+
+import ast
+import json
+from pathlib import Path
+
+from tools.contract_graph import compile_graph, direct, reverse, transitive
+from tools.contract_graph import impact as impact_module
+from tools.contract_graph.impact import report
+
+# --- shared synthetic fixture (domain-neutral: a/b/c/d, contract "widget") ------------------------
+
+
+def _fan_out_cfg() -> dict:
+    """One authority 'a' fanning out to 'b'/'c'/'d' via contract 'widget' (mirrors
+    test_compile.py's test_fan_out_compiles_clean shape)."""
+    return {
+        "components": [
+            {"id": "a", "produces": ["widget"], "consumes": [], "language": "py"},
+            {"id": "b", "produces": [], "consumes": ["widget"], "language": "py"},
+            {"id": "c", "produces": [], "consumes": ["widget"], "language": "py"},
+            {"id": "d", "produces": [], "consumes": ["widget"], "language": "py"},
+        ],
+        "languages": [{"id": "py", "persona": "harness/agents/py-engineer.md"}],
+        "contract_graph": {
+            "relationships": [
+                {"id": "r1", "contract": "widget", "authority": "a", "dependents": ["b", "c", "d"]},
+            ]
+        },
+    }
+
+
+# --- behavior 1: traversal reuse over a multi-hop fixture -----------------------------------------
+
+
+def test_report_composes_direct_reverse_transitive_not_rederived() -> None:
+    """report()'s direct/reverse/transitive are the SAME values query.py's functions return
+    for the resolved node — proof of composition, not re-derivation."""
+    cfg = _fan_out_cfg()
+    graph = compile_graph(cfg)
+    result = report("contracts/sample/widget.schema.json", cfg=cfg)
+    assert result["resolved"] is True
+    assert result["node"] == "a"
+    assert result["direct"] == direct(graph, "a")
+    assert result["reverse"] == reverse(graph, "a")
+    assert result["transitive"] == transitive(graph, "a")
+
+
+def test_report_accepts_a_bare_node_id_directly() -> None:
+    """A bare node id (already a key/value in adjacency) resolves without contract-id lookup."""
+    cfg = _fan_out_cfg()
+    result = report("b", cfg=cfg)
+    assert result["resolved"] is True
+    assert result["node"] == "b"
+    assert result["contract_id"] is None
+
+
+# --- behavior 2: affected-package attribution ------------------------------------------------------
+
+
+def test_affected_packages_include_a_matching_facts_entry() -> None:
+    """A facts["packages"] entry whose id matches an affected node id (and has a 'dir' key)
+    appears in affected_packages."""
+    cfg = _fan_out_cfg()
+    facts = {
+        "packages": [
+            {"id": "a", "dir": "pkg/a"},
+            {"id": "b", "dir": "pkg/b"},
+            {"id": "unaffected", "dir": "pkg/unaffected"},
+        ]
+    }
+    result = report("contracts/sample/widget.schema.json", cfg=cfg, facts=facts)
+    assert "a" in result["affected_packages"]
+    assert "b" in result["affected_packages"]
+    assert "unaffected" not in result["affected_packages"]
+
+
+def test_affected_packages_excludes_declared_only_components_with_no_dir() -> None:
+    """A facts package record with no 'dir' key (declared-only) never reaches owning_package() and
+    never appears in affected_packages — the Phase-48 adapter filter is applied, not bypassed."""
+    cfg = _fan_out_cfg()
+    facts = {"packages": [{"id": "c"}]}  # no "dir" key
+    result = report("contracts/sample/widget.schema.json", cfg=cfg, facts=facts)
+    assert "c" not in result["affected_packages"]
+
+
+# --- behavior 3: no-second-traversal-engine structural check (strengthened) -----------------------
+
+
+def _traversal_violations(source: str) -> list[str]:
+    """Return a list of violation tags found in ``source``, empty on a clean pass.
+
+    Catches THREE re-implementation shapes, per the plan-checker's strengthened requirement (a
+    plain ``while``-only check catches only one shape):
+
+    1. Any ``ast.While`` node (a hand-rolled frontier/worklist loop).
+    2. Any ``ast.For`` node whose iterated expression's source mentions "adjacency" (a for-loop
+       walking the adjacency dict directly instead of calling direct/reverse/transitive).
+    3. Any locally-defined function that calls itself by name (a hand-rolled recursive walk).
+    """
+    tree = ast.parse(source)
+    violations: list[str] = []
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.While):
+            violations.append("while-loop")
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.For):
+            iter_src = ast.unparse(node.iter)
+            if "adjacency" in iter_src:
+                violations.append(f"for-over-adjacency: {iter_src}")
+
+    for fn in [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]:
+        for node in ast.walk(fn):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == fn.name
+            ):
+                violations.append(f"recursive-function: {fn.name}")
+
+    return violations
+
+
+def _impact_source() -> str:
+    return Path(impact_module.__file__).read_text(encoding="utf-8")
+
+
+def test_impact_module_calls_the_three_query_functions_and_defines_no_second_engine() -> None:
+    """impact.py calls direct()/reverse()/transitive() by name AND the extended structural check
+    (while-loop / for-over-adjacency / local recursion) finds zero violations in its own source."""
+    source = _impact_source()
+    assert "direct(" in source and "reverse(" in source and "transitive(" in source
+    assert _traversal_violations(source) == []
+
+
+# Mutation-test the extended check itself: it must actually trip on both re-implementation shapes,
+# not just the while-shaped one. Each stub below is a synthetic (never impact.py's real source)
+# module string standing in for a hypothetical re-implementation.
+
+
+def test_check_traps_a_while_frontier_stub() -> None:
+    """A synthetic while-frontier re-implementation trips the check (shape 1)."""
+    stub = (
+        "def report(contract_path, cfg=None, graph=None, facts=None):\n"
+        "    frontier = [contract_path]\n"
+        "    visited = set()\n"
+        "    while frontier:\n"
+        "        current = frontier.pop(0)\n"
+        "        visited.add(current)\n"
+        "    return {'resolved': True}\n"
+    )
+    violations = _traversal_violations(stub)
+    assert any(v == "while-loop" for v in violations), violations
+
+
+def test_check_traps_a_for_over_adjacency_stub() -> None:
+    """A synthetic for-over-adjacency re-implementation trips the check (shape 2) — the plan-
+    checker's warning: a while-only check would NOT catch this shape."""
+    stub = (
+        "def report(contract_path, cfg=None, graph=None, facts=None):\n"
+        "    graph = compile_graph(cfg)\n"
+        "    reached = set()\n"
+        "    for node in graph['adjacency']:\n"
+        "        reached.add(node)\n"
+        "    return {'resolved': True}\n"
+    )
+    violations = _traversal_violations(stub)
+    assert any(v.startswith("for-over-adjacency") for v in violations), violations
+
+
+# --- behavior 4: three-way distinguishable outcomes (refused / isolated / affected) ---------------
+
+
+def test_refused_isolated_and_affected_reports_are_key_set_distinguishable() -> None:
+    """The refused shape's key set differs from the resolved shapes'; isolated and affected share
+    the same key set (both are legitimately resolved — the distinction is the 'isolated' value,
+    never a shape difference)."""
+    cfg = _fan_out_cfg()
+    # Extend the fixture with a genuinely isolated node: authority "iso" with zero dependents.
+    cfg["components"].append(
+        {"id": "iso", "produces": ["gadget"], "consumes": [], "language": "py"}
+    )
+    cfg["contract_graph"]["relationships"].append(
+        {"id": "r2", "contract": "gadget", "authority": "iso", "dependents": []}
+    )
+
+    refused = report("contracts/sample/does-not-exist.schema.json", cfg=cfg)
+    isolated = report("contracts/sample/gadget.schema.json", cfg=cfg)
+    affected = report("contracts/sample/widget.schema.json", cfg=cfg)
+
+    assert refused["resolved"] is False
+    assert "node" not in refused
+    assert "isolated" not in refused
+
+    assert isolated["resolved"] is True
+    assert isolated["isolated"] is True
+    assert "node" in isolated
+
+    assert affected["resolved"] is True
+    assert affected["isolated"] is False
+
+    assert set(refused.keys()) != set(isolated.keys())
+    assert set(isolated.keys()) == set(affected.keys())
+
+
+# --- behavior 5: determinism -----------------------------------------------------------------------
+
+
+def test_report_is_deterministic_across_repeated_calls() -> None:
+    """Two report() calls with the identical cfg/contract_path return byte-identical (==) dicts."""
+    cfg = _fan_out_cfg()
+    first = report("contracts/sample/widget.schema.json", cfg=cfg)
+    second = report("contracts/sample/widget.schema.json", cfg=cfg)
+    assert first == second
+
+
+def test_report_json_dump_is_deterministic_across_repeated_calls() -> None:
+    """json.dumps(report(...), sort_keys=True) is string-identical across repeated invocations —
+    proves determinism survives the exact serialization main() uses."""
+    cfg = _fan_out_cfg()
+    dump_a = json.dumps(report("contracts/sample/widget.schema.json", cfg=cfg), sort_keys=True)
+    dump_b = json.dumps(report("contracts/sample/widget.schema.json", cfg=cfg), sort_keys=True)
+    assert dump_a == dump_b
