@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-07-30",
+  "timestamp": "2026-07-30T12:16:01.870Z",
   "phase": null,
   "phase_name": null,
   "phase_dir": null,
@@ -8,27 +8,48 @@
   "task": null,
   "total_tasks": null,
   "status": "between_milestones",
-  "milestone": "v2.5",
-  "milestone_status": "shipped_archived_tagged",
+  "milestone": "v2.6",
+  "milestone_name": "Minimal Monorepo Core",
+  "milestone_status": "shipped_archived_tagged_merged",
   "completed_tasks": [
-    {"id": 1, "name": "Milestone v2.5 — 8 phases (39-46), 33 plans, 16/16 requirements", "status": "done", "commit": "1658247", "note": "net -27,398 LOC outside .planning/; human-authored gates 5 kinds -> 0; constitution plane 4 -> 3 members; product gained 4 routes + /flow"},
-    {"id": 2, "name": "Milestone-close PR #5", "status": "done", "commit": "858460f", "note": "the FIRST CI run on any v2.5 work (ci.yml is pull_request-only); all 11 jobs plus the `gate` fan-in passed, which is what finally satisfied Phase 43's SC-1 CI-green half"},
-    {"id": 3, "name": "PR #6 — the four human-gated leftovers", "status": "done", "commit": "dd8ac08", "note": "ADR-0013 (retires ADR-0008, ratifies the cited-target rule), docs/glossary.md :20 and :23, README counts 982 -> 881, and D-24 accepted as a documented residual"},
-    {"id": 4, "name": "Archive + tag v2.5", "status": "done", "commit": "e3b3cd2", "note": "ROADMAP collapsed 860 -> 267 lines; REQUIREMENTS.md archived and removed; MILESTONES.md and PROJECT.md rewritten; annotated tag v2.5 pushed"}
+    {"id": 1, "name": "Phase 47 Package Facts (5 plans, MONO-01..04)", "status": "done", "commit": "c343515", "note": "committed derived package + dependency graph; every edge parsed from the manifests themselves across 5 kinds; [[components]] demoted to an override slot; contract->owning-package attribution. Report-only, +0 gates/CI jobs."},
+    {"id": 2, "name": "Phase 48 Convention Profiles (3 plans, MONO-05..07)", "status": "done", "commit": "82d7bc4", "note": "conventions_for(path) nearest-wins; lint/test commands DERIVED from [[languages]], never restated; /component step 2 populates. Extended the existing package-facts artifact rather than adding a sibling, so ci.yml diff stayed empty."},
+    {"id": 3, "name": "Phase 49 Contract Impact (2 plans, MONO-08..09)", "status": "done", "commit": "6f8a56b", "note": "/impact <contract> over the EXISTING direct/reverse/transitive + package facts; replaced the inline one-liner in orchestrator.md's contract-change route. The milestone's one sanctioned +1 command (18 -> 19)."},
+    {"id": 4, "name": "Phase 50a Harness Authoring (1 plan, MONO-10..11)", "status": "done", "commit": "470df6a", "note": "harness-author absorbed skill-creator at skills 8 -> 8, widened to skills+commands+agents, every default cited as a path:line that must resolve (new citation-integrity gate)."},
+    {"id": 5, "name": "Milestone audit", "status": "done", "commit": "f032b21", "note": "status tech_debt, 0 gaps, 11/12 requirements, integration 11/11 verified by execution."},
+    {"id": 6, "name": "Archive v2.6 + clean up 22 stale phase dirs from earlier milestones", "status": "done", "commit": "295993d"},
+    {"id": 7, "name": "Ruff ratchet repair after CI went red on the PR", "status": "done", "commit": "a919596", "note": "v2.6 had added 23 violations (E501 +19, B905 +2, I001 +2). Fixed, then recorded the shrink 74 -> 67."},
+    {"id": 8, "name": "PR #7 merged to main", "status": "done", "commit": "e9824cd", "note": "all 12 CI jobs green including the gate fan-in; 100 commits, 422 files, +16,158/-1,547."}
   ],
   "remaining_tasks": [
-    {"id": 5, "name": "v2.6 Minimal Monorepo Core (phases 47-50)", "status": "not_started", "why": "Scoped in ROADMAP, never started: package facts, convention profiles, contract impact, harness-author + managed adopt. The smallest goal-complete subset is all of v2.5 + 47 + 49. Start with /gsd:new-milestone — it writes the fresh .planning/REQUIREMENTS.md, which is deliberately absent right now (archived to .planning/milestones/v2.5-REQUIREMENTS.md, not lost)."}
+    {"id": 9, "name": "Scope v2.7 via /gsd:new-milestone", "status": "not_started", "why": "Candidate inputs are already written up in .planning/NEXT-SESSION-PROMPT.md: MONO-12 (blocked only on naming a target repo), three recorded tech-debt items, and two process findings from this session."}
   ],
-  "blockers": [],
-  "human_actions_pending": [],
+  "blockers": [
+    {
+      "description": "MONO-12 / phase 50b (managed /adopt install-update over one manifest with conflict reporting): needs a REAL multi-package target repo. This checkout has only synthetic targets (three adoption fixtures + the in-repo 2-member demo workspace in workspace.toml).",
+      "type": "external",
+      "workaround": "Name a real multi-package target repo, then re-plan phase 50b against it. Nothing in the code is missing. Note WHY it was not resolved opportunistically: /adopt writes into its target, so pointing it at the unrelated sibling repos on this machine would be an unauthorized outward-facing change."
+    },
+    {
+      "description": "BOOT-01 .NET 10 SDK install is egress-denied in this container; local .NET-side execution stays gated.",
+      "type": "human_action",
+      "workaround": "Allowlist the .NET download hosts (or ship a pre-installed SDK), then run tools/bootstrap/install.sh && tools/bootstrap/verify.sh. CI's dotnet lang-tests job passes independently, so this does not block merges."
+    }
+  ],
+  "human_actions_pending": [
+    {"action": "Decide whether to push the local v2.6 git tag", "context": "Created locally and intentionally not pushed, matching the existing v2.1/v2.3/v2.5 tags which are also local-only.", "blocking": false},
+    {"action": "Name a real multi-package target repo if MONO-12 should ship in v2.7", "context": "The sole precondition for phase 50b.", "blocking": false}
+  ],
   "decisions": [
-    {"decision": "Accepted D-24 — CODEOWNERS is advisory on this repo — as a documented residual rather than compensating for it", "rationale": "Branch protection on main requires the `gate` check (strict) but carries no required_pull_request_reviews block and enforce_admins is false. `require_code_owner_reviews=true` is NOT the remedy it appears to be: GitHub forbids self-approval, so a solo repo where the sole code owner is the PR author cannot satisfy it without a second account or a per-merge admin waiver — already considered and declined at v2.3 RAT-5. Accepting is consistent with ADR-0012 (CI and the merge are the authority) and ADR-0013 clause (c) (no new enforcement). Re-openable in v2.6 as a machine-side check on golden baseline diffs, which v2.5's no-growth constraint forbade and which is now closed.", "phase": "v2.5 close"},
-    {"decision": "Authored ADR-0013 to supersede ADR-0008, and ratified a keep-cited-targets rule with it", "rationale": "ADR-0012 superseded 0001 and 0010 by name but never mentioned 0008, whose whole subject Phase 43 deleted. Under this repo's precedence an accepted ADR wins a data conflict against code, so 0008 was telling agents the deletion was the error. The second clause ratifies what Phase 45 did without a rule behind it: a path cited by an accepted ADR is corrected or marked historical, never deleted, because the citing text is append-only and can never be repaired.", "phase": "v2.5 close"},
-    {"decision": "Resolved D-14 as a finding rather than authoring a correction for ADR-0003", "rationale": "The handoff described two accepted ADRs citing files the milestone made stale. Measured, BOTH citation targets are live — docs/explanation/next-milestone-task-control-plane.md kept under a HISTORICAL header, and harness/agents/templates/component-engineer.md kept and corrected in place with two live gates depending on it. So ADR-0003 needs no correction; the real dangling references are the six deleted paths inside ADR-0008's own immutable Links section.", "phase": "v2.5 close"},
-    {"decision": "The human ran the constitution-plane writes via an agent-prepared script instead of the agent setting a token", "rationale": "tools/hooks/contract_guard.py:55 puts docs/adr/** on CONSTITUTION_GLOBS alongside docs/glossary.md, so THREE of the four leftovers were human-gated, not one — correcting the handoff's own framing that the ADR was agent-authorable. GOLDEN_APPROVE_HUMAN must never be forged and HARNESS_DEV_BYPASS must not be used on a plane a gate protects. The working pattern: the agent prepares an off-plane script whose every replacement asserts an exact single match (mutation-tested both directions) with an ERR trap rolling back a partial apply, and the human runs it. .planning/quick/260729-wdi-*/apply.sh is the worked example.", "phase": "v2.5 close"},
-    {"decision": "Corrected two stale declarations before archiving rather than letting the archive preserve them", "rationale": "ROADMAP had phases 43-46 unchecked while its own Progress table read Complete, and REQUIREMENTS' traceability read CER-01/02/03 as `Not started` against a Phase 39 VERIFICATION recording all three SATISFIED. Both are this milestone's defining defect class — a declaration that has quietly stopped meaning anything — so archiving them unchanged would have made the record permanently wrong.", "phase": "v2.5 close"}
+    {"decision": "Record phase 50b BLOCKED and carry MONO-12 rather than designate an unrelated repo as the adoption target", "rationale": "/adopt writes into its target; conscripting an out-of-scope repo is an unauthorized outward-facing change, and a manufactured fixture target would satisfy the phase's own criterion 4 only on paper. Owner chose block-and-carry at the phase boundary.", "phase": "50b"},
+    {"decision": "Merge tasks 2+3 of plan 50a-01 into ONE atomic task before executing", "rationale": "generate.py's validate.check_skill_set raises before any write on a mismatched skill set, so the per-task auto-commit between the absorption and the re-emit would have committed a state that cannot even regenerate. The plan-checker caught that the plan's prose said 'one commit' while the executor harness had no mechanism to honour it.", "phase": "50a"},
+    {"decision": "Extend package-facts.md with a Convention Profiles section instead of a sibling derived artifact", "rationale": "A second artifact would have required re-widening ci.yml's stale-derived job — exactly the growth v2.6 forbids. Result: zero ci.yml and zero .gitignore diff for phase 48.", "phase": "48"},
+    {"decision": "Accept the recorded tech debt and archive rather than fix inline", "rationale": "Audit status tech_debt with 0 gaps; no item blocks the milestone goal. All three are written into the audit with locations.", "phase": "milestone"},
+    {"decision": "Reconcile the four nyquist_compliant flags to true at audit time", "rationale": "Every Wave-0 test file shipped and every task carried an automated verify command; only the frontmatter flag had never been flipped. Records drift, not coverage drift.", "phase": "milestone"},
+    {"decision": "Record the ruff baseline shrink 74 -> 67 after repairing the ratchet", "rationale": "The ratchet permits the baseline to shrink only; recording it means the seven reflowed lines cannot silently come back.", "phase": "post-milestone"},
+    {"decision": "Use strict=True for both new zip() call sites in test_orchestrator_topology.py", "rationale": "positions is built as a 1:1 comprehension over _ROUTE_SUBSECTIONS, so equal length is structurally guaranteed; strict=True turns that invariant into something enforced rather than assumed.", "phase": "post-milestone"}
   ],
   "uncommitted_files": [],
-  "next_action": "Run /gsd:new-milestone to open v2.6 Minimal Monorepo Core (phases 47-50). Nothing is in flight, no gate is red, and no human action is pending.",
-  "context_notes": "Milestone v2.5 is SHIPPED, ARCHIVED and TAGGED — a clean boundary, not a pause. Working tree clean; branch claude/data-pipeline-harness-8aypct and origin/main both carry the work. Final gates: core 881 passed / 7 snapshots, instance 14, contract-drift (core + workspace), emit-drift, stale-derived and the ruff ratchet all exit 0; commands 18. THE LESSON THAT MATTERS MOST is in memory as checks-that-cannot-fail, and it now has EIGHT instances, not six: the original six across phases 40-46 (RETIRED_SIGNATURES[0] reading one entry, a test asserting [] == [], a loop over an emptied edge list, deny rows whose only enforcer had been deleted, a glob set matching zero paths, three predicates passing on prose elsewhere in the same file), plus two found during this very close (ROADMAP's unchecked 43-46 against a Complete Progress table, and CER-01/02/03's `Not started`). The normal gates verify that declared things EXIST, never that declarations still MEAN something — so mutation-test every new or edited assertion, scope predicates to the section they govern, and count per-block rather than whole-file. Second: docs/adr/** is on CONSTITUTION_GLOBS, so authoring an ADR is human-gated exactly like docs/glossary.md; when an agent must not write, prepare an off-plane script with exact-single-match assertions and have the human run it. Third, mechanical: git commit needs its -m message BEFORE the --, and a NEW file needs an explicit targeted `git add` first, or `git commit -- <pathspec>` rejects the path outright."
+  "next_action": "Read .planning/NEXT-SESSION-PROMPT.md, then run /gsd:new-milestone to scope v2.7.",
+  "context_notes": "v2.6 is a CLEAN BOUNDARY, not a pause: audited, archived, tagged locally, PR #7 merged to main (e9824cd), all 12 CI jobs green, working tree clean. .planning/phases/ is empty and .planning/REQUIREMENTS.md is intentionally absent (archived to .planning/milestones/v2.6-REQUIREMENTS.md) — /gsd:new-milestone writes the fresh one. Live surface: 19 commands, 8 skills, 6 contracts, 981 tests. THE PROCESS LESSON THAT MATTERS MOST THIS SESSION: the in-session gate I actually ran (uv run pytest) was NOT the CI gate, and I reported the tree green several times before CI caught 23 ruff violations the ratchet would have caught locally. /verify-work already includes lint; the phase executors never went through it. Run `uv run python -m tools.ruff_baseline` before claiming green. SECOND LESSON: adversarial review found 8 critical defects that phase verification had already passed over — verification and review do different jobs, and the data argues against trimming review."
 }
