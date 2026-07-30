@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.6
-milestone_name: Minimal Monorepo Core
-status: shipped
-last_updated: "2026-07-30"
+milestone: v2.7
+milestone_name: Real-Target Adoption
+status: planning
+last_updated: "2026-07-30T14:51:56.714Z"
 last_activity: 2026-07-30
 progress:
-  total_phases: 5
-  completed_phases: 4
-  blocked_phases: 1
-  total_plans: 11
-  completed_plans: 11
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -27,11 +26,10 @@ step is `/gsd:new-milestone` to scope the next cycle.
 
 ## Current Position
 
-Phase: — (no active milestone)
+Phase: Not started (defining requirements)
 Plan: —
-Status: v2.6 archived to `.planning/milestones/v2.6-*`; `.planning/REQUIREMENTS.md` intentionally
-absent — `/gsd:new-milestone` creates a fresh one.
-Last activity: 2026-07-30 — milestone v2.6 audited, completed and archived
+Status: Defining requirements
+Last activity: 2026-07-30 — Milestone v2.7 started
 
 ## Blockers/Concerns
 
@@ -42,18 +40,23 @@ Last activity: 2026-07-30 — milestone v2.6 audited, completed and archived
   targets (three adoption fixtures + the in-repo 2-member demo workspace), and `/adopt` writes into
   its target, so unrelated repos were not used. **Human action:** name a real multi-package target
   repo, then re-plan phase 50b against it. Nothing in the code is missing.
+
 - **[Tech debt — v2.6]** the `"dir"`-key filter adapter is copy-duplicated between
   `tools/harness_config/loader.py:conventions_for()` and `tools/contract_graph/impact.py:report()`.
   Verified not divergent today; a shared helper would remove the drift risk.
+
 - **[Tech debt — v2.6]** `/impact` cannot distinguish a typo'd contract path from a
   tracked-but-unwired one while the contract graph is empty; they separate once relationships exist.
+
 - **[Tech debt — v2.6]** the citation gate exempts fenced code blocks, and numeric-range citations
   verify the anchor falls inside the range rather than matching content exactly.
+
 - **[BLOCKING — carried from Phase 1] BOOT-01 .NET 10 install egress-denied:**
   `tools/bootstrap/install.sh` + `verify.sh` are committed and correct, but the .NET 10 download
   hosts are blocked by this container's egress policy. **Human action:** allowlist those hosts (or
   ship a pre-installed .NET 10), then run `bash tools/bootstrap/install.sh && bash
   tools/bootstrap/verify.sh`. All .NET-side execution stays gated until then.
+
 - Research flag: opencode.ai is proxy-403'd; re-verify hook event names, the permission-matrix
   semantics and skill size caps against live docs when next touching those surfaces.
 

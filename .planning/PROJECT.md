@@ -96,19 +96,45 @@ RAT-5, and the per-tool deny-spelling gap are recorded `obsolete-by-deletion`; v
 
 </details>
 
-## Next Milestone Goals
+## Current Milestone: v2.7 Real-Target Adoption
 
-Not yet defined. Run `/gsd:new-milestone` to scope the next cycle. Two things are already on the
-record as inputs:
+**Goal:** 하네스를 **실제 외부 모노레포**에 도입해서, 새 기계를 짓는 대신 **현실이 무엇을 깨뜨리는지
+관측하고 그것만 수리**한다. 네 갈래 목적(①패키지별 컨벤션 ②패키지 간 계약 ③LLM의 크로스-프로젝트
+이해 ④장기 유지보수)이 합성 픽스처가 아니라 남의 레포에서 성립하는지가 이 마일스톤의 유일한 판정
+기준이다.
 
-- **MONO-12 / phase 50b** — managed `/adopt` install-update over one manifest with conflict
-  reporting. Blocked on a hard *external* precondition: a real multi-package target repo. Naming one
-  unblocks it; nothing in the code is missing.
-- **Recorded tech debt from v2.6** — the duplicated `"dir"`-key filter adapter between
-  `loader.py:conventions_for()` and `impact.py:report()` (not divergent today, but nothing structural
-  prevents drift), `/impact`'s ambiguous refusal while the contract graph is empty, and the documented
-  blind spots in the citation and AST gates. See `.planning/v2.6-MILESTONE-AUDIT.md`.
-- **EVOL-02** contract versioning / compatibility engine remains the long-standing carried item.
+**Why this and not more machinery (scoping review, 2026-07-30):** 이월된 후보 7개를 목적 4개
+기준으로 재평가한 결과 **4개가 하네스 자신을 더 단단히 감싸는 일**이었다 — 인용/AST 게이트 사각지대
+보강, D-24 CODEOWNERS 어드바이저리, 세션 내 ruff 강제장치(ADR-0012가 이미 CI를 결정 권한으로
+못박았으므로 CI 복제), 그리고 겪은 적 없는 문제에 엔진을 신설하는 EVOL-02. `/impact`의 모호 거부는
+관계 레코드가 생기면 자동 해소되므로 작업 자체가 불필요. 목적 안에 남는 실질 항목은 **MONO-12
+하나**였고, 그것은 코드가 아니라 **실제 타깃 레포**가 없어서 막혀 있었다. 기능 마일스톤을 억지로
+채우면 필연적으로 하드닝으로 채워진다 — v2.5가 27k LOC를 지워 되돌린 바로 그 실패 모드다.
+
+**Target repo:** `~/Desktop/2026/FeedbackOps` 의 **git worktree**(별도 브랜치). pnpm workspace +
+turbo, root + `packages/{ui,shared}` + `apps/{frontend,backend}`. `/adopt`가 타깃에 쓰기 때문에
+워크트리로 격리하고 원본 `develop`은 침범하지 않는다. 전부 JS/TS 단일언어 — 하네스가 "언어는 슬롯,
+코어는 언어 중립"이라 주장해온 것의 **가장 강한 반증 시험**이다.
+
+**Target features:**
+- **워크트리 격리 도입** — `/adopt`의 전 경로(discover → draft → apply)를 실제 타깃에 실행.
+- **MONO-12 해제** — 관리형 install-update. v2.6 성공 기준 3개 불변: 매니페스트가 관리 파일을 기록 /
+  재실행은 업데이트이고 변경 없으면 no-op / 분기된 관리 파일은 **충돌 보고 후 미변경**.
+- **현실이 깨뜨린 것만 수리** — 관측된 결함에 한정. 사전 후보(가설, 관측 전): pnpm `workspace:*`
+  프로토콜 의존성 파싱, `pnpm-workspace.yaml`/`turbo.json` 미인지(매니페스트 인식 5종에 없음),
+  단일언어 인스턴스에서의 폴리글랏 가정 누출, `[[languages]]` 슬롯의 javascript 채움.
+- **(소형) v2.6 tech debt B-1** — `loader.py:conventions_for()`와 `impact.py:report()` 사이
+  `"dir"`-키 필터 어댑터 복사 중복을 공유 헬퍼로 추출. 표면 **감소**.
+
+**Binding constraint (carried, governs every phase):** 절대 만들고자 하는 목적 이상으로 불필요한 검증
+게이트나 보안 등으로 프로젝트 규모를 **확장하지 말 것**. 이 마일스톤의 구체 목표: **새 게이트 0개,
+새 커맨드 0개** — 수리는 전부 기존 표면 안에서. 요구사항은 도입 **관측 결과**에 따라 페이즈 중
+구체화된다(관측이 설계에 선행).
+
+**OUT of scope:** **EVOL-02**(계약 버저닝/호환성 엔진 — 겪지 않은 문제, 별도 ADR 필요);
+**D-24**(CODEOWNERS 어드바이저리 — 게이트 추가, 은퇴 대상 없음); **인용/AST 게이트 사각지대 보강**
+(게이트로 게이트 보강); **세션 내 ruff 강제장치**(ADR-0012의 CI=결정권한 결정을 되돌림);
+`/impact` 모호 거부(관계 레코드로 자동 해소).
 
 ## Shipped Milestone: v2.6 Minimal Monorepo Core
 
@@ -395,7 +421,14 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
+*Last updated: 2026-07-30 — milestone **v2.7 Real-Target Adoption** started via `/gsd:new-milestone`. Scoped by a candidate review that rejected 4 of 7 carried inputs as self-hardening and 1 as speculative infrastructure; the only in-purpose item left (MONO-12) was blocked on an external target, so the milestone names one: a git worktree of `~/Desktop/2026/FeedbackOps` (pnpm + turbo, JS/TS only), isolated so the original `develop` is untouched. New gates and new commands both budgeted at **0**. v2.6 shipped and archived 2026-07-30 to `.planning/milestones/v2.6-*`; PR #7 merged.*
+
+<details>
+<summary>Previous footer — v2.6 start (2026-07-30)</summary>
+
 *Last updated: 2026-07-30 — milestone **v2.6 Minimal Monorepo Core** (phases 47-50) started via `/gsd:new-milestone`. Scope carried verbatim from the v2.5 panel's OUT-of-scope section; research skipped (design already settled). Owner chose all four phases over the smallest goal-complete subset (47 + 49), so phase 50 is split into 50a (`harness-author`, ships) and 50b (managed adopt/upgrade, blocks on a real multi-package target). D-24 and EVOL-02 stay out. v2.5 shipped and archived 2026-07-30 to `.planning/milestones/v2.5-*`.*
+
+</details>
 
 <details>
 <summary>Previous footer — v2.5 start (2026-07-26)</summary>
