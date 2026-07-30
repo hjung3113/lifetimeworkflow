@@ -56,6 +56,28 @@ Out of the boundary: convention *enforcement* (a gate), prose-rule generation co
 - The profile **points at** the nearest `AGENTS.md` and never copies its prose. Two sources that
   could disagree is the failure mode being avoided.
 
+### Resolved after research (2026-07-30)
+- **Extend the existing artifact, do not add a sibling.** The convention profiles become additional
+  section(s) of `.memory/derived/package-facts.md` via `package_facts.py`'s `build_facts()` /
+  `render()`. That costs **zero** `ci.yml` diff and zero `.gitignore` diff — a second artifact would
+  mean re-widening the `stale-derived` job again, which is exactly the growth this milestone forbids.
+- **`conventions_for()` takes a repo-relative path**, mirroring `owning_package()`'s own contract.
+- **An adapter filter is required before calling `owning_package()`.** `effective_packages()` can
+  return declared-only `[[components]]` entries that carry no `"dir"` key (true of both live configs
+  today), and `owning_package()` indexes `"dir"` — so filter to records that have a `dir` before
+  resolving. Do NOT add the filter inside `ownership.py`; keep that function untouched.
+- **The real nested pair proves nesting, not command divergence.** `libs/python` is genuinely nested
+  inside the root package, but both are `python` (one `[[languages]]` row), so their test/format
+  commands are identical. Criterion 1's "inner differs from enclosing" must therefore key on package
+  id / dir / nearest-`AGENTS.md` (both `libs/python/AGENTS.md` and root `AGENTS.md` exist). A
+  synthetic two-language fixture additionally proves the commands-differ case — the real pair alone
+  would leave that untested.
+- **MONO-06's falsifiable proof uses the repo's existing pure-function idiom**: pass synthetic
+  `cfg` / `facts` dicts straight into the function (as `tools/harness_config/tests/
+  test_effective_packages.py` already does). No monkeypatching, no temp-file config.
+- **The 18 → 18 command count has no existing assertion.** `test_commands.py` is glob/subset-driven
+  only. Add a durable count-stability test rather than relying on a one-time manual measurement.
+
 ### Claude's Discretion
 - Whether the derived profile data is a separate artifact or additional section(s) of the existing
   package-facts artifact — pick whichever keeps the committed-derived set smaller while still
