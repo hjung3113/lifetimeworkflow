@@ -456,6 +456,18 @@ def test_trailing_slash_contract_path_is_refused() -> None:
     assert result["resolved"] is False
 
 
+# --- behavior 8: WR-02 "searched" is actually informative ------------------------------------------
+
+
+def test_refusal_searched_field_names_the_contract_ids_actually_checked() -> None:
+    """WR-02 (49-REVIEW.md) regression: 'searched' is the sorted list of contract ids checked, not
+    a bare count that is identical for every refusal regardless of what was searched."""
+    cfg = _fan_out_cfg()
+    result = report("contracts/sample/does-not-exist.schema.json", cfg=cfg)
+    assert result["resolved"] is False
+    assert result["searched"] == ["widget"]
+
+
 # --- behavior 9: WR-03 contract_owner is never attributed from an unvalidated path ------------------
 
 

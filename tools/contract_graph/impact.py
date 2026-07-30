@@ -128,7 +128,10 @@ def report(
     default to the real repo, but tests inject synthetic data with no monkeypatching).
 
     Refusal shape (unresolved): ``{"resolved": False, "contract_path", "contract_id", "searched"}``
-    — no traversal keys at all.
+    — no traversal keys at all. ``"searched"`` (WR-02, 49-REVIEW.md) is the sorted list of contract
+    ids actually checked against ``contract_path``, not a bare count — a caller can see whether the
+    derived id is a near-miss of a real one (a typo) or genuinely absent from every relationship
+    (tracked-but-unwired, or wholly bogus).
 
     Resolved shape: ``{"resolved": True, "contract_path", "contract_id", "node", "isolated",
     "direct", "reverse", "transitive", "affected_contracts", "affected_packages",
@@ -153,7 +156,7 @@ def report(
             "resolved": False,
             "contract_path": contract_path,
             "contract_id": contract_id,
-            "searched": len(relationships),
+            "searched": sorted({rel["contract"] for rel in relationships}),
         }
 
     d = direct(graph, node)
