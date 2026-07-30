@@ -234,7 +234,7 @@ genuine gap is ③.
   5. The phase adds no gate and no CI job: `ci.yml`'s job set and `gate.needs` are unchanged from the
      phase's base commit, and the derived artifact's freshness rides the **existing** `stale-derived`
      job rather than a new one.
-- [ ] **Phase 48: Convention Profiles** *(v2.6)* — nearest-wins per-package convention data whose
+- [x] **Phase 48: Convention Profiles** *(v2.6)* — nearest-wins per-package convention data whose (completed 2026-07-30)
   lint/test commands are derived from the existing `[[languages]]` slot, populated by `/component`
   step 2 inside its existing mandated order. **No new command.** (MONO-05, MONO-06, MONO-07)
   **Success criteria:**
@@ -450,7 +450,7 @@ profiles.
 | 45. Projection Repair | v2.5 | 6/6 | Complete   | 2026-07-29 |
 | 46. Product Flow | v2.5 | 3/3 | Complete   | 2026-07-29 |
 | 47. Package Facts | v2.6 | 5/5 | Complete   | 2026-07-29 |
-| 48. Convention Profiles | v2.6 | 2/3 | In Progress|  |
+| 48. Convention Profiles | v2.6 | 3/3 | Complete   | 2026-07-30 |
 | 49. Contract Impact | v2.6 | — | Not started | - |
 | 50a. Harness Authoring | v2.6 | — | Not started | - |
 | 50b. Managed Adopt / Upgrade | v2.6 | — | Not started | - |

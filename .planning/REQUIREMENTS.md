@@ -40,7 +40,7 @@ it names what it retires.
 - [x] **MONO-06**: Each language's lint and test commands are derived from the existing
   `[[languages]]` slot in `harness/project.toml`, so a convention profile never restates a command
   that the language config already owns.
-- [ ] **MONO-07**: `/component` step 2 populates a convention profile for the new package as part of
+- [x] **MONO-07**: `/component` step 2 populates a convention profile for the new package as part of
   its existing mandated order (structure → AGENTS.md → tests), adding **no new command**.
 
 ### Contract Impact (Phase 49)
@@ -101,7 +101,7 @@ multi-package target) — see `ROADMAP.md` § *Phase Numbering* and the v2.6 rec
 | MONO-04 | Phase 47 | Complete |
 | MONO-05 | Phase 48 | Complete |
 | MONO-06 | Phase 48 | Complete |
-| MONO-07 | Phase 48 | Pending |
+| MONO-07 | Phase 48 | Complete |
 | MONO-08 | Phase 49 | Pending |
 | MONO-09 | Phase 49 | Pending |
 | MONO-10 | Phase 50a | Pending |
