@@ -62,6 +62,7 @@ EXPECTED_COMMAND_NAMES = frozenset(
         "docs-sync",
         "fan-out-synthesize",
         "flow",
+        "impact",
         "lint",
         "new-contract-rule",
         "orient",
@@ -90,13 +91,14 @@ def test_golden_adjacent_commands_present() -> None:
 
 
 def test_command_count_is_stable() -> None:
-    """Live command count is pinned at 18 (v2.6 no-growth constraint) — RESEARCH.md Q5.
+    """Live command count is pinned at 19 (v2.6 no-growth constraint plus the one sanctioned
+    Phase-49 addition, `/impact`) — RESEARCH.md Q5.
 
     Failing this test on a legitimate new command means bumping the constant deliberately, not a
     regression by itself; it converts a one-time manual measurement into a durable, self-proving
     gate for future phases' "N -> N" claims.
     """
-    assert len(_command_files()) == 18
+    assert len(_command_files()) == 19
 
 
 def test_command_names_are_stable() -> None:
