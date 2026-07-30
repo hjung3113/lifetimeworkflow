@@ -1,0 +1,13 @@
+{
+  "enumeration_mode": "git",
+  "inventory_source": "discover",
+  "minio_data": {
+    "excluded": [],
+    "included": []
+  },
+  "node_modules": {
+    "excluded": [],
+    "included": []
+  },
+  "result": "observed"
+}
