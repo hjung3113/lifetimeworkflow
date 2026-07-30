@@ -112,3 +112,10 @@ None - no external service configuration required.
 ---
 *Phase: 48-convention-profiles*
 *Completed: 2026-07-30*
+
+## Self-Check: PASSED
+
+- FOUND: tools/harness_config/tests/test_conventions_for.py
+- FOUND: .planning/phases/48-convention-profiles/48-01-SUMMARY.md
+- FOUND commit: d0cad03
+- FOUND commit: 8df233d

@@ -35,9 +35,9 @@ it names what it retires.
 
 ### Convention Profiles (Phase 48)
 
-- [ ] **MONO-05**: An agent working in any package can ask which conventions apply there and get the
+- [x] **MONO-05**: An agent working in any package can ask which conventions apply there and get the
   **nearest-wins** answer — the nearest enclosing package's profile, not the repo-wide default.
-- [ ] **MONO-06**: Each language's lint and test commands are derived from the existing
+- [x] **MONO-06**: Each language's lint and test commands are derived from the existing
   `[[languages]]` slot in `harness/project.toml`, so a convention profile never restates a command
   that the language config already owns.
 - [ ] **MONO-07**: `/component` step 2 populates a convention profile for the new package as part of
@@ -99,8 +99,8 @@ multi-package target) — see `ROADMAP.md` § *Phase Numbering* and the v2.6 rec
 | MONO-02 | Phase 47 | Complete |
 | MONO-03 | Phase 47 | Complete |
 | MONO-04 | Phase 47 | Complete |
-| MONO-05 | Phase 48 | Pending |
-| MONO-06 | Phase 48 | Pending |
+| MONO-05 | Phase 48 | Complete |
+| MONO-06 | Phase 48 | Complete |
 | MONO-07 | Phase 48 | Pending |
 | MONO-08 | Phase 49 | Pending |
 | MONO-09 | Phase 49 | Pending |

@@ -450,7 +450,7 @@ profiles.
 | 45. Projection Repair | v2.5 | 6/6 | Complete   | 2026-07-29 |
 | 46. Product Flow | v2.5 | 3/3 | Complete   | 2026-07-29 |
 | 47. Package Facts | v2.6 | 5/5 | Complete   | 2026-07-29 |
-| 48. Convention Profiles | v2.6 | — | Not started | - |
+| 48. Convention Profiles | v2.6 | 1/3 | In Progress|  |
 | 49. Contract Impact | v2.6 | — | Not started | - |
 | 50a. Harness Authoring | v2.6 | — | Not started | - |
 | 50b. Managed Adopt / Upgrade | v2.6 | — | Not started | - |
