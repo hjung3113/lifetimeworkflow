@@ -4,14 +4,14 @@ milestone: v2.6
 milestone_name: Minimal Monorepo Core
 status: executing
 stopped_at: Completed 48-01-PLAN.md
-last_updated: "2026-07-30T00:38:09.303Z"
+last_updated: "2026-07-30T00:43:18.412Z"
 last_activity: 2026-07-30
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 8
-  completed_plans: 6
-  percent: 75
+  completed_plans: 7
+  percent: 88
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-30)
 ## Current Position
 
 Phase: 48 (Convention Profiles) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-07-30
 
@@ -161,6 +161,7 @@ Last activity: 2026-07-30
 | Phase 47 P04 | 20min | 2 tasks | 3 files |
 | Phase 47 P05 | 20min | 2 tasks | 11 files |
 | Phase 48 P01 | 25min | 2 tasks | 3 files |
+| Phase 48 P02 | 20min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -299,6 +300,7 @@ Recent decisions affecting current work:
 - [Phase 47-03]: GEN-04 self-check caught a literal examples/ leak in a new core-plane test docstring before commit — reworded to a generic phrase; a separate pre-existing Plan 47-02 GEN-04 failure was verified out of scope and logged to deferred-items.md
 - [Phase 47]: MONO-04 owning_package(): pure nearest-enclosing-package-folder lookup with root-package fallback, deterministic sorted-id tie-break — Reworded 'directory'->'folder' and avoided literal direct/reverse/transitive/examples/ substrings in prose so the plan's own acceptance greps prove no-traversal-coupling and GEN-04-clean honestly, not by accident
 - [Phase 47-05]: SC5 no-growth proof: widened the existing stale-derived CI job's regen command + diff path list to cover package-facts.md, rather than adding a job — job set and gate.needs stay byte-unchanged; proven structurally by test_ci_stale_derived.py
+- [Phase 48]: render()'s cfg param is additive/optional so write()/main() call sites need no edit; None profile fields render as (none) never blank
 
 ### Pending Todos
 
@@ -366,7 +368,7 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-30T00:38:09.298Z
+Last session: 2026-07-30T00:42:43.319Z
 Stopped at: Completed 48-01-PLAN.md
 any v2.5 work, which satisfies Phase 43 SC-1's CI-green half. Awaiting the four human-gated items
 and the merge. Do NOT run `/gsd:complete-milestone` before the merge.
