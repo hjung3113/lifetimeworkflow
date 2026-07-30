@@ -498,9 +498,14 @@ Not applicable — no external ecosystem drift to track; this is a pure internal
 direct `Read`/execution of this checkout's own code in this session (no `[CITED]`/web sources — phase
 scope is codebase-grounded only, no web search).
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should `impact.py`'s report distinguish "resolved to a node with zero neighbours in all three
+> RESOLVED 2026-07-30: both questions below are settled in `49-CONTEXT.md`'s "Resolved after
+> research" block and implemented in `49-01-PLAN.md`'s behaviour spec — the three outcomes
+> (refused · resolved-but-isolated · resolved-with-affected-set) must be machine-checkably distinct
+> by key-set, and `impact.py` takes the injectable `cfg=None, graph=None, facts=None` signature.
+
+1. **RESOLVED — Should `impact.py`'s report distinguish "resolved to a node with zero neighbours in all three
    directions" from "resolved to a node, and it genuinely has some neighbours" in its rendered
    output, or is the raw `{"ids": [], "paths": []}` shape from each of `direct`/`reverse`/
    `transitive` sufficient?**
