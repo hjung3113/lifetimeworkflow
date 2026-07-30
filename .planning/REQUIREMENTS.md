@@ -45,7 +45,7 @@ it names what it retires.
 
 ### Contract Impact (Phase 49)
 
-- [ ] **MONO-08**: A developer can run `/impact <contract>` and see which contracts and which
+- [x] **MONO-08**: A developer can run `/impact <contract>` and see which contracts and which
   **packages** are affected, built on `contract_graph.query`'s existing `direct`/`reverse`/
   `transitive` (`query.py:29,39,55`) plus the Phase-47 package facts — no second traversal engine.
 - [ ] **MONO-09**: `/impact` runs **on demand only** — no SessionStart injection, no gate, no CI job.
@@ -102,7 +102,7 @@ multi-package target) — see `ROADMAP.md` § *Phase Numbering* and the v2.6 rec
 | MONO-05 | Phase 48 | Complete |
 | MONO-06 | Phase 48 | Complete |
 | MONO-07 | Phase 48 | Complete |
-| MONO-08 | Phase 49 | Pending |
+| MONO-08 | Phase 49 | Complete |
 | MONO-09 | Phase 49 | Pending |
 | MONO-10 | Phase 50a | Pending |
 | MONO-11 | Phase 50a | Pending |

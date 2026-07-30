@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.6
 milestone_name: Minimal Monorepo Core
-status: verifying
-stopped_at: Completed 48-03-PLAN.md — phase 48 complete
-last_updated: "2026-07-30T00:47:29.017Z"
+status: executing
+stopped_at: Completed 49-01-PLAN.md — impact.py reporter + tests
+last_updated: "2026-07-30T03:38:01.711Z"
 last_activity: 2026-07-30
 progress:
-  total_phases: 2
+  total_phases: 3
   completed_phases: 2
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
+  total_plans: 10
+  completed_plans: 9
+  percent: 90
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-30)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
-**Current focus:** Phase 48 — Convention Profiles
+**Current focus:** Phase 49 — Contract Impact
 
 ## Current Position
 
-Phase: 48 (Convention Profiles) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
+Phase: 49 (Contract Impact) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-07-30
 
 ## Performance Metrics
@@ -163,6 +163,7 @@ Last activity: 2026-07-30
 | Phase 48 P01 | 25min | 2 tasks | 3 files |
 | Phase 48 P02 | 20min | 2 tasks | 4 files |
 | Phase 48 P03 | 15min | 2 tasks | 5 files |
+| Phase 49 P01 | 25min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -303,6 +304,7 @@ Recent decisions affecting current work:
 - [Phase 47-05]: SC5 no-growth proof: widened the existing stale-derived CI job's regen command + diff path list to cover package-facts.md, rather than adding a job — job set and gate.needs stay byte-unchanged; proven structurally by test_ci_stale_derived.py
 - [Phase 48]: render()'s cfg param is additive/optional so write()/main() call sites need no edit; None profile fields render as (none) never blank
 - [Phase 48]: 48-03: Extended /component step 2 in place (no step 4) for MONO-07's convention-profile resolution assertion; pinned command count at 18 with a mutation-proven regression test.
+- [Phase 49]: 49-01 impact.py's refusal report has a structurally different key set (no traversal keys) than a resolved report; owners dict keyed by the FULL node_set (start node + all traversal ids); contract_owner is None on both bare-node-id resolution and an unenclosed owning_package() lookup, never fabricates.
 
 ### Pending Todos
 
@@ -370,8 +372,8 @@ ratification obligation and not an unbuilt or defective artifact.
 
 ## Session Continuity
 
-Last session: 2026-07-30T00:47:29.013Z
-Stopped at: Completed 48-03-PLAN.md — phase 48 complete
+Last session: 2026-07-30T03:38:01.706Z
+Stopped at: Completed 49-01-PLAN.md — impact.py reporter + tests
 any v2.5 work, which satisfies Phase 43 SC-1's CI-green half. Awaiting the four human-gated items
 and the merge. Do NOT run `/gsd:complete-milestone` before the merge.
 Resume file: None
