@@ -230,6 +230,30 @@ def test_refused_isolated_and_affected_reports_are_key_set_distinguishable() -> 
     assert set(isolated.keys()) == set(affected.keys())
 
 
+def test_isolated_node_resolves_identically_via_bare_id_and_via_contract_path() -> None:
+    """CR-02 (49-REVIEW.md) regression: a legitimately isolated authority ('iso', zero dependents)
+    must resolve the SAME way whether addressed by its contract path or its bare node id — not
+    silently refused when addressed directly by id. The pre-fix `contract_path in adjacency or
+    any(contract_path in deps ...)` check falsely refused this because compile_graph() never lists
+    a zero-dependent authority in adjacency at all."""
+    cfg = _fan_out_cfg()
+    cfg["components"].append(
+        {"id": "iso", "produces": ["gadget"], "consumes": [], "language": "py"}
+    )
+    cfg["contract_graph"]["relationships"].append(
+        {"id": "r2", "contract": "gadget", "authority": "iso", "dependents": []}
+    )
+
+    via_path = report("contracts/sample/gadget.schema.json", cfg=cfg)
+    via_bare_id = report("iso", cfg=cfg)
+
+    assert via_path["resolved"] is True
+    assert via_bare_id["resolved"] is True
+    assert via_path["isolated"] is True
+    assert via_bare_id["isolated"] is True
+    assert via_path["node"] == via_bare_id["node"] == "iso"
+
+
 # --- behavior 5: determinism -----------------------------------------------------------------------
 
 
@@ -248,3 +272,77 @@ def test_report_json_dump_is_deterministic_across_repeated_calls() -> None:
     dump_a = json.dumps(report("contracts/sample/widget.schema.json", cfg=cfg), sort_keys=True)
     dump_b = json.dumps(report("contracts/sample/widget.schema.json", cfg=cfg), sort_keys=True)
     assert dump_a == dump_b
+
+
+# --- behavior 6: CR-01 path-containment (traversal/collision) refusal ------------------------------
+
+
+def test_traversal_path_is_refused_not_collided_onto_the_real_contract() -> None:
+    """CR-01 (49-REVIEW.md) regression: a `../` traversal path that merely ENDS in the real
+    contract's filename must NOT resolve to the same node as the real path — it must be refused.
+    Pre-fix, both returned byte-identical, fully-confident reports."""
+    cfg = _fan_out_cfg()
+    real = report("contracts/sample/widget.schema.json", cfg=cfg)
+    bogus = report("contracts/WRONG-DIR/../../etc/widget.schema.json", cfg=cfg)
+
+    assert real["resolved"] is True
+    assert bogus["resolved"] is False
+    assert bogus.get("contract_id") is None
+
+
+def test_absolute_traversal_path_is_refused() -> None:
+    """An absolute path is rejected outright — never treated as a resolvable contract path."""
+    cfg = _fan_out_cfg()
+    result = report("/etc/widget.schema.json", cfg=cfg)
+    assert result["resolved"] is False
+    assert result.get("contract_id") is None
+
+
+def test_multi_dot_contract_filename_resolves_by_full_suffix_strip() -> None:
+    """A `<pkg>.<name>.schema.json`-style multi-dot filename still strips exactly the
+    `.schema.json` suffix (not just the last dot-segment) to derive its candidate id."""
+    cfg = _fan_out_cfg()
+    cfg["contract_graph"]["relationships"].append(
+        {"id": "r3", "contract": "a.b", "authority": "a", "dependents": ["b"]}
+    )
+    result = report("contracts/sample/a.b.schema.json", cfg=cfg)
+    assert result["resolved"] is True
+    assert result["contract_id"] == "a.b"
+
+
+def test_contract_path_with_no_extension_derives_the_whole_filename_as_candidate_id() -> None:
+    """A path with no `.schema.json` extension derives a candidate id equal to the whole filename
+    (removesuffix is a no-op) — refused when no relationship names that exact id, never crashes on
+    the missing extension."""
+    cfg = _fan_out_cfg()
+    result = report("contracts/sample/widget-no-ext", cfg=cfg)
+    assert result["resolved"] is False
+    assert result["contract_id"] == "widget-no-ext"
+
+
+def test_empty_string_contract_path_is_refused() -> None:
+    """An empty string is refused cleanly — never crashes, never collides with a real contract."""
+    cfg = _fan_out_cfg()
+    result = report("", cfg=cfg)
+    assert result["resolved"] is False
+
+
+def test_trailing_slash_contract_path_is_refused() -> None:
+    """A path with a trailing slash (its filename component is empty) is refused cleanly."""
+    cfg = _fan_out_cfg()
+    result = report("contracts/sample/", cfg=cfg)
+    assert result["resolved"] is False
+
+
+# --- behavior 9: WR-03 contract_owner is never attributed from an unvalidated path ------------------
+
+
+def test_contract_owner_is_null_for_a_traversal_path_never_root_fallback_attributed() -> None:
+    """WR-03 (49-REVIEW.md) regression: a refused (traversal) path must never reach
+    owning_package() at all — no confident, root-fallback-attributed contract_owner leaks through
+    for a path that failed CR-01's containment check."""
+    cfg = _fan_out_cfg()
+    facts = {"packages": [{"id": "a", "dir": "."}]}  # root package would match EVERY path.
+    result = report("contracts/WRONG-DIR/../../etc/widget.schema.json", cfg=cfg, facts=facts)
+    assert result["resolved"] is False
+    assert "contract_owner" not in result

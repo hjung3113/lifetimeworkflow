@@ -13,10 +13,13 @@ set.
 A graph node in this codebase is a component/member id (e.g. ``"source"``, ``"parser"``) — never a
 contract path or contract id (``compile.py``'s adjacency is keyed by ``rel["authority"]`` /
 ``rel["dependents"]``). The one genuinely new piece of logic this module adds is
-``_resolve_node``: derive a contract id from the path's filename (mirrors ``compile.py``'s
+``_resolve_node``: validate the path is not absolute and carries no ``..`` traversal segment (CR-01,
+49-REVIEW.md), derive a contract id from the validated path's filename (mirrors ``compile.py``'s
 ``_tracked_schemas`` suffix-strip idiom), scan ``effective_relationships()`` for the record naming
 that contract, and take its ``authority`` as the node — or accept ``contract_path`` directly when it
-is already a bare node id present in the graph.
+is already a DECLARED component or member id (CR-02, 49-REVIEW.md — checked against
+``components()``/``members()``, never against ``compile_graph()``'s ``adjacency``, which omits
+every legitimately isolated, zero-dependent node).
 
 An unresolved contract path produces a report shape with a DIFFERENT key set than a resolved report
 (``"resolved": False`` plus only ``contract_path``/``contract_id``/``searched`` — no ``"node"``, no
@@ -32,7 +35,7 @@ from __future__ import annotations
 
 import json
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from tools.contract_graph.compile import compile_graph
 from tools.contract_graph.ownership import owning_package
@@ -44,33 +47,71 @@ from tools.harness_config.loader import (
     languages,
     load_project,
 )
+from tools.workspace_config import members
 
 __all__ = ["report", "main"]
 
 
-def _resolve_node(
-    contract_path: str, relationships: list[dict], graph: dict
-) -> tuple[str | None, str | None]:
-    """Resolve ``contract_path`` (or a bare node id) to ``(node, contract_id)``.
+def _normalize_contract_path(contract_path: str) -> str | None:
+    """Return a POSIX-normalized ``contract_path``, or ``None`` if it escapes containment.
 
-    First tries contract-id resolution: derive ``candidate_id`` from the path's filename (the exact
-    suffix-strip idiom ``compile.py:46`` already uses) and scan ``relationships`` for the record
-    whose ``"contract"`` matches — on a hit, the record's ``"authority"`` IS the node. If no
-    relationship names the contract, fall back to bare-node-id resolution: ``contract_path`` is
-    accepted directly as the node when it is already a known key or value in
-    ``graph["adjacency"]``. Returns ``(None, candidate_id)`` when neither resolves.
+    CR-01 (49-REVIEW.md): the pre-fix ``_resolve_node`` derived a contract id purely from the
+    path's final filename component, so any path that merely *ended* in the right leaf name —
+    including a wrong-directory typo or a ``../`` traversal — resolved identically to the real
+    contract and returned a fully-confident report for the WRONG contract. This is the minimum
+    fix the review names explicitly: refuse any path that is absolute or contains a ``..``
+    segment BEFORE a candidate id is ever derived from it, so a traversal payload can never reach
+    the filename-matching step at all. (A stronger fix — matching the full path against the real
+    tracked ``contracts/**/<id>.schema.json`` glob — is not applied here because relationship
+    records only carry a bare contract id, not a directory; see the module docstring.)
     """
-    candidate_id = Path(contract_path).name.removesuffix(".schema.json")
+    normalized = contract_path.replace("\\", "/")
+    p = PurePosixPath(normalized)
+    if p.is_absolute():
+        return None
+    if ".." in p.parts:
+        return None
+    return str(p)
 
-    for rel in relationships:
-        if rel["contract"] == candidate_id:
-            return rel["authority"], candidate_id
 
-    adjacency = graph["adjacency"]
-    if contract_path in adjacency or any(contract_path in deps for deps in adjacency.values()):
-        return contract_path, None
+def _resolve_node(
+    contract_path: str,
+    relationships: list[dict],
+    component_ids: set[str],
+    member_ids: set[str],
+) -> tuple[str | None, str | None, str | None]:
+    """Resolve ``contract_path`` (or a bare node id) to ``(node, contract_id, safe_path)``.
 
-    return None, candidate_id
+    First tries contract-id resolution: reject the path outright (CR-01) if it is absolute or
+    contains a ``..`` traversal segment; otherwise derive ``candidate_id`` from the normalized
+    path's filename (the exact suffix-strip idiom ``compile.py:46`` already uses) and scan
+    ``relationships`` for the record whose ``"contract"`` matches — on a hit, the record's
+    ``"authority"`` IS the node, and ``safe_path`` is the normalized path (safe to hand to
+    ``owning_package()`` — see WR-03).
+
+    If no relationship names the contract, fall back to bare-node-id resolution: ``contract_path``
+    is accepted directly as the node when it names a DECLARED component or member id
+    (``component_ids`` / ``member_ids`` — CR-02). ``compile_graph()``'s ``adjacency`` is NOT used
+    for this check: it only ever contains an authority with at least one resolved dependent, so a
+    legitimately isolated node (zero dependents, zero references) is never a key or value there —
+    checking membership in ``adjacency`` falsely refuses every isolated node when addressed by its
+    bare id, even though the identical node resolves fine via its contract path.
+
+    Returns ``(None, candidate_id, None)`` when neither resolves (``candidate_id`` is ``None`` too
+    when the path itself was rejected by the CR-01 containment check).
+    """
+    normalized = _normalize_contract_path(contract_path)
+    candidate_id = None
+    if normalized is not None:
+        candidate_id = Path(normalized).name.removesuffix(".schema.json")
+        for rel in relationships:
+            if rel["contract"] == candidate_id:
+                return rel["authority"], candidate_id, normalized
+
+    if contract_path in component_ids or contract_path in member_ids:
+        return contract_path, None, None
+
+    return None, candidate_id, None
 
 
 def report(
@@ -100,7 +141,12 @@ def report(
     if graph is None:
         graph = compile_graph(cfg)
 
-    node, contract_id = _resolve_node(contract_path, relationships, graph)
+    component_by_id = {c["id"]: c for c in components(cfg)}
+    member_by_id = {m["id"]: m for m in members(cfg)}
+
+    node, contract_id, safe_path = _resolve_node(
+        contract_path, relationships, set(component_by_id), set(member_by_id)
+    )
 
     if node is None:
         return {
@@ -130,14 +176,17 @@ def report(
     dir_pkgs = [p for p in pkgs if "dir" in p]
     affected_packages = sorted({p["id"] for p in dir_pkgs if p["id"] in node_set})
 
+    # WR-03 (49-REVIEW.md): only ever pass `safe_path` — the CR-01-validated, normalized path —
+    # to owning_package(), never the raw `contract_path`. Its root-package fallback matches EVERY
+    # path (including an absolute path or a `../` traversal), so a confident non-null
+    # `contract_owner` must never be attributed from an unvalidated string.
     contract_owner: str | None = None
-    if contract_id is not None:
+    if contract_id is not None and safe_path is not None:
         try:
-            contract_owner = owning_package(dir_pkgs, contract_path)
+            contract_owner = owning_package(dir_pkgs, safe_path)
         except ValueError:
             contract_owner = None
 
-    component_by_id = {c["id"]: c for c in components(cfg)}
     language_by_id = {lang["id"]: lang for lang in languages(cfg)}
     owners: dict[str, str | None] = {}
     for node_id in sorted(node_set):
