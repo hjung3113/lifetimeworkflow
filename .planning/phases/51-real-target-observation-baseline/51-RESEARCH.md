@@ -525,9 +525,9 @@ directory is required for `/adopt draft`/`apply` is stale — the CLI accepts an
 | A2 | `pnpm --version` (11.1.1) and `node --version` (v22.22.2) as observed in this research session will still be the versions present when the plan executes; this is an ambient-environment fact, not a code fact, and could differ in a different execution environment. | Standard Stack, Environment Availability | Low risk — D-13 requires capturing the ACTUAL versions in the record header at run time regardless, so a drift here is self-correcting as long as the plan re-captures rather than copies this document's numbers. |
 | A3 | No FeedbackOps manifest, script, or config file contains a secret-shaped literal that would trip `scan.py`'s `SECRET_CONTENT_PATTERNS`/`SECRET_PATH_GLOBS` — this was not exhaustively checked (only the 5 `package.json` files and `pnpm-workspace.yaml` were read); a `.env`, `minio_data/` credential file, or embedded token elsewhere in the tree was not ruled out. | Security Domain | If such content exists it would be legitimately EXCLUDED from `inventory.json` (never hashed, never echoed — D-08 in `scan.py`'s own design) — this is the correct behavior, not a defect, but the evidence record should note if any `excluded: "secret-content"`/`"secret-path"` entries appear so the reader isn't surprised by files silently missing from `included`. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Will `/adopt apply` actually attempt any write inside `node_modules/`, `minio_data/`, or other
+1. **(RESOLVED by an execution-time evidence check) Will `/adopt apply` actually attempt any write inside `node_modules/`, `minio_data/`, or other
    large untracked directories?**
    - What we know: `enumerate_target()` uses `git ls-files --cached --others --exclude-standard`,
      which respects `.gitignore` — `node_modules/`/`minio_data/` are almost certainly gitignored in
@@ -535,16 +535,19 @@ directory is required for `/adopt draft`/`apply` is stale — the CLI accepts an
      never lists them).
    - What's unclear: This was not directly verified against FeedbackOps's actual `.gitignore`
      content in this research pass.
-   - Recommendation: The plan's discover-stage task should quote the `enumeration_mode` field
-     (`"git"` vs `"builtin"`) from the real `inventory.json` and spot-check that neither directory
-     appears in `included`/`excluded`, as a cheap confirming check rather than a blocking gate.
+   - Resolution: Plan 51-02 Task 1 now writes `discover/enumeration-check.json`, quotes the literal
+     `enumeration_mode` from discover inventory (or labels a draft-inventory fallback), and records
+     explicit `node_modules`/`minio_data` matches across `included` and `excluded`. If neither
+     inventory exists, it records `blocked` under the discover OBS-D id instead of asserting the
+     expected exclusion. This closes the planning question while preserving the run as authority.
 
-2. **Does `apply` ever need `--out`?**
+2. **(RESOLVED) Does `apply` ever need `--out`?**
    - What we know: `apply`'s argparse only defines `--task-dir`, `--batch-id`, `--target` — no
      `--out` flag exists on `apply` (only `discover`'s bare `tools.adoption_scan` CLI has `--out`).
    - What's unclear: Nothing — this was directly confirmed by reading `cli.py`'s `argparse`
      wiring; flagging here only so the plan does not invent a nonexistent `--out` flag for `apply`.
-   - Recommendation: Use exactly the three-flag form shown in Code Examples for `apply`.
+   - Resolution: No. Plans use exactly the three-flag form shown in Code Examples for `apply` and
+     never invent `--out`.
 
 ## Environment Availability
 
