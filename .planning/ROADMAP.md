@@ -400,6 +400,53 @@ profiles.
 4. The command count is unchanged (`/component` extended, nothing added), and no gate or CI job is
    added.
 
+#### Phase 49: Contract Impact
+
+**Goal:** Turn the `contract-change` route's *Repository evidence* step from a raw inline one-liner
+into one named command. `/impact <contract>` answers "what does changing this contract reach?" over
+**both** planes now available: the compiled contract graph (v2.3) and the Phase-47 package facts —
+so the answer names affected **packages**, not only affected contract nodes. This is the payoff of
+47 and 49 being the milestone's smallest goal-complete subset.
+
+**Requirements:** MONO-08, MONO-09
+
+**Scope** (measured 2026-07-30 against this checkout):
+
+- **No second traversal engine.** The affected sets come from `tools/contract_graph/query.py`'s
+  existing `direct` (`:29`), `reverse` (`:39`) and `transitive` (`:55`) over
+  `compile_graph()`'s adjacency, plus `tools/harness_config.effective_relationships()` /
+  `components()`. Package attribution reuses Phase 47's `owning_package()` and the package facts.
+  Writing a fresh walk would create the second authority plane REQUIREMENTS.md explicitly forbids.
+- **Replaces prose with a command, not with a new engine.** `harness/agents/orchestrator.md`'s
+  `contract-change` route currently inlines a `uv run python -c "..."` one-liner in its *Repository
+  evidence* block and explains `direct`/`reverse`/`transitive` in prose. That block becomes
+  `/impact`, and the route names it as the evidence step it previously left unfilled (criterion 4).
+- **On demand only.** No SessionStart injection, no gate, no CI job, no hook may reference `/impact`.
+  The injector's assembled output must be byte-identical with and without this phase.
+- **The one sanctioned surface addition in v2.6.** The milestone's no-growth rule is "no growth
+  without retiring at least as much"; the roadmap scopes `/impact` as exactly one new command, and
+  50a pays for itself separately (skills 8 → 8). Phase 48 pinned the command surface with
+  `test_command_count_is_stable` (`== 18`) and `test_command_names_are_stable` (the 18-name set) —
+  **both must be updated to 19 and to include `impact` in the same change**, which is precisely the
+  guard working as intended rather than an obstacle.
+- **Emit round-trip.** A new `harness/commands/impact.md` plus the edited `orchestrator.md` must
+  project cleanly into both runtime trees via `tools.harness_emit`; `.opencode/` and `.claude/` are
+  never hand-edited.
+
+**Non-goals:** a gate on impact output; caching or persisting impact results; injecting impact into
+any session banner; contract *versioning* / compatibility analysis (that is carried EVOL-02).
+
+**Success Criteria** (what must be TRUE):
+
+1. `/impact <contract>` reports the affected **contracts** and the affected **packages**, covering
+   direct, reverse and transitive relations.
+2. No second traversal engine exists: the affected sets come from `contract_graph.query`'s existing
+   three functions and the Phase-47 package facts.
+3. Nothing is injected: the SessionStart injector's assembled output is byte-identical with and
+   without this phase, and no CI job or hook references `/impact`.
+4. The `contract-change` route in `harness/agents/orchestrator.md` names `/impact` as the evidence
+   step it previously left unfilled, and the emit round-trip to both runtimes is byte-clean.
+
 ### 📋 Carried to a later milestone
 
 - **EVOL-02** contract versioning / compatibility engine — the only survivor; still a standalone
