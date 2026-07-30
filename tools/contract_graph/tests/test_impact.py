@@ -503,3 +503,21 @@ def test_main_exits_1_on_clean_refusal_and_3_on_internal_error_not_the_same_code
 
     assert crash_exit == 3
     assert crash_exit != refusal_exit
+
+
+# --- behavior 10: WR-04 malformed-package diagnostic parity with conventions_for() ------------------
+
+
+def test_malformed_package_record_prints_the_same_stderr_diagnostic_as_conventions_for(
+    capsys,
+) -> None:
+    """WR-04 (49-REVIEW.md) regression: a facts package record with 'manifest' but no 'dir' (the
+    malformed-record case, not a legitimate declared-only component) prints an stderr diagnostic —
+    the exact case conventions_for() already surfaces at its sibling call site, no longer silently
+    dropped here."""
+    cfg = _fan_out_cfg()
+    facts = {"packages": [{"id": "a", "manifest": "some/manifest.json"}]}
+    report("contracts/sample/widget.schema.json", cfg=cfg, facts=facts)
+    captured = capsys.readouterr()
+    assert "manifest" in captured.err
+    assert "dir" in captured.err

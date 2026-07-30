@@ -176,6 +176,19 @@ def report(
     pkgs = effective_packages(cfg, facts)
     # ADAPTER: reuse the exact "dir"-key filter conventions_for() applies (loader.py:330-338) —
     # owning_package() reads package["dir"] unconditionally; never call it on an unfiltered list.
+    # This also replicates conventions_for()'s stderr diagnostic for the malformed-record case
+    # (WR-02, 48-REVIEW.md / WR-04, 49-REVIEW.md): "dir" not in p alone can't distinguish a
+    # legitimate declared-only component from a derived record that lost its "dir" for some other
+    # reason. A record carrying "manifest" (meaning it came from build_facts()) but no "dir" is the
+    # malformed case — surface it on stderr instead of silently dropping it, exactly as
+    # conventions_for() does at the sibling call site.
+    for p in pkgs:
+        if "dir" not in p and "manifest" in p:
+            print(
+                f"impact: package {p.get('id')!r} has 'manifest' but no 'dir' — excluded from "
+                "ownership resolution (malformed record, not a declared-only component)",
+                file=sys.stderr,
+            )
     dir_pkgs = [p for p in pkgs if "dir" in p]
     affected_packages = sorted({p["id"] for p in dir_pkgs if p["id"] in node_set})
 
