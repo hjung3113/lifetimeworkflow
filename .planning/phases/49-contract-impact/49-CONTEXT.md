@@ -58,6 +58,43 @@ any gate on impact output.
 - The reporter lives at `tools/contract_graph/impact.py` — a new module in an **existing** package, so
   no new `tools/` package is created.
 
+### Resolved after research (2026-07-30)
+- **A graph node is a component/member id** (`"source"`, `"parser"`), never a contract path or
+  contract id — `compile.py`'s adjacency is keyed by `rel["authority"]` / `rel["dependents"]`.
+  So `/impact <contract-path>` needs a small resolution step: strip the filename to a contract id,
+  scan `effective_relationships()` for the record whose `"contract"` matches, take its
+  `"authority"` as the start node. That ~10-line lookup is the phase's one genuinely new algorithm;
+  everything downstream is composition.
+- **"Affected contracts" are the contracts carried on the edges among the affected components** —
+  derived from the relationship records, not from a second contract-level graph.
+- **The live graph is EMPTY on this checkout**: `compile_graph()` returns
+  `{"relationships": [], "adjacency": {}, "diagnostics": []}` (Phase 44's CER-08 removed the core
+  `[pipeline]` edges; `[contract_graph]` is an empty table). All 6 tracked contracts therefore
+  resolve to "no declared edges" today. **Fixtures are mandatory** — the real traversal and
+  composition behaviour cannot be exercised against the live tree at all.
+- **Three outcomes must be distinguishable, and machine-checkably so** (not merely different prose):
+  1. *refused* — the contract path resolves to no relationship record at all;
+  2. *resolved but isolated* — the record exists, the component has no edges;
+  3. *resolved with an affected set*.
+  A test must assert the three return shapes differ. Collapsing (1) and (2) is the dangerous case:
+  a pre-edit evidence step that says "nothing affected" when it actually means "I could not find
+  your contract" is worse than useless.
+- **Package attribution** reuses `effective_packages()` plus the same `"dir"`-key adapter filter
+  Phase 48 built inline in `conventions_for()` (`tools/harness_config/loader.py:320-338`).
+  `conventions_for()` itself answers a different question (conventions by containing path), so it is
+  not the right call here; `ownership.py` stays untouched either way.
+- **`impact.py` follows the repo's injectable-pure-function convention** — `cfg=None`, `graph=None`,
+  `facts=None` — matching `owning_package()` and `conventions_for()`, so tests pass synthetic data
+  with no monkeypatching.
+- **The edit site is `harness/agents/orchestrator.md:274-296`** (the *Repository evidence* block
+  holding the one-liner to delete). The five-subsection structure and the sibling routes' wording
+  must survive untouched.
+- **The guards to bump** are `tools/harness_lint/tests/test_commands.py:99` (count `18` → `19`) and
+  `EXPECTED_COMMAND_NAMES` (lines 52-73, add `"impact"`), in the same change.
+- **The injector proof is simple**: `tools/memory_regen/inject.py`'s `assemble()` has no code path
+  touching commands or `contract_graph`, so the proof is an empty diff on that file plus the existing
+  `test_inject_determinism.py` staying green.
+
 ### Claude's Discretion
 - The rendered layout of the report (sections, ordering within a section) provided it is deterministic.
 - Function names and signatures inside `impact.py`.
