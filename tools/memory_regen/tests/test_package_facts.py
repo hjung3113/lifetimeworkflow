@@ -79,6 +79,19 @@ def test_real_tree_render_structure() -> None:
     manifests = [pkg["manifest"] for pkg in facts["packages"]]
     assert manifests == sorted(manifests), "packages must be rendered in manifest-sorted order"
 
+    # Convention Profiles section (MONO-05/MONO-06) — asserted IN-MEMORY ONLY, never committed
+    # to a snapshot (GEN-04: a live-tree snapshot under tools/ would embed instance paths).
+    assert "## Convention Profiles" in text
+    root_row = next(line for line in lines if line.startswith("| logparser-harness | . |"))
+    inner_row = next(
+        line for line in lines if line.startswith("| logparser-normalize | libs/python |")
+    )
+    # nested-wins: libs/python's nearest AGENTS.md differs from the root's, even though both
+    # packages share the same `python` language row (real-tree proof, RESEARCH.md Pitfall 2).
+    assert "libs/python/AGENTS.md" in inner_row
+    assert "libs/python/AGENTS.md" not in root_row
+    assert " AGENTS.md " in root_row or root_row.endswith(" AGENTS.md |")
+
 
 # ---- (3) discovery + exclusion -------------------------------------------------------------------
 

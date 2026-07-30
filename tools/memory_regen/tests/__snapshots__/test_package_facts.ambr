@@ -21,5 +21,14 @@
   | widget-app | widget-core | runtime |
   | widget-core | widget-lib | runtime |
   
+  ## Convention Profiles
+  
+  | package | dir | language | test | format | bash_scope | agents_md | default |
+  | --- | --- | --- | --- | --- | --- | --- | --- |
+  | widget-app | widget-app | javascript | (none) | (none) | (none) | AGENTS.md | false |
+  | WidgetCli | widget-cli | csharp | (none) | (none) | (none) | AGENTS.md | false |
+  | widget-core | widget-core | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
+  | widget-lib | widget-lib | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
+  
   '''
 # ---
