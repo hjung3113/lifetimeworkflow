@@ -216,7 +216,18 @@ def main(argv: list[str] | None = None) -> int:
 
     Prints ``json.dumps(result, indent=2, sort_keys=True)`` to stdout — ``sort_keys`` is the
     determinism proof's mechanism (byte-identical regardless of internal dict-construction order).
-    Returns ``0`` when resolved, ``1`` on clean refusal, ``2`` on missing argument.
+
+    Exit codes (CR-03, 49-REVIEW.md — three DISTINCT signals, never collapsed to the same code):
+
+    * ``0`` — resolved.
+    * ``1`` — clean refusal (``report()`` returned, but ``resolved`` is ``False``).
+    * ``2`` — usage error (missing CLI argument).
+    * ``3`` — internal error: ``report()`` raised (a malformed ``harness/project.toml`` — the three
+      D-05 failure modes ``effective_relationships()`` documents — or any other unhandled
+      exception from its dependencies). This is deliberately NOT the same code as a clean refusal:
+      "your contract doesn't resolve" needs a different fix (re-check the contract path) than "the
+      config is malformed / the tool crashed" (fix ``harness/project.toml`` or the code itself), and
+      a caller parsing exit codes must be able to tell them apart.
     """
     argv = sys.argv[1:] if argv is None else argv
     if not argv:
@@ -226,7 +237,12 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
-    result = report(argv[0])
+    try:
+        result = report(argv[0])
+    except Exception as exc:  # noqa: BLE001 - CR-03: any crash must exit 3, not the refusal's 1.
+        print(f"impact: internal error: {exc}", file=sys.stderr)
+        return 3
+
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0 if result["resolved"] else 1
 

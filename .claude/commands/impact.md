@@ -14,4 +14,8 @@ An unresolved contract produces a clean refusal (non-zero exit) that names what 
 never an empty "nothing affected" success, which would read as "safe to edit" when it actually
 means "I could not find your contract."
 
+Exit codes are three distinct signals, never collapsed: `0` resolved, `1` clean refusal
+(unresolved contract), `2` usage error (missing argument), `3` internal error (a malformed
+`harness/project.toml` or another unhandled failure — fix the config/tool, not the contract path).
+
 !`uv run python -m tools.contract_graph.impact "$ARGUMENTS"`

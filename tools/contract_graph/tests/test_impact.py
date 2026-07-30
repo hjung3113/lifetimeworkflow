@@ -346,3 +346,26 @@ def test_contract_owner_is_null_for_a_traversal_path_never_root_fallback_attribu
     result = report("contracts/WRONG-DIR/../../etc/widget.schema.json", cfg=cfg, facts=facts)
     assert result["resolved"] is False
     assert "contract_owner" not in result
+
+
+# --- behavior 7: CR-03 refusal vs. internal-error exit codes are distinct --------------------------
+
+
+def test_main_exits_1_on_clean_refusal_and_3_on_internal_error_not_the_same_code() -> None:
+    """CR-03 (49-REVIEW.md) regression: a clean refusal and an unhandled exception from report()'s
+    dependencies must NOT share exit code 1 — refusal is 1, an internal error is 3."""
+    refusal_exit = impact_module.main(["definitely-not-a-real-node"])
+    assert refusal_exit == 1
+
+    def _boom(*args: object, **kwargs: object) -> dict:
+        raise ValueError("boom")
+
+    original_report = impact_module.report
+    impact_module.report = _boom
+    try:
+        crash_exit = impact_module.main(["anything"])
+    finally:
+        impact_module.report = original_report
+
+    assert crash_exit == 3
+    assert crash_exit != refusal_exit
