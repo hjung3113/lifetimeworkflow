@@ -33,6 +33,11 @@ _HARNESS_AUTHOR_SKILL = _REPO_ROOT / "harness" / "skills" / "harness-author" / "
 # scope per RESEARCH.md Pitfall 2 / Assumption A2).
 _SCAN_TARGETS = ("AGENTS.md", "CLAUDE.md", "harness", "tools", ".opencode", ".claude")
 
+# This guard file itself holds the forbidden literal as documentation/negative-control text; it is
+# EXCLUDED from the scanned set (mirrors test_core_no_example_dep.py's `_SELF` exemption), or the
+# guard would flag itself.
+_SELF = Path(__file__).resolve()
+
 _FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
 
 # A backtick-quoted inline citation shaped `<relative/path.ext>[:anchor]` — the path segment must
@@ -97,7 +102,10 @@ def _tracked_scan_files() -> list[Path]:
         rel = rel.strip()
         if not rel:
             continue
-        files.append((_REPO_ROOT / rel).resolve())
+        resolved = (_REPO_ROOT / rel).resolve()
+        if resolved == _SELF:
+            continue  # negative-control literals live here — never scan self
+        files.append(resolved)
     return files
 
 
