@@ -1,0 +1,36 @@
+{
+  "baseline_sha": "1d1c8eda9ed7dd4d79652224b2f3cc92a8dd535a",
+  "baseline_recorded_at": "2026-07-31T07:26:19+09:00",
+  "later_captures": [
+    {
+      "capture": "external-drift-observation",
+      "observed_at": "2026-07-30T22:55:16.125118+00:00",
+      "observed_sha": "59688d25a5386676443e72fad706bd75a1a5e907"
+    }
+  ],
+  "drifting_commits": [
+    {
+      "hash": "86e7673c8b9476c1a1a53828c0a250d5fe0d8009",
+      "author_date": "2026-07-31T07:27:02+09:00",
+      "subject": "Merge pull request #254 from hjung3113/chore/fe-ac-id-exemption"
+    },
+    {
+      "hash": "59688d25a5386676443e72fad706bd75a1a5e907",
+      "author_date": "2026-07-31T07:42:42+09:00",
+      "subject": "Merge pull request #256 from hjung3113/feature/255-clean-probe"
+    }
+  ],
+  "unrelated_worktrees": [
+    {
+      "path": "/Users/hyojung/Desktop/2026/wt-239",
+      "registered": true,
+      "exists": true
+    },
+    {
+      "path": "/Users/hyojung/Desktop/2026/wt-255",
+      "registered": false,
+      "exists": false
+    }
+  ],
+  "attribution": "The baseline SHA is authoritative. No Phase-51 command targeted the original checkout as an adoption target or mutated it; observed inequality is documented third-party external drift, not an OBS-D adoption defect."
+}
