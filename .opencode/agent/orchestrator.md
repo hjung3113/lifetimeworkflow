@@ -270,23 +270,21 @@ contract graph, and its order is fixed.
 *The question:* what is the **full** affected set of this contract edge — every node the change can
 reach, the connecting path to each, and the engineer that owns each side of the declared edge?
 
-*The calls that answer it today:*
+*The command that answers it:*
 
 ```bash
-uv run python -c "from tools.harness_config import components, effective_relationships; from tools.contract_graph import compile_graph, direct, reverse, transitive; graph = compile_graph(); node = 'NODE'; print(direct(graph, node)); print(reverse(graph, node)); print(transitive(graph, node)); print(effective_relationships()); print(components())"
+/impact <path/to/contract.schema.json>
 ```
 
-`direct()` gives the immediate neighbours, `reverse()` the consumers, and `transitive()` the whole
-reachable set — each returning ids **and** the connecting paths. Read `transitive()` and its paths
+`/impact` composes the existing `direct()`/`reverse()`/`transitive()` queries over the compiled
+contract graph plus the Phase-47 package facts into one report: the affected contracts (direct,
+reverse and transitive, each with connecting paths), the affected packages, and the owning
+engineer per side of the declared edge — the same answer `effective_relationships()` and
+`components()` would otherwise require calling by hand. Read the `transitive` result and its paths
 rather than eyeballing the edge list: the compiled graph here is **not** guaranteed linear, and a
 branch, a fan-in or a cycle puts nodes in the affected set that no single hop shows. The path is
-what tells you the order to edit the sides in. `effective_relationships()` confirms the declared
-edge you are changing, and `components()` names the owning engineer on each side, which is who each
-per-side packet goes to. Both packages are libraries with no module entry point — call them with
-`python -c`.
-
-A single-command form of this block is planned; these calls are the interface it will preserve, and
-that command's affected-set answer is exactly the `transitive()`-plus-paths result above.
+what tells you the order to edit the sides in. An unresolved contract path is a clean refusal that
+names what was searched — never an empty "nothing affected" success.
 
 **Stop condition** — Stop when the affected set from step 2 contains a component whose owning
 engineer is not declared in `project.toml`, or when the transitive neighbourhood contains a cycle you
