@@ -1,4 +1,5 @@
-"""package-facts generator — derive a committed package + dependency graph (MONO-01/MONO-02).
+"""package-facts generator — derive a committed package + dependency graph (MONO-01/MONO-02,
+MONO-05/MONO-06).
 
 Enumerates every git-tracked manifest this checkout recognizes (via
 :func:`tools.adoption_scan.detect.detect_manifests`), excludes anything under a
@@ -249,12 +250,29 @@ def build_facts(manifest_paths: list[dict] | None = None, repo_root: Path = _REP
     }
 
 
-def render(facts: dict) -> str:
+def _render_value(value: object) -> str:
+    """Render a profile field for a markdown cell: ``None`` becomes the literal ``(none)``."""
+    return "(none)" if value is None else str(value)
+
+
+def render(facts: dict, cfg: dict | None = None) -> str:
     """Render ``facts`` into the deterministic DERIVED-marked markdown artifact.
 
-    Two tables: ``## Packages`` (id/manifest/dir/language), then ``## Dependency Edges``
-    (from/to/kind). No timestamp, no raw float. Trailing newline.
+    Three tables: ``## Packages`` (id/manifest/dir/language), ``## Dependency Edges``
+    (from/to/kind), and a third convention-profiles section (MONO-05/MONO-06 —
+    package/dir/language/test/format/bash_scope/agents_md/default, one row per package, computed
+    entirely via :func:`tools.harness_config.conventions_for` — no command literal is ever
+    restated here). No timestamp, no raw float. Trailing newline.
+
+    ``cfg`` is an additive, optional parameter (defaults to ``None``, meaning "load the default
+    ``harness/project.toml``") threaded straight through to ``conventions_for``; existing call
+    sites (``write()``/``main()``) need no edit.
     """
+    # Lazy in-function import — mirrors loader.py's own reverse-direction lazy import of
+    # tools.memory_regen.package_facts inside effective_packages(); keeps the convention
+    # consistent even though no import cycle exists in this direction.
+    from tools.harness_config import conventions_for
+
     lines = [
         f"# {DERIVED_HEADER}",
         "",
@@ -278,6 +296,32 @@ def render(facts: dict) -> str:
     ]
     for edge in facts["edges"]:
         lines.append(f"| {edge['from']} | {edge['to']} | {edge['kind']} |")
+
+    lines += [
+        "",
+        "## Convention Profiles",
+        "",
+        "| package | dir | language | test | format | bash_scope | agents_md | default |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for pkg in facts["packages"]:
+        profile = conventions_for(pkg["dir"], cfg=cfg, facts=facts)
+        lines.append(
+            "| "
+            + " | ".join(
+                [
+                    _render_value(profile["package"]),
+                    _render_value(profile["dir"]),
+                    _render_value(profile["language"]),
+                    _render_value(profile["test"]),
+                    _render_value(profile["format"]),
+                    _render_value(profile["bash_scope"]),
+                    _render_value(profile["agents_md"]),
+                    "true" if profile["is_default"] else "false",
+                ]
+            )
+            + " |"
+        )
 
     return "\n".join(lines) + "\n"
 
