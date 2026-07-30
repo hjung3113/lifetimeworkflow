@@ -521,3 +521,14 @@ def test_malformed_package_record_prints_the_same_stderr_diagnostic_as_conventio
     captured = capsys.readouterr()
     assert "manifest" in captured.err
     assert "dir" in captured.err
+
+
+# --- behavior 11: IN-01 extra CLI arguments are rejected, not silently discarded --------------------
+
+
+def test_main_rejects_extra_cli_arguments_with_a_usage_error() -> None:
+    """IN-01 (49-REVIEW.md) regression: `python -m ... a b c` must not run identically to `... a`
+    with `b`/`c` silently discarded — reject with the same usage-error exit code (2) as a missing
+    argument."""
+    assert impact_module.main(["a", "b", "c"]) == 2
+    assert impact_module.main([]) == 2

@@ -237,7 +237,9 @@ def main(argv: list[str] | None = None) -> int:
 
     * ``0`` — resolved.
     * ``1`` — clean refusal (``report()`` returned, but ``resolved`` is ``False``).
-    * ``2`` — usage error (missing CLI argument).
+    * ``2`` — usage error (missing or extra CLI arguments — IN-01, 49-REVIEW.md: exactly one
+      positional argument is accepted; a second/third token is a caller bug, e.g. an unquoted path
+      containing a space, and is rejected rather than silently discarded).
     * ``3`` — internal error: ``report()`` raised (a malformed ``harness/project.toml`` — the three
       D-05 failure modes ``effective_relationships()`` documents — or any other unhandled
       exception from its dependencies). This is deliberately NOT the same code as a clean refusal:
@@ -246,7 +248,7 @@ def main(argv: list[str] | None = None) -> int:
       a caller parsing exit codes must be able to tell them apart.
     """
     argv = sys.argv[1:] if argv is None else argv
-    if not argv:
+    if len(argv) != 1:
         print(
             "usage: python -m tools.contract_graph.impact <contract-path-or-node-id>",
             file=sys.stderr,
