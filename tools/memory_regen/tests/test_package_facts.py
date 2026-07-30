@@ -342,6 +342,59 @@ def test_unresolvable_dependency_is_dropped_not_fabricated(tmp_path: Path) -> No
     )
 
 
+# ---- WR-01 (48-REVIEW.md): render() must resolve conventions from the EFFECTIVE dir -------------
+
+
+def test_render_convention_profile_uses_effective_dir_not_pre_merge_dir() -> None:
+    """A [[components]] override that relocates a package's dir must be reflected in that
+    package's Convention Profiles row — not silently bypassed by querying the pre-merge dir."""
+    facts = {
+        "packages": [
+            {"id": "root", "manifest": "pyproject.toml", "dir": ".", "language": "python"},
+            {
+                "id": "widget",
+                "manifest": "widget/pyproject.toml",
+                "dir": "widget",
+                "language": "python",
+            },
+        ],
+        "edges": [],
+    }
+    cfg = {
+        "languages": [{"id": "python", "test": "t", "format": "f", "bash_scope": "uv *"}],
+        "components": [{"id": "widget", "dir": "widget/relocated"}],
+    }
+
+    text = package_facts.render(facts, cfg=cfg)
+    profile_lines = text.splitlines()[text.splitlines().index("## Convention Profiles") :]
+    widget_row = next(line for line in profile_lines if line.startswith("| widget |"))
+
+    assert "widget/relocated" in widget_row, (
+        f"widget row must resolve via the effective (merged) dir, got: {widget_row!r}"
+    )
+    assert widget_row.endswith("| false |"), "relocated widget package must not read as default"
+
+
+def test_render_skips_declared_only_component_with_no_dir() -> None:
+    """A declared-only [[components]] entry (no matching derived package, no `dir` key) must not
+    crash render() and must not produce a Convention Profiles row of its own."""
+    facts = {
+        "packages": [
+            {"id": "root", "manifest": "pyproject.toml", "dir": ".", "language": "python"}
+        ],
+        "edges": [],
+    }
+    cfg = {
+        "languages": [{"id": "python", "test": "t", "format": "f", "bash_scope": "uv *"}],
+        "components": [{"id": "declared-only", "stage": "ingest"}],
+    }
+
+    text = package_facts.render(facts, cfg=cfg)
+
+    assert "declared-only" not in text
+    assert "| root | . | python |" in text
+
+
 # ---- (5) committed snapshot -----------------------------------------------------------------
 
 

@@ -42,12 +42,9 @@ Every package in this checkout with its manifest path, language and package id, 
 | package | dir | language | test | format | bash_scope | agents_md | default |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | .claude | .claude | javascript | (none) | (none) | (none) | AGENTS.md | false |
-| ToyConverter | examples/log-parser/components/toy-converter | csharp | (none) | (none) | (none) | examples/log-parser/AGENTS.md | false |
-| logparser-golden-runner | examples/log-parser/golden_runner | python | uv run pytest | ruff format | uv * | examples/log-parser/AGENTS.md | false |
-| Normalize.Tests | examples/log-parser/libs/dotnet/Normalize.Tests | csharp | (none) | (none) | (none) | examples/log-parser/libs/dotnet/AGENTS.md | false |
 | Normalize | examples/log-parser/libs/dotnet/Normalize | csharp | (none) | (none) | (none) | examples/log-parser/libs/dotnet/AGENTS.md | false |
-| logparser-normalize | libs/python | python | uv run pytest | ruff format | uv * | libs/python/AGENTS.md | false |
-| logparser-harness | . | python | uv run pytest | ruff format | uv * | AGENTS.md | true |
+| Normalize.Tests | examples/log-parser/libs/dotnet/Normalize.Tests | csharp | (none) | (none) | (none) | examples/log-parser/libs/dotnet/AGENTS.md | false |
+| ToyConverter | examples/log-parser/components/toy-converter | csharp | (none) | (none) | (none) | examples/log-parser/AGENTS.md | false |
 | logparser-adoption-apply | tools/adoption_apply | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
 | logparser-adoption-scan | tools/adoption_scan | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
 | logparser-agree | tools/agree | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
@@ -55,12 +52,15 @@ Every package in this checkout with its manifest path, language and package id, 
 | logparser-contract-graph | tools/contract_graph | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
 | logparser-contract-hash | tools/contract_hash | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
 | logparser-docs-sync | tools/docs_sync | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
+| logparser-golden-runner | examples/log-parser/golden_runner | python | uv run pytest | ruff format | uv * | examples/log-parser/AGENTS.md | false |
+| logparser-harness | . | python | uv run pytest | ruff format | uv * | AGENTS.md | true |
 | logparser-harness-config | tools/harness_config | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
 | logparser-harness-emit | tools/harness_emit | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
 | logparser-harness-lint | tools/harness_lint | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
 | logparser-harness-perms | tools/harness_perms | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
 | logparser-hooks | tools/hooks | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
 | logparser-memory-regen | tools/memory_regen | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
+| logparser-normalize | libs/python | python | uv run pytest | ruff format | uv * | libs/python/AGENTS.md | false |
 | logparser-polyglot-lint | tools/polyglot_lint | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
 | logparser-ruff-baseline | tools/ruff_baseline | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
 | logparser-workspace-config | tools/workspace_config | python | uv run pytest | ruff format | uv * | AGENTS.md | false |

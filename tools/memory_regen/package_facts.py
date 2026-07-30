@@ -271,7 +271,7 @@ def render(facts: dict, cfg: dict | None = None) -> str:
     # Lazy in-function import — mirrors loader.py's own reverse-direction lazy import of
     # tools.memory_regen.package_facts inside effective_packages(); keeps the convention
     # consistent even though no import cycle exists in this direction.
-    from tools.harness_config import conventions_for
+    from tools.harness_config import conventions_for, effective_packages
 
     lines = [
         f"# {DERIVED_HEADER}",
@@ -304,7 +304,18 @@ def render(facts: dict, cfg: dict | None = None) -> str:
         "| package | dir | language | test | format | bash_scope | agents_md | default |",
         "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
-    for pkg in facts["packages"]:
+    # WR-01 (48-REVIEW.md): resolve each row via the EFFECTIVE (merged) dir, not the raw
+    # facts["packages"] dir. A `[[components]]` entry can overwrite a package's `dir`
+    # (effective_packages()'s own documented layering); querying conventions_for() with the
+    # pre-merge dir would silently mis-resolve ownership for that package the moment such an
+    # override exists (it stays latent today: no live config exercises it yet).
+    # A declared-only `[[components]]` entry (no matching derived package) carries no "dir" key
+    # at all — the same adapter filter conventions_for() itself applies before calling
+    # owning_package() — and is excluded here for the identical reason: it has no directory to
+    # render a profile for.
+    for pkg in effective_packages(cfg, facts):
+        if "dir" not in pkg:
+            continue
         profile = conventions_for(pkg["dir"], cfg=cfg, facts=facts)
         lines.append(
             "| "
