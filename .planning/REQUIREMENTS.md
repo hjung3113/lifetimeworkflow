@@ -75,13 +75,13 @@
 
 | REQ-ID | Phase |
 |---|---|
-| RTA-01 | — |
-| RTA-02 | — |
-| RTA-03 | — |
-| RTA-04 | — |
-| MONO-12 | — |
-| OBS-01 | — |
-| OBS-02 | — |
-| OBS-03 | — |
-| DEBT-01 | — |
-| NG-01 | — |
+| RTA-01 | Phase 52 |
+| RTA-02 | Phase 52 |
+| RTA-03 | Phase 52 |
+| RTA-04 | Phase 52 |
+| MONO-12 | Phase 53 |
+| OBS-01 | Phase 51 |
+| OBS-02 | Phase 52 |
+| OBS-03 | Phase 51 |
+| DEBT-01 | Phase 54 |
+| NG-01 | Phase 54 |
