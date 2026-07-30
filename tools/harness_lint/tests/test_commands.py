@@ -41,9 +41,7 @@ _AGENT_SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 # The six golden-adjacent commands this plan authors (D-05 sequencing) MUST all be present.
 # Was eight: Phase 44 (CER-09) retired `golden` and `golden-approve` — promotion is review at
 # the PR (the `golden/` CODEOWNERS entry, ADR-0012), not an in-session human-gated command.
-EXPECTED_GOLDEN_ADJACENT = frozenset(
-    {"build", "test", "lint", "adr", "checkpoint", "component"}
-)
+EXPECTED_GOLDEN_ADJACENT = frozenset({"build", "test", "lint", "adr", "checkpoint", "component"})
 
 
 def _command_files() -> list[Path]:
@@ -60,6 +58,16 @@ def test_golden_adjacent_commands_present() -> None:
     names = {p.stem for p in _command_files()}
     missing = EXPECTED_GOLDEN_ADJACENT - names
     assert not missing, f"missing golden-adjacent commands: {sorted(missing)}"
+
+
+def test_command_count_is_stable() -> None:
+    """Live command count is pinned at 18 (v2.6 no-growth constraint) — RESEARCH.md Q5.
+
+    Failing this test on a legitimate new command means bumping the constant deliberately, not a
+    regression by itself; it converts a one-time manual measurement into a durable, self-proving
+    gate for future phases' "N -> N" claims.
+    """
+    assert len(_command_files()) == 18
 
 
 @pytest.mark.parametrize("path", _command_files(), ids=lambda p: p.stem)
