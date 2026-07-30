@@ -16,6 +16,7 @@ from __future__ import annotations
 __all__ = [
     "components",
     "contract_graph_relationships",
+    "conventions_for",
     "effective_packages",
     "effective_relationships",
     "language_bash_scopes",

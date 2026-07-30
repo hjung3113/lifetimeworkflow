@@ -4,6 +4,8 @@ Reads ``harness/project.toml`` — the harness's language/toolchain SINGLE SOURC
 stdlib ``tomllib`` (guaranteed by ``requires-python >=3.11``; no external dep). Pure I/O + shape:
 NO enforcement logic (that belongs to the consistency test in ``tools.harness_lint``). Keep the
 signatures stable — the Phase-6 config-derived CI matrix will import ``language_bash_scopes``.
+Also home to ``conventions_for`` (MONO-05/MONO-06) — the nearest-wins join between package facts
+and the ``[[languages]]`` config that answers "which conventions apply at this path?".
 
 Semantics:
   * ``load_project`` — parse the TOML into a plain dict (``instance`` table + ``languages`` list).
@@ -17,6 +19,8 @@ from __future__ import annotations
 
 import tomllib
 from pathlib import Path
+
+from tools.contract_graph import owning_package
 
 # Repo-root-anchored default so the loader works regardless of the caller's cwd.
 # loader.py -> harness_config -> tools -> repo root (parents[2]).
@@ -248,6 +252,72 @@ def effective_packages(cfg: dict | None = None, facts: dict | None = None) -> li
             merged.append(pkg)
 
     return sorted(merged, key=lambda pkg: pkg["id"])
+
+
+def _nearest_agents_md(dir_: str) -> str | None:
+    """Return the POSIX-relative path of the nearest ``AGENTS.md`` enclosing ``dir_``.
+
+    Walks ``_REPO_ROOT / dir_`` and its ``.parents``, checking each candidate for an
+    ``AGENTS.md`` file, stopping once ``_REPO_ROOT`` itself has been checked (never inspects
+    anything above the repo root — T-48-01's bounded-walk mitigation). Returns ``None`` if no
+    candidate has an ``AGENTS.md``.
+    """
+    candidate = (_REPO_ROOT / dir_).resolve()
+    search_path = [candidate, *candidate.parents]
+    for probe in search_path:
+        if (probe / "AGENTS.md").is_file():
+            return (
+                probe.relative_to(_REPO_ROOT).as_posix() + "/AGENTS.md"
+                if probe != _REPO_ROOT
+                else "AGENTS.md"
+            )
+        if probe == _REPO_ROOT:
+            break
+    return None
+
+
+def conventions_for(path: str, cfg: dict | None = None, facts: dict | None = None) -> dict:
+    """Answer "which conventions apply at ``path``?" (MONO-05/MONO-06).
+
+    A pure join over ``effective_packages()`` (Phase-47 package facts layered with
+    ``[[components]]``) and the ``[[languages]]`` config: resolves the nearest-enclosing package
+    via ``owning_package()`` (reused unchanged from ``tools.contract_graph``, never
+    reimplemented), then looks up that package's language's commands.
+
+    Follows the module's optional-``cfg``/``facts`` injectable-pure-function convention
+    (``effective_packages``, above) — the only filesystem touch when both are injected is the
+    ``_nearest_agents_md`` walk, which makes this function fully testable without monkeypatch or
+    a temp-file config.
+
+    Returns a dict with exactly these keys: ``package``, ``dir``, ``language`` (the raw
+    ``owner.get("language")`` value — visible even when absent from ``[[languages]]``), ``test``,
+    ``format``, ``bash_scope`` (all ``None`` when the language has no matching ``[[languages]]``
+    row — never raises on a missing row), ``agents_md`` (nearest-enclosing ``AGENTS.md``, or
+    ``None`` if none found), and ``is_default`` (``True`` iff the resolved package's ``dir`` is
+    the repo root, ``"."``).
+    """
+    if cfg is None:
+        cfg = load_project()
+
+    pkgs = effective_packages(cfg, facts)
+    # ADAPTER: owning_package() reads a bare package["dir"] subscript unconditionally — a
+    # declared-only component (no "dir" key, see effective_packages's Pitfall 1) would raise a
+    # bare KeyError there. Filter it out here; never inside ownership.py (kept untouched/pure).
+    dir_pkgs = [p for p in pkgs if "dir" in p]
+    owner_id = owning_package(dir_pkgs, path)
+    owner = next(p for p in dir_pkgs if p["id"] == owner_id)
+    lang = next((entry for entry in languages(cfg) if entry["id"] == owner.get("language")), None)
+
+    return {
+        "package": owner["id"],
+        "dir": owner["dir"],
+        "language": owner.get("language"),
+        "test": lang["test"] if lang else None,
+        "format": lang["format"] if lang else None,
+        "bash_scope": lang["bash_scope"] if lang else None,
+        "agents_md": _nearest_agents_md(owner["dir"]),
+        "is_default": owner["dir"] == ".",
+    }
 
 
 def language_bash_scopes(cfg: dict | None = None) -> set[str]:
