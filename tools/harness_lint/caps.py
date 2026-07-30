@@ -134,9 +134,11 @@ _XML_CHARS = ("<", ">")
 # `golden-testing` authoring skill and the `golden-debug` red-golden decision tree — because
 # promotion is no longer a human-gated in-session command but review at the PR (the `golden/`
 # CODEOWNERS entry, ADR-0012). The golden RUNNER package is unaffected by that removal.
-# Phase 50a (Harness Authoring) absorbs the prior skills-only meta-authoring skill into a wider
-# skill covering all three emitter-projected kinds (skills, commands, agents); the count stays
-# at eight before and after.
+# Phase 50a (Harness Authoring) absorbs the prior `skill-creator` skill into a wider skill
+# covering all three emitter-projected kinds (skills, commands, agents); the count stays at eight
+# before and after. (This literal mention is a narrow, explicitly-commented exemption from
+# test_harness_author.py's dangling-reference gate — see that module's _HISTORY_EXEMPT_REFERENCE —
+# because it is historical narration naming a retired skill, not a live pointer to it.)
 # The eight entries below are the whole set.
 # No more, no fewer (anti-sprawl).
 EXPECTED_SKILLS = frozenset(

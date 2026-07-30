@@ -25,8 +25,11 @@ command's action rather than adding a new one.
 The current sets are enumerated at their single source of truth, not restated here (a restated
 list is a second copy that silently goes stale):
 
-- Skills: `tools/harness_lint/caps.py:139-150` (`EXPECTED_SKILLS`).
+- Skills: `tools/harness_lint/caps.py:144-155` (`EXPECTED_SKILLS`).
 - Commands: `tools/harness_lint/tests/test_commands.py:52-74` (`EXPECTED_COMMAND_NAMES`).
+- Agents: `tools/harness_lint/caps.py:57-59` (`EXPECTED_PERSONAS`) — enforced by
+  `tools/harness_lint/tests/test_agents.py::test_expected_personas_present_no_sprawl`; adding an
+  un-enumerated persona fails this guard, so update the set here in the same commit.
 
 ## Step 1: choose the kind and its shape
 
@@ -60,8 +63,9 @@ under `harness/agents/` — checked at the phase level by
 Create `harness/agents/<persona>.md` with least-privilege frontmatter (`mode`, `permission`,
 `tools`). See `harness/agents/curator.md:1-17` for a real example of the shape — a `permission`
 block least-privileged to the persona's job, and a `tools` allowlist that must agree with it. The
-persona set, the valid permission keys, the valid modes, and the read-only-persona invariant all
-live at `tools/harness_lint/caps.py:22-67`.
+persona set, the valid permission keys, and the valid modes live at
+`tools/harness_lint/caps.py:22-59`; the read-only-persona invariant is enforced by
+`tools/harness_lint/caps.py:91-103` (`is_read_only`).
 
 ## Step 2: author the source
 
@@ -77,13 +81,16 @@ Reference shapes to copy from:
 
 Run the structural gate for the kind you authored:
 
-- Skill: `uv run pytest tools/harness_lint/tests/test_skills.py -x -q` — enforces the caps, the
-  regex, the dir-name match, the routing-trigger token, the reserved-word/tag bans, and the pinned
-  set of skill names (so adding an un-enumerated skill fails loudly).
-- Command: `tools/harness_lint/tests/test_commands.py -x -q`, plus
-  `tools/harness_lint/tests/test_agent_referential_integrity.py` for the cross-file `agent:`
-  resolution.
-- Agent: `tools/harness_lint/tests/test_agents.py -x -q`.
+- Skill: run `uv run pytest` on `tools/harness_lint/tests/test_skills.py` with `-x -q` — enforces
+  the caps, the regex, the dir-name match, the routing-trigger token, the reserved-word/tag bans,
+  and the pinned set of skill names (so adding an un-enumerated skill fails loudly).
+- Command: run `uv run pytest` on `tools/harness_lint/tests/test_commands.py` with `-x -q` —
+  enforces the caps and the pinned `EXPECTED_COMMAND_NAMES` set (so adding an un-enumerated command
+  fails loudly), plus `tools/harness_lint/tests/test_agent_referential_integrity.py` for the
+  cross-file `agent:` resolution.
+- Agent: run `uv run pytest` on `tools/harness_lint/tests/test_agents.py` with `-x -q` — enforces
+  the frontmatter shape, the read-only-persona invariant, and the pinned `EXPECTED_PERSONAS` set
+  (so adding an un-enumerated persona fails loudly).
 
 Then run the emit round-trip so both runtime trees stay in lockstep with `harness/`:
 
