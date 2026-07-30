@@ -223,3 +223,38 @@ substrate with NO new surface, and round-tripped byte-identical to both runtimes
 Phase 11.
 
 ---
+
+## v2.6 Minimal Monorepo Core — SHIPPED 2026-07-30
+
+**Phases completed:** 4 phases (47, 48, 49, 50a), 11 plans · phase 50b BLOCKED and carried
+**Requirements:** 11/12 (MONO-01..11; MONO-12 carried)
+**Scale:** 104 commits, 103 files changed, +15,204 / −325 · 981 tests passing at close
+
+**Key accomplishments:**
+
+- A committed derived **package + dependency graph** (`.memory/derived/package-facts.md`) where every
+  edge is parsed from the manifests themselves across five manifest kinds — no hand-maintained
+  dependency list anywhere — with `[[components]]` demoted from source-of-truth to an override slot
+  layered over the derived facts.
+- **Nearest-wins convention profiles**: asking "which conventions apply here?" from any path returns
+  the enclosing package's answer, with lint/test commands *derived* from the `[[languages]]` slot
+  rather than restated — editing the language config changes every profile with no profile edited.
+- **`/impact <contract>`** — the `contract-change` route's Repository-evidence step became one named
+  command over the *existing* `direct`/`reverse`/`transitive` plus the new package facts, replacing an
+  inline python one-liner. No second traversal engine exists, proven by an AST gate mutation-tested
+  against while-loop, for-over-adjacency and mutual-recursion rewrites.
+- **`harness-author`** absorbed `skill-creator` at net skills ±0, widening scope from skills alone to
+  all three emitter-projected kinds, with every offered default cited as a `path:line` that must
+  resolve — enforced by a new citation-integrity gate.
+- **The no-growth constraint held for the whole milestone**: +1 command (the sanctioned `/impact`),
+  ±0 skills, +0 gates, +0 CI jobs, +0 contracts, +0 `tools/` packages, +0 dependencies, nothing
+  injected into SessionStart. `ci.yml`'s job set and `gate.needs` are byte-unchanged.
+- **Adversarial review earned its place**: four review passes found 8 critical defects the phase
+  verifications had passed over — including a `../../`-traversal path that resolved onto a real
+  contract's node and returned confident output, and a skill that walked an agent author into a
+  guaranteed guard failure. All fixed with regression tests.
+- **Phase 50b was blocked honestly** rather than faked: `/adopt` writes into its target, no real
+  multi-package target repo exists, and unrelated repos on the machine were not conscripted into
+  being one. MONO-12 carried with its criteria intact.
+
+---

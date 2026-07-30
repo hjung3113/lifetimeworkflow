@@ -195,312 +195,29 @@ Net: 33/33 plans, 171 commits, **−27,398 LOC** outside `.planning/`; human-aut
 
 </details>
 
-### 🚧 v2.6 Minimal Monorepo Core (Phases 47, 48, 49, 50a, 50b) — IN PROGRESS
+<details>
+<summary>✅ v2.6 Minimal Monorepo Core (Phases 47–50a) — SHIPPED 2026-07-30 · 50b BLOCKED</summary>
 
-Requirements: `.planning/REQUIREMENTS.md` (MONO-01..12, 12/12 mapped). **No research round** — the
-design was settled by the v2.5 scoping panel and every phase cites this repo's own code rather than an
-external ecosystem, so `.planning/research/` holds nothing for v2.6 by decision.
+Full detail: `.planning/milestones/v2.6-ROADMAP.md`. Requirements:
+`.planning/milestones/v2.6-REQUIREMENTS.md`. Audit: `.planning/v2.6-MILESTONE-AUDIT.md`.
 
-**Goal:** close gap ③ of the owner's four-part purpose — *an LLM working in this repo understands
-cross-project relationships better than it would in a generic repo*. Smallest goal-complete subset =
-all of v2.5 **+ 47 + 49**; the owner chose all five. ① is already covered by the lint adapters +
-nearest-wins `AGENTS.md` + `/component`; ② by `contracts/` + `contract_hash`/`contract_drift` +
-`contract_graph` + CI; ④ by append-only ADR + the derived plane + ADR-0011's CI-strong posture. The
-genuine gap is ③.
+- [x] **Phase 47: Package Facts** — a committed derived package + dependency graph parsed from the
+  manifests themselves; `[[components]]` demoted to an override slot; contract→owning-package
+  attribution. Report-only. (MONO-01..04) (2026-07-30)
+- [x] **Phase 48: Convention Profiles** — nearest-wins per-package conventions whose commands derive
+  from `[[languages]]`, populated by `/component` step 2. No new command. (MONO-05..07) (2026-07-30)
+- [x] **Phase 49: Contract Impact** — `/impact <contract>` over the existing
+  `direct`/`reverse`/`transitive` plus the package facts; fills the `contract-change` route's evidence
+  slot. The milestone's one sanctioned +1 command. (MONO-08, MONO-09) (2026-07-30)
+- [x] **Phase 50a: Harness Authoring** — the `harness-author` skill with `path:line`-cited defaults,
+  absorbing `skill-creator` at skills 8 → 8. (MONO-10, MONO-11) (2026-07-30)
+- [⛔] **Phase 50b: Managed Adopt / Upgrade** — **BLOCKED and carried**: no real multi-package target
+  repo exists, and `/adopt` writes into its target. MONO-12 carried; unblock by naming a real target.
 
-> **Binding constraint (carried from v2.5, governs every criterion below):** never expand scope beyond
-> the purpose by adding verification gates, security layers, or ceremony. Default answer to "should we
-> also gate X?" is **NO**; the surface may not grow without retiring at least as much. Concretely for
-> this milestone: **47 and 49 are gate-free by design** (no new CI job, no new gate), **48 adds no new
-> command**, **50a is net ±0 on skills** (8 → 8, `harness-author` absorbs `skill-creator`), and
-> **nothing is injected into SessionStart**.
+Net surface: **+1 command, ±0 skills, +0 gates / CI jobs / contracts / packages / dependencies**,
+nothing injected into SessionStart. 981 tests passing at close.
 
-- [x] **Phase 47: Package Facts** *(v2.6)* — extend `tools/adoption_scan/detect.py`'s manifest (completed 2026-07-29)
-  detection (`:41-47,100-121`, which today records manifest *existence* and parses no dependencies)
-  into a committed **derived** package + dependency graph that feeds `contract_graph`;
-  `[[components]]` in `harness/project.toml` is demoted to an **override slot** layered over the
-  derived facts. **Report-only: no gate, no CI job.** (MONO-01, MONO-02, MONO-03, MONO-04)
-  **Success criteria:**
-  1. One committed derived artifact lists every package in this checkout with its manifest path,
-     language and package id; deleting it and regenerating from a clean tree yields a byte-identical
-     file.
-  2. Every dependency edge in that artifact is parsed from the manifests themselves (`pyproject.toml`,
-     `package.json`, `go.mod`, `Cargo.toml`, `*.csproj`) — no hand-maintained dependency list exists
-     anywhere in the tree, and removing a dependency from a fixture manifest removes exactly that edge
-     on regeneration.
-  3. A `[[components]]` entry overrides the derived record for the same package, and both live configs
-     (core `harness/project.toml` + `examples/log-parser/`) still load with **zero edits**.
-  4. Given a contract path, `contract_graph` reports the package that owns it, using the package facts.
-  5. The phase adds no gate and no CI job: `ci.yml`'s job set and `gate.needs` are unchanged from the
-     phase's base commit, and the derived artifact's freshness rides the **existing** `stale-derived`
-     job rather than a new one.
-- [x] **Phase 48: Convention Profiles** *(v2.6)* — nearest-wins per-package convention data whose (completed 2026-07-30)
-  lint/test commands are derived from the existing `[[languages]]` slot, populated by `/component`
-  step 2 inside its existing mandated order. **No new command.** (MONO-05, MONO-06, MONO-07)
-  **Success criteria:**
-  1. Asking "which conventions apply here?" from a path inside a package returns that package's
-     profile, and from a path with no enclosing package returns the repo-wide default — demonstrated
-     on a nested case where the inner answer differs from the enclosing one.
-  2. A profile never restates a lint or test command literal: the commands it reports come from
-     `[[languages]]` in `harness/project.toml`, so editing the language config changes the reported
-     commands with no profile edited.
-  3. Running `/component` produces a convention profile for the new package as part of step 2, in its
-     existing structure → AGENTS.md → tests order.
-  4. The command count is unchanged (`/component` extended, nothing added), and no gate or CI job is
-     added.
-- [x] **Phase 49: Contract Impact** *(v2.6)* — one `/impact <contract>` command over (completed 2026-07-30)
-  `contract_graph.query`'s existing `direct`/`reverse`/`transitive` (`query.py:29,39,55`) plus the
-  Phase-47 package facts; fills phase 46's evidence slot in the `contract-change` route. **On demand
-  only — no SessionStart injection, no gate, no CI job.** (MONO-08, MONO-09)
-  **Success criteria:**
-  1. `/impact <contract>` reports the affected **contracts** and the affected **packages**, covering
-     direct, reverse and transitive relations.
-  2. No second traversal engine exists: the affected sets come from `contract_graph.query`'s existing
-     three functions and the Phase-47 package facts.
-  3. Nothing is injected: the SessionStart injector's assembled output is byte-identical with and
-     without this phase, and no CI job or hook references `/impact`.
-  4. The `contract-change` route in `harness/agents/orchestrator.md` names `/impact` as the evidence
-     step it previously left unfilled, and the emit round-trip to both runtimes is byte-clean.
-- [x] **Phase 50a: Harness Authoring** *(v2.6 — SPLIT half (a), ships independently)* — one (completed 2026-07-30)
-  `harness-author` skill: Q&A with defaults cited as `path:line` from this checkout, output
-  runtime-neutral under `harness/` only (the emitter projects it), **absorbing `skill-creator`** for
-  net skills ±0. Presupposes PROD-01 (shipped in v2.5 phase 42). (MONO-10, MONO-11)
-  **Success criteria:**
-  1. `harness-author` exists as a skill and its offered defaults are cited as `path:line` locations
-     that resolve in this checkout.
-  2. Its output lands under `harness/` only; `.opencode/` and `.claude/` change solely through
-     re-emit, and the emit round-trip is byte-clean.
-  3. `skill-creator` no longer exists and everything it did is reachable through `harness-author`; the
-     skill count is **8 before and 8 after**.
-  4. Zero new packages under `tools/`, zero new commands, zero new contracts.
-- [⛔] **Phase 50b: Managed Adopt / Upgrade** *(v2.6 — SPLIT half (b), **BLOCKED and carried
-  2026-07-30**)* — simplified `/adopt` as a managed install/update over one manifest that **reports
-  conflicts** rather than silently overwriting a target repo's files. (MONO-12)
-
-  > **BLOCKED 2026-07-30 — precondition undischarged, recorded per criterion 4.** No real
-  > multi-package target repo exists for this work. What this checkout has is synthetic only: the
-  > three adoption fixtures (`tools/adoption_apply/tests/fixtures/{polyglot-single,client-server,
-  > partial-collision-crlf}`) and the in-repo 2-member demo workspace declared in `workspace.toml`
-  > (`tests/fixtures/workspace/member-{a,b}`). Unrelated repositories on the developer's machine were
-  > deliberately **not** used: `/adopt` writes into its target, so pointing it at a repo outside this
-  > project's scope is an outward-facing change nobody authorized. Decision taken by the owner at the
-  > phase boundary: record BLOCKED and carry **MONO-12**, rather than manufacture a nominal target
-  > that would satisfy criterion 4 only on paper. v2.6 closes on **47 · 48 · 49 · 50a**.
-  > **To unblock:** name a real multi-package target repo, then re-plan this phase against it.
-  **Hard precondition:** a **real multi-package target repo**. None exists in this checkout. If none
-  exists when the phase is reached, 50b is recorded **BLOCKED and carried** — it does not stall the
-  milestone, which closes on 47 · 48 · 49 · 50a.
-  **Success criteria:**
-  1. One manifest records what the harness installed into the target, so a later run can tell managed
-     files from target-owned files.
-  2. Re-running `/adopt` against an already-adopted target **updates** managed files from that
-     manifest instead of re-installing, and is a no-op when nothing changed.
-  3. A managed file the target has since diverged from its recorded baseline is **reported as a
-     conflict and left untouched** — never silently overwritten.
-  4. The phase's precondition is discharged on the record: either a named real multi-package target
-     repo is cited, or the phase is marked BLOCKED and carried with that reason.
-
-**DAG:** `47 → {48, 49}`. `50a` needs `48`. `50b` needs `48` **and** a real multi-package target repo
-— a hard *external* precondition, not a code dependency, which is why it cannot be scheduled away.
-
-**Recorded deviation from the v2.5 panel's sketch:** the panel scoped four phases (47–50). At v2.6
-kickoff the owner **split phase 50 into `50a` and `50b`**, because 50b explicitly does not start
-without a real multi-package target and no such target exists in this checkout. Splitting lets 50a
-ship and 50b block cleanly, rather than one phase stalling the milestone. This is the repo's first
-letter-suffixed split (see *Phase Numbering* above); decimal numbering was **not** used because
-`50.1`/`50.2` are reserved for urgent insertions and would misdescribe this.
-
-#### Phase 47: Package Facts
-
-**Goal:** An agent asking *"what packages exist here, what do they depend on, and which package owns
-this contract?"* gets one **derived, committed, machine-built** answer instead of reading 24 manifests
-or trusting a hand-written `[[components]]` table. This is the base of gap ③ — 48 and 49 both read it.
-
-**Requirements:** MONO-01, MONO-02, MONO-03, MONO-04
-
-**Scope** (measured 2026-07-30 against this checkout):
-
-- **Extend `tools/adoption_scan/detect.py`, do not fork it.** `_MANIFEST_KIND_BY_NAME`
-  (`detect.py:41-47`) recognizes `pyproject.toml` · `package.json` · `go.mod` · `Cargo.toml`, plus the
-  `*.csproj` suffix special-case at `detect.py:107-108`. `detect_manifests` (`detect.py:100-121`)
-  records `path`/`kind`/`classification`/`evidence` — **manifest existence only, zero dependency
-  parsing**. MONO-02's edges come from adding dependency extraction per manifest kind here, on the
-  same D-02 `observed` evidence ladder the module already enforces.
-- **One committed derived artifact** listing every package with manifest path, language and package
-  id. `git ls-files` finds **24** recognized manifests today (1 `package.json`, 3 `.csproj`, 20
-  `pyproject.toml`). Derived-plane rules apply unchanged: generator under `tools/`, never hand-edited,
-  byte-identical on regeneration from a clean tree.
-- **`[[components]]` becomes an override slot, not the source.** Two live configs must keep loading
-  with **zero edits**: the core generic default (`harness/project.toml` — `source`/`sink`, both
-  `python`) and the instance overlay (`examples/log-parser/project.toml:34-63` — `parser`/`converter`
-  (dotnet) + `scheduler`/`collector` (python)). A declared component overrides the derived record for
-  the same package; it does not delete or contradict it silently.
-- **Contract → owning package attribution** lands in `tools/contract_graph`, reusing the existing
-  compiler/query surface (`compile.py`, `query.py`) — no second graph engine.
-- **No gate, no CI job.** `ci.yml`'s job set (`setup · lang-tests · contract-check · drift · golden ·
-  core-suite · lint · emit-drift · stale-derived · workspace`) and `gate.needs` (`ci.yml:329`) are
-  unchanged from this phase's base commit. Freshness rides the **existing** `stale-derived` job
-  (`ci.yml:271`), which today regenerates `docs/reference` + `.memory/derived/contracts-index.md` —
-  the new artifact joins that regen command and that diff check, adding no job.
-
-**Non-goals:** a dependency *policy* (allowed/forbidden edges), any hand-maintained package list, any
-SessionStart injection of the package graph, version/compatibility resolution (that is carried
-EVOL-02).
-
-**Success Criteria** (what must be TRUE):
-
-1. One committed derived artifact lists every package in this checkout with its manifest path,
-   language and package id; deleting it and regenerating from a clean tree yields a byte-identical
-   file.
-2. Every dependency edge in that artifact is parsed from the manifests themselves (`pyproject.toml`,
-   `package.json`, `go.mod`, `Cargo.toml`, `*.csproj`) — no hand-maintained dependency list exists
-   anywhere in the tree, and removing a dependency from a fixture manifest removes exactly that edge
-   on regeneration.
-3. A `[[components]]` entry overrides the derived record for the same package, and both live configs
-   (core `harness/project.toml` + `examples/log-parser/project.toml`) still load with **zero edits**.
-4. Given a contract path, `contract_graph` reports the package that owns it, using the package facts.
-5. The phase adds no gate and no CI job: `ci.yml`'s job set and `gate.needs` are unchanged from the
-   phase's base commit, and the derived artifact's freshness rides the **existing** `stale-derived`
-   job rather than a new one.
-
-#### Phase 48: Convention Profiles
-
-**Goal:** An agent working anywhere in the tree can ask *"which conventions apply here?"* and get the
-**nearest-wins** answer — the enclosing package's profile, not the repo-wide default — without any
-profile restating a lint or test command the language config already owns. Phase 47 answered *what
-packages exist*; this answers *what rules apply where*.
-
-**Requirements:** MONO-05, MONO-06, MONO-07
-
-**Scope** (measured 2026-07-30 against this checkout):
-
-- **Nearest-wins resolution over the Phase-47 package facts.** `.memory/derived/package-facts.md` +
-  `tools/memory_regen/package_facts.py` (`build_facts`, `discover_manifests`) already give every
-  package's directory; `tools/contract_graph/ownership.py`'s `owning_package()` already implements
-  segment-based nearest-enclosing-package lookup. This phase reuses that resolution rather than
-  writing a second path-matcher.
-- **Commands are DERIVED, never restated.** `harness/project.toml`'s `[[languages]]` rows own
-  `test` and `format` (plus `bash_scope`, `test_paths`); `tools/harness_config/loader.py` already
-  exposes them via `languages()`. A profile names its language and inherits the commands — editing
-  `[[languages]]` must change what every profile reports, with no profile edited. That is the
-  falsifiable form of MONO-06.
-- **Prose rules stay where they already live.** 7 `AGENTS.md` files are tracked (3 of them adoption
-  test fixtures); the nearest-wins AGENTS.md convention shipped in Phase 2 and is unchanged. The
-  profile is the *machine-readable* answer that sits alongside it, not a replacement — and it must
-  not fork the two into disagreeing sources.
-- **`/component` is EXTENDED, not joined.** `harness/commands/component.md` (35 lines) declares a
-  mandated order — structure → self-sufficient `AGENTS.md` → tests. The profile is populated inside
-  **step 2**, keeping that order intact. Live command count is **18** and must be 18 after.
-- **No gate, no CI job.** As with Phase 47, `ci.yml`'s job set and `gate.needs` stay byte-unchanged,
-  and any derived output rides the existing `stale-derived` job.
-
-**Non-goals:** a convention *enforcement* gate (this milestone forbids adding gates); per-package
-prose generation that would compete with `AGENTS.md`; any new command; SessionStart injection of
-profiles.
-
-**Success Criteria** (what must be TRUE):
-
-1. Asking "which conventions apply here?" from a path inside a package returns that package's
-   profile, and from a path with no enclosing package returns the repo-wide default — demonstrated
-   on a nested case where the inner answer differs from the enclosing one.
-2. A profile never restates a lint or test command literal: the commands it reports come from
-   `[[languages]]` in `harness/project.toml`, so editing the language config changes the reported
-   commands with no profile edited.
-3. Running `/component` produces a convention profile for the new package as part of step 2, in its
-   existing structure → AGENTS.md → tests order.
-4. The command count is unchanged (`/component` extended, nothing added), and no gate or CI job is
-   added.
-
-#### Phase 49: Contract Impact
-
-**Goal:** Turn the `contract-change` route's *Repository evidence* step from a raw inline one-liner
-into one named command. `/impact <contract>` answers "what does changing this contract reach?" over
-**both** planes now available: the compiled contract graph (v2.3) and the Phase-47 package facts —
-so the answer names affected **packages**, not only affected contract nodes. This is the payoff of
-47 and 49 being the milestone's smallest goal-complete subset.
-
-**Requirements:** MONO-08, MONO-09
-
-**Scope** (measured 2026-07-30 against this checkout):
-
-- **No second traversal engine.** The affected sets come from `tools/contract_graph/query.py`'s
-  existing `direct` (`:29`), `reverse` (`:39`) and `transitive` (`:55`) over
-  `compile_graph()`'s adjacency, plus `tools/harness_config.effective_relationships()` /
-  `components()`. Package attribution reuses Phase 47's `owning_package()` and the package facts.
-  Writing a fresh walk would create the second authority plane REQUIREMENTS.md explicitly forbids.
-- **Replaces prose with a command, not with a new engine.** `harness/agents/orchestrator.md`'s
-  `contract-change` route currently inlines a `uv run python -c "..."` one-liner in its *Repository
-  evidence* block and explains `direct`/`reverse`/`transitive` in prose. That block becomes
-  `/impact`, and the route names it as the evidence step it previously left unfilled (criterion 4).
-- **On demand only.** No SessionStart injection, no gate, no CI job, no hook may reference `/impact`.
-  The injector's assembled output must be byte-identical with and without this phase.
-- **The one sanctioned surface addition in v2.6.** The milestone's no-growth rule is "no growth
-  without retiring at least as much"; the roadmap scopes `/impact` as exactly one new command, and
-  50a pays for itself separately (skills 8 → 8). Phase 48 pinned the command surface with
-  `test_command_count_is_stable` (`== 18`) and `test_command_names_are_stable` (the 18-name set) —
-  **both must be updated to 19 and to include `impact` in the same change**, which is precisely the
-  guard working as intended rather than an obstacle.
-- **Emit round-trip.** A new `harness/commands/impact.md` plus the edited `orchestrator.md` must
-  project cleanly into both runtime trees via `tools.harness_emit`; `.opencode/` and `.claude/` are
-  never hand-edited.
-
-**Non-goals:** a gate on impact output; caching or persisting impact results; injecting impact into
-any session banner; contract *versioning* / compatibility analysis (that is carried EVOL-02).
-
-**Success Criteria** (what must be TRUE):
-
-1. `/impact <contract>` reports the affected **contracts** and the affected **packages**, covering
-   direct, reverse and transitive relations.
-2. No second traversal engine exists: the affected sets come from `contract_graph.query`'s existing
-   three functions and the Phase-47 package facts.
-3. Nothing is injected: the SessionStart injector's assembled output is byte-identical with and
-   without this phase, and no CI job or hook references `/impact`.
-4. The `contract-change` route in `harness/agents/orchestrator.md` names `/impact` as the evidence
-   step it previously left unfilled, and the emit round-trip to both runtimes is byte-clean.
-
-#### Phase 50a: Harness Authoring
-
-**Goal:** Authoring a harness artifact stops being tribal knowledge. One `harness-author` skill asks
-grounded questions and offers defaults **cited as `path:line` from this checkout**, so the answer is
-verifiable against the repo rather than recalled. Its output lands runtime-neutral under `harness/`
-only — the emitter projects it — which is the rule newcomers most often break by hand-editing
-`.opencode/` or `.claude/`.
-
-**Requirements:** MONO-10, MONO-11
-
-**Scope** (measured 2026-07-30 against this checkout):
-
-- **`harness-author` absorbs `skill-creator`; skills stay 8 → 8.** `harness/skills/` holds exactly 8
-  today (`brownfield-adoption`, `context-budget`, `data-contracts`, `fan-out-synthesize`,
-  `polyglot-boundary`, `python-conventions`, `skill-creator`, `two-plane-memory`). Everything
-  `skill-creator` does must remain reachable — above all its **Step 0 anti-sprawl question** ("why
-  can't this live in an existing skill?"), which is the reason the skill set has stayed small, and its
-  caps/verify step (`tools/harness_lint/tests/test_skills.py`).
-- **`skill-creator` is referenced in more places than its own directory.** The rename must move
-  together with: `tools/harness_lint/caps.py` (pins the skill-name set — designed to fail loudly on an
-  un-enumerated skill), `tools/harness_emit/emit-manifest.json`, root `AGENTS.md`, and
-  `harness/skills/brownfield-adoption/SKILL.md`, plus both emitted trees via re-emit. A stale
-  reference to a deleted skill is a broken pointer in the product surface.
-- **Wider than skills.** `skill-creator` covered skills alone; `harness-author` covers the harness
-  artifact kinds the emitter actually projects — commands, agents, skills — since the same
-  runtime-neutral-source rule and the same emit round-trip govern all of them.
-- **Presupposes PROD-01** (shipped in v2.5 phase 42).
-- **Zero growth elsewhere:** no new package under `tools/`, no new command, no new contract, no new
-  gate, no new CI job. Commands stay at 19 (Phase 49's `/impact` was the sanctioned +1).
-
-**Non-goals:** generating the emitted trees directly; a gate that blocks hand-authored artifacts (the
-emit-drift job already catches divergence); authoring plugins or hooks, which have no analogous
-single-file shape today.
-
-**Success Criteria** (what must be TRUE):
-
-1. `harness-author` exists as a skill and its offered defaults are cited as `path:line` locations that
-   resolve in this checkout.
-2. Its output lands under `harness/` only; `.opencode/` and `.claude/` change solely through re-emit,
-   and the emit round-trip is byte-clean.
-3. `skill-creator` no longer exists and everything it did is reachable through `harness-author`; the
-   skill count is **8 before and 8 after**.
-4. Zero new packages under `tools/`, zero new commands, zero new contracts.
+</details>
 
 ### 📋 Carried to a later milestone
 
@@ -557,11 +274,8 @@ single-file shape today.
 | 44. Non-Goal Surface Removal | v2.5 | 6/6 | Complete   | 2026-07-29 |
 | 45. Projection Repair | v2.5 | 6/6 | Complete   | 2026-07-29 |
 | 46. Product Flow | v2.5 | 3/3 | Complete   | 2026-07-29 |
-| 47. Package Facts | v2.6 | 5/5 | Complete   | 2026-07-29 |
-| 48. Convention Profiles | v2.6 | 3/3 | Complete   | 2026-07-30 |
-| 49. Contract Impact | v2.6 | 2/2 | Complete   | 2026-07-30 |
-| 50a. Harness Authoring | v2.6 | 1/1 | Complete   | 2026-07-30 |
-| 50b. Managed Adopt / Upgrade | v2.6 | — | **BLOCKED** — no real multi-package target repo; MONO-12 carried | 2026-07-30 |
+| 47–50a | v2.6 | 11/11 | Complete (see archive) | 2026-07-30 |
+| 50b | v2.6 | — | **BLOCKED** — no real multi-package target repo; MONO-12 carried | - |
 
 Per-phase plan counts for v1.0–v2.2 are preserved in the milestone archives under
 `.planning/milestones/`; they are not restated here so this table stays a fixed size.

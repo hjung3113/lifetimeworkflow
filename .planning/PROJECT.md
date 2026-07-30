@@ -16,6 +16,30 @@
 
 ## Current State
 
+**v2.6 Minimal Monorepo Core shipped 2026-07-30** (phases 47, 48, 49, 50a; **50b BLOCKED and
+carried**). The repo now derives its own cross-project structure instead of asserting it: a committed
+**package + dependency graph** whose every edge is parsed from the manifests themselves across five
+manifest kinds — no hand-maintained dependency list anywhere — with `[[components]]` demoted from
+source-of-truth to an **override slot** layered over the derived facts. On top of it,
+**nearest-wins convention profiles** answer "which conventions apply here?" per package with
+lint/test commands *derived* from the `[[languages]]` slot rather than restated, and
+**`/impact <contract>`** turns the `contract-change` route's evidence step into one named command over
+the *existing* `direct`/`reverse`/`transitive` plus those package facts — no second traversal engine,
+proven by an AST gate mutation-tested against three distinct rewrites. **`harness-author`** absorbed
+`skill-creator` (skills 8 → 8), widening scope to all three emitter-projected kinds with every offered
+default cited as a `path:line` that must resolve.
+
+**The no-growth constraint held for the entire milestone**: **+1 command** (the sanctioned `/impact`),
+**±0 skills**, and **+0** gates, CI jobs, contracts, `tools/` packages and dependencies; nothing
+injected into SessionStart; `ci.yml`'s job set and `gate.needs` byte-unchanged. Suite **981 passing**.
+Four adversarial review passes found **8 critical defects** the phase verifications had passed over —
+all fixed with regression tests. **Phase 50b was blocked honestly**: `/adopt` writes into its target,
+no real multi-package target repo exists, and unrelated repos on the machine were not conscripted into
+being one — **MONO-12** is carried with its criteria intact. Archived to `.planning/milestones/v2.6-*`.
+
+<details>
+<summary>Previous state — v2.5 De-ceremony (shipped 2026-07-30)</summary>
+
 **v2.5 De-ceremony shipped 2026-07-30** — the harness no longer verifies itself. **ADR-0012** makes
 CI and the merge the decision authority, and seven phases then deleted the in-session machinery that
 had been doing that job: the skill-registry self-gate, the whole docs-review plane, the task-control
@@ -70,7 +94,23 @@ RAT-5, and the per-tool deny-spelling gap are recorded `obsolete-by-deletion`; v
 
 </details>
 
-## Current Milestone: v2.6 Minimal Monorepo Core
+</details>
+
+## Next Milestone Goals
+
+Not yet defined. Run `/gsd:new-milestone` to scope the next cycle. Two things are already on the
+record as inputs:
+
+- **MONO-12 / phase 50b** — managed `/adopt` install-update over one manifest with conflict
+  reporting. Blocked on a hard *external* precondition: a real multi-package target repo. Naming one
+  unblocks it; nothing in the code is missing.
+- **Recorded tech debt from v2.6** — the duplicated `"dir"`-key filter adapter between
+  `loader.py:conventions_for()` and `impact.py:report()` (not divergent today, but nothing structural
+  prevents drift), `/impact`'s ambiguous refusal while the contract graph is empty, and the documented
+  blind spots in the citation and AST gates. See `.planning/v2.6-MILESTONE-AUDIT.md`.
+- **EVOL-02** contract versioning / compatibility engine remains the long-standing carried item.
+
+## Shipped Milestone: v2.6 Minimal Monorepo Core
 
 **Goal:** close gap ③ of the owner's four-part purpose — *an LLM working in this repo understands
 cross-project relationships better than it would in a generic repo* — by deriving package facts from
