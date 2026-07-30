@@ -8,7 +8,58 @@ real-tree test is the deliberate exception (libs/python vs root), asserted in-me
 
 from __future__ import annotations
 
+import pytest
+
 from tools.harness_config import conventions_for
+from tools.harness_config.loader import _nearest_agents_md
+
+
+# ---- CR-01 (48-REVIEW.md): _nearest_agents_md must never walk above the repo root -------------
+
+
+def test_nearest_agents_md_rejects_relative_traversal_escaping_repo_root() -> None:
+    """A ``../..``-escaping dir_ must fail closed with a scoped ValueError, never an unhandled
+    crash from deep inside the walk and never a silent out-of-root probe."""
+    with pytest.raises(ValueError, match="resolves outside the repo root"):
+        _nearest_agents_md("../../etc")
+
+
+def test_nearest_agents_md_rejects_absolute_path_escaping_repo_root() -> None:
+    """An absolute dir_ (``_REPO_ROOT / "/etc"`` discards ``_REPO_ROOT`` per pathlib join
+    semantics) must also fail closed rather than walking the real filesystem root."""
+    with pytest.raises(ValueError, match="resolves outside the repo root"):
+        _nearest_agents_md("/etc")
+
+
+def test_nearest_agents_md_tolerates_nonexistent_in_repo_dir() -> None:
+    """A dir_ that does not exist on disk but stays inside the repo root is NOT an error — it
+    falls through to the nearest existing ancestor's AGENTS.md (here, the repo root's)."""
+    assert _nearest_agents_md("this/path/does/not/exist/anywhere") == "AGENTS.md"
+
+
+def test_nearest_agents_md_tolerates_empty_string_as_repo_root() -> None:
+    """The empty string resolves to ``_REPO_ROOT`` itself — a valid, in-root input."""
+    assert _nearest_agents_md("") == "AGENTS.md"
+
+
+def test_conventions_for_propagates_out_of_root_dir_as_scoped_value_error() -> None:
+    """A malformed config ``dir`` (typo'd traversal) must surface as a clear ValueError through
+    the public conventions_for() entry point too — never an opaque crash."""
+    facts = {
+        "packages": [
+            {"id": "root", "manifest": "pyproject.toml", "dir": ".", "language": "python"},
+            {
+                "id": "escaped",
+                "manifest": "../escaped/pyproject.toml",
+                "dir": "../escaped",
+                "language": "python",
+            },
+        ]
+    }
+    cfg = {"languages": [{"id": "python", "test": "t", "format": "f", "bash_scope": "uv *"}]}
+
+    with pytest.raises(ValueError, match="resolves outside the repo root"):
+        conventions_for("../escaped/thing.py", cfg=cfg, facts=facts)
 
 
 def test_editing_language_command_changes_every_affected_profile_with_no_profile_edit() -> None:

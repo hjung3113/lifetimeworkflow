@@ -261,10 +261,26 @@ def _nearest_agents_md(dir_: str) -> str | None:
     ``AGENTS.md`` file, stopping once ``_REPO_ROOT`` itself has been checked (never inspects
     anything above the repo root — T-48-01's bounded-walk mitigation). Returns ``None`` if no
     candidate has an ``AGENTS.md``.
+
+    Contract for out-of-root ``dir_`` (CR-01, 48-REVIEW.md): a relative-escaping value
+    (``"../../etc"``) or an absolute value (``"/etc"`` — ``_REPO_ROOT / "/etc"`` silently
+    discards ``_REPO_ROOT`` per pathlib join semantics) is validated and rejected with a scoped
+    ``ValueError`` BEFORE any filesystem walk happens — fail closed, never a traversal above the
+    repo root and never an unhandled ``ValueError`` from deep inside the loop. A non-existent-but
+    in-repo ``dir_`` or the empty string are both fine: they resolve to a path inside
+    ``_REPO_ROOT`` (the empty string resolves to ``_REPO_ROOT`` itself) and fall through to the
+    normal walk.
     """
     candidate = (_REPO_ROOT / dir_).resolve()
-    search_path = [candidate, *candidate.parents]
-    for probe in search_path:
+    try:
+        candidate.relative_to(_REPO_ROOT)
+    except ValueError:
+        raise ValueError(
+            f"_nearest_agents_md: dir_={dir_!r} resolves outside the repo root "
+            f"({candidate}) — refusing to walk above _REPO_ROOT"
+        ) from None
+
+    for probe in (candidate, *candidate.parents):
         if (probe / "AGENTS.md").is_file():
             return (
                 probe.relative_to(_REPO_ROOT).as_posix() + "/AGENTS.md"
