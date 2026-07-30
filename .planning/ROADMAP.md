@@ -248,7 +248,7 @@ genuine gap is ③.
      existing structure → AGENTS.md → tests order.
   4. The command count is unchanged (`/component` extended, nothing added), and no gate or CI job is
      added.
-- [ ] **Phase 49: Contract Impact** *(v2.6)* — one `/impact <contract>` command over
+- [x] **Phase 49: Contract Impact** *(v2.6)* — one `/impact <contract>` command over (completed 2026-07-30)
   `contract_graph.query`'s existing `direct`/`reverse`/`transitive` (`query.py:29,39,55`) plus the
   Phase-47 package facts; fills phase 46's evidence slot in the `contract-change` route. **On demand
   only — no SessionStart injection, no gate, no CI job.** (MONO-08, MONO-09)
@@ -498,7 +498,7 @@ any session banner; contract *versioning* / compatibility analysis (that is carr
 | 46. Product Flow | v2.5 | 3/3 | Complete   | 2026-07-29 |
 | 47. Package Facts | v2.6 | 5/5 | Complete   | 2026-07-29 |
 | 48. Convention Profiles | v2.6 | 3/3 | Complete   | 2026-07-30 |
-| 49. Contract Impact | v2.6 | 1/2 | In Progress|  |
+| 49. Contract Impact | v2.6 | 2/2 | Complete   | 2026-07-30 |
 | 50a. Harness Authoring | v2.6 | — | Not started | - |
 | 50b. Managed Adopt / Upgrade | v2.6 | — | Not started | - |
 
