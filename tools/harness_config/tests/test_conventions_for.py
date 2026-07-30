@@ -102,6 +102,25 @@ def test_legitimate_declared_only_component_produces_no_stderr_warning(capsys) -
     assert captured.err == ""
 
 
+def test_declared_only_component_alongside_derived_package_resolves_to_derived_owner() -> None:
+    """IN-02 (48-REVIEW.md): a fixture combining one derived package and one declared-only
+    [[components]] entry (no matching facts package, no 'dir') proves the 'dir' filter's
+    documented Pitfall-1 handling directly, rather than only being read from the docstring —
+    ownership resolves to the derived package without raising."""
+    facts = {
+        "packages": [{"id": "root", "manifest": "pyproject.toml", "dir": ".", "language": "python"}]
+    }
+    cfg = {
+        "languages": [{"id": "python", "test": "t", "format": "f", "bash_scope": "uv *"}],
+        "components": [{"id": "declared-only", "stage": "ingest"}],
+    }
+
+    profile = conventions_for("some/file.py", cfg=cfg, facts=facts)
+
+    assert profile["package"] == "root"
+    assert profile["is_default"] is True
+
+
 def test_editing_language_command_changes_every_affected_profile_with_no_profile_edit() -> None:
     """MONO-06 strong falsifiable form: a live config read, not a copied literal (RESEARCH.md Q3)."""
     facts = {

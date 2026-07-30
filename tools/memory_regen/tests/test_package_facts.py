@@ -13,6 +13,14 @@ Pins the guarantees the derived plane depends on:
   (5) a committed syrupy snapshot of render(build_facts()) over a SYNTHETIC, domain-neutral
       fixture repo (not the real tree — see GEN-04, tools/harness_lint/tests/
       test_core_no_example_dep.py).
+
+IN-01 (48-REVIEW.md): `_nearest_agents_md` (tools/harness_config/loader.py) always walks the
+REAL repo filesystem rooted at `_REPO_ROOT` — it is not injectable. The synthetic fixture repos
+below (e.g. `widget-app`/`widget-core`) don't exist on disk, so every synthetic row's `agents_md`
+value resolves to the real repo root's `AGENTS.md` purely because the fake directories don't
+exist and the walk falls through to the root — this is a coincidental real-tree artifact, not an
+asserted synthetic behavior. See `test_render_value_none_branch_renders_none_literal` for a
+direct (non-coincidental) test of the `agents_md: None` -> "(none)" render branch.
 """
 
 from __future__ import annotations
@@ -91,6 +99,21 @@ def test_real_tree_render_structure() -> None:
     assert "libs/python/AGENTS.md" in inner_row
     assert "libs/python/AGENTS.md" not in root_row
     assert " AGENTS.md " in root_row or root_row.endswith(" AGENTS.md |")
+
+
+# ---- IN-01 (48-REVIEW.md): _render_value's None branch ------------------------------------------
+
+
+def test_render_value_none_branch_renders_none_literal() -> None:
+    """Direct unit test of the `agents_md: None` -> "(none)" branch (IN-01, 48-REVIEW.md).
+
+    `_nearest_agents_md` always walks the REAL repo filesystem (not injectable), and in this
+    checkout the walk always eventually finds the real root AGENTS.md — so no fixture in this
+    module's synthetic-package tests exercises `_render_value`'s `None` branch coincidentally.
+    Testing `_render_value` directly makes that branch falsifiable without needing an injectable
+    root override."""
+    assert package_facts._render_value(None) == "(none)"
+    assert package_facts._render_value("x") == "x"
 
 
 # ---- (3) discovery + exclusion -------------------------------------------------------------------
