@@ -53,6 +53,35 @@ Out of the boundary: generating the emitted trees directly, any new gate on hand
 - A test asserts **no tracked file references `skill-creator`** after the change — a dangling pointer
   to a deleted skill is a broken product surface, and a one-time manual grep does not keep it fixed.
 
+### Resolved after research (2026-07-30)
+- **`emit-manifest.json` is GENERATED, not hand-maintained** — `manifest.prune_then_write`
+  (`tools/harness_emit/manifest.py:65-94`) rewrites it on every emit and auto-prunes stale entries.
+  Remove it from the "edit by hand" list; it updates through re-emit.
+- **One snapshot CONTEXT.md missed**: `tools/harness_emit/tests/__snapshots__/test_emit_determinism.ambr`
+  (lines 2471, 2477, 2807, 2810, 2814) embeds the skill name and needs `--snapshot-update`.
+- **The rename is a three-way pin that fails together by construction**: `caps.py:139-150`
+  (`EXPECTED_SKILLS`), `test_skills.py::test_expected_skills_present_no_sprawl`, and
+  `test_emit_determinism.py::test_emitted_skill_set_matches_expected` all assert the same frozenset.
+  Verify them as ONE step; they are not three independent tasks.
+- **Deleting the directory alone breaks emit outright, not just its diff**:
+  `generate.py:361-362`'s `validate.check_skill_set` raises `HarnessEmitError` before any write. So
+  the change genuinely must be atomic — a partial commit cannot even regenerate.
+- **The complete tracked-tree change-set** is: `harness/skills/skill-creator/` (delete),
+  the new `harness/skills/harness-author/`, `AGENTS.md:108`, `caps.py:143`,
+  `harness/skills/brownfield-adoption/SKILL.md:15,21`, the `.ambr` snapshot, plus regenerated
+  `emit-manifest.json` and both emitted trees. All other ~50 hits are inside `.planning/` —
+  historical, append-only, correctly out of scope.
+- **No prior art exists for validating a body-embedded `path:line` citation.** This is new test code.
+  Closest mechanical template: `test_core_no_example_dep.py:80-96`'s `git ls-files`-scoped line-scan
+  idiom — use it for both the citation-integrity test and the no-dangling-reference test.
+  (`test_agent_referential_integrity.py:42-56` resolves a frontmatter field, not free text;
+  `pointer_index.py` solves the inverse problem.)
+- **Citation scan scope**: the whole skill body **minus fenced code blocks**, mirroring how
+  `test_core_no_example_dep.py` exempts pointer lines. A citation inside an illustrative code fence is
+  an example, not a claim about this checkout.
+- **`caps.py`'s self-narrating docstring** (lines 122-138) gets a one-line addendum, consistent with its
+  existing convention.
+
 ### Claude's Discretion
 - The body's section layout and question wording, provided Step 0 comes first.
 - Which specific `path:line` anchors are cited per artifact kind, provided each resolves.
