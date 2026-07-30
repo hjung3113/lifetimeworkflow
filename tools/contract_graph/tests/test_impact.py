@@ -80,7 +80,7 @@ def test_report_accepts_a_bare_node_id_directly() -> None:
     assert result["contract_id"] is None
 
 
-# --- behavior 2: affected-package attribution ------------------------------------------------------
+# --- behavior 2: affected-package attribution -----------------------------------------------------
 
 
 def test_affected_packages_include_a_matching_facts_entry() -> None:
@@ -292,7 +292,7 @@ def test_check_traps_a_mutual_recursion_evasion_stub() -> None:
     assert any(v.startswith("recursive-function") for v in violations), violations
 
 
-# --- behavior 3b: behavioural equivalence, independent of AST shape entirely -----------------------
+# --- behavior 3b: behavioural equivalence, independent of AST shape entirely ----------------------
 
 
 def test_report_affected_sets_exactly_match_query_functions_for_every_traversal_direction() -> None:
@@ -300,7 +300,8 @@ def test_report_affected_sets_exactly_match_query_functions_for_every_traversal_
     49-REVIEW.md): on a multi-node fixture, report()'s direct/reverse/transitive payloads are
     exactly what calling query.py's three functions directly returns for the SAME node — for every
     node in the fixture, not just one. A re-implemented walk that disagreed anywhere on ids, paths,
-    or ordering would fail this regardless of how cleverly it was written (no AST pattern to evade)."""
+    or ordering would fail this regardless of how cleverly it was written (no AST pattern to
+    evade)."""
     cfg = _fan_out_cfg()
     graph = compile_graph(cfg)
     for node_id, contract_path in (
@@ -376,7 +377,7 @@ def test_isolated_node_resolves_identically_via_bare_id_and_via_contract_path() 
     assert via_path["node"] == via_bare_id["node"] == "iso"
 
 
-# --- behavior 5: determinism -----------------------------------------------------------------------
+# --- behavior 5: determinism ----------------------------------------------------------------------
 
 
 def test_report_is_deterministic_across_repeated_calls() -> None:
@@ -396,7 +397,7 @@ def test_report_json_dump_is_deterministic_across_repeated_calls() -> None:
     assert dump_a == dump_b
 
 
-# --- behavior 6: CR-01 path-containment (traversal/collision) refusal ------------------------------
+# --- behavior 6: CR-01 path-containment (traversal/collision) refusal -----------------------------
 
 
 def test_traversal_path_is_refused_not_collided_onto_the_real_contract() -> None:
@@ -456,7 +457,7 @@ def test_trailing_slash_contract_path_is_refused() -> None:
     assert result["resolved"] is False
 
 
-# --- behavior 8: WR-02 "searched" is actually informative ------------------------------------------
+# --- behavior 8: WR-02 "searched" is actually informative -----------------------------------------
 
 
 def test_refusal_searched_field_names_the_contract_ids_actually_checked() -> None:
@@ -468,7 +469,7 @@ def test_refusal_searched_field_names_the_contract_ids_actually_checked() -> Non
     assert result["searched"] == ["widget"]
 
 
-# --- behavior 9: WR-03 contract_owner is never attributed from an unvalidated path ------------------
+# --- behavior 9: WR-03 contract_owner is never attributed from an unvalidated path ----------------
 
 
 def test_contract_owner_is_null_for_a_traversal_path_never_root_fallback_attributed() -> None:
@@ -482,7 +483,7 @@ def test_contract_owner_is_null_for_a_traversal_path_never_root_fallback_attribu
     assert "contract_owner" not in result
 
 
-# --- behavior 7: CR-03 refusal vs. internal-error exit codes are distinct --------------------------
+# --- behavior 7: CR-03 refusal vs. internal-error exit codes are distinct -------------------------
 
 
 def test_main_exits_1_on_clean_refusal_and_3_on_internal_error_not_the_same_code() -> None:
@@ -505,7 +506,7 @@ def test_main_exits_1_on_clean_refusal_and_3_on_internal_error_not_the_same_code
     assert crash_exit != refusal_exit
 
 
-# --- behavior 10: WR-04 malformed-package diagnostic parity with conventions_for() ------------------
+# --- behavior 10: WR-04 malformed-package diagnostic parity with conventions_for() ----------------
 
 
 def test_malformed_package_record_prints_the_same_stderr_diagnostic_as_conventions_for(
@@ -523,7 +524,7 @@ def test_malformed_package_record_prints_the_same_stderr_diagnostic_as_conventio
     assert "dir" in captured.err
 
 
-# --- behavior 11: IN-01 extra CLI arguments are rejected, not silently discarded --------------------
+# --- behavior 11: IN-01 extra CLI arguments are rejected, not silently discarded ------------------
 
 
 def test_main_rejects_extra_cli_arguments_with_a_usage_error() -> None:

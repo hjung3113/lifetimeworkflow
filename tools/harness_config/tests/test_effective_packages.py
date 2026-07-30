@@ -12,7 +12,8 @@ from tools.harness_config import effective_packages
 
 
 def test_declared_field_overrides_derived_field() -> None:
-    """A declared component's field wins over the same-named derived field; unshared fields survive."""
+    """A declared component's field wins over the same-named derived field; unshared fields
+    survive."""
     facts = {
         "packages": [
             {"id": "a", "manifest": "a/pyproject.toml", "dir": "a", "language": "python"},

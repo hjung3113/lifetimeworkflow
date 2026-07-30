@@ -194,7 +194,8 @@ def _seed_gsd_tree(tmp_path: Path) -> dict[str, str]:
 
 
 def test_gsd_owned_claude_files_untouched_and_unlisted(tmp_path: Path) -> None:
-    """Every seeded GSD-owned .claude/ file is byte-unchanged after emit and absent from manifest."""
+    """Every seeded GSD-owned .claude/ file is byte-unchanged after emit and absent from
+    manifest."""
     originals = _seed_gsd_tree(tmp_path)
 
     _, manifest_path = _emit(tmp_path)

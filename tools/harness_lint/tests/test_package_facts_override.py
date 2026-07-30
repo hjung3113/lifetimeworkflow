@@ -23,7 +23,8 @@ def test_core_config_loads_through_effective_packages_with_zero_edits() -> None:
 
 
 def test_core_declared_components_are_either_overridden_or_declared_only() -> None:
-    """Every declared component id survives into the effective output (override or declared-only)."""
+    """Every declared component id survives into the effective output (override or
+    declared-only)."""
     cfg = load_project()
     declared_ids = {c["id"] for c in components(cfg)}
     effective_ids = {pkg["id"] for pkg in effective_packages(cfg)}

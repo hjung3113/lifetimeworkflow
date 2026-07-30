@@ -271,7 +271,8 @@ def _dependencies_from_pyproject(text: str) -> list[dict]:
 
 
 def _dependencies_from_package_json(text: str) -> list[dict]:
-    """Parse ``dependencies`` (runtime) and ``devDependencies`` (dev) keys; version values ignored."""
+    """Parse ``dependencies`` (runtime) and ``devDependencies`` (dev) keys; version values
+    ignored."""
     data = json.loads(text)
     entries: list[dict] = []
     # IN-02 (47-REVIEW.md): `.get(..., {})`'s default only applies when the key is absent, not

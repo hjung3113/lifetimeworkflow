@@ -2,7 +2,9 @@
 
 Public API downstream consumers import::
 
-    from tools.harness_config import load_project, languages, language_bash_scopes, components, pipeline
+    from tools.harness_config import (
+        load_project, languages, language_bash_scopes, components, pipeline,
+    )
 
 Re-export is LAZY (PEP 562 ``__getattr__``) on purpose: ``tools`` is a namespace package (no
 ``tools/__init__.py``) imported by module path, and an eager top-level import here would run during

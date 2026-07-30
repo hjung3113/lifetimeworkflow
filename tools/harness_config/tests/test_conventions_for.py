@@ -13,7 +13,6 @@ import pytest
 from tools.harness_config import conventions_for
 from tools.harness_config.loader import _nearest_agents_md
 
-
 # ---- CR-01 (48-REVIEW.md): _nearest_agents_md must never walk above the repo root -------------
 
 
@@ -122,7 +121,8 @@ def test_declared_only_component_alongside_derived_package_resolves_to_derived_o
 
 
 def test_editing_language_command_changes_every_affected_profile_with_no_profile_edit() -> None:
-    """MONO-06 strong falsifiable form: a live config read, not a copied literal (RESEARCH.md Q3)."""
+    """MONO-06 strong falsifiable form: a live config read, not a copied literal (RESEARCH.md
+    Q3)."""
     facts = {
         "packages": [
             {"id": "root", "manifest": "pyproject.toml", "dir": ".", "language": "python"},
@@ -163,7 +163,8 @@ def test_real_nested_pair_libs_python_vs_root_differ_on_package_and_agents_md() 
 
 
 def test_path_outside_any_package_returns_explicit_default() -> None:
-    """A single-package fixture: any path resolves to the root package, is_default explicitly True."""
+    """A single-package fixture: any path resolves to the root package, is_default explicitly
+    True."""
     facts = {
         "packages": [{"id": "root", "manifest": "pyproject.toml", "dir": ".", "language": "python"}]
     }
@@ -190,7 +191,8 @@ def test_package_whose_language_is_absent_from_languages_reports_no_commands() -
 
 
 def test_synthetic_two_language_nested_pair_commands_differ() -> None:
-    """Supplementary fixture (RESEARCH.md Q4): proves the commands-DO-differ case the real tree can't."""
+    """Supplementary fixture (RESEARCH.md Q4): proves the commands-DO-differ case the real tree
+    can't."""
     facts = {
         "packages": [
             {"id": "root", "manifest": "pyproject.toml", "dir": ".", "language": "python"},

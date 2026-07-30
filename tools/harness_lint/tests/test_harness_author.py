@@ -137,7 +137,8 @@ def _resolve_citation(path: str, anchor: str | None, name: str | None = None) ->
 
 
 def _tracked_scan_files() -> list[Path]:
-    """Tracked files under `_SCAN_TARGETS` (git ls-files), matching CONTEXT.md's change-set scope."""
+    """Tracked files under `_SCAN_TARGETS` (git ls-files), matching CONTEXT.md's change-set
+    scope."""
     completed = subprocess.run(
         ["git", "ls-files", *_SCAN_TARGETS],
         cwd=_REPO_ROOT,

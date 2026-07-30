@@ -1,4 +1,5 @@
-"""MONO-08 impact reporter — composes, never re-implements, the existing traversal/attribution layers.
+"""MONO-08 impact reporter — composes, never re-implements, the existing traversal/attribution
+layers.
 
 ``report(contract_path, cfg=None, graph=None, facts=None)`` answers "what does changing this
 contract reach?" by composing three already-shipped engines: ``tools.contract_graph.query``'s

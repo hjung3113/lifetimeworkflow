@@ -9,13 +9,13 @@ only by language. This gate keeps that evolution from silently regressing:
 - its routing section keys on stage/component (or the component role words).
 
 Parsing is delegated to the shared ``parse_frontmatter`` — no hand-sliced ``---`` fences. Kept
-domain-neutral (no instance-overlay path or domain-contract tokens) so the GEN-04 core-plane guard stays green.
+domain-neutral (no instance-overlay path or domain-contract tokens) so the GEN-04 core-plane
+guard stays green.
 """
 
 from __future__ import annotations
 
 import re
-
 from pathlib import Path
 
 from tools.harness_lint import parse_frontmatter
@@ -43,7 +43,8 @@ def _read() -> tuple[dict, str]:
 
 
 def _route_bodies(body: str) -> dict[str, str]:
-    """Split ``body`` into ``{route_name: route_section_text}`` at each ``## Route: <name>`` header."""
+    """Split ``body`` into ``{route_name: route_section_text}`` at each ``## Route: <name>``
+    header."""
     matches = list(_ROUTE_HEADER_RE.finditer(body))
     sections: dict[str, str] = {}
     for i, m in enumerate(matches):
@@ -99,9 +100,11 @@ def test_every_route_carries_all_five_subsections_in_order() -> None:
 
     for name, text in sections.items():
         positions = [text.find(f"**{h}**") for h in _ROUTE_SUBSECTIONS]
-        missing = [h for h, pos in zip(_ROUTE_SUBSECTIONS, positions) if pos == -1]
+        # positions is built 1:1 from _ROUTE_SUBSECTIONS via the comprehension above, so the two
+        # sequences are always equal length — strict=True enforces that invariant, not assumes it.
+        missing = [h for h, pos in zip(_ROUTE_SUBSECTIONS, positions, strict=True) if pos == -1]
         assert not missing, f"route {name!r} is missing subsection(s): {missing}"
         assert positions == sorted(positions), (
             f"route {name!r} has its five subsections out of order: "
-            f"{list(zip(_ROUTE_SUBSECTIONS, positions))}"
+            f"{list(zip(_ROUTE_SUBSECTIONS, positions, strict=True))}"
         )

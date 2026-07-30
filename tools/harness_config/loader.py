@@ -85,7 +85,8 @@ def contract_graph_relationships(cfg: dict | None = None) -> list[dict]:
     Raw passthrough (mirrors ``components()`` / ``pipeline()``): the TOPO-02 contract-relationship
     DATA slot flows through UNCHANGED — NO validation, traversal, discovery, or policy (D-03). The
     two-level ``.get`` mirrors ``workspace_config.edges``: ``[[contract_graph.relationships]]``
-    parses to ``cfg["contract_graph"]["relationships"]``. Graph resolution is Phase-25 compiler work.
+    parses to ``cfg["contract_graph"]["relationships"]``. Graph resolution is Phase-25 compiler
+    work.
     """
     if cfg is None:
         cfg = load_project()
@@ -93,17 +94,17 @@ def contract_graph_relationships(cfg: dict | None = None) -> list[dict]:
 
 
 def effective_relationships(cfg: dict | None = None) -> list[dict]:
-    """Lower every legacy ``[pipeline].edges`` entry to an authority/dependent relationship and union
-    it with the explicit ``[[contract_graph.relationships]]`` records (TOPO-03).
+    """Lower every legacy ``[pipeline].edges`` entry to an authority/dependent relationship and
+    union it with the explicit ``[[contract_graph.relationships]]`` records (TOPO-03).
 
     Lowering (D-04): each edge ``{from, to, contract}`` becomes
     ``{"id": "pipeline/<contract>/<from>-><to>", "contract": contract, "authority": from,
     "dependents": [to]}`` — the namespaced id can never collide with a human-authored explicit id.
-    ``from`` / ``to`` are treated as OPAQUE strings and passed through verbatim: this function never
-    calls ``split_endpoint`` or interprets a ``repo:`` half (that resolution is Phase 25). Because it
-    reads only ``cfg["pipeline"]["edges"]`` + ``cfg["contract_graph"]["relationships"]`` — both plain
-    dict/list shapes present in BOTH ``load_project()`` and ``load_workspace()`` output — the same
-    function serves project and workspace configs.
+    ``from`` / ``to`` are treated as OPAQUE strings and passed through verbatim: this function
+    never calls ``split_endpoint`` or interprets a ``repo:`` half (that resolution is Phase 25).
+    Because it reads only ``cfg["pipeline"]["edges"]`` + ``cfg["contract_graph"]["relationships"]``
+    — both plain dict/list shapes present in BOTH ``load_project()`` and ``load_workspace()``
+    output — the same function serves project and workspace configs.
 
     The merged list is stable-sorted by ``id`` for deterministic output (no ``set`` iteration order
     or wall-clock in the output path). Raises ``ValueError`` with a deterministic, stable-sorted
