@@ -447,6 +447,50 @@ any session banner; contract *versioning* / compatibility analysis (that is carr
 4. The `contract-change` route in `harness/agents/orchestrator.md` names `/impact` as the evidence
    step it previously left unfilled, and the emit round-trip to both runtimes is byte-clean.
 
+#### Phase 50a: Harness Authoring
+
+**Goal:** Authoring a harness artifact stops being tribal knowledge. One `harness-author` skill asks
+grounded questions and offers defaults **cited as `path:line` from this checkout**, so the answer is
+verifiable against the repo rather than recalled. Its output lands runtime-neutral under `harness/`
+only — the emitter projects it — which is the rule newcomers most often break by hand-editing
+`.opencode/` or `.claude/`.
+
+**Requirements:** MONO-10, MONO-11
+
+**Scope** (measured 2026-07-30 against this checkout):
+
+- **`harness-author` absorbs `skill-creator`; skills stay 8 → 8.** `harness/skills/` holds exactly 8
+  today (`brownfield-adoption`, `context-budget`, `data-contracts`, `fan-out-synthesize`,
+  `polyglot-boundary`, `python-conventions`, `skill-creator`, `two-plane-memory`). Everything
+  `skill-creator` does must remain reachable — above all its **Step 0 anti-sprawl question** ("why
+  can't this live in an existing skill?"), which is the reason the skill set has stayed small, and its
+  caps/verify step (`tools/harness_lint/tests/test_skills.py`).
+- **`skill-creator` is referenced in more places than its own directory.** The rename must move
+  together with: `tools/harness_lint/caps.py` (pins the skill-name set — designed to fail loudly on an
+  un-enumerated skill), `tools/harness_emit/emit-manifest.json`, root `AGENTS.md`, and
+  `harness/skills/brownfield-adoption/SKILL.md`, plus both emitted trees via re-emit. A stale
+  reference to a deleted skill is a broken pointer in the product surface.
+- **Wider than skills.** `skill-creator` covered skills alone; `harness-author` covers the harness
+  artifact kinds the emitter actually projects — commands, agents, skills — since the same
+  runtime-neutral-source rule and the same emit round-trip govern all of them.
+- **Presupposes PROD-01** (shipped in v2.5 phase 42).
+- **Zero growth elsewhere:** no new package under `tools/`, no new command, no new contract, no new
+  gate, no new CI job. Commands stay at 19 (Phase 49's `/impact` was the sanctioned +1).
+
+**Non-goals:** generating the emitted trees directly; a gate that blocks hand-authored artifacts (the
+emit-drift job already catches divergence); authoring plugins or hooks, which have no analogous
+single-file shape today.
+
+**Success Criteria** (what must be TRUE):
+
+1. `harness-author` exists as a skill and its offered defaults are cited as `path:line` locations that
+   resolve in this checkout.
+2. Its output lands under `harness/` only; `.opencode/` and `.claude/` change solely through re-emit,
+   and the emit round-trip is byte-clean.
+3. `skill-creator` no longer exists and everything it did is reachable through `harness-author`; the
+   skill count is **8 before and 8 after**.
+4. Zero new packages under `tools/`, zero new commands, zero new contracts.
+
 ### 📋 Carried to a later milestone
 
 - **EVOL-02** contract versioning / compatibility engine — the only survivor; still a standalone
