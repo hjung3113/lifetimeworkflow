@@ -43,6 +43,35 @@ _AGENT_SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 # the PR (the `golden/` CODEOWNERS entry, ADR-0012), not an in-session human-gated command.
 EXPECTED_GOLDEN_ADJACENT = frozenset({"build", "test", "lint", "adr", "checkpoint", "component"})
 
+# WR-03 (48-REVIEW.md): the full stable command-name set (not just its count and the
+# golden-adjacent subset). `test_command_count_is_stable`'s pinned `18` literal has no linkage
+# back to WHICH 18 commands exist — a PR that deletes one command and adds an unrelated one in
+# the same change keeps the count at 18 and (for a non-golden-adjacent swap) would pass every
+# other gate in this module silently. Pinning the full name set closes that gap: renaming ANY
+# command — golden-adjacent or not — now fails this test, forcing a deliberate update here.
+EXPECTED_COMMAND_NAMES = frozenset(
+    {
+        "add-language",
+        "adopt",
+        "adr",
+        "agree",
+        "build",
+        "checkpoint",
+        "component",
+        "contract-check",
+        "docs-sync",
+        "fan-out-synthesize",
+        "flow",
+        "lint",
+        "new-contract-rule",
+        "orient",
+        "refresh-memory",
+        "review",
+        "test",
+        "verify-work",
+    }
+)
+
 
 def _command_files() -> list[Path]:
     return sorted(_COMMANDS_DIR.glob("*.md"))
@@ -68,6 +97,22 @@ def test_command_count_is_stable() -> None:
     gate for future phases' "N -> N" claims.
     """
     assert len(_command_files()) == 18
+
+
+def test_command_names_are_stable() -> None:
+    """WR-03 (48-REVIEW.md): pins the full command-NAME set, not just its count.
+
+    `test_command_count_is_stable` alone cannot catch a same-count rename swap (delete one
+    command, add an unrelated one in the same change) unless the swap happens to touch a
+    golden-adjacent name — `test_golden_adjacent_commands_present` only covers that subset. This
+    test closes the gap: renaming ANY command changes the observed set and fails here, forcing a
+    deliberate update to `EXPECTED_COMMAND_NAMES` alongside the rename.
+    """
+    names = frozenset(p.stem for p in _command_files())
+    assert names == EXPECTED_COMMAND_NAMES, (
+        f"command name set drifted: added={sorted(names - EXPECTED_COMMAND_NAMES)}, "
+        f"removed={sorted(EXPECTED_COMMAND_NAMES - names)}"
+    )
 
 
 @pytest.mark.parametrize("path", _command_files(), ids=lambda p: p.stem)
