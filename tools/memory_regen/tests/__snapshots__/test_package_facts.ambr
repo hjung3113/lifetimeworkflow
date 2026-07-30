@@ -1,0 +1,34 @@
+# serializer version: 1
+# name: test_render_matches_committed_snapshot
+  '''
+  # DERIVED — do not hand-edit (tools/memory_regen/package_facts.py)
+  
+  Every package in this checkout with its manifest path, language and package id, plus intra-repo dependency edges parsed from the manifests themselves.
+  
+  ## Packages
+  
+  | id | manifest | dir | language |
+  | --- | --- | --- | --- |
+  | widget-app | widget-app/package.json | widget-app | javascript |
+  | WidgetCli | widget-cli/WidgetCli.csproj | widget-cli | csharp |
+  | widget-core | widget-core/pyproject.toml | widget-core | python |
+  | widget-lib | widget-lib/pyproject.toml | widget-lib | python |
+  
+  ## Dependency Edges
+  
+  | from | to | kind |
+  | --- | --- | --- |
+  | widget-app | widget-core | runtime |
+  | widget-core | widget-lib | runtime |
+  
+  ## Convention Profiles
+  
+  | package | dir | language | test | format | bash_scope | agents_md | default |
+  | --- | --- | --- | --- | --- | --- | --- | --- |
+  | WidgetCli | widget-cli | csharp | (none) | (none) | (none) | AGENTS.md | false |
+  | widget-app | widget-app | javascript | (none) | (none) | (none) | AGENTS.md | false |
+  | widget-core | widget-core | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
+  | widget-lib | widget-lib | python | uv run pytest | ruff format | uv * | AGENTS.md | false |
+  
+  '''
+# ---

@@ -28,8 +28,12 @@ from ruamel.yaml import YAML
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _CI_WORKFLOW = _REPO_ROOT / ".github" / "workflows" / "ci.yml"
 
-# The two committed-derived artifacts the stale-derived gate regenerates and diffs.
-_DERIVED_PATHS = ("docs/reference", ".memory/derived/contracts-index.md")
+# The three committed-derived artifacts the stale-derived gate regenerates and diffs.
+_DERIVED_PATHS = (
+    "docs/reference",
+    ".memory/derived/contracts-index.md",
+    ".memory/derived/package-facts.md",
+)
 
 
 def _load_ci() -> dict:
@@ -71,7 +75,7 @@ def test_stale_derived_uses_untracked_safe_diff_primitive() -> None:
         assert path in joined, f"stale-derived diff must cover the committed-derived path `{path}`"
 
 
-def test_stale_derived_regenerates_both_derived_generators() -> None:
+def test_stale_derived_regenerates_all_three_derived_generators() -> None:
     """The gate regenerates via the canonical tools.* modules (no inline derivation, D-06)."""
     ci = _load_ci()
     joined = "\n".join(_run_texts(ci["jobs"]["stale-derived"]))
@@ -80,6 +84,9 @@ def test_stale_derived_regenerates_both_derived_generators() -> None:
     )
     assert "tools.memory_regen.contracts_index" in joined, (
         "stale-derived must regen contracts-index via tools.memory_regen.contracts_index"
+    )
+    assert "tools.memory_regen.package_facts" in joined, (
+        "stale-derived must regen package-facts via tools.memory_regen.package_facts"
     )
 
 

@@ -25,6 +25,7 @@ __pycache__/
 # form `/`) is required: git cannot re-include a file under an excluded DIRECTORY (P3).
 .memory/derived/*
 !.memory/derived/contracts-index.md
+!.memory/derived/package-facts.md
 
 # Local-only settings (never commit — may hold GOLDEN_APPROVE_HUMAN ratification token)
 .claude/settings.local.json

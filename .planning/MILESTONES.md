@@ -1,5 +1,49 @@
 # Milestones
 
+## v2.5 De-ceremony (Shipped: 2026-07-30)
+
+**Phases completed:** 8 phases (39–46), 33 plans, strictly serial DAG — no insertions.
+
+**Timeline:** 2026-07-26 → 2026-07-30 (5 days, 171 commits, `dacaae6`..`dd8ac08`)
+
+**Scale:** 385 files outside `.planning/`, +3,115 / −30,513 = **net −27,398 LOC**.
+
+**Delivered:** the harness stopped verifying itself. ADR-0012 made **CI and the merge** the decision
+authority; seven phases then deleted the machinery that had been doing that job in-session — the
+skill-registry self-gate, the entire docs-review plane, the task-control lifecycle plane (8 `tools/`
+packages, 7 contracts, 4 commands, 5 discipline skills), `secret_scan`, `memory_ui`,
+`strangler_guard`, `/pipeline` — and relocated the golden stack to `examples/log-parser/` per
+ADR-0002(b). The gates a human must personally **author** went from five kinds to **zero**; the
+constitution plane narrowed 4 → 3 members by ratified decision (ADR-0012 clause (d)). The eighth
+phase repaid the product side: four routes (`small-change · bugfix · feature · contract-change`) plus
+`/flow`, commands 17 → 18 with `+0` on every other surface count. Suite at close: **881 passed / 7
+snapshots** core, 14 instance.
+
+**How it closed.** `ci.yml` is `pull_request`-only and this repo does one PR per milestone, so CI had
+never run on any of this work — PR #5 was the milestone's entire CI evidence and the only way to
+satisfy Phase 43's SC-1. All 11 jobs plus the `gate` fan-in passed. PR #6 then closed the four
+human-gated leftovers: **ADR-0013** (retires ADR-0008, whose plane Phase 43 deleted while it still
+read `Accepted`, and ratifies the rule that a path cited by an accepted ADR is corrected or marked
+historical but never deleted), the two deferred `docs/glossary.md` rows, the README test counts
+(982 → 881), and **D-24** — CODEOWNERS being advisory here — accepted as a documented residual
+because `require_code_owner_reviews` cannot be satisfied in a solo repo and compensating for it
+in-session would be the ceremony ADR-0012 rules out.
+
+**The lesson that outlived the milestone.** Most of the work went not into deleting but into proving
+the deletions safe, and the recurring obstacle was never a stale reference — it was **a check that
+cannot fail**. Six distinct guards across phases 40–46 passed while the thing they guarded was
+absent: `RETIRED_SIGNATURES[0]` reading one entry, a test asserting `[] == []`, a loop over an
+emptied edge list, deny rows whose only enforcer had been deleted, a glob set matching zero paths,
+and three predicates passing on prose elsewhere in the same file. The normal gates verify that
+declared things *exist*, never that declarations still *mean* something. Two more of that class were
+found and fixed during this very close: Phase 43–46 sat unchecked in ROADMAP while the Progress table
+read Complete, and CER-01/02/03 read `Not started` while their VERIFICATION recorded all three
+SATISFIED.
+
+**Archived:** `.planning/milestones/v2.5-ROADMAP.md` and `.planning/milestones/v2.5-REQUIREMENTS.md`.
+No `v2.5-MILESTONE-AUDIT.md` was run — completion was verified directly against the phase artifacts
+(33/33 SUMMARY files, 16/16 requirements) and against the two green CI fan-ins.
+
 ## v2.4 Gate Right-Sizing, Carried Debt, Lane Discipline (Closed PARTIAL: 2026-07-26)
 
 **Phases:** 30–38 planned; **34, 35, 36, 37 shipped** (12 plans), **38 landed as code** (`bc9a6d9`,
@@ -177,5 +221,40 @@ Known deferred items at close: 8 (see STATE.md Deferred Items). The load-bearing
 workspace-level synthesis (no single context holds every repo), reusing the Phase-10 fan-out
 substrate with NO new surface, and round-tripped byte-identical to both runtimes — closing out
 Phase 11.
+
+---
+
+## v2.6 Minimal Monorepo Core — SHIPPED 2026-07-30
+
+**Phases completed:** 4 phases (47, 48, 49, 50a), 11 plans · phase 50b BLOCKED and carried
+**Requirements:** 11/12 (MONO-01..11; MONO-12 carried)
+**Scale:** 104 commits, 103 files changed, +15,204 / −325 · 981 tests passing at close
+
+**Key accomplishments:**
+
+- A committed derived **package + dependency graph** (`.memory/derived/package-facts.md`) where every
+  edge is parsed from the manifests themselves across five manifest kinds — no hand-maintained
+  dependency list anywhere — with `[[components]]` demoted from source-of-truth to an override slot
+  layered over the derived facts.
+- **Nearest-wins convention profiles**: asking "which conventions apply here?" from any path returns
+  the enclosing package's answer, with lint/test commands *derived* from the `[[languages]]` slot
+  rather than restated — editing the language config changes every profile with no profile edited.
+- **`/impact <contract>`** — the `contract-change` route's Repository-evidence step became one named
+  command over the *existing* `direct`/`reverse`/`transitive` plus the new package facts, replacing an
+  inline python one-liner. No second traversal engine exists, proven by an AST gate mutation-tested
+  against while-loop, for-over-adjacency and mutual-recursion rewrites.
+- **`harness-author`** absorbed `skill-creator` at net skills ±0, widening scope from skills alone to
+  all three emitter-projected kinds, with every offered default cited as a `path:line` that must
+  resolve — enforced by a new citation-integrity gate.
+- **The no-growth constraint held for the whole milestone**: +1 command (the sanctioned `/impact`),
+  ±0 skills, +0 gates, +0 CI jobs, +0 contracts, +0 `tools/` packages, +0 dependencies, nothing
+  injected into SessionStart. `ci.yml`'s job set and `gate.needs` are byte-unchanged.
+- **Adversarial review earned its place**: four review passes found 8 critical defects the phase
+  verifications had passed over — including a `../../`-traversal path that resolved onto a real
+  contract's node and returned confident output, and a skill that walked an agent author into a
+  guaranteed guard failure. All fixed with regression tests.
+- **Phase 50b was blocked honestly** rather than faked: `/adopt` writes into its target, no real
+  multi-package target repo exists, and unrelated repos on the machine were not conscripted into
+  being one. MONO-12 carried with its criteria intact.
 
 ---

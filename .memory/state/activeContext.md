@@ -1,5 +1,5 @@
 ---
-updated: "2026-07-29"
+updated: "2026-07-30"
 ---
 
 # activeContext — volatile session hint (COMMITTED)
@@ -11,24 +11,38 @@ updated: "2026-07-29"
 
 ## In flight
 
-- Route: small-change
-- Step: 3 of 3 — make the edit and run `/lint`
-- Next command: /verify-work
+- Route: none — between milestones
+- Step: —
+- Next command: /gsd:new-milestone (v2.6)
 
-**Milestone v2.5 — Phase 46 (Product Flow), the milestone's final phase.** Plans 01 and 02 landed
-(`439b416` four product routes in `harness/agents/orchestrator.md`; `4df76db` `harness/commands/flow.md`,
-17 → 18 commands). Plan 03 is in flight: the state round-trip above plus the eight-criterion
-verification record. Nothing mid-edit outside `.memory/state/`.
+**Milestone v2.5 De-ceremony is SHIPPED, ARCHIVED and TAGGED `v2.5`.** Nothing is mid-edit. Working
+tree clean; branch `claude/data-pipeline-harness-8aypct` and `origin/main` both carry the work
+(PR #5 the milestone close, PR #6 the leftovers — both CI-green on all 11 jobs plus `gate`).
 
-The three lines above are the route state `/flow` §2 prescribes. They are written by `/checkpoint`
-and surfaced by `/orient`'s pointer payload — **no new state file, no new writer, no new reader**.
+The three lines above are the route state `/flow` §2 prescribes, written by `/checkpoint` and
+surfaced by `/orient`'s pointer payload — no new state file, no new writer, no new reader.
+
+Final gate state: core **881 passed / 7 snapshots**, instance **14**; `contract-drift` (core +
+workspace), `emit-drift`, `stale-derived` and the ruff ratchet all exit 0. Commands **18**.
 
 ## Next
 
-- Close Phase 46: `.planning/phases/46-product-flow/46-03-SUMMARY.md` carries the eight-criterion
-  record, the D-24 whole-phase LOC line, and the D-23 statement that no mutation-proof table is owed.
-- Then the **milestone-close PR** for v2.5, which owns the nine-item deferral list inherited from
-  Phase 45 (`45-06-SUMMARY.md`): `docs/glossary.md`, ADR-0008/ADR-0003 dangling citations, the
-  982-vs-live README counts, and D-24's branch-protection remedy.
-- v2.6 (phases 47–50) is scoped, not started: `/impact`, package facts, the `contract_graph` query
-  surface.
+- **v2.6 Minimal Monorepo Core (phases 47–50)** — scoped in ROADMAP, not started. Smallest
+  goal-complete subset is v2.5 + 47 + 49. Start with `/gsd:new-milestone`, which writes the fresh
+  `.planning/REQUIREMENTS.md` — deliberately absent right now, archived rather than lost
+  (`.planning/milestones/v2.5-REQUIREMENTS.md`).
+- D-24 is re-openable there as a machine-side check on golden baseline diffs; v2.5's no-growth
+  constraint forbade exactly that and is now closed.
+
+## Carry into the next milestone
+
+- **A check that cannot fail** — this milestone's own defect class, eight instances: six across
+  phases 40–46, plus two caught during the close itself (phases 43–46 sat unchecked in ROADMAP while
+  the Progress table read Complete; CER-01/02/03 read `Not started` against a VERIFICATION recording
+  all three SATISFIED). The gates verify that declared things *exist*, never that declarations still
+  *mean* something. Mutation-test every new or edited assertion; scope predicates to their section.
+- **`docs/adr/**` is on `CONSTITUTION_GLOBS`** alongside `contracts/**` and `docs/glossary.md`, so
+  authoring an ADR is human-gated exactly like the glossary. When an agent must not write: prepare
+  the edit as an off-plane script asserting an exact single match per replacement, and have the human
+  run it — `.planning/quick/260729-wdi-*/apply.sh` is the worked example. Never forge
+  `GOLDEN_APPROVE_HUMAN`; never use `HARNESS_DEV_BYPASS` on a plane a gate protects.

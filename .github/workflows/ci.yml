@@ -276,11 +276,11 @@ jobs:
       - name: Sync workspace (all packages)
         run: uv sync --all-packages
       - name: Regenerate the committed-derived set
-        run: uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index
+        run: uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index && uv run python -m tools.memory_regen.package_facts
       - name: Fail on any stale committed-derived artifact (untracked-safe)
         run: |
-          git add -A -- docs/reference .memory/derived/contracts-index.md
-          if ! git diff --cached --exit-code -- docs/reference .memory/derived/contracts-index.md; then
+          git add -A -- docs/reference .memory/derived/contracts-index.md .memory/derived/package-facts.md
+          if ! git diff --cached --exit-code -- docs/reference .memory/derived/contracts-index.md .memory/derived/package-facts.md; then
             echo ''
             echo 'FAIL: the committed-derived plane is STALE — a derived artifact differs from its regenerated form.'
             echo 'Fix locally (never hand-edit derived files): run'
@@ -289,11 +289,11 @@ jobs:
             echo ''
             echo 'or the underlying regen commands directly:'
             echo ''
-            echo '    uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index'
+            echo '    uv run python -m tools.docs_sync && uv run python -m tools.memory_regen.contracts_index && uv run python -m tools.memory_regen.package_facts'
             echo ''
             echo 'then commit the regenerated artifacts:'
             echo ''
-            echo '    git add docs/reference .memory/derived/contracts-index.md && git commit'
+            echo '    git add docs/reference .memory/derived/contracts-index.md .memory/derived/package-facts.md && git commit'
             echo ''
             exit 1
           fi

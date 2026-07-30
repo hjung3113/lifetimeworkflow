@@ -12,13 +12,13 @@ description: >-
 # brownfield-adoption
 
 **Why this is a new skill, not an extension of an existing one:** none of this harness's other
-skills (`python-conventions`, `data-contracts`, `skill-creator`,
+skills (`python-conventions`, `data-contracts`, `harness-author`,
 `polyglot-boundary`, `two-plane-memory`, `fan-out-synthesize`,
 `context-budget`) own the discover→draft→apply adoption lifecycle. The closest
 candidate — `data-contracts` — is about authoring or checking contracts already
 known to exist, not about discovering an UNKNOWN brownfield tree and proposing what its contracts
 might be. That is a genuinely disjoint routing trigger, so a new skill directory is justified
-(skill-creator Step 0).
+(harness-author Step 0).
 
 This skill teaches the three-stage adoption runbook: a target repository is scanned read-only, a
 task-local batch drafts what would change, and the batch is then safely applied to the target — no

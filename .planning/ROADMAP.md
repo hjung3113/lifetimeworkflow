@@ -24,13 +24,19 @@ file keeps only the milestone-level index so it stays constant-size as milestone
 - ⚠ **v2.4 Gate Right-Sizing, Carried Debt, Lane Discipline** — Phases 30–38 (**closed PARTIAL
   2026-07-26**: 34–37 shipped; 30 partial; 31/32/33 cut; 38 landed as code `bc9a6d9`, formalized by
   v2.5 phase 39)
-- 🚧 **v2.5 De-ceremony** — Phases 39–46 (in progress)
-- 📋 **v2.6 Minimal Monorepo Core** — Phases 47–50 (scoped, not started)
+- ✅ **v2.5 De-ceremony** — Phases 39–46 (shipped 2026-07-30)
+- ✅ **v2.6 Minimal Monorepo Core** — Phases 47, 48, 49, 50a shipped 2026-07-30; **50b BLOCKED and
+  carried** (no real multi-package target repo — MONO-12 carried, see the Carried section)
 
 ## Phases
 
 **Phase Numbering:** integer phases (1, 2, 3) are planned milestone work; decimal phases (26.1,
 27.2) are urgent insertions, and appear between their surrounding integers in numeric order.
+**Letter-suffixed phases (50a, 50b) are new in v2.6 and mean something different:** they are a
+**split** of one *already scoped* phase into an independently shippable half and a half held behind a
+hard external precondition. A split is decided at kickoff, not inserted mid-flight, and the halves
+keep the parent's number. Spell them `50a` / `50b` — never `50.1` / `50.2`, which would read as
+insertions.
 
 <details>
 <summary>✅ v1.0 Harness Core (Phases 1–8) — SHIPPED 2026-07-12</summary>
@@ -124,7 +130,7 @@ Full detail: `.planning/milestones/v2.3-ROADMAP.md`. Audit: `.planning/milestone
 > CUT. Phase 38 delivers the right-sizing.
 
 Design: `.planning/research/v2.4-scoping-FINAL.md` (Claude draft + one codex-sol review pass,
-human-approved). Requirements: `.planning/REQUIREMENTS.md`.
+human-approved). Requirements: `.planning/milestones/v2.4-REQUIREMENTS.md`.
 
 **Goal:** close the gap between what this harness *declares* and what it *enforces*, discharge the
 debt carried across three milestones, and finish the task-lifecycle discipline left unbuilt by v2.2.
@@ -169,646 +175,63 @@ about, and the posture must be ratified before enforcement is written. `33` depe
 D. The named failure mode — phase 32 expanding without bound — is mitigated by phase 31's posture ADR
 being a hard precondition. If 31 cannot pick a posture, stop rather than proceed.
 
-### 🚧 v2.5 De-ceremony (Phases 39–46) — IN PROGRESS
-
-Design: `.planning/research/v2.5-scoping-FINAL.md` — a three-round two-model panel (`gpt-5.6-sol` high
-× `claude-opus-5` high; factual dossier by `gpt-5.6-terra` medium) over a Claude-authored brief,
-owner-approved. Requirements: `.planning/REQUIREMENTS.md` (CER-01..11, PROD-01..05).
-
-**Goal:** stop the harness from verifying itself and start it serving its stated purpose — a monorepo
-where ① per-package conventions stay consistent, ② interface contracts between packages stay
-consistent, ③ an LLM understands cross-project relationships better than in a generic repo, and
-④ the thing stays maintainable. Delete ~16k LOC of self-verification machinery, take the gates a human
-must personally **author** from five kinds to **zero**, and give the **product** an honest lifecycle.
-
-> **Binding constraint (owner):** never expand scope beyond the purpose by adding verification gates,
-> security layers, or ceremony. Default answer to "should we also gate X?" is **NO**; the surface may
-> not grow without retiring at least as much.
->
-> **The DEV/PRODUCT boundary (the round-3 correction):** rounds 1–2 deleted the product's whole
-> lifecycle on the ground that "GSD already owns it" — true of this checkout, false of the product.
-> GSD is never installed. Operative rule, ratified in ADR-0012: *no product capability may be declined
-> because GSD covers it; only a named shipped artifact may cover it.* What ships is
-> `tools/adoption_scan/destinations.py::_CATEGORY_GLOBS`, not the emitter (`generate.py:41-43`
-> projects this checkout into itself).
-
-- [x] **Phase 39: Decision Boundary** *(v2.5 A)* — one human-ratified **ADR-0012**: CI + the merge are (completed 2026-07-26)
-  the authority; the DEV/PRODUCT boundary is ratified with its operative rule; ADR-0001's
-  constitution-member list is superseded (golden leaves the core) and ADR-0010 retires; ADR-0011 is
-  accepted with `Date`/`Deciders` filled and its code-before-ratification recorded; RAT-4 / RAT-5 /
-  the per-tool deny spelling close as **obsolete-by-deletion**; the bash surface is declared a
-  **permanent residual by design**. (CER-01, CER-02, CER-03)
-  **Success:** ADR-0012 exists and is `accepted`; ADR-0011 has non-empty `Date`/`Deciders`; the three
-  carried items show a recorded disposition in `STATE.md`; SEAL-05 is marked withdrawn, not deferred.
-- [x] **Phase 40: Self-Gate Teardown** *(v2.5 A)* — delete `tools/skill_registry` (611 LOC),
-  `harness/skills/registry.lock`, CI `registry-lock` and its `gate.needs` entry. **Must precede every
-  skill deletion** (`registry.py:44,105-110`). (CER-04) (completed 2026-07-27, `45364d7`)
-  **Success:** no `registry.lock` in the tree; `gate.needs` has no dangling job; the suite is green.
-  **Verified:** suite 1664 passed/0 failed; `gate.needs` 12 entries, no dangling (YAML-resolved);
-  emit-drift + stale-derived + contract-drift + ruff-ratchet clean; UAT 4/4 passed.
-  **Carry-forward for 41/43/44 —** deletion-phase ordering is **delete → stage → commit → verify →
-  amend-if-red**, NOT verify-before-commit. `tools/adoption_scan` reads git, not the filesystem
-  (`destinations.py:217` `git ls-files`), so a tracked-file deletion reds 3 tests until staged (2 of
-  them) and committed (`test_catalog_invariant_to_untracked_local_state`, which diffs against HEAD
-  and is red by construction while uncommitted). Measured 3→1→0. See `40-01-SUMMARY.md`.
-- [x] **Phase 41: Docs-Review Plane Removal** *(v2.5 A)* — unbind the 8 `[[binding]]` rows, then delete (completed 2026-07-26)
-  `tools/docs_guard` (6110 LOC), the ledger, hook `ledger_guard` + its `path_deny_globs` entry,
-  `/docs-update`, skill `docs-upkeep`, `contracts/harness/docs/*`, CI `docs-guard` + its `gate.needs`
-  entry. The severity-flip alternative is provably dead: `guard.py:383-399` classifies `BROKEN` before
-  staleness and `cli.py:6-13` exits 1 on `BROKEN` regardless of severity. (CER-05)
-  **Success:** the CI fan-in gate is **green**; no human-authored ledger row is required by anything.
-- [x] **Phase 42: Adoption Decoupling + Install-Set Repair** *(v2.5 B)* — drop task-control coupling (completed 2026-07-27)
-  from `adoption_apply` (inline the ~60-LOC atomic create/replace; inline `gate-registry.json`'s 7
-  redaction regexes into `adoption_scan`, live consumer `scan.py:110-112`); **add the surviving
-  `tools/**` to `_CATEGORY_GLOBS`**, which today ships commands and CI that invoke Python the target
-  never receives (`destinations.py:142-181`). (CER-06, PROD-01)
-  **Success:** adoption runs draft → apply with no `task_control` import and no
-  `GOLDEN_APPROVE_HUMAN`; a fixture install produces a tree where an emitted command's module exists.
-- [ ] **Phase 43: Lifecycle Plane Removal** *(v2.5 B)* — delete 8 `tools/` packages (7021 LOC), the 7
-  task-control contracts, commands `intake·phase-gate·handoff·discipline`, hook `resume_gate`, the 5
-  discipline skills, `harness/{capabilities,disciplines,risk-policy}.toml`, `.workflow/tasks/`, CI
-  `lifecycle-eval` + its `gate.needs` entry; strip `memory_regen`'s active-task block
-  (`inject.py:165-195`) keeping the pointer (`:148-162`). No residue package. (CER-07)
-  **Success:** no module imports a deleted package; `test_capability_wiring.py` is gone with
-  `capabilities.toml`; the suite is green.
-- [ ] **Phase 44: Non-Goal Surface Removal** *(v2.5 B)* — delete `secret_scan` (**no replacement
-  job**), `deny-domains.*`, `gate-registry.json` and their `DATA_CONTRACT_PATHS` entries,
-  `tools/memory_ui` (1756 LOC), `tools/strangler_guard` + `/strangler-step`, `/pipeline` +
-  `pipeline-map` + `[pipeline].edges`, skill `gate-model`, `/component`'s topology half; **relocate the
-  golden stack to `examples/log-parser/`** (ADR-0002(b): `runner.py:78-85` puts .NET in the core).
-  (CER-08, CER-09)
-  **Success:** `contracts/` holds 6–8 entries with a rebaselined hash manifest; the core suite passes
-  with no golden module; the instance leg still runs golden.
-- [ ] **Phase 45: Projection Repair** *(v2.5 C)* — re-emit both trees; update `caps.py` frozensets,
-  `emit-manifest.json`, `HARNESS_SIGNATURES` (`merge.py:86-95`); rebaseline
-  `contracts/.hashes/manifest.json`; regenerate `docs/reference/**`, contracts-index and the syrupy
-  snapshots; repair `gate.needs`; **scrub prose naming deleted surfaces**, including root
-  `AGENTS.md:8-9` and `AGENTS.md:52-62`, both outside the managed block. (CER-10, CER-11)
-  **Success:** `emit-drift` and `stale-derived` produce an empty diff; no surviving artifact names a
-  deleted one.
-- [ ] **Phase 46: Product Flow** *(v2.5 C)* — rewrite `harness/agents/orchestrator.md` (already *"the
-  only planner in the deployed harness"*, `:48`): strip its 8 dangling citations, retire the 25-row
-  table (`:90-129`), add **4 routes** `small-change · bugfix · feature · contract-change` with stop
-  conditions, the delegation-packet fields, the **six-field completion contract**
-  (`WORKFLOW_CONTRACTS.md:39-46`), one operative sentence per deleted discipline skill, and
-  *Repository evidence* from existing `harness_config` + `contract_graph` facts. Add **one** command
-  `/flow`; record route · step · next command in the already-shipped `.memory/state/activeContext.md`.
-  **Zero flow artifacts imported**; upstream mattpocock skills are not a product dependency.
-  (PROD-02, PROD-03, PROD-04, PROD-05)
-  **Success:** net **+1 command, +0 agents/skills/tools/contracts/CI/hooks/state files**; a weak model
-  can pick a route and close with the six fields from the emitted tree alone; re-emit is byte-clean.
-
-**DAG:** strictly serial `39 → 40 → 41 → 42 → 43 → 44 → 45 → 46`. Deletion-first is literal: 40 before
-any skill deletion; 41 before deletions that would classify `BROKEN`; 42 before 43 (adoption and
-`memory_regen` must be decoupled first); 45 after all deletions; 46 last, because it is the only
-additive phase.
-
-**Ordering rules that must hold inside every phase** (each verified against a file): (1) registry lock
-dies before the first skill deletion; (2) unbind a docs binding before deleting a source it names;
-(3) every contract deletion edits `contract_hash/hash.py:32` **and** rebaselines the hash manifest in
-the same commit; (4) decouple `adoption_apply` + `memory_regen` before deleting `task_control` /
-`handoff`; (5) every CI job deletion removes its `gate.needs` entry in the same commit
-(`ci.yml:410`); (6) every `harness/` change re-emits in the same commit and every skill/agent
-add-or-delete edits `caps.py` (`validate.py:182-183`); (7) never hand-edit `.claude/` or `.opencode/`;
-(8) **new** — a deleted `harness/` artifact's dedicated gate test dies in the same commit
-(`test_conductor_graph_render.py:31-32,42-57`, `test_capability_wiring.py:30,51`,
-`test_language_config.py:48-51`).
-
-**Recorded deviation from the panel:** three split deltas decided by the coordinator and approved by
-the owner — `/flow` ships (sol) rather than being cut (opus); the fourth route is `contract-change`
-(opus) rather than `research` (sol); the lifecycle is its own phase 46 (sol) rather than a widening of
-45 (opus).
-
-#### Phase 39: Decision Boundary
-
-**Goal:** Land one human-ratified ADR-0012 that makes CI + the merge the authority, ratifies the DEV/PRODUCT boundary with its operative rule, retires the superseded decision records, and closes the three carried human-ratification items as obsolete-by-deletion.
-
-Every later v2.5 deletion phase then has a written decision to cite instead of re-litigating scope.
-
-**Requirements:** CER-01, CER-02, CER-03
-
-**Scope:**
-- Author `docs/adr/0012-*.md` as `accepted`: CI + the merge are the authority; it names every surface
-  this milestone deletes; it supersedes ADR-0001's constitution-member list (golden leaves the core)
-  and ADR-0010 (the review ledger retires); it declares the bash surface a **permanent residual by
-  design**.
-- Ratify the DEV/PRODUCT boundary in the same ADR — DEV is this checkout (Claude Code + GSD, never
-  installed); PRODUCT is what `tools/adoption_scan/destinations.py::_CATEGORY_GLOBS` installs into a
-  target monorepo — with the operative rule that **no product capability may be declined on the ground
-  that GSD covers it**; only a named shipped artifact may cover it.
-- **Accept ADR-0011**: fill its empty `Date`/`Deciders` and record that its code landed (`bc9a6d9`)
-  before its ratification.
-- Record dispositions in `STATE.md` for **RAT-4**, **RAT-5**, and the per-tool deny spelling as
-  *obsolete-by-deletion*; mark v2.4's **SEAL-05** *withdrawn*, not deferred.
-
-**Non-goals:** no code deletion, no gate/CI change, no new mechanism, no new tool or contract. This
-phase is decision-record-only. Per the milestone's binding constraint, the surface may not grow.
-
-**Success Criteria**:
-1. `docs/adr/0012-*.md` exists with `Status: accepted`, non-empty `Date`/`Deciders`, and names the deleted surfaces, the ADR-0001/ADR-0010 supersession, and the bash-residual declaration.
-2. ADR-0012 states the DEV/PRODUCT boundary and its operative rule so a later phase can cite it to justify keeping a product capability GSD also covers.
-3. `docs/adr/0011-*.md` has non-empty `Date` and `Deciders` and records the code-before-ratification fact with the `bc9a6d9` reference.
-4. `.planning/STATE.md` records a disposition for RAT-4, RAT-5 and the per-tool deny spelling as obsolete-by-deletion, and marks SEAL-05 withdrawn (not deferred).
-5. ADR-0001 and ADR-0010 carry a superseded-by pointer to ADR-0012 with their decision bodies unedited (append-only / supersede-don't-edit).
-6. The existing suite and the contract-drift gate stay green — no contract, gate, or emitted artifact changes from this phase.
-
-#### Phase 40: Self-Gate Teardown
-
-**Goal:** Delete the skill-registry self-gate — the lock file, its tool, its two gate tests and its CI
-job — so that no later v2.5 phase can delete a skill and be blocked by a declaration *about* the skill
-tree. This is the first pure-deletion phase and it **must precede every skill deletion** in phases
-41, 43 and 44: `registry.py:44,105-110` recomputes the surface from `harness/skills/**` and fails on
-any diff against the committed lock, so deleting a skill first would red the gate.
-
-Authority to delete is already recorded — ADR-0012 (`docs/adr/0012-ci-and-merge-as-decision-authority.md:96-97`)
-names this exact surface.
-
-**Requirements:** CER-04
-
-**Scope** (verified against the tree, 2026-07-26):
-- Delete `tools/skill_registry/` — `registry.py`, `__main__.py`, `__init__.py`, `pyproject.toml`,
-  `tests/{conftest.py,test_skill_registry.py}` (611 LOC total).
-- Delete `harness/skills/registry.lock` (8462 bytes, 24 declared skills).
-- Delete the LANE-04 mirror gate `tools/harness_lint/tests/test_skill_registry_lock.py` (50 LOC) —
-  ordering rule (8): a deleted `harness/` artifact's dedicated gate test dies in the same commit.
-- Delete CI job `registry-lock` (`ci.yml:275-303`, including its comment block) **and** its entry in
-  `gate.needs` (`ci.yml:410`) — ordering rule (5), same commit.
-- Refresh `uv.lock` (`uv.lock:198` — `source = { virtual = "tools/skill_registry" }`). The workspace
-  glob `members = ["tools/*"]` (`pyproject.toml:34`) needs no edit; removing the directory removes the
-  member.
-
-**Non-goals:** no skill is deleted in this phase (that starts in 41); no other CI job, hook, contract,
-or emitted artifact changes; no replacement gate — per the milestone's binding constraint the surface
-may not grow, and the accepted consequence is recorded below. `docs/explanation/agent-workflow-skillset-design-guide.md`
-mentions a `registry.lock` as *vendored-skill provenance* — a different, unimplemented concept, not
-this gate; it is out of scope here (prose scrub belongs to Phase 45).
-
-**Accepted consequence** (scoping FINAL §156, risk 4): once the lock is gone, a skill `description`
-rewrite silently changes agent routing with no gate catching it. Accepted — CI + the merge are the
-authority (ADR-0012).
-
-**Success Criteria**:
-1. No `registry.lock` anywhere in the tree and no `tools/skill_registry/` directory; `grep -rn "skill_registry\|registry-lock"` over `tools/`, `harness/`, `.github/`, `pyproject.toml` and `uv.lock` returns nothing.
-2. `.github/workflows/ci.yml` has no `registry-lock` job and `gate.needs` (`ci.yml:410`) has no dangling `registry-lock` entry — no other `needs` entry is added or removed.
-3. `uv run pytest` is green with no collection error from a removed package, and `uv sync --all-packages` resolves against the refreshed `uv.lock`.
-4. The emitted trees are unchanged: `emit-drift` and `stale-derived` produce an empty diff (`registry.lock` is a declaration about `harness/skills/`, not an emitted artifact — deleting it must not move `.opencode/` or `.claude/`).
-5. The contract-drift gate stays clean — this phase touches no `contracts/` entry and no `contract_hash/hash.py` path list.
-6. Net surface change is deletion-only: **−1 CI job, −1 tool package, −1 lock file, −2 gate tests, +0** commands/agents/skills/contracts/hooks.
-
-#### Phase 41: Docs-Review Plane Removal
-
-**Goal:** Delete the human-doc review-obligation plane in its entirety — the bindings, the ledger,
-the guard, the hook, the command, the skill, the contracts and the CI job — so that **no gate
-requires a human-authored artifact to go green**. This is the last of the five such gates v2.5
-retires, and it is what turns the CI fan-in gate green: `docs-guard` has been red since the plane
-shipped, because a human ledger row is the only thing that can green it.
-
-Authority to delete is already recorded — ADR-0012 (`docs/adr/0012-ci-and-merge-as-decision-authority.md`)
-is `accepted` and supersedes ADR-0010, the record that declared this obligation model.
-
-**Requirements:** CER-05
-
-**Scope** (verified against the tree, 2026-07-27):
-- Unbind first: remove the 8 `[[binding]]` rows from `docs/doc-dependencies.toml` and delete
-  `docs/.docs-review-ledger.toml` (90 lines) before any tool deletion.
-- Delete `tools/docs_guard/` — `guard.py`, `cli.py`, `ledger.py`, `registry.py`, `impact.py`,
-  `digest.py`, `exclusions.py`, `__main__.py`, `__init__.py`, `pyproject.toml` and its 8 test modules
-  (6110 LOC total).
-- Delete the registry and its derived page: `docs/doc-dependencies.toml`,
-  `docs/reference/doc-dependencies.md`; delete `contracts/harness/docs/doc-dependencies.schema.json`
-  and **rebaseline `contracts/.hashes/manifest.json`** in the same commit.
-- Delete the hook and its permission data: `tools/hooks/ledger_guard.py`,
-  `harness/plugins/ledger-guard.ts`, the `docs/.docs-review-ledger.toml` entry in
-  `harness/permission-matrix.json:34` (and its `_note` prose at `:2`), and the emitted hook group
-  (`.claude/settings.json:165`) via re-emit.
-- Delete the runtime surface at source: `harness/commands/docs-update.md`,
-  `harness/skills/docs-upkeep/`, and their rows in `tools/harness_emit/emit-manifest.json`
-  (`:18,41,71,89,101`), then run `python -m tools.harness_emit`.
-- Delete the derived staleness queue: `tools/memory_regen/docs_staleness.py` (233 LOC, imports
-  `tools.docs_guard` at `:158`), its test, the `("docs", _docs_staleness_pointer(...))` injector row
-  (`inject.py:82,217`) and `test_inject_docs_pointer.py`.
-- Delete the adoption docs-binding proposal path (DOCSUP-07) incl.
-  `tools/adoption_apply/tests/test_docs_binding_proposal.py`.
-- Delete CI job `docs-guard` (`ci.yml:317-351`, including its comment block) **and** its entry in the
-  fan-in `needs` (`ci.yml:381`) — same commit.
-- Sweep the surviving references: `AGENTS.md:106-107`, `.memory/README.md`,
-  `harness/skills/gate-model/SKILL.md` (docs-plane claims only), `tools/harness_lint/caps.py:128-129,151`
-  and the wiring tests (`test_docs_update_wiring.py`, `tools/hooks/tests/test_settings_coexist.py`,
-  `tools/harness_emit/tests/test_coexist.py`, `test_tests_are_isolatable.py`,
-  `test_workspace_member_completeness.py`, `tools/docs_sync/tests/test_docs_sync_determinism.py`).
-  Refresh `uv.lock` for the removed workspace member.
-
-**Non-goals:** **no replacement of any kind** — no advisory/warn-only docs job, no severity flip, no
-successor link-checker. Per the milestone's binding constraint the surface may not grow. The
-severity-flip alternative is provably dead: `guard.py:383-399` classifies `BROKEN` before every
-staleness check and `cli.py:6-13` exits 1 on `BROKEN` regardless of severity, and every v2.5 deletion
-produces `BROKEN`. No new ADR (ADR-0012 already covers it) and **no edit to ADR-0010**
-(supersede-don't-edit). Out of scope: `tools/docs_sync` + `/docs-sync` (a different machine), the
-full `gate-model` skill (Phase 44), adoption ↔ task-control decoupling (Phase 42), `memory_regen`'s
-active-task block (Phase 43).
-
-**Accepted consequence:** a human-authored document can go stale against its sources with nothing
-reporting it. Accepted — CI + the merge are the authority (ADR-0012).
-
-**Success Criteria**:
-1. The CI fan-in gate is **green**, and `.github/workflows/ci.yml` has no `docs-guard` job and no dangling `docs-guard` entry in the fan-in `needs` (resolved as YAML, not by grep); no other `needs` entry is added or removed.
-2. No human-authored artifact is required by any gate: `docs/.docs-review-ledger.toml`, `docs/doc-dependencies.toml` and `tools/docs_guard/` do not exist, and no module imports `tools.docs_guard`.
-3. `grep -rnE "docs_guard|docs-guard|docs-review-ledger|ledger_guard|docs-upkeep|docs-update|doc-dependencies"` over `tools/`, `harness/`, `contracts/`, `docs/`, `.github/`, `.claude/`, `.opencode/`, `AGENTS.md`, `.memory/README.md` and `uv.lock` returns nothing (`.planning/` history is exempt and is not rewritten).
-4. `uv run pytest` is green with no collection error from a removed package, and `uv sync --all-packages` resolves against the refreshed `uv.lock`.
-5. `emit-drift` and `stale-derived` produce an empty diff after `python -m tools.harness_emit` — the removals reached the emitted trees through the emitter, not by hand-editing `.opencode/` or `.claude/`.
-6. `contract-drift` is clean against a rebaselined `contracts/.hashes/manifest.json` that no longer carries a `contracts/harness/docs/` entry, and the ruff ratchet is clean.
-7. Net surface change is deletion-only: **−1 CI job, −1 tool package, −1 hook, −1 command, −1 skill, −1 contract, −2 data files, +0** commands/agents/skills/contracts/hooks. Removed LOC is reported from `git diff --stat`, not estimated.
-
-#### Phase 42: Adoption Decoupling + Install-Set Repair
-
-**Goal:** Make adoption a standalone product capability — `draft → apply → PR review`, with no
-task-control import and no `GOLDEN_APPROVE_HUMAN` — and make the installed product **non-inert** by
-shipping the Python its own emitted artifacts invoke. Today a target monorepo receives commands that
-shell `uv run python -m tools.X`, receives `.github/workflows/**` running the same modules, receives
-`pyproject.toml` stubs, and receives **none of the Python**.
-
-Authority: ADR-0012's DEV/PRODUCT boundary and its operative rule — *no product capability may be
-declined because GSD covers it; only a named shipped artifact may cover it.* PROD-01 is the first
-place that rule bites.
-
-**Requirements:** CER-06, PROD-01
-
-**Scope** (verified against the tree, 2026-07-28 — the requirement prose predates three changes):
-- **The task-control coupling is `approval.py:37`**, not `apply.py`: `from tools.task_control.manager
-  import show`, plus `HUMAN_TOKEN_ENV = "GOLDEN_APPROVE_HUMAN"` (`approval.py:45`). Drop the import
-  and the task-revision binding it serves.
-- **The ~60-LOC atomic create/replace is ALREADY inlined** in `tools/adoption_apply/apply.py`
-  (`:207`, `:241`) — only the docstrings still say "Mirrors `tools.task_control.manager._atomic_create`".
-  This phase therefore only has to update that prose, not re-inline the sequence. Confirm before planning.
-- **Inline the secret patterns** `tools/adoption_scan/scan.py` reads from
-  `contracts/harness/task-control/gate-registry.json` (`scan.py:48`, live consumer `:110-112`).
-  There are **8** patterns, not 7. `scan.py:52-54` already owns `SECRET_PATH_GLOBS` for exactly this
-  reason — follow that precedent. The contract file itself is Phase 44's deletion (CER-08); this phase
-  removes adoption's dependency on it.
-- **Add the surviving `tools/**` to `_CATEGORY_GLOBS`** (`tools/adoption_scan/destinations.py:142-181`).
-  A data row, not a mechanism. Scope it to what survives v2.5 — do not ship packages phases 43/44 delete.
-- Adoption's own tests move with it: anything asserting the task-revision binding or the human-token
-  gate on the adoption path.
-
-**Non-goals:** no new gate, tool, contract, or dependency — the milestone's binding constraint holds.
-Do NOT delete `gate-registry.json`, `tools/task_control`, or `secret_scan` here (Phases 43/44 own
-those); this phase only severs adoption's dependence on them. No change to the adoption contracts'
-shapes, and no widening of what `/adopt` may write without a human.
-
-**Accepted consequence:** the adoption apply path loses its human-token gate. That is the point —
-CI + the merge are the authority (ADR-0012), and adoption's real review is the PR.
-
-**Success Criteria**:
-1. `grep -rn "task_control" tools/adoption_apply/ tools/adoption_scan/` returns nothing — no import, no docstring reference, no test.
-2. `grep -rn "GOLDEN_APPROVE_HUMAN" tools/adoption_apply/ tools/adoption_scan/` returns nothing; a full draft → apply run completes with the variable unset.
-3. `tools/adoption_scan/scan.py` reads no file under `contracts/harness/task-control/`; its 8 secret patterns are owned locally alongside `SECRET_PATH_GLOBS`, and the secret-redaction tests still pass unchanged.
-4. `_CATEGORY_GLOBS` contains a `tools/**` entry, and a **fixture install** produces a target tree in which every module an emitted command invokes (`uv run python -m tools.X`) actually exists — asserted by a test, not by inspection.
-5. `uv run pytest -q` is green; `emit-drift`, `stale-derived`, `contract-drift` and the ruff ratchet are clean.
-6. Net surface change adds no command, agent, skill, contract, hook, or dependency — the only additions are data rows and locally-owned constants.
-
-#### Phase 43: Lifecycle Plane Removal
-
-**Goal:** Delete the task-control lifecycle plane whole — 8 `tools/` packages, its contracts, its four
-commands, its hook, its five discipline skills, its three `harness/*.toml` declarations, its
-`.workflow/tasks/` state directory, and its CI job. **No residue package**: a Python state manager must
-be unreachable in the product by construction, not merely unused.
-
-This is the milestone's largest single deletion (**7021 LOC** of packages alone, verified 2026-07-28).
-Phase 42 already severed adoption — the last non-lifecycle consumer — so the plane now stands alone.
-
-Authority: ADR-0012 names this surface; the lifecycle's in-session gates are exactly the ceremony v2.5
-retires, and CI + the merge are the authority that replaces them.
-
-**Requirements:** CER-07
-
-**Scope** (every path verified present, 2026-07-28):
-- **8 packages, 7021 LOC total** — `tools/task_control` (1677), `tools/handoff` (1238),
-  `tools/discipline` (990), `tools/risk_router` (877), `tools/evidence` (783), `tools/task_packet`
-  (605), `tools/lifecycle_eval` (472), `tools/capability` (379).
-- **6 of the 7 task-control contracts**: `attestation`, `evidence`, `handoff`, `state`, `task`,
-  `transitions`. ⚠ **`gate-registry.json` is NOT deleted here** — CER-08 names it explicitly together
-  with its `DATA_CONTRACT_PATHS` entry (`tools/contract_hash/hash.py:32`), so Phase 44 owns it. CER-07's
-  prose says "the 7 task-control contracts"; the live directory holds 7 files and one of them is
-  claimed by the next phase. Recorded here so the two phases do not both try to delete it.
-  Rebaseline `contracts/.hashes/manifest.json` with the deletions.
-- **4 commands**: `harness/commands/{intake,phase-gate,handoff,discipline}.md` + their emitted copies
-  (via the emitter, never by hand) + their `tools/harness_emit/emit-manifest.json` rows.
-- **The hook**: `tools/hooks/resume_gate.py` and `harness/plugins/resume-gate.ts`, plus the emitted
-  `.claude/settings.json` hook group — which is a hand-maintained literal in
-  `tools/harness_emit/merge.py` (`HARNESS_SIGNATURES` + a hook-group dict), NOT a projected file.
-  Phase 41 built the `RETIRED_SIGNATURES` drop mechanism there for exactly this case and left it in
-  place with an empty tuple — use it, then empty it again once the re-emit has landed.
-- **5 discipline skills**: `harness/skills/{clarify,diagnose,domain-modeling,test-driven-change,adversarial-review-panel}/`
-  and their `tools/harness_lint/caps.py` declarations (`EXPECTED_SKILLS` hard-fails the emitter before
-  it writes a byte — Phase 41 hit this).
-- **3 declarations**: `harness/{capabilities,disciplines,risk-policy}.toml`, and
-  `tools/harness_lint/tests/test_capability_wiring.py` which dies with `capabilities.toml`.
-- **State + CI**: `.workflow/tasks/`, CI job `lifecycle-eval` (`ci.yml:221-231`) and its entry in the
-  fan-in `needs` (`ci.yml:345`) — resolved as YAML, not grep.
-- **`tools/memory_regen/inject.py`**: strip the active-task block, KEEP the activeContext pointer.
-  These are adjacent in the same function — read both before cutting.
-
-**Non-goals:** **no residue package** — do not leave a shim, a stub, a "minimal state manager", or a
-deprecation path. No replacement gate or CI job. Do not delete `gate-registry.json`, `secret_scan`,
-`deny-domains.*`, `tools/memory_ui`, or the golden stack (Phase 44). Per the binding constraint the
-surface may not grow.
-
-**Accepted consequence:** in-session task lifecycle, risk routing, evidence bundles and handoffs stop
-existing as harness machinery. Recorded and intended — the equivalent function is the PR.
-
-**Success Criteria**:
-1. None of the 8 package directories exists, and `grep -rnE "task_control|task_packet|risk_router|tools\.evidence|tools\.handoff|tools\.discipline|tools\.capability|lifecycle_eval" tools/ harness/ contracts/ .github/ .claude/ .opencode/` returns nothing outside `.planning/`.
-2. No module imports a deleted package: `uv run pytest --collect-only -q` exits 0 with zero collection errors.
-3. `contracts/harness/task-control/` contains only `gate-registry.json`; the hash manifest is rebaselined and `uv run python -m tools.contract_drift.drift` exits 0.
-4. `test_capability_wiring.py` is gone with `capabilities.toml`; `caps.py` declares no deleted skill or command.
-5. CI has no `lifecycle-eval` job and the YAML-resolved fan-in `needs` has no dangling entry (10 entries after removal; no other entry added or removed).
-6. `tools/memory_regen/inject.py` no longer emits an active-task block but STILL emits the activeContext pointer — asserted by a test, not by reading.
-7. `uv run pytest -q` green; `emit-drift`, `stale-derived`, `contract-drift`, ruff ratchet clean; `uv.lock` refreshed for the removed workspace members.
-8. Net surface change is deletion-only: **−8 packages, −6 contracts, −4 commands, −1 hook, −5 skills, −3 declarations, −1 CI job, +0** of anything.
-
-#### Phase 44: Non-Goal Surface Removal
-
-**Goal:** Delete the surface v2.5 declared a non-goal — a security layer no threat in this repo
-motivates, a 1756-LOC UI, a migration guard, a topology-tracing command set — and **relocate the golden
-stack to `examples/log-parser/`**, where ADR-0002(b) says language-specific evidence belongs.
-
-Authority: ADR-0012 §"Phase 44 — Non-Goal Surface Removal" names this surface. CER-09's ground is
-structural, not preference: `resolve_dotnet()` (`golden_runner/runner.py:78-85`) puts .NET resolution in
-the domain-neutral core, which ADR-0002(b) forbids in its own words, and `compare()` calls
-`normalize_tsv` unconditionally with `baseline.{verified,received}.tsv` hardcoded. Making it
-format-pluggable would be additive machinery the binding constraint forbids — so the core stops
-promising golden parity and each instance owns that evidence.
-
-**Requirements:** CER-08, CER-09
-
-**Plans:** 6 plans, 6 waves (sequential — `caps.py`, the emit `.ambr` snapshot and the emitter itself
-are shared by every commit, so parallelism buys nothing)
-
-Plans:
-- [ ] 44-01-PLAN.md — delete `memory_ui` + `strangler_guard` + `/strangler-step` + skill `gate-model`; delete the `deny-domains` + `gate-registry` contracts and rebaseline the manifest
-- [ ] 44-02-PLAN.md — cover every `RETIRED_SIGNATURES` tombstone, then remove the `secret_scan` hook with no replacement
-- [ ] 44-03-PLAN.md — remove `/component`'s topology-registration half, then the core `[pipeline]` data + `/pipeline` + `pipeline-map` (keeping `loader.pipeline()`)
-- [ ] 44-04-PLAN.md — assert CI pytest path arguments resolve; retire the `/golden` + `/golden-approve` commands and the `golden-testing` + `golden-debug` skills
-- [ ] 44-05-PLAN.md — delete `commit_gate`'s golden-parity component, then relocate the golden stack to `examples/log-parser/` (atomic)
-- [ ] 44-06-PLAN.md — whole-phase gate sweep, success-criteria evidence table, measured net LOC, recorded consequences
-
-**Scope** (every path verified present, 2026-07-29):
-- **`secret_scan`** — `tools/hooks/secret_scan.py` + `tools/hooks/tests/test_secret_scan.py`.
-  ⚠ CER-08's prose implies a `tools/secret_scan/` package; there is none. It is a **live PreToolUse
-  hook** with `harness/plugins/secret-scan.ts`, a `HARNESS_SIGNATURES` entry and a hook-group literal in
-  `tools/harness_emit/merge.py`, and a `harness/commands/review.md` reference. **Deleted with no
-  replacement CI job.**
-- **`deny-domains.{json,schema.json}`** + the `DATA_CONTRACT_PATHS` entry (`contract_hash/hash.py:33`),
-  `docs/reference/deny-domains.md`, the `docs_sync` `EXPECTED_PAGES` member, `test_contract_guard.py:330`,
-  and both syrupy snapshots that render them. Deleting these **self-clears two stale declarations**
-  carried from Phase 41: `deny-domains.json:81,102` names `tools.hooks.ledger_guard` (deleted in 41) and
-  the schema description at `:5,77` names `tools.deny_domains.registry`, a module that has never existed.
-- **`gate-registry.json`** + its `DATA_CONTRACT_PATHS` entry (`hash.py:32`) — deferred here by Phase 43's
-  recorded CER-07/CER-08 collision. Phase 43 narrowed `test_hash.py`'s expected set to
-  `{gate-registry.json}`; deleting it moves that assertion again. Also clears the **5 hyphenated
-  provenance docstrings** in `tools/adoption_scan/**` carried from Phase 42.
-- **`tools/memory_ui`** (1756 LOC) — no consumer outside itself.
-- **`tools/strangler_guard`** (240 LOC) + `harness/commands/strangler-step.md` + its `emit-manifest.json`
-  row + `test_commands.py`; also referenced by `harness/skills/gate-model/SKILL.md`, which dies with it.
-- **`/pipeline` + skill `pipeline-map` + `[pipeline].edges`** (`harness/project.toml:77`) and the
-  `harness_config/loader.py` `pipeline()` passthrough. ⚠ Widest blast radius in the phase: eight
-  `tools/harness_lint/tests/*` read the topology, including `test_pipeline_config.py` (the consistency
-  gate), `test_orchestrator_topology.py`, and `test_conductor_graph_render.py`.
-- **Skill `gate-model`**, and **`/component`'s topology-registration half** — steps 1–3 survive as an
-  ① mechanism; only the registration half goes.
-- **CER-09 — the golden stack relocates** (not deletes) to `examples/log-parser/`:
-  `tools/golden_runner` (791 LOC), root `golden/`, `/golden`, `/golden-approve`, skills
-  `golden-testing` and `golden-debug`, CI job `golden` (`ci.yml:157-168`). ⚠ **A second consumer CER-09's
-  text omits**: the `workspace` job also runs `tools/golden_runner/tests/test_workspace_golden.py`
-  (`ci.yml:336`), so the cross-repo gate must be repointed too, not just the `golden` job.
-
-**Recorded scope extension (2026-07-29, from research):** `tools/hooks/commit_gate.py:42` — a core
-PreToolUse guard — imports `tools.golden_runner.runner`. Neither CER-08 nor CER-09 names it, but after
-the relocation the core suite dies at collection, and repointing the import at `examples/` is hard-failed
-by GEN-04's `test_core_no_example_dep.py`. So **CER-09 also deletes `commit_gate`'s golden-parity
-component** (15 coupled `test_commit_gate.py` tests, not the 2 a reading suggests). Grounded in ADR-0012:
-a pre-commit golden-parity check is exactly the in-session gate that CI and the merge replace. The rest
-of `commit_gate` survives.
-
-**Non-goals:** no replacement for `secret_scan` — not a lighter hook, not a CI job, not a pre-commit
-entry. No shim for the relocated golden stack in the core. `/component` steps 1–3, `tools/contract_graph`
-and the `[components]` slot survive. Projection repair (`caps.py`, `emit-manifest.json`,
-`HARNESS_SIGNATURES`, `docs/reference/**`, `AGENTS.md`) is **Phase 45's**, not this phase's.
-
-**Accepted consequence:** the core no longer promises golden parity, and secret detection at the tool
-boundary stops existing — both recorded in ADR-0012 as permanent residuals caught at CI/PR review
-instead. Adopted repos lose a hook they may believe is protecting them; the relocation is why CER-09
-moves rather than deletes.
-
-**Carried in from Phase 43 — the defect class that cost four verification passes:**
-deleting `secret_scan` repeats the `RETIRED_SIGNATURES` case exactly. Removing a signature from
-`HARNESS_SIGNATURES` alone leaves the emitted hook group looking human-owned, so every checkout still
-holding the old `.claude/settings.json` keeps running a deleted module and denies every Write/Edit/Bash.
-`merge.py:111` now carries `("tools.hooks.resume_gate",)` as a **permanent tombstone** — append to it,
-never clear it. Plan every live-tree-rendering test (`.ambr` snapshots, `EXPECTED_PAGES`,
-`EXPECTED_SKILLS`, slot counts, module-discovery floors, `DATA_CONTRACT_PATHS` membership) into the same
-commit as the deletion that invalidates it, and sweep **both** `gate-registry`/`gate_registry` spellings.
-
-**Success Criteria**:
-1. `tools/hooks/secret_scan.py`, `harness/plugins/secret-scan.ts`, `tools/memory_ui`, `tools/strangler_guard`, `harness/commands/{strangler-step,pipeline}.md`, and skills `pipeline-map`/`gate-model` do not exist, and no surviving file invokes them.
-2. A checkout still carrying the pre-44 `.claude/settings.json` drops the `secret_scan` group on re-emit — asserted by extending `test_retired_signature_group_is_dropped_from_a_stale_checkout`, not by reading the merge.
-3. `contracts/harness/` contains no `deny-domains.*` and no `gate-registry.json`; `DATA_CONTRACT_PATHS` retains only surviving entries; the manifest is rebaselined and `contract-drift` exits 0.
-4. The `[pipeline]` slot and its consistency gate are gone, and the surviving `harness_lint` suite has no dangling topology assertion.
-5. The golden stack resolves under `examples/log-parser/`; the core contains no **golden/parity** `.NET` resolution and no core module imports `golden_runner`; BOTH the `golden` job and the `workspace` job's `test_workspace_golden.py` path are repointed, YAML-resolved. ⚠ **Corrected 2026-07-29** from "the core contains no `.NET` resolution", which a commit replay proved unachievable: `tools/hooks/format_on_write.py:57` defines a second `resolve_dotnet()` that shells `dotnet format`. That is a **language-toolchain** concern, legitimate in a polyglot template core, whereas CER-09's ADR-0002(b) ground is that .NET *parity evidence* belongs in the instance. The resolver is deliberately retained; only the golden-side one relocates.
-6. No Phase-42 hyphenated `gate-registry.json` provenance docstring survives, and `grep -rn "gate.registry\|gate_registry"` outside `.planning/` returns only legitimate history.
-7. `uv run pytest -q` green at every commit; `emit-drift`, `stale-derived`, `contract-drift`, ruff ratchet clean; `uv.lock` refreshed.
-8. Net surface change is deletion or relocation only — **+0** gates, tools, contracts, or dependencies.
-
-#### Phase 45: Projection Repair
-
-**Goal:** After four deletion phases removed ~25k LOC, make the repo's own account of itself true
-again. Every surviving file that names a deleted control, path, or command is either corrected or
-recorded as a deliberate history note — and no gate is left claiming a protection it no longer
-provides.
-
-This phase is larger than "prose scrub". Phases 41–44 each deferred residue here, and the reviews
-found that the most dangerous residue is not stale prose but **a control whose scope silently emptied**.
-
-**Requirements:** CER-10, CER-11
-
-**Scope** (every item verified present, 2026-07-29):
-
-*Tier 1 — controls that no longer control anything (do these first):*
-- **`tools/hooks/contract_guard.py:53`** — `CONSTITUTION_GLOBS` still lists `golden/**`. Root
-  `golden/` was deleted in Phase 44 and the baselines now live at `examples/log-parser/golden/`, which
-  that repo-root-anchored glob does not match. **Measured: all 7 relocated baselines match NOTHING.**
-  Phase 44 recorded this downgrade as accepted (`44-06-SUMMARY.md:311-316`) on the ground that widening
-  the glob would be SC-8 surface growth, with `/examples/*/golden/ @hjung3113` in CODEOWNERS as the
-  compensating control. ⚠ **Re-open that reasoning here:** repointing an existing glob to follow files
-  it already covered is maintaining scope, not growing surface — growth would be a *new* gate. Decide
-  deliberately between repointing and removing the dead entry, but do not leave a glob that matches
-  zero paths while its comment claims a plane. Note the member list is declared by `docs/adr/0001:48`
-  and pinned by `test_every_declared_plane_member_is_independently_enforced`, so a change may need
-  ADR cover.
-- **`.github/CODEOWNERS:30`** — still routes `/golden/`, a directory Phase 44 deleted. `:36` correctly
-  covers the new path; `:30` is dead.
-- **`harness/permission-matrix.json` `path_deny_globs`** — its `*.env` secret rows lost their only
-  enforcer when `secret_scan` was deleted (`contract_guard` explicitly excludes them), and
-  `tools/harness_perms/tests/test_resolver.py:64` still asserts `config/prod.env` → `deny`, keeping a
-  claimed control green. `:60` likewise asserts `golden/case.verified` → `deny` against the old path.
-
-*Tier 2 — dangling references (CER-11):*
-- Root **`AGENTS.md`**: `:8-9` calls the guard hooks "the true backstop" (false after Phase 44's
-  `secret_scan` removal), and `:66,67,84` still ship `python -m tools.golden_runner.runner` /
-  `.approve` and name `golden_runner` in the engine list. `:8-9` and `:66-67` sit **outside** the
-  emitter's HARNESS-MANAGED block, so a re-emit will not repair them.
-- **`tools/hooks/contract_guard.py:9,55,75,89`** — names `/golden-approve` (a command Phase 44 retired)
-  in live refusal text, plus a stale `tools/golden_runner/approve.py` path; asserted by
-  `tools/hooks/tests/test_contract_guard.py:51,288`.
-- **`README.md:119`**; **`README.ko.md` whole file** — `:79` labels `harness/task-control/` (deleted in
-  Phase 43) and it also carries stale `golden/` and `tools/golden_runner` lines. ⚠ Every prior deferral
-  list named `README.md` and never the Korean file; that gap is why it survived four phases.
-- **`docs/`** — `glossary.md:20`, `how-to/README.md:11`, and `how-to/approve-a-golden.md` (whole file)
-  carry `/golden-approve`; `how-to/task-lifecycle.md` (8 command blocks invoking 7 deleted modules),
-  `explanation/task-lifecycle-shadow-metrics.md`, `explanation/next-milestone-task-control-plane.md`,
-  `how-to/README.md`, `adr/README.md`, and `explanation/agent-workflow-skillset-design-guide.md` carry
-  Phase-43 plane prose. ⚠ `docs/` sits outside every sweep the harness runs and `tools/docs_guard` was
-  deleted in Phase 41, so nothing gates any of this.
-- **`tools/adoption_scan/tests/test_install_completeness.py:196`** — `test_discovers_at_least_twelve_modules`
-  now asserts `>= 11`. Mechanical rename, no callers.
-- **`tools/hooks/commit_gate.py:18,60,203`** — a surviving `SKIP` vocabulary describing a state no
-  component can produce after the golden-parity amputation.
-
-*Tier 3 — CER-10 re-emit + drained assertions:*
-- `caps.py` frozensets, `emit-manifest.json`, `HARNESS_SIGNATURES`, `contracts/.hashes/manifest.json`,
-  `docs/reference/**`, `.memory/derived/contracts-index.md`, the syrupy snapshots, `gate.needs`.
-  Much of this was kept green per-commit by Phases 43–44, so verify rather than assume work remains.
-- **`tools/harness_lint/tests/test_topology_relationships.py:54-57`** — `test_output_is_deterministic`
-  now asserts `[] == []`; verified live that `effective_relationships(load_project())` returns `[]`.
-  Deleting its sibling drained it.
-- **`tools/harness_lint/tests/test_ci_paths.py`** (Phase 44's CI-path assertion) hard-requires
-  `examples/**` — 3 of its 8 discovered tokens — while living in the core suite. Deleting the reference
-  instance, which ADR-0002 explicitly invites, turns the **core** suite red, and
-  `test_core_no_example_dep.py` cannot see it (`_CORE_ROOTS` scans neither `pyproject.toml` nor `.github/`).
-- **`harness/agents/templates/component-engineer.md`** — still shipped and gated, its header still says
-  "`/component` instantiates a COPY of this file", but Phase 44 deleted the step that did so.
-
-*Tier 4 — the record itself:*
-- **ADR-0008** still reads `Status: Accepted`, `Superseded by: —` while Phase 43 deleted the plane it
-  governs; ADR-0012 supersedes 0001 and 0010 but never mentions 0008. In a repo whose stated precedence
-  is "accepted ADRs win a data conflict against code", it currently tells agents the deletion was the
-  error. The supersede-don't-edit convention means this needs a **new ADR**, which is a human-gated call.
-- **Phase 43's SC-1 wording** can never pass as literally written — the negative-control fixture at
-  `tools/contract_graph/tests/test_query.py:75-78` must contain the forbidden strings for the assertion
-  above it to mean anything. `43-VERIFICATION.md` recorded an executable-invocation override; correct
-  the wording rather than leaving it to be hand-waived.
-
-**Non-goals:** no new gate, tool, contract, or dependency — the binding constraint still holds, and a
-"prose freshness checker" is exactly the class this milestone removes. Do not re-add `docs_guard`. Do
-not delete history notes that name a retired artifact **in order to record its retirement** (`caps.py:124,134`,
-`test_coexist.py:56`, `test_commands.py:42`) — Phase 43 and 44 executors each correctly refused to strip
-those to force a clean grep. Product lifecycle work is Phase 46's.
-
-**Accepted consequence:** some residue is legitimate and stays — the relocated `golden_runner` package
-implements the approve gate and will keep naming it; append-only ADR text keeps naming deleted surface
-by design. This phase must distinguish those from staleness rather than sweeping by token.
-
-**Success Criteria**:
-1. No glob, deny-list entry, or CODEOWNERS route in the repo matches zero paths while claiming to protect a plane — asserted mechanically, not by reading.
-2. `contract_guard`'s constitution decision is explicit: either the relocated goldens are covered again, or their exclusion is recorded with ADR cover and the dead `golden/**` entry removed. No third state.
-3. `harness/permission-matrix.json` declares no deny row without a live enforcer, and no test asserts a deny that nothing performs.
-4. Root `AGENTS.md` names no deleted module, command, or hook — including `:8-9` and `:66-67`, which lie outside the emitter's managed block.
-5. `README.md`, `README.ko.md` and every file under `docs/` name no deleted surface except inside append-only ADR text or an explicit history note.
-6. No surviving test asserts a tautology drained by a deletion (`[] == []`), and no test name contradicts its own assertion.
-7. `emit-drift`, `stale-derived`, `contract-drift` and the ruff ratchet are green with an empty diff; `uv run pytest -q` green at every commit.
-8. Net surface change is **+0** gates, tools, contracts, or dependencies.
-
-#### Phase 46: Product Flow
-
-**Goal:** Give the **product** a lifecycle. Seven phases removed ~25k LOC of dev-side ceremony; this
-one repays it on the other side of the DEV/PRODUCT boundary — the deployed harness, driven by a weaker
-in-house model with no GSD to fall back on, gets four named routes and one entry point.
-
-`harness/agents/orchestrator.md` already declares itself *"the only planner in the deployed harness
-(GSD is dev-side and is not emitted)"* (`:45`). This phase makes that claim true.
-
-**Requirements:** PROD-02, PROD-03, PROD-04, PROD-05
-
-**Scope** (measured 2026-07-29 — see the ⚠ corrections, the requirement prose predates phases 43–45):
-- **Four route sections** in `orchestrator.md`: `small-change · bugfix · feature · contract-change`,
-  each with an explicit stop condition, the delegation-packet fields, and the **six-field completion
-  contract** — `Outcome · Artifacts or changes · Verification · Decisions and assumptions ·
-  Risks or unresolved items · Next command` (verified verbatim at
-  `docs/references/opencode-matt-workflows/WORKFLOW_CONTRACTS.md:39-46`).
-  `contract-change` exists because it is the one route where this harness is **not** repo-agnostic.
-  `research` is deliberately absent — it terminates in a document, and `explorer` +
-  `fan-out-synthesize` + `context-budget` already cover it.
-- **Retire the routing decision table.** ⚠ **Corrections:** it starts at **`:72`** and has **19 rows**,
-  not the "25-row (`:90-129`)" the requirement states — phases 43–44 deleted the personas those rows
-  named. `orchestrator.md` is **102 lines**, not 129.
-- ⚠ **PROD-02's "8 dangling citations" are already gone.** All twelve command citations in
-  `orchestrator.md` resolve to live artifacts today (`/add-language`, `/checkpoint`, `/component`,
-  `/contract-check`, `/fan-out-synthesize`, `/lint`, `/new-contract-rule`, `/orient`, `/review`,
-  `/test`, `/verify-work`, plus `tools.harness_config` and `tools.contract_graph`). Phases 43–45
-  discharged this clause; **verify, do not redo.**
-- **PROD-03 — five deleted discipline skills become ~20 lines of prose** in the file already being
-  rewritten: bugfix → reproduce before fixing; feature → settle vocabulary first; contract-change →
-  contract entry, then failing case, then code; all → red before green.
-- **PROD-04 — exactly one new command**, `harness/commands/flow.md`, as the product's named entry
-  point. **Route · step · next command** are recorded in the already-shipped
-  `.memory/state/activeContext.md` (`destinations.py:151`), written by the existing `/checkpoint`
-  and read by the existing `/orient`. **No `.flow/state.md`, no router agent, no new skill, no new
-  contract, no new CI job, no new hook** — net **+1 command, +0 everything else**, against 9 retired
-  across this milestone (live count: **17** commands).
-- **PROD-05 — each route's *Repository evidence* section is filled from monorepo facts the harness
-  alone can compute**, using the existing `harness_config` + `contract_graph` surfaces, worded so
-  v2.6's `/impact` slots in without a rewrite. This is the differentiator: the vendored matt flows are
-  repo-agnostic; these are not.
-
-**Non-goals:** **zero flow artifacts are imported.** `docs/references/opencode-matt-workflows/` is a
-pinned **DEV-only** vendored reference (79 files) and stays that way; the mattpocock upstream skills are
-**not** a product dependency even optionally — the vendored contract says *stop* when one is missing
-(`UPSTREAM_SKILLS.md:34-42`), so "degrades gracefully" was false. No second command, no state file, no
-router agent. The binding constraint still holds: the surface may not grow beyond the one command
-PROD-04 names.
-
-**Accepted consequence:** the deployed harness gains a lifecycle it did not have, authored as prose in
-files that already ship. Nothing enforces route adherence — that is deliberate, and consistent with
-ADR-0012: CI and the merge are the authority, and a route-compliance gate would be exactly the ceremony
-this milestone removed.
-
-**Success Criteria**:
-1. `harness/agents/orchestrator.md` contains four route sections — `small-change`, `bugfix`, `feature`, `contract-change` — each with an explicit stop condition and the delegation-packet fields.
-2. The six-field completion contract appears verbatim, and `research` appears as no route.
-3. The 19-row routing decision table is gone, and every command or module the rewritten file cites resolves to a live artifact (asserted mechanically, not by eye).
-4. Each of the five retired discipline skills leaves one operative sentence in the route that needed it.
-5. `harness/commands/flow.md` exists and is the only command added; `ls harness/commands/*.md` returns **18**.
-6. Route · step · next command round-trip through `.memory/state/activeContext.md` via the existing `/checkpoint` → `/orient` pair — no new state file, no new writer, no new reader.
-7. Each route's *Repository evidence* section cites only `harness_config` / `contract_graph` facts that resolve today, and no file from the vendored bundle is imported or depended on.
-8. `uv run pytest -q` green at every commit; `emit-drift`, `stale-derived`, `contract-drift`, ruff ratchet clean. Net surface change: **+1 command, +0** gates, tools, contracts, skills, agents, hooks, or dependencies.
-
-### 📋 v2.6 Minimal Monorepo Core (Phases 47–50) — SCOPED, NOT STARTED
-
-Smallest goal-complete subset = all of v2.5 **+ 47 + 49**. ① is already covered by the lint adapters +
-nearest-wins `AGENTS.md` + `/component`; ② by `contracts/` + `contract_hash`/`contract_drift` +
-`contract_graph` + CI; ④ by append-only ADR + the derived plane + ADR-0011's CI-strong posture. The
-genuine gap is ③.
-
-- [ ] **Phase 47: Package Facts** — extend `adoption_scan/detect.py`'s manifest detection
-  (`:41-47,100-121`) into a committed **derived** package + dependency graph feeding `contract_graph`;
-  `[[components]]` demoted to an override slot. **Report-only, no gate.** (MONO-01)
-- [ ] **Phase 48: Convention Profiles** — nearest-wins per-package convention data + language→lint/test
-  mapping, populated by `/component` step 2. (MONO-02)
-- [ ] **Phase 49: Contract Impact** — one `/impact` command over `contract_graph.query`'s existing
-  `direct`/`reverse`/`transitive` (`query.py:29,39,55`) + package facts; fills phase 46's evidence
-  slot. On demand only, **no SessionStart injection**. (MONO-03)
-- [ ] **Phase 50: `harness-author` + Managed Adopt/Upgrade** — (a) `harness-author`: one skill, Q&A
-  with grounded `path:line` defaults, **absorbs `skill-creator`** (net skills ±0), zero new
-  packages/commands/contracts, output runtime-neutral under `harness/` only; **presupposes PROD-01**.
-  (b) simplified `/adopt` as a managed install/update with one manifest + conflict report — **does not
-  start without a real multi-package target**. (MONO-04)
-
-**DAG:** `47 → {48, 49}`; `50` needs `48` and, for its (b) half, a real target.
+<details>
+<summary>✅ v2.5 De-ceremony (Phases 39–46) — SHIPPED 2026-07-30</summary>
+
+DAG: strictly serial `39 → 40 → 41 → 42 → 43 → 44 → 45 → 46`; deletion-first is literal.
+Design: `.planning/research/v2.5-scoping-FINAL.md`. Full detail: `.planning/milestones/v2.5-ROADMAP.md`.
+Requirements: `.planning/milestones/v2.5-REQUIREMENTS.md` (CER-01..11, PROD-01..05, 16/16).
+Authority: ADR-0012 (CI + the merge), closed out by ADR-0013 (task-control-plane retirement).
+Net: 33/33 plans, 171 commits, **−27,398 LOC** outside `.planning/`; human-authored gates 5 kinds → 0.
+
+- [x] **Phase 39: Decision Boundary** *(v2.5 A)* — one human-ratified ADR-0012: CI + the merge are the authority; the DEV/PRODUCT boundary ratified with its operative rule; ADR-0001's constitution-member list superseded and ADR-0010 retired; ADR-0011 accepted; RAT-4/RAT-5/per-tool deny spelling closed as obsolete-by-deletion; the bash surface declared a permanent residual by design. (CER-01..03) (2026-07-26)
+- [x] **Phase 40: Self-Gate Teardown** *(v2.5 A)* — delete `tools/skill_registry` (611 LOC), `harness/skills/registry.lock`, its two gate tests and its CI job. Found unrecorded during the close and closed retroactively on direct evidence. (CER-04) (2026-07-29)
+- [x] **Phase 41: Docs-Review Plane Removal** *(v2.5 A)* — unbind the 8 `[[binding]]` rows, then delete the ledger, `ledger_guard`, `/docs-update` and the whole docs-review plane, with **no replacement of any kind**. (CER-05) (2026-07-26)
+- [x] **Phase 42: Adoption Decoupling + Install-Set Repair** *(v2.5 B)* — adoption becomes a standalone `draft → apply → PR review` capability with no task-control coupling; the product receives the code its own artifacts invoke. (CER-06, PROD-01) (2026-07-27)
+- [x] **Phase 43: Lifecycle Plane Removal** *(v2.5 B)* — delete 8 `tools/` packages, the 7 task-control contracts, 4 commands, `resume_gate`, the 5 discipline skills, `.workflow/tasks/` and the `lifecycle-eval` CI job. **−12,383 LOC**; review then caught the `RETIRED_SIGNATURES` defect that would have bricked every stale checkout. (CER-07) (2026-07-28)
+- [x] **Phase 44: Non-Goal Surface Removal** *(v2.5 B)* — delete `secret_scan` (no replacement job), `tools/memory_ui`, `strangler_guard`, `/pipeline`, skill `gate-model` and more; **relocate the golden stack to `examples/log-parser/`**. **−6,067 LOC**; two replays, the first finding 6 of 10 commits ending red. (CER-08, CER-09) (2026-07-29)
+- [x] **Phase 45: Projection Repair** *(v2.5 C)* — re-emit both trees, rebaseline the hash manifest, regenerate the derived plane, repair `gate.needs`, and scrub prose naming deleted surfaces. Constitution plane 4 → 3 members; the declaration had fourteen copies. (CER-10, CER-11) (2026-07-29)
+- [x] **Phase 46: Product Flow** *(v2.5 C)* — rewrite `orchestrator.md` with 4 routes (`small-change · bugfix · feature · contract-change`), the six-field completion contract, and one operative sentence per deleted discipline skill; add `/flow`; record route/step/next in the shipped state plane. **+1,341 LOC**, the milestone's only net addition. (PROD-02..05) (2026-07-29)
+
+</details>
+
+<details>
+<summary>✅ v2.6 Minimal Monorepo Core (Phases 47–50a) — SHIPPED 2026-07-30 · 50b BLOCKED</summary>
+
+Full detail: `.planning/milestones/v2.6-ROADMAP.md`. Requirements:
+`.planning/milestones/v2.6-REQUIREMENTS.md`. Audit: `.planning/v2.6-MILESTONE-AUDIT.md`.
+
+- [x] **Phase 47: Package Facts** — a committed derived package + dependency graph parsed from the
+  manifests themselves; `[[components]]` demoted to an override slot; contract→owning-package
+  attribution. Report-only. (MONO-01..04) (2026-07-30)
+- [x] **Phase 48: Convention Profiles** — nearest-wins per-package conventions whose commands derive
+  from `[[languages]]`, populated by `/component` step 2. No new command. (MONO-05..07) (2026-07-30)
+- [x] **Phase 49: Contract Impact** — `/impact <contract>` over the existing
+  `direct`/`reverse`/`transitive` plus the package facts; fills the `contract-change` route's evidence
+  slot. The milestone's one sanctioned +1 command. (MONO-08, MONO-09) (2026-07-30)
+- [x] **Phase 50a: Harness Authoring** — the `harness-author` skill with `path:line`-cited defaults,
+  absorbing `skill-creator` at skills 8 → 8. (MONO-10, MONO-11) (2026-07-30)
+- [⛔] **Phase 50b: Managed Adopt / Upgrade** — **BLOCKED and carried**: no real multi-package target
+  repo exists, and `/adopt` writes into its target. MONO-12 carried; unblock by naming a real target.
+
+Net surface: **+1 command, ±0 skills, +0 gates / CI jobs / contracts / packages / dependencies**,
+nothing injected into SessionStart. 981 tests passing at close.
+
+</details>
 
 ### 📋 Carried to a later milestone
 
+- **MONO-12** managed `/adopt` install/update over one manifest with conflict reporting — **carried
+  out of v2.6 with phase 50b BLOCKED** (2026-07-30). Blocked on a hard *external* precondition, not on
+  code: no real multi-package target repo. Unblock by naming one, then re-plan phase 50b against it.
+  All three of its success criteria (manifest records managed files; re-run updates instead of
+  re-installing and is a no-op when unchanged; a diverged managed file is reported as a conflict and
+  left untouched) remain as specified.
 - **EVOL-02** contract versioning / compatibility engine — the only survivor; still a standalone
   engine needing its own ADR.
+- **D-24** CODEOWNERS advisory on this repo — re-openable as a machine-side check on golden baseline
+  diffs, unblocked by ADR-0012 but out of v2.6: adding a gate contradicts the no-growth constraint
+  unless something retires with it. Stays a documented residual.
 - **Obsoleted by v2.5, recorded so they are not re-adopted:** **EVOL-01** (impact-driven task-evidence
   policy) and **TCP-F05** (signed external attestation + STRICT rollback) die with the task-control
   plane deleted in phase 43; **EVOL-03** (`examples/**` instance-local docs-registry overlay) dies with
@@ -851,10 +274,8 @@ genuine gap is ③.
 | 44. Non-Goal Surface Removal | v2.5 | 6/6 | Complete   | 2026-07-29 |
 | 45. Projection Repair | v2.5 | 6/6 | Complete   | 2026-07-29 |
 | 46. Product Flow | v2.5 | 3/3 | Complete   | 2026-07-29 |
-| 47. Package Facts | v2.6 | — | Scoped | - |
-| 48. Convention Profiles | v2.6 | — | Scoped | - |
-| 49. Contract Impact | v2.6 | — | Scoped | - |
-| 50. harness-author + Managed Adopt | v2.6 | — | Scoped | - |
+| 47–50a | v2.6 | 11/11 | Complete (see archive) | 2026-07-30 |
+| 50b | v2.6 | — | **BLOCKED** — no real multi-package target repo; MONO-12 carried | - |
 
 Per-phase plan counts for v1.0–v2.2 are preserved in the milestone archives under
 `.planning/milestones/`; they are not restated here so this table stays a fixed size.

@@ -106,6 +106,148 @@ def test_inventory_validates_against_schema(tmp_minirepo: Path, repo_root: Path)
     assert not errors, [error.message for error in errors]
 
 
+def test_pyproject_runtime_and_dev_dependencies_parsed() -> None:
+    text = (
+        "[project]\n"
+        'dependencies = ["widget-core>=1.0", "widget-lib"]\n\n'
+        "[dependency-groups]\n"
+        'dev = ["widget-test-tools"]\n'
+    )
+    entries = detect.detect_dependencies("pyproject.toml", "pyproject.toml", text)
+    assert len(entries) == 3
+    by_name = {entry["name"]: entry for entry in entries}
+    assert by_name.keys() == {"widget-core", "widget-lib", "widget-test-tools"}
+    assert by_name["widget-core"]["kind"] == "runtime"
+    assert by_name["widget-lib"]["kind"] == "runtime"
+    assert by_name["widget-test-tools"]["kind"] == "dev"
+    for entry in entries:
+        assert "path" not in entry
+
+
+def test_package_json_dependencies_and_dev_dependencies_have_distinct_kind() -> None:
+    text = json.dumps(
+        {
+            "dependencies": {"widget-core": "^1.0.0"},
+            "devDependencies": {"widget-test-tools": "^2.0.0"},
+        }
+    )
+    entries = detect.detect_dependencies("package.json", "package.json", text)
+    by_name = {entry["name"]: entry for entry in entries}
+    assert by_name["widget-core"]["kind"] == "runtime"
+    assert by_name["widget-test-tools"]["kind"] == "dev"
+
+
+def test_csproj_project_reference_is_path_based() -> None:
+    text = (
+        "<Project>\n"
+        "  <ItemGroup>\n"
+        '    <ProjectReference Include="../widget-core/widget-core.csproj" />\n'
+        "  </ItemGroup>\n"
+        "</Project>\n"
+    )
+    entries = detect.detect_dependencies("widget-app/widget-app.csproj", "*.csproj", text)
+    assert len(entries) == 1
+    entry = entries[0]
+    assert entry["path"] == "../widget-core/widget-core.csproj"
+    assert entry["name"] == "../widget-core/widget-core.csproj"
+    assert entry["kind"] == "runtime"
+
+
+def test_csproj_project_reference_legacy_msbuild_namespace_fallback() -> None:
+    """IN-01 (47-REVIEW.md): legacy (pre-SDK-style) .csproj files commonly declare
+    ``xmlns="http://schemas.microsoft.com/developer/msbuild/2003"`` on the ``<Project>`` root,
+    which puts every child element (including ``ProjectReference``) into that namespace. An
+    unqualified ``findall`` then silently matches nothing; the parser must fall back to the
+    legacy MSBuild namespace when the unqualified search returns no results."""
+    text = (
+        '<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"'
+        ' DefaultTargets="Build" ToolsVersion="4.0">\n'
+        "  <ItemGroup>\n"
+        '    <ProjectReference Include="../widget-core/widget-core.csproj" />\n'
+        "  </ItemGroup>\n"
+        "</Project>\n"
+    )
+    entries = detect.detect_dependencies("widget-app/widget-app.csproj", "*.csproj", text)
+    assert len(entries) == 1
+    entry = entries[0]
+    assert entry["path"] == "../widget-core/widget-core.csproj"
+    assert entry["kind"] == "runtime"
+
+
+def test_csproj_project_reference_backslash_separators_normalized() -> None:
+    """WR-01 (47-REVIEW.md): a Windows-style backslash ``Include`` path (MSBuild accepts it on
+    any OS, and Visual-Studio-authored .csproj files commonly emit it) must normalize to
+    forward slashes so the referenced path resolves against git-tracked (always forward-slash)
+    manifest paths."""
+    text = (
+        "<Project>\n"
+        "  <ItemGroup>\n"
+        '    <ProjectReference Include="..\\widget-core\\widget-core.csproj" />\n'
+        "  </ItemGroup>\n"
+        "</Project>\n"
+    )
+    entries = detect.detect_dependencies("widget-app/widget-app.csproj", "*.csproj", text)
+    assert len(entries) == 1
+    entry = entries[0]
+    assert entry["path"] == "../widget-core/widget-core.csproj"
+    assert entry["name"] == "../widget-core/widget-core.csproj"
+    assert entry["kind"] == "runtime"
+
+
+def test_package_json_null_dependencies_does_not_raise() -> None:
+    """IN-02 (47-REVIEW.md): ``"dependencies": null`` is valid JSON (occasionally emitted by
+    hand-edited or programmatic package.json files); ``.get()``'s default only applies when the
+    key is absent, not when it is present-but-null, so a naive ``for name in data.get(...,
+    {})`` raises ``TypeError`` on iteration. Must degrade to no entries instead."""
+    text = json.dumps({"dependencies": None, "devDependencies": None})
+    entries = detect.detect_dependencies("package.json", "package.json", text)
+    assert entries == []
+
+
+def test_go_mod_require_block_and_single_line_both_parsed() -> None:
+    text = (
+        "module widget-app\n\n"
+        "go 1.22\n\n"
+        "require (\n"
+        "\twidget.example/core v1.0.0\n"
+        "\twidget.example/lib v2.0.0\n"
+        ")\n\n"
+        "require widget.example/extra v3.0.0\n"
+    )
+    entries = detect.detect_dependencies("go.mod", "go.mod", text)
+    names = {entry["name"] for entry in entries}
+    assert names == {
+        "widget.example/core",
+        "widget.example/lib",
+        "widget.example/extra",
+    }
+    for entry in entries:
+        assert entry["kind"] == "runtime"
+        assert "path" not in entry
+
+
+def test_cargo_toml_path_dependency_kept_registry_dependency_dropped() -> None:
+    text = (
+        "[dependencies]\n"
+        'widget-core = { path = "../widget-core" }\n'
+        'widget-registry = "1.0"\n\n'
+        "[dev-dependencies]\n"
+        'widget-test-tools = { path = "../widget-test-tools" }\n'
+    )
+    entries = detect.detect_dependencies("Cargo.toml", "Cargo.toml", text)
+    assert len(entries) == 2
+    by_name = {entry["name"]: entry for entry in entries}
+    assert by_name.keys() == {"widget-core", "widget-test-tools"}
+    assert by_name["widget-core"]["kind"] == "runtime"
+    assert by_name["widget-core"]["path"] == "../widget-core"
+    assert by_name["widget-test-tools"]["kind"] == "dev"
+    assert by_name["widget-test-tools"]["path"] == "../widget-test-tools"
+
+
+def test_unrecognized_kind_returns_empty_list() -> None:
+    assert detect.detect_dependencies("x", "unknown-kind", "") == []
+
+
 def test_root_and_nested_agents_md_get_per_file_surface_records() -> None:
     """WR-01 (26-REVIEW.md): a root AGENTS.md and every nested AGENTS.md each get their OWN
     surfaceRecord keyed by their actual path — never collapsed into a single fixed-literal-target
