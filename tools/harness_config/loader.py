@@ -17,6 +17,7 @@ Semantics:
 
 from __future__ import annotations
 
+import sys
 import tomllib
 from pathlib import Path
 
@@ -319,6 +320,21 @@ def conventions_for(path: str, cfg: dict | None = None, facts: dict | None = Non
     # ADAPTER: owning_package() reads a bare package["dir"] subscript unconditionally — a
     # declared-only component (no "dir" key, see effective_packages's Pitfall 1) would raise a
     # bare KeyError there. Filter it out here; never inside ownership.py (kept untouched/pure).
+    #
+    # WR-02 (48-REVIEW.md): "dir" in p on its own can't tell a LEGITIMATE declared-only
+    # component (no "dir", also no "manifest" — it never came from build_facts()) apart from a
+    # MALFORMED derived-package record (has "manifest", meaning it came from build_facts() or a
+    # component overriding one, but is missing "dir" for some other reason). The latter must not
+    # be silently dropped with no trace — surface it on stderr so a data bug stays visible instead
+    # of letting an unrelated ancestor package quietly "win" ownership of its path.
+    for p in pkgs:
+        if "dir" not in p and "manifest" in p:
+            print(
+                f"conventions_for: package {p.get('id')!r} has 'manifest' but no 'dir' — "
+                "excluded from ownership resolution (malformed record, not a declared-only "
+                "component)",
+                file=sys.stderr,
+            )
     dir_pkgs = [p for p in pkgs if "dir" in p]
     owner_id = owning_package(dir_pkgs, path)
     owner = next(p for p in dir_pkgs if p["id"] == owner_id)

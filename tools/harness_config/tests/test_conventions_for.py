@@ -62,6 +62,46 @@ def test_conventions_for_propagates_out_of_root_dir_as_scoped_value_error() -> N
         conventions_for("../escaped/thing.py", cfg=cfg, facts=facts)
 
 
+# ---- WR-02 (48-REVIEW.md): the "dir" filter must distinguish declared-only from malformed ------
+
+
+def test_malformed_component_missing_dir_but_has_manifest_is_reported_on_stderr(capsys) -> None:
+    """A record carrying 'manifest' (meaning it is NOT a legitimate declared-only component) but
+    missing 'dir' must surface a stderr diagnostic naming it, not vanish silently."""
+    facts = {
+        "packages": [{"id": "root", "manifest": "pyproject.toml", "dir": ".", "language": "python"}]
+    }
+    cfg = {
+        "languages": [{"id": "python", "test": "t", "format": "f", "bash_scope": "uv *"}],
+        "components": [{"id": "malformed", "manifest": "malformed/pyproject.toml"}],
+    }
+
+    profile = conventions_for("whatever.py", cfg=cfg, facts=facts)
+
+    assert profile["package"] == "root"  # falls back to root; ownership not fabricated
+    captured = capsys.readouterr()
+    assert "malformed" in captured.err
+    assert "no 'dir'" in captured.err
+
+
+def test_legitimate_declared_only_component_produces_no_stderr_warning(capsys) -> None:
+    """A genuinely declared-only [[components]] entry (no 'dir', no 'manifest' — never came from
+    build_facts()) must load with zero edits and zero diagnostic noise."""
+    facts = {
+        "packages": [{"id": "root", "manifest": "pyproject.toml", "dir": ".", "language": "python"}]
+    }
+    cfg = {
+        "languages": [{"id": "python", "test": "t", "format": "f", "bash_scope": "uv *"}],
+        "components": [{"id": "declared-only", "stage": "ingest"}],
+    }
+
+    profile = conventions_for("whatever.py", cfg=cfg, facts=facts)
+
+    assert profile["package"] == "root"
+    captured = capsys.readouterr()
+    assert captured.err == ""
+
+
 def test_editing_language_command_changes_every_affected_profile_with_no_profile_edit() -> None:
     """MONO-06 strong falsifiable form: a live config read, not a copied literal (RESEARCH.md Q3)."""
     facts = {
