@@ -213,3 +213,17 @@ None - no external service configuration required.
 ---
 *Phase: 49-contract-impact*
 *Completed: 2026-07-30*
+
+## Self-Check: PASSED
+
+- FOUND: harness/commands/impact.md
+- FOUND: harness/agents/orchestrator.md
+- FOUND: tools/harness_lint/tests/test_commands.py
+- FOUND: tools/harness_lint/tests/test_orchestrator_topology.py
+- FOUND: tools/harness_emit/tests/test_coexist.py
+- FOUND: .opencode/command/impact.md
+- FOUND: .claude/commands/impact.md
+- FOUND commit: 4fa4ef1 (Task 1)
+- FOUND commit: 0b8c1f9 (Task 2)
+- FOUND commit: 0aedf82 (Task 3)
+- FOUND commit: f005614 (this docs commit)
