@@ -44,6 +44,57 @@ _SCHEMA_DIR = _REPO_ROOT / "contracts" / "harness" / "adoption"
 
 _DRAFT_ARTIFACTS: tuple[str, ...] = ("inventory", "plan", "manifest")
 
+# OBS-D-03 / D-12 (52-CONTEXT.md): target-derived [[languages]] row — the ONE sanctioned CR-01
+# exception. Every other draft/apply artifact stays the harness's own checkout bytes (CR-01); this
+# is the single deliberate splice, computed at draft time from the TARGET's own package.json.
+_DERIVED_LANGUAGE_ID = "javascript"
+_DERIVED_BASH_SCOPE = "pnpm *"
+_DERIVED_SCRIPT_KEYS: tuple[str, ...] = ("lint", "test", "format")
+_DERIVED_LANGUAGES_SIDECAR = "languages.toml"
+_DERIVED_PROVENANCE_COMMENT = (
+    "# Derived by tools.adoption_apply from the adopted target's own package.json scripts "
+    "(OBS-D-03 / D-12)."
+)
+
+
+def derive_language_rows(package_json_text: str) -> str | None:
+    """Pure, filesystem-free: render a ``[[languages]]`` TOML table from a target's own
+    ``package.json`` ``scripts`` object, or ``None`` when there is nothing to derive.
+
+    OBS-D-03 / D-12 (52-CONTEXT.md): the ONE sanctioned CR-01 exception — target-derived content
+    flowing into ``harness/project.toml``, computed here at draft time. Script VALUES are never
+    copied into the row and never executed: only the fixed literal ``"pnpm run <key>"`` command
+    strings are emitted, keyed by which of the allowlisted ``_DERIVED_SCRIPT_KEYS`` names exist
+    (T-52-07 — no subprocess argv is ever built from manifest/draft content).
+
+    Returns ``None`` on malformed JSON, a non-object top level, a missing/non-dict ``scripts``, or
+    a ``scripts`` object containing none of ``lint``/``test``/``format`` — nothing is invented.
+    Every one of ``id``/``bash_scope``/``lint``/``test``/``format`` is emitted unconditionally
+    when a row IS rendered (empty string ``""`` for a script the target doesn't declare), because
+    ``conventions_for()`` reads ``test``/``format``/``bash_scope`` by subscript against a matched
+    ``[[languages]]`` row (Pitfall 3) — a partially-shaped row would KeyError downstream.
+    """
+    try:
+        data = json.loads(package_json_text)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(data, dict):
+        return None
+    scripts = data.get("scripts")
+    if not isinstance(scripts, dict) or not any(key in scripts for key in _DERIVED_SCRIPT_KEYS):
+        return None
+
+    lines = [
+        _DERIVED_PROVENANCE_COMMENT,
+        "[[languages]]",
+        f'id = "{_DERIVED_LANGUAGE_ID}"',
+        f'bash_scope = "{_DERIVED_BASH_SCOPE}"',
+    ]
+    for key in _DERIVED_SCRIPT_KEYS:
+        value = f"pnpm run {key}" if key in scripts else ""
+        lines.append(f'{key} = "{value}"')
+    return "\n".join(lines) + "\n"
+
 
 def _load_schema(name: str) -> dict:
     path = _SCHEMA_DIR / f"{name}.schema.json"
@@ -109,6 +160,20 @@ def _cmd_draft(args: argparse.Namespace) -> int:
         refuse_if_outside_root(out_path, batch_root)
         out_path.write_bytes(scan._dump(documents[name]))
         print(f"wrote {out_path}", file=sys.stderr)
+
+    # OBS-D-03 / D-12 (52-CONTEXT.md): the ONE sanctioned CR-01 exception — target-derived
+    # [[languages]] row, derived here at draft time from the target's OWN root package.json, only
+    # when the target declares itself a pnpm workspace. Batch-local sidecar data, never a
+    # contract/command/skill (NG-01 untouched).
+    workspace_marker = target / "pnpm-workspace.yaml"
+    root_manifest = target / "package.json"
+    if workspace_marker.is_file() and root_manifest.is_file():
+        derived = derive_language_rows(root_manifest.read_text(encoding="utf-8"))
+        if derived is not None:
+            sidecar_path = batch_root / _DERIVED_LANGUAGES_SIDECAR
+            refuse_if_outside_root(sidecar_path, batch_root)
+            sidecar_path.write_text(derived, encoding="utf-8")
+            print(f"wrote {sidecar_path}", file=sys.stderr)
 
     return 0
 

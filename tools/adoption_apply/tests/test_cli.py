@@ -10,12 +10,13 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import tomllib
 from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 
-from tools.adoption_apply.cli import main
+from tools.adoption_apply.cli import derive_language_rows, main
 
 _TASK_ID = "T-20260721040000-cli-test"
 
@@ -430,3 +431,111 @@ def test_cli_apply_refuses_directory_shaped_destination(
     # No directory-shaped row may leave anything behind in the target tree.
     assert not (apply_target / "newdir").exists(), case_name
     assert list(apply_target.iterdir()) == [], case_name
+
+
+# --- Task 2 (OBS-D-03 / D-12): derive_language_rows() + draft-time sidecar write ------------------
+
+
+def test_derive_language_rows_renders_expected_shape() -> None:
+    rendered = derive_language_rows(
+        json.dumps({"scripts": {"lint": "eslint .", "test": "vitest run"}})
+    )
+    assert rendered is not None
+    parsed = tomllib.loads(rendered)
+    assert len(parsed["languages"]) == 1
+    row = parsed["languages"][0]
+    assert row["id"] == "javascript"
+    assert row["bash_scope"] == "pnpm *"
+    assert row["lint"] == "pnpm run lint"
+    assert row["test"] == "pnpm run test"
+    assert row["format"] == ""
+
+
+def test_derive_language_rows_emits_exact_key_set() -> None:
+    """Pitfall-3 guard: dropping any key must red this. Mutation observed in a scratch checkout —
+    see the SUMMARY for the quoted failure."""
+    rendered = derive_language_rows(json.dumps({"scripts": {"lint": "eslint ."}}))
+    assert rendered is not None
+    row = tomllib.loads(rendered)["languages"][0]
+    assert set(row.keys()) == {"id", "bash_scope", "test", "format", "lint"}
+
+
+def test_derive_language_rows_never_copies_script_values() -> None:
+    """Script VALUES never flow into the rendered text — only the fixed 'pnpm run <key>' literal
+    keyed by allowlisted script NAMES (T-52-07)."""
+    rendered = derive_language_rows(
+        json.dumps({"scripts": {"lint": "eslint .", "test": "vitest run"}})
+    )
+    assert rendered is not None
+    assert "eslint" not in rendered
+    assert "vitest" not in rendered
+
+
+def test_derive_language_rows_no_scripts_object_returns_none() -> None:
+    assert derive_language_rows(json.dumps({"name": "widget-root"})) is None
+
+
+def test_derive_language_rows_scripts_with_none_of_the_allowlisted_keys_returns_none() -> None:
+    assert derive_language_rows(json.dumps({"scripts": {"build": "tsc"}})) is None
+
+
+def test_derive_language_rows_malformed_json_returns_none() -> None:
+    assert derive_language_rows("not json") is None
+
+
+def test_derive_language_rows_non_object_json_returns_none() -> None:
+    assert derive_language_rows(json.dumps([1, 2, 3])) is None
+
+
+def test_cli_draft_against_pnpm_target_writes_languages_sidecar(
+    task_dir: Path, tmp_pnpm_target: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(Path(__file__).resolve().parents[3])
+
+    exit_code = main(
+        [
+            "draft",
+            "--task-dir",
+            str(task_dir),
+            "--target",
+            str(tmp_pnpm_target),
+        ]
+    )
+
+    assert exit_code == 0
+    batch_dirs = list((task_dir / "artifacts" / "adoption").iterdir())
+    assert len(batch_dirs) == 1
+    batch_root = batch_dirs[0]
+    sidecar = batch_root / "languages.toml"
+    assert sidecar.is_file()
+    parsed = tomllib.loads(sidecar.read_text(encoding="utf-8"))
+    row = parsed["languages"][0]
+    assert row["id"] == "javascript"
+    assert row["lint"] == "pnpm run lint"
+    assert row["test"] == "pnpm run test"
+
+
+def test_cli_draft_against_non_pnpm_target_writes_no_languages_sidecar(
+    task_dir: Path, synthetic_target: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A target with no pnpm-workspace.yaml: batch_root contains exactly the three draft
+    artifacts, no languages.toml."""
+    monkeypatch.chdir(Path(__file__).resolve().parents[3])
+
+    exit_code = main(
+        [
+            "draft",
+            "--task-dir",
+            str(task_dir),
+            "--target",
+            str(synthetic_target),
+        ]
+    )
+
+    assert exit_code == 0
+    batch_dirs = list((task_dir / "artifacts" / "adoption").iterdir())
+    assert len(batch_dirs) == 1
+    batch_root = batch_dirs[0]
+    names = {p.name for p in batch_root.iterdir()}
+    assert "languages.toml" not in names
+    assert {"inventory.json", "plan.json", "manifest.json"} <= names
