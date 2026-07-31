@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.7
 milestone_name: Real-Target Adoption
 status: executing
-last_updated: "2026-07-31T17:01:05.839Z"
-last_activity: 2026-07-31
+last_updated: "2026-07-31T17:16:11.633Z"
+last_activity: "2026-08-01 -- Plan 52-03 complete (see 52-03-SUMMARY.md): `conventions_for()` now"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 9
-  completed_plans: 1
-  percent: 11
+  completed_plans: 2
+  percent: 22
 ---
 
 # Project State
@@ -28,12 +28,21 @@ contract is `51-BASELINE-EVIDENCE.md`'s OBS-D-01..04.
 ## Current Position
 
 Phase: 52 (Evidence-Bounded Real-Target Adoption) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6 (52-03 just completed; 52-02 still pending — wave-2 plans ran out of numeric order)
 Status: Ready to execute
-Last activity: 2026-08-01 -- Plan 52-01 complete (see 52-01-SUMMARY.md): `non-workspace-member`
+Last activity: 2026-08-01 -- Plan 52-03 complete (see 52-03-SUMMARY.md): `conventions_for()` now
+returns a permanent `lint` key (OBS-D-03/D-11), and an adopted pnpm target's JavaScript lint/test
+commands are derived from that target's own `package.json` scripts at draft time and spliced into
+the applied `harness/project.toml` (D-12) — proven by a repo-local end-to-end test. The W-10
+Phase-53 re-run consequence (the spliced file no longer matches `harness_proposed_hashes()`, so a
+future managed re-run classifies it `conflict` not no-op) is recorded, not fixed. Full suite green
+(997 passed). 52-02 (OBS-D-01 pnpm workspace-member scoping) has NOT yet run and is still needed
+before wave 2 is fully closed; 52-04 (its serialization sibling under `use_worktrees: false`) also
+has not yet run.
+
+Prior: Plan 52-01 complete: `non-workspace-member`
 enum value landed on `inventory.schema.json` via the human-authorized constitution-plane path
 (GOLDEN_APPROVE_HUMAN), hash baseline + derived plane regenerated, full suite green (981 passed).
-Plan 52-02 is next.
 
 **Phase 51 outcome — OBS-03 REFUTED (a milestone output, not a failure).** `tools/adoption_scan/
 detect.py:273` discards dependency version strings and matches by package name, so pnpm `workspace:*`
