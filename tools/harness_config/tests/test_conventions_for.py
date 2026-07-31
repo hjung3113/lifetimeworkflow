@@ -293,3 +293,39 @@ def test_synthetic_two_language_nested_pair_commands_differ() -> None:
     inner = conventions_for("inner/x.cs", cfg=cfg, facts=facts)
 
     assert outer["test"] != inner["test"]
+
+
+# ---- CR-03 (52-REVIEW.md): a [[languages]] row may legitimately OMIT a command --------------
+
+
+def test_conventions_for_tolerates_a_row_omitting_test_format_bash_scope() -> None:
+    """`conventions_for` read `test`/`format`/`bash_scope` by SUBSCRIPT, so a row could not omit
+    any of them — which is exactly what forced `tools.adoption_apply.cli.derive_language_rows` to
+    emit `""` for a script the adopted target does not declare, and an empty `test` stops that
+    target's own CI `setup` job from starting (CR-03).
+
+    `.get` matches what these keys are already documented to return ("None when the matched row
+    declares no such command") and matches the `lint` treatment D-11 established. Reverting any
+    one of the three `.get`s to a subscript reds this with a KeyError.
+    """
+    facts = {
+        "packages": [
+            {"id": "root", "manifest": "package.json", "dir": ".", "language": "javascript"}
+        ]
+    }
+    cfg = {"languages": [{"id": "javascript", "test": "pnpm run test"}]}
+
+    profile = conventions_for("index.js", cfg=cfg, facts=facts)
+
+    assert profile["language"] == "javascript"
+    assert profile["test"] == "pnpm run test"
+    assert profile["format"] is None
+    assert profile["lint"] is None
+    assert profile["bash_scope"] is None
+
+    # Second case so the `test` key's own `.get` is covered too: with `test` present above, a
+    # `lang["test"]` subscript would still pass — a check that cannot fail for that one key.
+    bare = conventions_for("index.js", cfg={"languages": [{"id": "javascript"}]}, facts=facts)
+    assert bare["test"] is None
+    assert bare["format"] is None
+    assert bare["bash_scope"] is None

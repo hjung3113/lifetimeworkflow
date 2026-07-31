@@ -453,16 +453,96 @@ def test_derive_language_rows_renders_expected_shape() -> None:
     assert row["bash_scope"] == "pnpm *"
     assert row["lint"] == "pnpm run lint"
     assert row["test"] == "pnpm run test"
-    assert row["format"] == ""
+    # CR-03 (52-REVIEW.md): a script the target does not declare is OMITTED, never `""`.
+    assert "format" not in row
 
 
 def test_derive_language_rows_emits_exact_key_set() -> None:
-    """Pitfall-3 guard: dropping any key must red this. Mutation observed in a scratch checkout —
-    see the SUMMARY for the quoted failure."""
-    rendered = derive_language_rows(json.dumps({"scripts": {"lint": "eslint ."}}))
+    """The row carries exactly the keys the target actually declares, plus id/bash_scope.
+
+    CR-03: `persona` and `test_paths` stay absent on purpose — neither is derivable from a
+    package.json, and the gate that subscripts them (tools/harness_lint/tests/) is excluded from
+    the destination catalog by `destinations._SKIP_SEGMENTS`, so it never reaches a target.
+    """
+    rendered = derive_language_rows(json.dumps({"scripts": {"test": "vitest run"}}))
     assert rendered is not None
     row = tomllib.loads(rendered)["languages"][0]
-    assert set(row.keys()) == {"id", "bash_scope", "test", "format", "lint"}
+    assert set(row.keys()) == {"id", "bash_scope", "test"}
+
+    full = derive_language_rows(
+        json.dumps({"scripts": {"lint": "eslint .", "test": "vitest run", "format": "prettier -w"}})
+    )
+    assert full is not None
+    assert set(tomllib.loads(full)["languages"][0].keys()) == {
+        "id",
+        "bash_scope",
+        "lint",
+        "test",
+        "format",
+    }
+
+
+def test_derive_language_rows_never_emits_an_empty_string_command() -> None:
+    """CR-03: `""` is a second spelling of "absent" that every consumer reads as a real command.
+
+    Reinstating the `value = f"pnpm run {key}" if key in scripts else ""` blanking reds this.
+    """
+    rendered = derive_language_rows(json.dumps({"scripts": {"test": "vitest run"}}))
+    assert rendered is not None
+    for key, value in tomllib.loads(rendered)["languages"][0].items():
+        assert value != "", f"{key} was emitted as an empty string"
+
+
+def test_derive_language_rows_without_a_test_script_emits_no_row_at_all() -> None:
+    """CR-03: the adopted target inherits `.github/workflows/ci.yml`, whose `setup` job
+    `sys.exit`s on a `[[languages]]` entry with an empty `test` — so a target declaring `lint`
+    but no `test` (extremely common) previously shipped a config that stopped its own CI from
+    starting. Nothing safe is derivable in that case, so no row is emitted.
+
+    Relaxing the guard back to `any(key in scripts for key in _DERIVED_SCRIPT_KEYS)` reds this.
+    """
+    assert derive_language_rows(json.dumps({"scripts": {"lint": "eslint ."}})) is None
+    assert derive_language_rows(json.dumps({"scripts": {"format": "prettier -w"}})) is None
+    assert (
+        derive_language_rows(json.dumps({"scripts": {"lint": "eslint .", "test": "vitest run"}}))
+        is not None
+    )
+
+
+@pytest.mark.parametrize(
+    "scripts",
+    [
+        pytest.param({"lint": "eslint ."}, id="lint-only"),
+        pytest.param({"format": "prettier -w"}, id="format-only"),
+        pytest.param({"lint": "eslint .", "format": "prettier -w"}, id="lint-and-format-no-test"),
+        pytest.param({"test": "vitest run"}, id="test-only"),
+        pytest.param({"lint": "eslint .", "test": "vitest run"}, id="lint-and-test"),
+    ],
+)
+def test_whatever_is_derived_satisfies_the_shipped_ci_setup_language_gate(
+    scripts: dict[str, str],
+) -> None:
+    """The one consuming gate the apply cycle really does install into the adopted target.
+
+    Re-implements `.github/workflows/ci.yml`'s `setup` step check verbatim (non-empty `id` and
+    `test`; `test_paths` read with `.get(..., [])`) against whatever this function renders, so a
+    future change that reintroduces a partially-shaped row fails HERE rather than in a stranger's
+    CI. `None` is a passing outcome — no row means nothing for CI to reject.
+
+    The `no-test` params are what give this teeth: the pre-repair code rendered `test = ""` for
+    them, so it fails this gate. Asserting only against a package.json that declares `test` would
+    have been a check that cannot fail.
+    """
+    rendered = derive_language_rows(json.dumps({"scripts": scripts}))
+    if rendered is None:
+        assert "test" not in scripts, "a target declaring `test` must still yield a usable row"
+        return
+    rows = tomllib.loads(rendered)["languages"]
+    assert rows
+    for lang in rows:
+        missing = [k for k in ("id", "test") if not str(lang.get(k, "")).strip()]
+        assert not missing, f"the adopted target's CI setup job would sys.exit: missing {missing}"
+        assert isinstance(lang.get("test_paths", []), list)
 
 
 def test_derive_language_rows_never_copies_script_values() -> None:

@@ -68,11 +68,37 @@ def derive_language_rows(package_json_text: str) -> str | None:
     (T-52-07 — no subprocess argv is ever built from manifest/draft content).
 
     Returns ``None`` on malformed JSON, a non-object top level, a missing/non-dict ``scripts``, or
-    a ``scripts`` object containing none of ``lint``/``test``/``format`` — nothing is invented.
-    Every one of ``id``/``bash_scope``/``lint``/``test``/``format`` is emitted unconditionally
-    when a row IS rendered (empty string ``""`` for a script the target doesn't declare), because
-    ``conventions_for()`` reads ``test``/``format``/``bash_scope`` by subscript against a matched
-    ``[[languages]]`` row (Pitfall 3) — a partially-shaped row would KeyError downstream.
+    a ``scripts`` object that does not declare ``test`` — nothing is invented, and nothing
+    partially-shaped is emitted.
+
+    CR-03 (52-REVIEW.md) — WHY ``test`` is the one hard requirement, and why the other keys are
+    omitted rather than blanked. The apply cycle installs ``tools/**`` and
+    ``.github/workflows/**`` into the adopted target, so the target inherits the consumers of
+    this row. Traced against what each ACTUALLY does with it:
+
+    - ``.github/workflows/ci.yml`` (SHIPPED) — the ``setup`` job ``sys.exit``s when any
+      ``[[languages]]`` entry has an empty ``id`` or ``test``. The previous ``test = ""`` for a
+      target declaring ``lint`` but no ``test`` (extremely common) therefore made the adopted
+      target's CI unable to start. Hence: no ``test`` script -> no row at all. That job reads
+      ``test_paths`` with ``.get(..., [])``, and a bare ``pnpm run test`` at a workspace root is
+      the correct invocation, so an absent ``test_paths`` is right, not merely tolerated.
+    - ``tools/harness_config/loader.py::conventions_for`` (SHIPPED) — reads the row by subscript.
+      Made ``.get``-tolerant in the same commit, matching the ``lint`` treatment D-11 already
+      established, so an omitted ``format`` resolves to ``None`` instead of raising.
+    - ``tools/harness_lint/tests/test_language_config.py`` (NOT SHIPPED) — the ``persona``
+      subscript, the ``test_paths`` non-empty check and the ``bash_scope`` set-equality check all
+      live here, and ``destinations._SKIP_SEGMENTS`` excludes every ``tools/**`` path with a
+      ``tests`` segment from the catalog, so none of those three reaches an adopted target.
+      That is what makes omitting ``persona``/``test_paths`` the honest answer rather than a
+      shortcut: neither is derivable from a ``package.json`` at all (there is no javascript
+      persona in ``harness/agents/``, and a target's test paths are unknowable from its
+      manifest), and inventing either would be exactly the fabrication D-02 forbids.
+
+    ``bash_scope`` is still emitted. The target's copied ``harness/permission-matrix.json`` has no
+    ``pnpm *`` allow key, so pnpm commands there fall to the matrix's ``*: ask`` catch-all — a
+    safe-by-default degradation, not a break, and the only gate that would call the divergence an
+    error is the unshipped one above. Dropping the key would discard true, useful data and buy
+    nothing.
     """
     try:
         data = json.loads(package_json_text)
@@ -81,7 +107,7 @@ def derive_language_rows(package_json_text: str) -> str | None:
     if not isinstance(data, dict):
         return None
     scripts = data.get("scripts")
-    if not isinstance(scripts, dict) or not any(key in scripts for key in _DERIVED_SCRIPT_KEYS):
+    if not isinstance(scripts, dict) or "test" not in scripts:
         return None
 
     lines = [
@@ -90,9 +116,11 @@ def derive_language_rows(package_json_text: str) -> str | None:
         f'id = "{_DERIVED_LANGUAGE_ID}"',
         f'bash_scope = "{_DERIVED_BASH_SCOPE}"',
     ]
+    # Omit, never blank: an empty string is a second spelling of "absent" that every consumer
+    # above reads as a real-but-empty command.
     for key in _DERIVED_SCRIPT_KEYS:
-        value = f"pnpm run {key}" if key in scripts else ""
-        lines.append(f'{key} = "{value}"')
+        if key in scripts:
+            lines.append(f'{key} = "pnpm run {key}"')
     return "\n".join(lines) + "\n"
 
 

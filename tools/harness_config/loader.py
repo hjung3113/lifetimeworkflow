@@ -346,13 +346,19 @@ def conventions_for(path: str, cfg: dict | None = None, facts: dict | None = Non
         "package": owner["id"],
         "dir": owner["dir"],
         "language": owner.get("language"),
-        "test": lang["test"] if lang else None,
-        "format": lang["format"] if lang else None,
+        # CR-03 (52-REVIEW.md): `.get`, never a subscript — same reason as `lint` below. A
+        # `[[languages]]` row may legitimately omit a command it has none of (the adoption-derived
+        # javascript row omits `format` when the target's package.json declares no `format`
+        # script), and the documented contract for these keys is already "None when the row
+        # declares no such command". A bare subscript made an omitted key a KeyError, which is
+        # what forced the earlier `""` workaround that broke the adopted target's CI.
+        "test": lang.get("test") if lang else None,
+        "format": lang.get("format") if lang else None,
         # OBS-D-03 (51-BASELINE-EVIDENCE.md) — purpose 1: the profile had no lint key at all
         # (D-11 shape change). `.get`, never a subscript: neither of this repo's own `[[languages]]`
         # rows (dotnet/python) declares `lint`, so a bare `lang["lint"]` would KeyError here.
         "lint": lang.get("lint") if lang else None,
-        "bash_scope": lang["bash_scope"] if lang else None,
+        "bash_scope": lang.get("bash_scope") if lang else None,
         "agents_md": _nearest_agents_md(owner["dir"]),
         "is_default": owner["dir"] == ".",
     }
