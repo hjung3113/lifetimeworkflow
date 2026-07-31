@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.7
 milestone_name: Real-Target Adoption
 status: executing
-last_updated: "2026-07-31T17:26:59.762Z"
+last_updated: "2026-07-31T17:42:04.300Z"
 last_activity: 2026-07-31
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 9
-  completed_plans: 3
-  percent: 33
+  completed_plans: 4
+  percent: 44
 ---
 
 # Project State
@@ -22,25 +22,40 @@ See: .planning/PROJECT.md (updated 2026-07-30)
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
 
 **Current focus:** Phase 52 — Evidence-Bounded Real-Target Adoption
-2026-07-31, verified 4/4. Next is Phase 52 (Evidence-Bounded Real-Target Adoption), whose sole input
-contract is `51-BASELINE-EVIDENCE.md`'s OBS-D-01..04.
+2026-07-31, verified 4/4. Phase 52 (Evidence-Bounded Real-Target Adoption) — all 6 plans landed
+(52-01/02/03/04 numbered plus wave sequencing); ready for phase-level verification against
+`51-BASELINE-EVIDENCE.md`'s OBS-D-01..04.
 
 ## Current Position
 
 Phase: 52 (Evidence-Bounded Real-Target Adoption) — EXECUTING
-Plan: 4 of 6 (52-04 just completed; 52-02 still pending — wave-2 plans ran out of numeric order)
-Status: Ready to execute
-Last activity: 2026-08-01 -- Plan 52-04 complete (see 52-04-SUMMARY.md): the 3 marker-merge `.lock`
+Plan: 6 of 6 (52-02 just completed — the phase's final wave (wave 3) closes; all 5 numbered
+plans plus the enum-contract plan have now landed)
+Status: Ready for phase verification
+Last activity: 2026-08-01 -- Plan 52-02 complete (see 52-02-SUMMARY.md): `tools/adoption_scan/
+detect.py` gained a pure, filesystem-free `parse_pnpm_workspace_globs`/`is_workspace_member`
+pair (pnpm-workspace.yaml deliberately NOT registered in `_MANIFEST_KIND_BY_NAME` — taught as
+its own constant + parser instead, per the interfaces section's documented deviation from D-07's
+literal wording), and `scan.build_inventory` now scopes `manifests`/`candidate_process_boundaries`
+to a target's declared pnpm workspace members, recording any non-member manifest as excluded
+with reason `non-workspace-member` (the D-20 enum value ratified in 52-01). The no-workspace-
+manifest path (`tmp_minirepo`) stays byte-identical (D-10, proven by a captured pre-change digest
++ the untouched committed snapshot). `_dependencies_from_package_json` (the REFUTED OBS-03 site)
+is provably untouched via a source-digest pin. One test-quality deviation recorded: two of the
+plan's own proposed mutation-check negative controls were structurally unreachable ("checks that
+cannot fail") and were replaced with genuinely discriminating cases, each confirmed by an
+observed-RED-then-reverted mutation (see 52-02-SUMMARY.md). Full suite green (1023 passed, up
+from 1006). OBS-D-01 is now repaired at the source (RTA-02).
+
+Prior: Plan 52-04 complete: the 3 marker-merge `.lock`
 sidecars are declared as known harness-managed artifacts (`lock_sidecar_for`/`expected_lock_sidecars`/
 `HARNESS_MANAGED_LOCK_SIDECARS`, checked against the real filesystem, never unlinked — D-15), a
 sidecar left over from a prior run is announced on stderr with wording that claims only provenance,
 never "stale" (D-16), and OBS-D-02's `workspace:*`/`workspace:^` edge resolution is locked in by a
 regression test with zero production change (D-18). All three observed-RED mutation checks
-confirmed (quoted in 52-04-SUMMARY.md). Full suite green (1006 passed, up from 997). 52-02
-(OBS-D-01 pnpm workspace-member scoping) has NOT yet run and is still needed before wave 2 is
-fully closed.
+confirmed (quoted in 52-04-SUMMARY.md). Full suite green (1006 passed, up from 997).
 
-Prior: Plan 52-03 complete: `conventions_for()` now returns a permanent `lint` key (OBS-D-03/D-11),
+Earlier: Plan 52-03 complete: `conventions_for()` now returns a permanent `lint` key (OBS-D-03/D-11),
 and an adopted pnpm target's JavaScript lint/test commands are derived from that target's own
 `package.json` scripts at draft time and spliced into the applied `harness/project.toml` (D-12) —
 proven by a repo-local end-to-end test. The W-10 Phase-53 re-run consequence (the spliced file no
