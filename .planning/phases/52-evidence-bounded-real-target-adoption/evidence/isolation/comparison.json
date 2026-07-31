@@ -1,0 +1,22 @@
+{
+  "after_head": "919d152a56ed096c0fdef12b9bfb892d6ef4ced6",
+  "after_index_sha256": "60f1e62025b36cbfea5a8e0fbc6a48de19c5c67a457a891d9270d9340532e726  -",
+  "after_untracked_set_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  -",
+  "before_head": "919d152a56ed096c0fdef12b9bfb892d6ef4ced6",
+  "before_index_sha256": "60f1e62025b36cbfea5a8e0fbc6a48de19c5c67a457a891d9270d9340532e726  -",
+  "before_untracked_set_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  -",
+  "head_equal": true,
+  "index_equal": true,
+  "post_disposal": {
+    "final_head": "919d152a56ed096c0fdef12b9bfb892d6ef4ced6",
+    "final_index_sha256": "60f1e62025b36cbfea5a8e0fbc6a48de19c5c67a457a891d9270d9340532e726  -",
+    "final_untracked_set_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  -",
+    "head_equal": true,
+    "index_equal": true,
+    "status_equal": true,
+    "untracked_set_equal": true
+  },
+  "residual_note": "The untracked-set equality compares two empty-string SHA-256 digests (both before and after are e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855) and therefore has low discriminating power, as Phase 51 disclosed.",
+  "status_equal": true,
+  "untracked_set_equal": true
+}
