@@ -284,7 +284,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [x] 52-03-PLAN.md — OBS-D-03: permanent `lint` key on `conventions_for()` + target-derived JS `[[languages]]` row through draft/apply
-- [x] 52-04-PLAN.md — OBS-D-04: declare the marker-merge lock sidecars, report a stale one on stderr; OBS-D-02 `workspace:*` lock-in test
+- [x] 52-04-PLAN.md — OBS-D-04: declare the marker-merge lock sidecars, report a prior-run one on stderr (provenance, not staleness — D-15 forbids unlinking, so the sidecar exists on every run after the first); OBS-D-02 `workspace:*` lock-in test
 
 **Wave 3** *(blocked on Wave 2 completion)*
 - [x] 52-02-PLAN.md — OBS-D-01: pnpm workspace member scoping in `detect.py`/`scan.py` + synthetic fixture + regression tests
