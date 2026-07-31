@@ -1,0 +1,102 @@
+{
+  "config_source": "/Users/hyojung/Desktop/2026/FeedbackOps-worktrees/v27-52-adoption/harness/project.toml",
+  "packages": [
+    {
+      "conventions": {
+        "agents_md": "AGENTS.md",
+        "bash_scope": "pnpm *",
+        "dir": "apps/backend",
+        "format": "pnpm run format",
+        "is_default": false,
+        "language": "javascript",
+        "lint": "pnpm run lint",
+        "package": "@fops/backend",
+        "test": "pnpm run test"
+      },
+      "dir": "apps/backend",
+      "language": "javascript",
+      "package": "@fops/backend"
+    },
+    {
+      "conventions": {
+        "agents_md": "AGENTS.md",
+        "bash_scope": "pnpm *",
+        "dir": "apps/frontend",
+        "format": "pnpm run format",
+        "is_default": false,
+        "language": "javascript",
+        "lint": "pnpm run lint",
+        "package": "@fops/frontend",
+        "test": "pnpm run test"
+      },
+      "dir": "apps/frontend",
+      "language": "javascript",
+      "package": "@fops/frontend"
+    },
+    {
+      "conventions": {
+        "agents_md": "AGENTS.md",
+        "bash_scope": "pnpm *",
+        "dir": "docs/design-prototype",
+        "format": "pnpm run format",
+        "is_default": false,
+        "language": "javascript",
+        "lint": "pnpm run lint",
+        "package": "845745f6-c3e4-495c-b5dc-121f71bac734",
+        "test": "pnpm run test"
+      },
+      "dir": "docs/design-prototype",
+      "language": "javascript",
+      "package": "845745f6-c3e4-495c-b5dc-121f71bac734"
+    },
+    {
+      "conventions": {
+        "agents_md": "AGENTS.md",
+        "bash_scope": "pnpm *",
+        "dir": ".",
+        "format": "pnpm run format",
+        "is_default": true,
+        "language": "javascript",
+        "lint": "pnpm run lint",
+        "package": "feedbackops",
+        "test": "pnpm run test"
+      },
+      "dir": ".",
+      "language": "javascript",
+      "package": "feedbackops"
+    },
+    {
+      "conventions": {
+        "agents_md": "AGENTS.md",
+        "bash_scope": "pnpm *",
+        "dir": "packages/shared",
+        "format": "pnpm run format",
+        "is_default": false,
+        "language": "javascript",
+        "lint": "pnpm run lint",
+        "package": "@fops/shared",
+        "test": "pnpm run test"
+      },
+      "dir": "packages/shared",
+      "language": "javascript",
+      "package": "@fops/shared"
+    },
+    {
+      "conventions": {
+        "agents_md": "AGENTS.md",
+        "bash_scope": "pnpm *",
+        "dir": "packages/ui",
+        "format": "pnpm run format",
+        "is_default": false,
+        "language": "javascript",
+        "lint": "pnpm run lint",
+        "package": "@fops/ui",
+        "test": "pnpm run test"
+      },
+      "dir": "packages/ui",
+      "language": "javascript",
+      "package": "@fops/ui"
+    }
+  ],
+  "repo_root": "/Users/hyojung/Desktop/2026/FeedbackOps-worktrees/v27-52-adoption"
+}

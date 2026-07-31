@@ -1,0 +1,17 @@
+{
+  "build_facts_count": 6,
+  "build_facts_non_member_dirs": [
+    "docs/design-prototype"
+  ],
+  "build_facts_package_ids": [
+    "845745f6-c3e4-495c-b5dc-121f71bac734",
+    "@fops/backend",
+    "@fops/frontend",
+    "@fops/shared",
+    "@fops/ui",
+    "feedbackops"
+  ],
+  "inventory_members_equal_expected_five": true,
+  "note": "build_facts (discover_manifests, package_facts.py:93-114) is an UNSCOPED path (git ls-files + detect.detect_manifests, no workspace-glob scoping) \u2014 Phase 52 deliberately adds none there (D-07 scopes membership only in scan.build_inventory). Reporting SIX packages including docs/design-prototype here is the EXPECTED behavior of an unscoped code path, not an SC-2 failure and not a Phase-52 defect. SC-2 is decided by evidence/discover/member-comparison.json (the inventory), not by this file.",
+  "six_packages_one_non_member": true
+}

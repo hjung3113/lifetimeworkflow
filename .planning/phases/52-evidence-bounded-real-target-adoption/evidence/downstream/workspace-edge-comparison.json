@@ -1,0 +1,38 @@
+{
+  "all_edges_from_target": [
+    {
+      "from": "@fops/backend",
+      "kind": "runtime",
+      "to": "@fops/shared"
+    },
+    {
+      "from": "@fops/frontend",
+      "kind": "runtime",
+      "to": "@fops/shared"
+    },
+    {
+      "from": "@fops/frontend",
+      "kind": "runtime",
+      "to": "@fops/ui"
+    },
+    {
+      "from": "@fops/ui",
+      "kind": "runtime",
+      "to": "@fops/shared"
+    }
+  ],
+  "both_runtime_edges_present": true,
+  "edges": [
+    {
+      "from": "@fops/frontend",
+      "kind": "runtime",
+      "to": "@fops/shared"
+    },
+    {
+      "from": "@fops/backend",
+      "kind": "runtime",
+      "to": "@fops/shared"
+    }
+  ],
+  "shared_package": "@fops/shared"
+}
