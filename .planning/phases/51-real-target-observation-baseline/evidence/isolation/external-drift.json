@@ -11,6 +11,11 @@
       "capture": "after-proof",
       "observed_at": "2026-07-31T02:02:03.554520+00:00",
       "observed_sha": "4f16525478e0ddeeb10ebe90960c33beb385a942"
+    },
+    {
+      "capture": "post-disposal-proof",
+      "observed_at": "2026-07-31T05:19:38.603597+00:00",
+      "observed_sha": "4f16525478e0ddeeb10ebe90960c33beb385a942"
     }
   ],
   "drifting_commits": [

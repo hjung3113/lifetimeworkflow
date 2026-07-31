@@ -3,5 +3,12 @@
   "head_equal": false,
   "index_equal": false,
   "untracked_set_equal": true,
-  "external_drift": "See evidence/isolation/external-drift.json; false original-checkout comparisons attributable to third-party develop movement are not OBS-D adoption defects."
+  "external_drift": "See evidence/isolation/external-drift.json; false original-checkout comparisons attributable to third-party develop movement are not OBS-D adoption defects.",
+  "post_disposal": {
+    "status_equal": true,
+    "head_equal": false,
+    "index_equal": false,
+    "untracked_set_equal": true,
+    "external_drift": "False HEAD/index values are documented third-party develop drift in external-drift.json, not an OBS-D adoption defect."
+  }
 }
