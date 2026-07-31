@@ -1,0 +1,63 @@
+{
+  "edges": [
+    {
+      "from": "@fops/backend",
+      "kind": "runtime",
+      "to": "@fops/shared"
+    },
+    {
+      "from": "@fops/frontend",
+      "kind": "runtime",
+      "to": "@fops/shared"
+    },
+    {
+      "from": "@fops/frontend",
+      "kind": "runtime",
+      "to": "@fops/ui"
+    },
+    {
+      "from": "@fops/ui",
+      "kind": "runtime",
+      "to": "@fops/shared"
+    }
+  ],
+  "packages": [
+    {
+      "dir": "apps/backend",
+      "id": "@fops/backend",
+      "language": "javascript",
+      "manifest": "apps/backend/package.json"
+    },
+    {
+      "dir": "apps/frontend",
+      "id": "@fops/frontend",
+      "language": "javascript",
+      "manifest": "apps/frontend/package.json"
+    },
+    {
+      "dir": "docs/design-prototype",
+      "id": "845745f6-c3e4-495c-b5dc-121f71bac734",
+      "language": "javascript",
+      "manifest": "docs/design-prototype/package.json"
+    },
+    {
+      "dir": ".",
+      "id": "feedbackops",
+      "language": "javascript",
+      "manifest": "package.json"
+    },
+    {
+      "dir": "packages/shared",
+      "id": "@fops/shared",
+      "language": "javascript",
+      "manifest": "packages/shared/package.json"
+    },
+    {
+      "dir": "packages/ui",
+      "id": "@fops/ui",
+      "language": "javascript",
+      "manifest": "packages/ui/package.json"
+    }
+  ],
+  "repo_root": "/Users/hyojung/Desktop/2026/FeedbackOps-worktrees/v27-51-baseline"
+}
