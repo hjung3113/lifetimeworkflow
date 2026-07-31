@@ -231,7 +231,7 @@ confirmed or refuted OBS-03 hypothesis is equally successful. Commands remain 19
 contracts 6, and CI jobs and gates do not increase. Runtime artifacts are authored only in
 `harness/` and changed through re-emission; new repository artifacts contain no model identifiers.
 
-- [ ] **Phase 51: Real-Target Observation Baseline** - Run the current harness against the isolated
+- [x] **Phase 51: Real-Target Observation Baseline** - Run the current harness against the isolated
   target and capture reproducible evidence before designing repairs.
 - [ ] **Phase 52: Evidence-Bounded Real-Target Adoption** - Make the required adoption capabilities
   work using only failures established by Phase 51.
@@ -337,7 +337,7 @@ contracts 6, and CI jobs and gates do not increase. Runtime artifacts are author
 | 46. Product Flow | v2.5 | 3/3 | Complete   | 2026-07-29 |
 | 47–50a | v2.6 | 11/11 | Complete (see archive) | 2026-07-30 |
 | 50b | v2.6 | — | **BLOCKED** — no real multi-package target repo; MONO-12 carried | - |
-| 51. Real-Target Observation Baseline | v2.7 | 0/TBD | Not started | - |
+| 51. Real-Target Observation Baseline | v2.7 | 3/3 | Complete (verified 4/4; OBS-03 **refuted**) | 2026-07-31 |
 | 52. Evidence-Bounded Real-Target Adoption | v2.7 | 0/TBD | Not started | - |
 | 53. Managed Adopt Updates | v2.7 | 0/TBD | Not started | - |
 | 54. Surface Budget Closeout | v2.7 | 0/TBD | Not started | - |

@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.7
 milestone_name: Real-Target Adoption
-status: executing
-last_updated: "2026-07-30T17:44:31.610Z"
-last_activity: 2026-07-30 -- Phase 51 planning complete
+status: in-progress
+last_updated: "2026-07-31T05:37:55.232Z"
+last_activity: 2026-07-31 -- Phase 51 complete, verified 4/4
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_plans: 3
+  percent: 25
 ---
 
 # Project State
@@ -21,15 +21,34 @@ See: .planning/PROJECT.md (updated 2026-07-30)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
 
-**Current focus:** none — **v2.6 Minimal Monorepo Core shipped 2026-07-30** and is archived. Next
-step is `/gsd:new-milestone` to scope the next cycle.
+**Current focus:** **v2.7 Real-Target Adoption** — Phase 51 (Real-Target Observation Baseline) shipped
+2026-07-31, verified 4/4. Next is Phase 52 (Evidence-Bounded Real-Target Adoption), whose sole input
+contract is `51-BASELINE-EVIDENCE.md`'s OBS-D-01..04.
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Ready to execute
-Last activity: 2026-07-30 -- Phase 51 planning complete
+Phase: 51 — COMPLETE (verified 4/4, `51-VERIFICATION.md`)
+Plan: 3/3 complete
+Status: Ready for Phase 52 (`/gsd:discuss-phase 52`)
+Last activity: 2026-07-31 -- Phase 51 complete, verified 4/4
+
+**Phase 51 outcome — OBS-03 REFUTED (a milestone output, not a failure).** `tools/adoption_scan/
+detect.py:273` discards dependency version strings and matches by package name, so pnpm `workspace:*`
+already resolves correctly; both `@fops/frontend → @fops/shared` and `@fops/backend → @fops/shared`
+runtime edges were captured. Phase 52 must NOT spend budget repairing this. Four defects recorded as
+OBS-D-01..04 (stable ids; do not renumber).
+
+**Carried into Phase 52:**
+- Phase 52 SC-4 wants lint + test commands, but `conventions_for`
+  (`tools/harness_config/loader.py:297`) has **no `lint` key at all** — a shape change, not a null to
+  populate. Traces to OBS-D-03.
+- Re-pin the target SHA: FeedbackOps `develop` is now `4f16525`, six commits past the `1d1c8ed`
+  baseline; the Phase-51 worktree is disposed, so Phase 52 starts from a fresh one (D-04).
+- **Verification override (human-directed, recorded):** ROADMAP SC-1's "byte-unchanged" is satisfied
+  in substance but not literally — the target's `develop` advanced six times mid-run from unrelated
+  third-party work. Index digests were independently reconstructed from the target's commit trees,
+  proving 100% of the delta is commit movement and 0% is a Phase-51 write. Attributed in
+  `evidence/isolation/external-drift.json`, deliberately kept out of the OBS-D namespace.
 
 ## Blockers/Concerns
 
