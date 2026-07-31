@@ -491,11 +491,52 @@ def test_fresh_target_emits_no_prior_run_lock_sidecar_report(tmp_path, capsys):
     assert "lock sidecar from a prior run" not in captured.err
 
 
-def test_held_lock_still_blocks_and_emits_no_prior_run_report(tmp_path, monkeypatch):
-    """When another holder currently holds the lock, the call still blocks/serializes and no
-    prior-run report is emitted for a genuinely held lock (T-52-12)."""
+def test_held_lock_still_blocks_and_serializes(tmp_path, monkeypatch):
+    """When another holder currently holds the lock, the call still blocks/serializes (T-52-12).
+
+    WR-05 (52-REVIEW.md): renamed. The old name also promised "and emits no prior-run report",
+    but the body only called `_assert_mutual_exclusion` and never captured or asserted on stderr
+    — the repo's signature defect (a promise in the name the body does not keep). Worse, the
+    unasserted half is not guaranteed HERE: in `_observe_marker_merge_concurrency` the second
+    racer takes the FAST path (and so does emit the report) whenever the first racer has already
+    released, so an assertion bolted on here would have been flaky, not merely missing. The claim
+    is now kept by the deterministic test below instead.
+    """
     max_concurrent, events, _ = _observe_marker_merge_concurrency(tmp_path, monkeypatch)
     _assert_mutual_exclusion(max_concurrent, events)
+
+
+def test_genuinely_held_lock_emits_no_prior_run_report(tmp_path, capsys):
+    """WR-05: the half of the old test's name that was never asserted, made deterministic.
+
+    The sidecar is pre-created, so the FAST path would report; the lock is then genuinely held
+    from a separate file description before the call, forcing the blocking branch, which must
+    stay silent (that branch means "currently held", not "left over from a prior run"). Holding
+    the lock from the test body — rather than racing two threads — is what removes the flakiness.
+
+    Moving the `if pre_existed: print(...)` out of the `try` so it reports on both branches reds
+    this test.
+    """
+    target = tmp_path / "AGENTS.md"
+    target.write_text("# Repo agents\n\nSome human prose.\n", encoding="utf-8")
+    lock_path = target.with_name(".AGENTS.md.lock")
+    lock_path.write_bytes(b"")
+
+    holder = lock_path.open("a+b")
+    fcntl.flock(holder.fileno(), fcntl.LOCK_EX)
+    releasing = threading.Thread(target=lambda: (time.sleep(0.2), holder.close()))
+    releasing.start()
+    try:
+        apply._apply_marker_merge("AGENTS.md", target, block_body="## New\n")
+    finally:
+        releasing.join()
+
+    captured = capsys.readouterr()
+    assert "lock sidecar from a prior run" not in captured.err, (
+        "the blocking branch must not report a prior run — the lock was CURRENTLY held"
+    )
+    # The merge itself still completed once the holder released.
+    assert "## New" in target.read_text(encoding="utf-8")
 
 
 def test_prior_run_report_does_not_change_merged_content(tmp_path):

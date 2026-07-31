@@ -765,3 +765,85 @@ def test_splice_never_touches_any_other_destination(
         content = applied_path.read_text(encoding="utf-8")
         for literal in sidecar_literals:
             assert literal not in content, f"{marker_destination} leaked {literal!r}"
+
+
+# --- 52-REVIEW.md WR-06 / WR-07 -----------------------------------------------------------------
+
+
+def test_draft_on_non_utf8_target_package_json_degrades_cleanly(
+    task_dir: Path, tmp_pnpm_target: Path, monkeypatch: pytest.MonkeyPatch, capsys
+) -> None:
+    """WR-06: `read_text(encoding="utf-8")` on TARGET-controlled bytes raised UnicodeDecodeError
+    straight out of `main()` as an unhandled traceback — and it did so AFTER inventory/plan/
+    manifest were written, leaving a batch that looks drafted but has no sidecar and no error
+    record. Every other failure in `_cmd_draft` returns a clean exit code.
+
+    Removing the try/except reds this with `UnicodeDecodeError: 'utf-8' codec can't decode ...`.
+    """
+    monkeypatch.chdir(Path(__file__).resolve().parents[3])
+    (tmp_pnpm_target / "package.json").write_bytes(b'{"scripts": {"test": "\xff\xfe"}}\n')
+
+    exit_code = main(["draft", "--task-dir", str(task_dir), "--target", str(tmp_pnpm_target)])
+
+    assert exit_code == 0
+    batch_root = next((task_dir / "artifacts" / "adoption").iterdir())
+    names = {p.name for p in batch_root.iterdir()}
+    assert {"inventory.json", "plan.json", "manifest.json"} <= names
+    assert "languages.toml" not in names, "no sidecar may be derived from undecodable bytes"
+    assert "unreadable target package.json" in capsys.readouterr().err
+
+
+def test_apply_reports_when_the_sidecar_is_present_but_not_spliced(
+    task_dir: Path, tmp_pnpm_target: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
+) -> None:
+    """WR-07: `payloads` is populated ONLY for `create` dispositions, so on a target that already
+    carries a harness/project.toml the disposition is `preserve`/`conflict` and the sidecar was
+    silently ignored — the D-12 repair did nothing and said nothing. Reachable on every
+    re-adoption, i.e. the whole Phase-53 update scenario.
+
+    Deleting the `elif sidecar_path.is_file():` branch reds this.
+    """
+    monkeypatch.chdir(Path(__file__).resolve().parents[3])
+
+    # Make harness/project.toml a NON-`create` destination: the target already carries one at
+    # DRAFT time, so disposition() resolves it to preserve/conflict, never create. This is the
+    # re-adoption / Phase-53 update shape.
+    existing = "# a pre-existing target config\n"
+    for root in (tmp_pnpm_target, tmp_path / "apply-target"):
+        (root / "harness").mkdir(parents=True, exist_ok=True)
+        (root / "harness" / "project.toml").write_text(existing, encoding="utf-8")
+    apply_target = tmp_path / "apply-target"
+
+    draft_exit = main(["draft", "--task-dir", str(task_dir), "--target", str(tmp_pnpm_target)])
+    assert draft_exit == 0
+    batch_root = next((task_dir / "artifacts" / "adoption").iterdir())
+    assert (batch_root / "languages.toml").is_file()
+    manifest = json.loads((batch_root / "manifest.json").read_bytes())
+    project_toml_disposition = next(
+        record["disposition"]
+        for record in manifest["dispositions"]
+        if record["destination"] == "harness/project.toml"
+    )
+    assert project_toml_disposition != "create", "fixture must exercise the non-create path"
+    capsys.readouterr()
+
+    apply_exit = main(
+        [
+            "apply",
+            "--task-dir",
+            str(task_dir),
+            "--batch-id",
+            batch_root.name,
+            "--target",
+            str(apply_target),
+        ]
+    )
+
+    assert apply_exit == 0
+    err = capsys.readouterr().err
+    assert "NOT spliced" in err
+    assert "not a 'create' destination" in err
+    # The diagnostic reports a real no-op: the derived row genuinely did not land.
+    assert "javascript" not in (apply_target / "harness" / "project.toml").read_text(
+        encoding="utf-8"
+    )

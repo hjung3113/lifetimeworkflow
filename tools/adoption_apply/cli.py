@@ -196,7 +196,22 @@ def _cmd_draft(args: argparse.Namespace) -> int:
     workspace_marker = target / "pnpm-workspace.yaml"
     root_manifest = target / "package.json"
     if workspace_marker.is_file() and root_manifest.is_file():
-        derived = derive_language_rows(root_manifest.read_text(encoding="utf-8"))
+        # WR-06 (52-REVIEW.md): `read_text` on TARGET-controlled content raised
+        # UnicodeDecodeError/OSError straight out of `main()` as an unhandled traceback — and it
+        # did so AFTER inventory.json / plan.json / manifest.json were already written, leaving a
+        # batch that looks drafted but carries no sidecar and no error record. Every other
+        # failure in _cmd_draft returns a clean exit code; this one now degrades with a named
+        # message and the draft completes without a sidecar.
+        try:
+            manifest_text: str | None = root_manifest.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            print(
+                f"tools.adoption_apply draft: unreadable target package.json: {exc} — "
+                "no derived [[languages]] sidecar written",
+                file=sys.stderr,
+            )
+            manifest_text = None
+        derived = derive_language_rows(manifest_text) if manifest_text is not None else None
         if derived is not None:
             sidecar_path = batch_root / _DERIVED_LANGUAGES_SIDECAR
             refuse_if_outside_root(sidecar_path, batch_root)
@@ -261,12 +276,33 @@ def _cmd_apply(args: argparse.Namespace) -> int:
     # carries a draft-time-derived sidecar. Every other destination stays the harness's own
     # checkout bytes verbatim (T-52-10 — the splice guard is the exact literal destination string,
     # never a prefix/glob match).
+    #
+    # WR-08 (52-REVIEW.md), recorded consequence — NOT repaired here. The applied bytes are
+    # `harness_payload + b"\n" + sidecar_bytes`, so `sha256(existing) != proposed_sha` on the next
+    # draft: `destinations.disposition()` step 6 (`preserve`) can never fire for
+    # harness/project.toml again and step 7 classifies it `conflict` permanently, with nothing in
+    # the manifest recording that the divergence is harness-DERIVED rather than a human edit.
+    # Recording that provenance needs a new field on the disposition record, i.e. a change to
+    # contracts/harness/adoption/manifest.schema.json — the constitution plane, which is
+    # human-gated and closed for this phase. Noted here so Phase 53's re-run-as-update work does
+    # not rediscover it.
     sidecar_path = batch_root / _DERIVED_LANGUAGES_SIDECAR
     if "harness/project.toml" in payloads and sidecar_path.is_file():
         sidecar_bytes = sidecar_path.read_bytes()
         payloads["harness/project.toml"] = payloads["harness/project.toml"] + b"\n" + sidecar_bytes
         print(
             f"spliced {sidecar_path} into harness/project.toml payload (OBS-D-03 / D-12)",
+            file=sys.stderr,
+        )
+    elif sidecar_path.is_file():
+        # WR-07 (52-REVIEW.md): `payloads` is populated ONLY for `create` dispositions. If the
+        # target already carries a harness/project.toml the disposition is `preserve` or
+        # `conflict`, so the sidecar was silently ignored — the D-12 repair did nothing and said
+        # nothing. Reachable on every re-adoption, i.e. the whole Phase-53 update scenario.
+        print(
+            f"tools.adoption_apply apply: derived languages sidecar present at {sidecar_path} "
+            "but harness/project.toml is not a 'create' destination — NOT spliced "
+            "(OBS-D-03 / D-12)",
             file=sys.stderr,
         )
 
