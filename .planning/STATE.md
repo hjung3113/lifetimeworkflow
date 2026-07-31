@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.7
 milestone_name: Real-Target Adoption
-status: executing
-last_updated: "2026-08-01T00:00:00.000Z"
-last_activity: 2026-08-01
+status: verifying
+last_updated: "2026-07-31T18:03:39.185Z"
+last_activity: 2026-07-31
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 9
-  completed_plans: 5
-  percent: 56
+  completed_plans: 6
+  percent: 67
 ---
 
 # Project State
@@ -22,19 +22,20 @@ See: .planning/PROJECT.md (updated 2026-07-30)
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
 
 **Current focus:** Phase 52 — Evidence-Bounded Real-Target Adoption
-2026-08-01. Plans 52-01..52-05 landed (5 of 6); the real-target discover -> draft -> apply
-cycle (52-05) ran cleanly against a freshly provisioned FeedbackOps worktree. 52-06 (phase
-record + after-proof + worktree disposal) remains before phase-level verification against
-`51-BASELINE-EVIDENCE.md`'s OBS-D-01..04.
+2026-08-01. All 6 plans landed. 52-06 read the adopted worktree's own package facts and
+convention profiles (SC-2/SC-3/SC-4 proven with literal values), proved the original
+`develop` checkout byte-unchanged both immediately after the run and after disposal (no
+drift this time — no `external-drift.json` needed), disposed the worktree (exit 0), and
+wrote `52-ADOPTION-EVIDENCE.md` with the complete OBS-D-01..04 trace ledger (SC-5). Phase 52
+is ready for phase-level verification against `51-BASELINE-EVIDENCE.md`'s OBS-D-01..04.
 
 ## Current Position
 
-Phase: 52 (Evidence-Bounded Real-Target Adoption) — EXECUTING
-Plan: 6 of 6 (52-05 just completed — the real-target discover -> draft -> apply cycle ran
-against a freshly provisioned worktree, wave 4; only 52-06 (the phase-record + disposal plan)
-remains)
-Status: Ready for 52-06 (phase-record, after-proof, worktree disposal)
-Last activity: 2026-08-01 -- Plan 52-05 complete (see 52-05-SUMMARY.md): a freshly detached
+Phase: 52 (Evidence-Bounded Real-Target Adoption) — READY FOR VERIFICATION
+Plan: 6 of 6 (52-06 complete — the phase record, after-proof, and worktree disposal all
+landed; see `52-06-SUMMARY.md` and `52-ADOPTION-EVIDENCE.md`)
+Status: Phase complete — ready for verification
+Last activity: 2026-08-01
 worktree of FeedbackOps was provisioned at the run-time develop HEAD (re-read live as
 `919d152a56ed096c0fdef12b9bfb892d6ef4ced6` — third movement past both the Phase-51 baseline
 `1d1c8ed` and the STATE.md-carried `4f16525`, attributed as expected third-party drift per
@@ -50,6 +51,18 @@ throughout; no harness code was touched (`git diff --quiet` on `tools/`/`harness
 full suite still green (1023 passed). The fresh worktree was deliberately left in place — 52-06
 owns the after-proof and disposal.
 
+Plan 52-06 complete (see 52-06-SUMMARY.md and 52-ADOPTION-EVIDENCE.md): `build_facts` and
+`conventions_for` ran against the worktree with the target passed explicitly, proving SC-2/SC-3/
+SC-4 with literal captured values (`package-facts.json` shows six packages — five real members
+plus `docs/design-prototype`, the expected unscoped `build_facts` result; both `packages/shared`
+runtime edges present; every JS package's `lint`/`test` non-null). The original checkout's
+after-proof was byte-identical to 52-05's before-proof (no third-party drift this run, so no
+`external-drift.json` was needed); the worktree was disposed (`worktree remove --force`, exit 0)
+and confirmed absent from the final worktree list. `52-ADOPTION-EVIDENCE.md` records SC-1..SC-5
+each with a quoted deciding value and the complete OBS-D-01..04 trace ledger (every cited pytest
+node id executed and confirmed passing). Full suite still green (1023 passed); contract-drift OK;
+contract count unchanged at 6.
+
 Prior: Plan 52-02 complete (see 52-02-SUMMARY.md): `tools/adoption_scan/
 detect.py` gained a pure, filesystem-free `parse_pnpm_workspace_globs`/`is_workspace_member`
 pair (pnpm-workspace.yaml deliberately NOT registered in `_MANIFEST_KIND_BY_NAME` — taught as
@@ -58,7 +71,9 @@ literal wording), and `scan.build_inventory` now scopes `manifests`/`candidate_p
 to a target's declared pnpm workspace members, recording any non-member manifest as excluded
 with reason `non-workspace-member` (the D-20 enum value ratified in 52-01). The no-workspace-
 manifest path (`tmp_minirepo`) stays byte-identical (D-10, proven by a captured pre-change digest
+
 + the untouched committed snapshot). `_dependencies_from_package_json` (the REFUTED OBS-03 site)
+
 is provably untouched via a source-digest pin. One test-quality deviation recorded: two of the
 plan's own proposed mutation-check negative controls were structurally unreachable ("checks that
 cannot fail") and were replaced with genuinely discriminating cases, each confirmed by an

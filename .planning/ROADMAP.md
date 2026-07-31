@@ -233,7 +233,7 @@ contracts 6, and CI jobs and gates do not increase. Runtime artifacts are author
 
 - [x] **Phase 51: Real-Target Observation Baseline** - Run the current harness against the isolated
   target and capture reproducible evidence before designing repairs.
-- [ ] **Phase 52: Evidence-Bounded Real-Target Adoption** - Make the required adoption capabilities
+- [x] **Phase 52: Evidence-Bounded Real-Target Adoption** - Make the required adoption capabilities (completed 2026-07-31)
   work using only failures established by Phase 51.
 - [ ] **Phase 53: Managed Adopt Updates** - Prove install-to-update behavior, unchanged no-op, and
   divergence-safe conflict handling on the real target.
@@ -293,7 +293,7 @@ Plans:
 - [x] 52-05-PLAN.md — Fresh detached FeedbackOps worktree: before-proof, discover → draft → apply captures, apply-write comparison
 
 **Wave 5** *(blocked on Wave 4 completion)*
-- [ ] 52-06-PLAN.md — Downstream observations, after-proof with drift attribution, auto-disposal, and the SC-5 trace ledger
+- [x] 52-06-PLAN.md — Downstream observations, after-proof with drift attribution, auto-disposal, and the SC-5 trace ledger
 
 ### Phase 53: Managed Adopt Updates
 **Goal**: Re-running `/adopt` safely manages installed harness files instead of reinstalling them
@@ -354,7 +354,7 @@ Plans:
 | 47–50a | v2.6 | 11/11 | Complete (see archive) | 2026-07-30 |
 | 50b | v2.6 | — | **BLOCKED** — no real multi-package target repo; MONO-12 carried | - |
 | 51. Real-Target Observation Baseline | v2.7 | 3/3 | Complete (verified 4/4; OBS-03 **refuted**) | 2026-07-31 |
-| 52. Evidence-Bounded Real-Target Adoption | v2.7 | 5/6 | In Progress|  |
+| 52. Evidence-Bounded Real-Target Adoption | v2.7 | 6/6 | Complete   | 2026-07-31 |
 | 53. Managed Adopt Updates | v2.7 | 0/TBD | Not started | - |
 | 54. Surface Budget Closeout | v2.7 | 0/TBD | Not started | - |
 
