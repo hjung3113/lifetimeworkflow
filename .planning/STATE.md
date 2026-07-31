@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.7
 milestone_name: Real-Target Adoption
 status: executing
-last_updated: "2026-07-31T08:59:02.776Z"
-last_activity: 2026-07-31 -- Phase 52 planning complete
+last_updated: "2026-07-31T17:01:05.839Z"
+last_activity: 2026-07-31
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 9
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 11
 ---
 
 # Project State
@@ -21,16 +21,19 @@ See: .planning/PROJECT.md (updated 2026-07-30)
 
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
 
-**Current focus:** **v2.7 Real-Target Adoption** — Phase 51 (Real-Target Observation Baseline) shipped
+**Current focus:** Phase 52 — Evidence-Bounded Real-Target Adoption
 2026-07-31, verified 4/4. Next is Phase 52 (Evidence-Bounded Real-Target Adoption), whose sole input
 contract is `51-BASELINE-EVIDENCE.md`'s OBS-D-01..04.
 
 ## Current Position
 
-Phase: 51 — COMPLETE (verified 4/4, `51-VERIFICATION.md`)
-Plan: 3/3 complete
+Phase: 52 (Evidence-Bounded Real-Target Adoption) — EXECUTING
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-07-31 -- Phase 52 planning complete
+Last activity: 2026-08-01 -- Plan 52-01 complete (see 52-01-SUMMARY.md): `non-workspace-member`
+enum value landed on `inventory.schema.json` via the human-authorized constitution-plane path
+(GOLDEN_APPROVE_HUMAN), hash baseline + derived plane regenerated, full suite green (981 passed).
+Plan 52-02 is next.
 
 **Phase 51 outcome — OBS-03 REFUTED (a milestone output, not a failure).** `tools/adoption_scan/
 detect.py:273` discards dependency version strings and matches by package name, so pnpm `workspace:*`

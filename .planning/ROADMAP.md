@@ -280,7 +280,7 @@ contracts 6, and CI jobs and gates do not increase. Runtime artifacts are author
 **Plans**: 6 plans
 Plans:
 **Wave 1**
-- [ ] 52-01-PLAN.md — Contract-first: add the `non-workspace-member` reason to `inventory.schema.json`, rebaseline the schema hash, regenerate the derived plane (D-20)
+- [x] 52-01-PLAN.md — Contract-first: add the `non-workspace-member` reason to `inventory.schema.json`, rebaseline the schema hash, regenerate the derived plane (D-20)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 52-03-PLAN.md — OBS-D-03: permanent `lint` key on `conventions_for()` + target-derived JS `[[languages]]` row through draft/apply
@@ -354,7 +354,7 @@ Plans:
 | 47–50a | v2.6 | 11/11 | Complete (see archive) | 2026-07-30 |
 | 50b | v2.6 | — | **BLOCKED** — no real multi-package target repo; MONO-12 carried | - |
 | 51. Real-Target Observation Baseline | v2.7 | 3/3 | Complete (verified 4/4; OBS-03 **refuted**) | 2026-07-31 |
-| 52. Evidence-Bounded Real-Target Adoption | v2.7 | 0/TBD | Not started | - |
+| 52. Evidence-Bounded Real-Target Adoption | v2.7 | 1/6 | In Progress|  |
 | 53. Managed Adopt Updates | v2.7 | 0/TBD | Not started | - |
 | 54. Surface Budget Closeout | v2.7 | 0/TBD | Not started | - |
 
