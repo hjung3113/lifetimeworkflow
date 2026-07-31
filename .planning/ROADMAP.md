@@ -277,7 +277,14 @@ contracts 6, and CI jobs and gates do not increase. Runtime artifacts are author
   3. Generated package facts contain the real `packages/shared` dependency edges to both `apps/frontend` and `apps/backend`.
   4. Each adopted package resolves a nearest-wins convention profile containing its lint and test commands.
   5. Every change made in this phase traces to a Phase 51 observation within purpose ①②③④ and has a regression test; observations requiring no change remain evidence-backed confirmations.
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 52-01-PLAN.md — Contract-first: add the `non-workspace-member` reason to `inventory.schema.json`, rebaseline the schema hash, regenerate the derived plane (D-20)
+- [ ] 52-02-PLAN.md — OBS-D-01: pnpm workspace member scoping in `detect.py`/`scan.py` + synthetic fixture + regression tests
+- [ ] 52-03-PLAN.md — OBS-D-03: permanent `lint` key on `conventions_for()` + target-derived JS `[[languages]]` row through draft/apply
+- [ ] 52-04-PLAN.md — OBS-D-04: declare the marker-merge lock sidecars, report a stale one on stderr; OBS-D-02 `workspace:*` lock-in test
+- [ ] 52-05-PLAN.md — Fresh detached FeedbackOps worktree: before-proof, discover → draft → apply captures, apply-write comparison
+- [ ] 52-06-PLAN.md — Downstream observations, after-proof with drift attribution, auto-disposal, and the SC-5 trace ledger
 
 ### Phase 53: Managed Adopt Updates
 **Goal**: Re-running `/adopt` safely manages installed harness files instead of reinstalling them
