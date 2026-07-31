@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.7
 milestone_name: Real-Target Adoption
-status: verifying
-last_updated: "2026-07-31T18:03:39.185Z"
-last_activity: 2026-07-31
+status: in-progress
+last_updated: "2026-08-01T00:00:00.000Z"
+last_activity: 2026-08-01 -- Phase 52 complete, verified 5/5
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 9
   completed_plans: 6
-  percent: 67
+  percent: 50
 ---
 
 # Project State
@@ -31,10 +31,10 @@ is ready for phase-level verification against `51-BASELINE-EVIDENCE.md`'s OBS-D-
 
 ## Current Position
 
-Phase: 52 (Evidence-Bounded Real-Target Adoption) — READY FOR VERIFICATION
+Phase: 52 (Evidence-Bounded Real-Target Adoption) — COMPLETE (verified 5/5, `52-VERIFICATION.md`)
 Plan: 6 of 6 (52-06 complete — the phase record, after-proof, and worktree disposal all
 landed; see `52-06-SUMMARY.md` and `52-ADOPTION-EVIDENCE.md`)
-Status: Phase complete — ready for verification
+Status: Ready for Phase 53 (`/gsd:autonomous --from 53`)
 Last activity: 2026-08-01
 worktree of FeedbackOps was provisioned at the run-time develop HEAD (re-read live as
 `919d152a56ed096c0fdef12b9bfb892d6ef4ced6` — third movement past both the Phase-51 baseline
