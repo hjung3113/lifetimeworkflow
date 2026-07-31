@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.7
 milestone_name: Real-Target Adoption
 status: executing
-last_updated: "2026-07-31T17:16:11.633Z"
-last_activity: "2026-08-01 -- Plan 52-03 complete (see 52-03-SUMMARY.md): `conventions_for()` now"
+last_updated: "2026-07-31T17:26:59.762Z"
+last_activity: 2026-07-31
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 9
-  completed_plans: 2
-  percent: 22
+  completed_plans: 3
+  percent: 33
 ---
 
 # Project State
@@ -28,19 +28,26 @@ contract is `51-BASELINE-EVIDENCE.md`'s OBS-D-01..04.
 ## Current Position
 
 Phase: 52 (Evidence-Bounded Real-Target Adoption) — EXECUTING
-Plan: 3 of 6 (52-03 just completed; 52-02 still pending — wave-2 plans ran out of numeric order)
+Plan: 4 of 6 (52-04 just completed; 52-02 still pending — wave-2 plans ran out of numeric order)
 Status: Ready to execute
-Last activity: 2026-08-01 -- Plan 52-03 complete (see 52-03-SUMMARY.md): `conventions_for()` now
-returns a permanent `lint` key (OBS-D-03/D-11), and an adopted pnpm target's JavaScript lint/test
-commands are derived from that target's own `package.json` scripts at draft time and spliced into
-the applied `harness/project.toml` (D-12) — proven by a repo-local end-to-end test. The W-10
-Phase-53 re-run consequence (the spliced file no longer matches `harness_proposed_hashes()`, so a
-future managed re-run classifies it `conflict` not no-op) is recorded, not fixed. Full suite green
-(997 passed). 52-02 (OBS-D-01 pnpm workspace-member scoping) has NOT yet run and is still needed
-before wave 2 is fully closed; 52-04 (its serialization sibling under `use_worktrees: false`) also
-has not yet run.
+Last activity: 2026-08-01 -- Plan 52-04 complete (see 52-04-SUMMARY.md): the 3 marker-merge `.lock`
+sidecars are declared as known harness-managed artifacts (`lock_sidecar_for`/`expected_lock_sidecars`/
+`HARNESS_MANAGED_LOCK_SIDECARS`, checked against the real filesystem, never unlinked — D-15), a
+sidecar left over from a prior run is announced on stderr with wording that claims only provenance,
+never "stale" (D-16), and OBS-D-02's `workspace:*`/`workspace:^` edge resolution is locked in by a
+regression test with zero production change (D-18). All three observed-RED mutation checks
+confirmed (quoted in 52-04-SUMMARY.md). Full suite green (1006 passed, up from 997). 52-02
+(OBS-D-01 pnpm workspace-member scoping) has NOT yet run and is still needed before wave 2 is
+fully closed.
 
-Prior: Plan 52-01 complete: `non-workspace-member`
+Prior: Plan 52-03 complete: `conventions_for()` now returns a permanent `lint` key (OBS-D-03/D-11),
+and an adopted pnpm target's JavaScript lint/test commands are derived from that target's own
+`package.json` scripts at draft time and spliced into the applied `harness/project.toml` (D-12) —
+proven by a repo-local end-to-end test. The W-10 Phase-53 re-run consequence (the spliced file no
+longer matches `harness_proposed_hashes()`, so a future managed re-run classifies it `conflict` not
+no-op) is recorded, not fixed.
+
+Earlier: Plan 52-01 complete: `non-workspace-member`
 enum value landed on `inventory.schema.json` via the human-authorized constitution-plane path
 (GOLDEN_APPROVE_HUMAN), hash baseline + derived plane regenerated, full suite green (981 passed).
 
@@ -64,6 +71,11 @@ OBS-D-01..04 (stable ids; do not renumber).
   third-party work. Index digests were independently reconstructed from the target's commit trees,
   proving 100% of the delta is commit movement and 0% is a Phase-51 write. Attributed in
   `evidence/isolation/external-drift.json`, deliberately kept out of the OBS-D namespace.
+
+- **D-15/D-16 known limitation, recorded for Phase 53 (52-04):** the marker-merge lock-sidecar
+  prior-run stderr report cannot distinguish a normal re-run from a crash-interrupted one — under
+  D-15's no-unlink rule the sidecar exists on every run after the first. It is a provenance signal,
+  not a staleness detector; Phase 53's re-run semantics inherit this as a known gap.
 
 ## Blockers/Concerns
 

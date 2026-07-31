@@ -284,7 +284,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [x] 52-03-PLAN.md — OBS-D-03: permanent `lint` key on `conventions_for()` + target-derived JS `[[languages]]` row through draft/apply
-- [ ] 52-04-PLAN.md — OBS-D-04: declare the marker-merge lock sidecars, report a stale one on stderr; OBS-D-02 `workspace:*` lock-in test
+- [x] 52-04-PLAN.md — OBS-D-04: declare the marker-merge lock sidecars, report a stale one on stderr; OBS-D-02 `workspace:*` lock-in test
 
 **Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 52-02-PLAN.md — OBS-D-01: pnpm workspace member scoping in `detect.py`/`scan.py` + synthetic fixture + regression tests
@@ -354,7 +354,7 @@ Plans:
 | 47–50a | v2.6 | 11/11 | Complete (see archive) | 2026-07-30 |
 | 50b | v2.6 | — | **BLOCKED** — no real multi-package target repo; MONO-12 carried | - |
 | 51. Real-Target Observation Baseline | v2.7 | 3/3 | Complete (verified 4/4; OBS-03 **refuted**) | 2026-07-31 |
-| 52. Evidence-Bounded Real-Target Adoption | v2.7 | 2/6 | In Progress|  |
+| 52. Evidence-Bounded Real-Target Adoption | v2.7 | 3/6 | In Progress|  |
 | 53. Managed Adopt Updates | v2.7 | 0/TBD | Not started | - |
 | 54. Surface Budget Closeout | v2.7 | 0/TBD | Not started | - |
 

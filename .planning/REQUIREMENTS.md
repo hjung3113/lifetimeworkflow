@@ -15,7 +15,7 @@
   원본 `develop` 체크아웃은 한 바이트도 바뀌지 않는다.
 - [x] **RTA-02**: `/adopt` discover 단계가 실제 pnpm 워크스페이스 멤버 5개(root · `packages/ui` ·
   `packages/shared` · `apps/frontend` · `apps/backend`)를 인벤토리에 빠짐없이 올린다.
-- [ ] **RTA-03**: 도입 후 타깃에서 package facts가 패키지 간 **실제 의존 엣지**를 산출한다
+- [x] **RTA-03**: 도입 후 타깃에서 package facts가 패키지 간 **실제 의존 엣지**를 산출한다
   (`packages/shared` → `apps/frontend`, `apps/backend`).
 - [x] **RTA-04**: 도입 후 타깃의 각 패키지가 lint/test 커맨드를 포함한 nearest-wins 컨벤션 프로파일을
   갖는다.
