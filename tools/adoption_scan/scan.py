@@ -40,7 +40,7 @@ import hashlib
 import json
 import re
 import subprocess
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from tools.adoption_scan import detect
 from tools.harness_perms import resolve_path
@@ -281,6 +281,17 @@ def classify_exclusions(path: Path, *, base: Path, max_bytes: int) -> dict | Non
     return None
 
 
+def _manifest_kind_for_name(name: str) -> str | None:
+    """Reuse ``detect._MANIFEST_KIND_BY_NAME`` / the ``.csproj`` suffix rule (never retyped
+    here) to decide whether a candidate's basename is a recognized manifest name at all — the
+    OBS-D-01 non-member-scoping branch only ever looks at recognized manifests, never every
+    file."""
+    kind = detect._MANIFEST_KIND_BY_NAME.get(name)
+    if kind is None and name.endswith(".csproj"):
+        kind = "*.csproj"
+    return kind
+
+
 def _target_ref(target: Path) -> str:
     """The scanned target's current git commit hex, or the literal ``"unknown"`` on any failure —
     a fact about the INPUT, never a clock (no-timestamp determinism rule)."""
@@ -320,14 +331,54 @@ def build_inventory(
     computed_paths, mode = enumerate_target(target)
     paths = list(_paths) if _paths is not None else computed_paths
 
+    # OBS-D-01 (51-BASELINE-EVIDENCE.md) — purpose 2; contract value ratified by 52-01 (D-20).
+    # D-10 additive branch: when no pnpm-workspace.yaml exists at the target root,
+    # workspace_globs stays None and every candidate below takes the exact pre-existing path —
+    # discovery output for a target with no workspace manifest is byte-identical to before this
+    # change. The manifest is read HERE (never inside detect.py, which stays filesystem-free).
+    workspace_globs: list[str] | None = None
+    workspace_manifest_path = target / detect.PNPM_WORKSPACE_MANIFEST
+    if workspace_manifest_path.is_file():
+        try:
+            workspace_manifest_text = workspace_manifest_path.read_text(
+                encoding="utf-8", errors="replace"
+            )
+        except OSError:
+            workspace_manifest_text = None
+        if workspace_manifest_text is not None:
+            workspace_globs = detect.parse_pnpm_workspace_globs(workspace_manifest_text)
+
     included: list[dict] = []
     excluded: list[dict] = []
     for candidate in paths:
+        # classify_exclusions runs FIRST and unchanged — the security-first ordering (symlink
+        # escape -> vendored -> generated -> size cap -> binary -> generated marker ->
+        # secret-path -> source-dump -> secret-content) is preserved verbatim. The
+        # non-workspace-member branch below only ever fires when this already returned None (the
+        # file would otherwise be included), so a manifest that is ALSO secret-path/vendored/
+        # size-capped/etc. keeps its original exclusion reason (T-52-06).
         exclusion = classify_exclusions(candidate, base=target, max_bytes=max_bytes)
         if exclusion is not None:
             excluded.append(exclusion)
             continue
+
         rel = candidate.relative_to(target).as_posix()
+
+        if workspace_globs is not None:
+            manifest_kind = _manifest_kind_for_name(candidate.name)
+            if manifest_kind is not None:
+                manifest_dir = str(PurePosixPath(rel).parent)
+                # Re-validate confinement before ever treating a glob-derived path as a member
+                # (reusing this module's own _confined idiom, T-52-03) — a glob must never widen
+                # scope beyond `target`, even though `candidate` is already a confined,
+                # already-enumerated path at this point.
+                if _confined(candidate, target) and not detect.is_workspace_member(
+                    manifest_dir, workspace_globs
+                ):
+                    size = candidate.stat().st_size
+                    excluded.append({"path": rel, "size": size, "excluded": "non-workspace-member"})
+                    continue
+
         included.append(
             {
                 "path": rel,
