@@ -248,6 +248,80 @@ def test_unrecognized_kind_returns_empty_list() -> None:
     assert detect.detect_dependencies("x", "unknown-kind", "") == []
 
 
+def test_pnpm_workspace_globs_parsed_quotes_stripped_order_preserved() -> None:
+    text = 'packages:\n  - "apps/*"\n  - "packages/*"\n'
+    assert detect.parse_pnpm_workspace_globs(text) == ["apps/*", "packages/*"]
+
+
+def test_pnpm_workspace_globs_bare_and_single_quoted_parse_identically() -> None:
+    bare = "packages:\n  - apps/*\n  - packages/*\n"
+    single_quoted = "packages:\n  - 'apps/*'\n  - 'packages/*'\n"
+    double_quoted = 'packages:\n  - "apps/*"\n  - "packages/*"\n'
+    expected = ["apps/*", "packages/*"]
+    assert detect.parse_pnpm_workspace_globs(bare) == expected
+    assert detect.parse_pnpm_workspace_globs(single_quoted) == expected
+    assert detect.parse_pnpm_workspace_globs(double_quoted) == expected
+
+
+def test_pnpm_workspace_globs_comments_and_blanks_ignored_key_ends_block() -> None:
+    text = (
+        "packages:\n"
+        "  # a comment inside the block\n"
+        "\n"
+        '  - "apps/*"\n'
+        "  # another comment\n"
+        '  - "packages/*"\n'
+        "other_key: value\n"
+        "  - not-a-member-of-packages\n"
+    )
+    assert detect.parse_pnpm_workspace_globs(text) == ["apps/*", "packages/*"]
+
+
+def test_pnpm_workspace_globs_malformed_or_empty_returns_empty_list_never_raises() -> None:
+    assert detect.parse_pnpm_workspace_globs("") == []
+    assert detect.parse_pnpm_workspace_globs("not: yaml: at: all: {{{[[[") == []
+    assert detect.parse_pnpm_workspace_globs("packages:\n") == []
+    assert detect.parse_pnpm_workspace_globs("no packages key here\njust prose\n") == []
+    # Genuine negative control: a non-str input reaches `.splitlines()` and raises
+    # AttributeError with no `try`/`except` around the body. Deleting the wrapping try/except
+    # must red this assertion (it would raise instead of degrading to `[]`).
+    assert detect.parse_pnpm_workspace_globs(None) == []  # type: ignore[arg-type]
+
+
+def test_workspace_member_matches_declared_globs() -> None:
+    globs = ["apps/*", "packages/*"]
+    assert detect.is_workspace_member("apps/widget-app", globs) is True
+    assert detect.is_workspace_member("docs/design-prototype", globs) is False
+
+
+def test_workspace_member_root_always_true_regardless_of_globs() -> None:
+    assert detect.is_workspace_member(".", []) is True
+    assert detect.is_workspace_member(".", ["apps/*"]) is True
+
+
+def test_workspace_member_single_segment_star_does_not_match_nested_dir() -> None:
+    assert detect.is_workspace_member("apps/widget-app/nested", ["apps/*"]) is False
+
+
+def test_workspace_member_traversal_glob_contributes_no_members() -> None:
+    # Segment-count mismatch alone would already reject these (glob has one more segment than
+    # the directory), so they exercise the traversal guard only incidentally.
+    assert detect.is_workspace_member("outside", ["../outside/*"]) is False
+    assert detect.is_workspace_member("outside/nested", ["../outside/*"]) is False
+    # A genuine negative control: segment COUNTS match (4 vs 4) and every non-".." segment
+    # matches too, so only the explicit ".."-segment rejection stops this from matching.
+    # Deleting that rejection must red this assertion.
+    assert detect.is_workspace_member("sub/../sibling/foo", ["sub/../sibling/*"]) is False
+
+
+def test_workspace_member_absolute_glob_contributes_no_members() -> None:
+    assert detect.is_workspace_member("etc", ["/etc/*"]) is False
+
+
+def test_pnpm_workspace_manifest_not_registered_in_manifest_kind_table() -> None:
+    assert "pnpm-workspace.yaml" not in detect._MANIFEST_KIND_BY_NAME
+
+
 def test_root_and_nested_agents_md_get_per_file_surface_records() -> None:
     """WR-01 (26-REVIEW.md): a root AGENTS.md and every nested AGENTS.md each get their OWN
     surfaceRecord keyed by their actual path — never collapsed into a single fixed-literal-target

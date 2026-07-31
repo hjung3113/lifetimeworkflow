@@ -20,6 +20,7 @@ scope here — that evidence ladder step belongs to Plan 03's ``plan.py``.
 
 from __future__ import annotations
 
+import fnmatch
 import json
 import re
 import tomllib
@@ -43,12 +44,104 @@ _LANGUAGE_BY_EXTENSION: dict[str, str] = {
 }
 
 # Manifest filename -> kind (observed on literal file existence, D-02).
+#
+# `pnpm-workspace.yaml` is deliberately NOT registered here. This table drives
+# `detect_manifests` -> `detect_candidate_process_boundaries`, so registering it would emit a
+# 6th manifest record and a duplicate root boundary, directly defeating RTA-02's "exactly the
+# five members" (52-CONTEXT.md D-07's literal wording vs its intent — see PNPM_WORKSPACE_MANIFEST
+# below, which teaches the workspace manifest as its own module-level constant + pure parser
+# instead, scoping membership at the source without growing this kind table).
 _MANIFEST_KIND_BY_NAME: dict[str, str] = {
     "pyproject.toml": "pyproject.toml",
     "package.json": "package.json",
     "go.mod": "go.mod",
     "Cargo.toml": "Cargo.toml",
 }
+
+# OBS-D-01 (51-BASELINE-EVIDENCE.md) — purpose 2: pnpm workspace member scoping.
+PNPM_WORKSPACE_MANIFEST = "pnpm-workspace.yaml"
+
+
+# OBS-D-01 (51-BASELINE-EVIDENCE.md) — purpose 2: pnpm workspace member scoping.
+def parse_pnpm_workspace_globs(text: str) -> list[str]:
+    """Narrow line-based reader of a ``pnpm-workspace.yaml``'s top-level ``packages:`` block.
+
+    Deliberately NOT a general YAML parser (52-RESEARCH.md § Don't Hand-Roll) — this repo's
+    ``pyproject.toml`` carries a zero-new-external-deps invariant, so pulling in a full
+    third-party YAML library for one four-line list-of-globs shape is out of proportion. Scope
+    is exactly pnpm's
+    ``packages:`` list-of-glob-strings: collect ``- glob`` / ``- "glob"`` / ``- 'glob'`` list
+    items inside the block (surrounding matched quotes stripped, order preserved), skip ``#``
+    comment lines and blank lines, and stop the block at the next top-level key (a non-blank,
+    non-comment, non-list-item line). No filesystem access — this function only ever sees text
+    handed to it (module docstring invariant: detection can never diverge from what was hashed).
+
+    Malformed / non-YAML / empty text degrades to ``[]`` rather than raising, mirroring
+    ``package_facts.py:176-182``'s degrade-per-file posture (T-52-04): a hostile manifest
+    downgrades scoping to the D-10 unchanged path, never crashes the run.
+    """
+    try:
+        globs: list[str] = []
+        in_block = False
+        for raw_line in text.splitlines():
+            stripped = raw_line.strip()
+            if not in_block:
+                if stripped == "packages:":
+                    in_block = True
+                continue
+            if not stripped or stripped.startswith("#"):
+                continue
+            if not stripped.startswith("-"):
+                # A non-blank, non-comment, non-list-item line is the next top-level key.
+                in_block = False
+                continue
+            item = stripped[1:].strip()
+            if not item or item.startswith("#"):
+                continue
+            if not item.startswith(('"', "'")):
+                hash_idx = item.find("#")
+                if hash_idx != -1:
+                    item = item[:hash_idx].strip()
+            if len(item) >= 2 and item[0] == item[-1] and item[0] in "\"'":
+                item = item[1:-1]
+            if item:
+                globs.append(item)
+        return globs
+    except Exception:
+        return []
+
+
+# OBS-D-01 (51-BASELINE-EVIDENCE.md) — purpose 2: pnpm workspace member scoping.
+def is_workspace_member(directory: str, globs: list[str]) -> bool:
+    """True if ``directory`` (a repo-relative POSIX dir, ``"."`` for the workspace root)
+    matches one of the pnpm workspace ``globs``.
+
+    The workspace root (``"."``) is always a member, regardless of ``globs`` — pnpm's own
+    implicit-root semantics. A glob that is absolute or contains a ``..`` segment contributes NO
+    members (T-52-03 traversal guard): membership is computed on repo-relative POSIX directories
+    only, and the caller (``scan.py``) re-validates any glob-derived path with its own
+    ``_confined`` idiom before ever treating it as a member. Matching is per-path-segment via
+    ``fnmatch``, with segment COUNT required equal — a bare ``*`` in one glob segment matches
+    exactly one directory segment, so ``apps/*`` matches ``apps/widget-app`` but NOT
+    ``apps/widget-app/nested``.
+    """
+    if directory == ".":
+        return True
+    directory_parts = PurePosixPath(directory).parts
+    for glob in globs:
+        if glob.startswith("/") or PurePosixPath(glob).is_absolute():
+            continue
+        glob_parts = PurePosixPath(glob).parts
+        if any(part == ".." for part in glob_parts):
+            continue
+        if len(glob_parts) != len(directory_parts):
+            continue
+        if all(
+            fnmatch.fnmatch(actual, pattern) for actual, pattern in zip(directory_parts, glob_parts)
+        ):
+            return True
+    return False
+
 
 # WR-06 (26-REVIEW.md): all three GitHub-honored CODEOWNERS locations — a repo may place the
 # file at the root, under .github/, or under docs/, and GitHub resolves whichever is present.
