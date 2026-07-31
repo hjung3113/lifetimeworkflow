@@ -7,6 +7,7 @@ check). The former ADOPT-06 promote/approval gate is deleted (D-01); the review 
 
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -16,7 +17,11 @@ from pathlib import Path
 
 import pytest
 
+from tools.adoption_apply import cli as cli_module
 from tools.adoption_apply.cli import derive_language_rows, main
+from tools.adoption_scan.destinations import MARKER_CAPABLE, harness_proposed_hashes
+from tools.harness_config.loader import conventions_for, load_project
+from tools.memory_regen.package_facts import build_facts
 
 _TASK_ID = "T-20260721040000-cli-test"
 
@@ -539,3 +544,144 @@ def test_cli_draft_against_non_pnpm_target_writes_no_languages_sidecar(
     names = {p.name for p in batch_root.iterdir()}
     assert "languages.toml" not in names
     assert {"inventory.json", "plan.json", "manifest.json"} <= names
+
+
+# --- Task 3 (OBS-D-03 / D-12): splice the derived row into applied harness/project.toml ----------
+
+
+def _draft_and_apply(
+    task_dir: Path, target: Path, apply_target: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[Path, dict]:
+    """Shared draft->apply harness for the Task-3 tests. Returns (batch_root, manifest)."""
+    monkeypatch.chdir(Path(__file__).resolve().parents[3])
+
+    draft_exit = main(["draft", "--task-dir", str(task_dir), "--target", str(target)])
+    assert draft_exit == 0
+
+    batch_dirs = list((task_dir / "artifacts" / "adoption").iterdir())
+    assert len(batch_dirs) == 1
+    batch_root = batch_dirs[0]
+    batch_id = batch_root.name
+
+    apply_exit = main(
+        [
+            "apply",
+            "--task-dir",
+            str(task_dir),
+            "--batch-id",
+            batch_id,
+            "--target",
+            str(apply_target),
+        ]
+    )
+    assert apply_exit == 0
+
+    manifest = json.loads((batch_root / "manifest.json").read_bytes())
+    return batch_root, manifest
+
+
+def test_end_to_end_pnpm_target_resolves_lint_and_test_through_real_config(
+    task_dir: Path, tmp_pnpm_target: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The repo-local SC-4 proof: draft -> apply against tmp_pnpm_target, then resolve the
+    profile with the TARGET's OWN config and facts — never this repo's.
+
+    Removing the splice, the sidecar write, or the Task-1 `lint` key must each red this
+    independently: no splice -> applied harness/project.toml has no `javascript` row -> `lang` is
+    None in conventions_for -> lint/test are None; no sidecar write -> nothing to splice, same
+    failure; no Task-1 `lint` key -> `conventions_for` never returns a `lint` key at all -> the
+    `profile["lint"]` access itself raises `KeyError`.
+    """
+    apply_target = tmp_path / "apply-target"
+    apply_target.mkdir()
+
+    _draft_and_apply(task_dir, tmp_pnpm_target, apply_target, monkeypatch)
+
+    applied_project_toml = apply_target / "harness" / "project.toml"
+    assert applied_project_toml.is_file()
+    applied_cfg = load_project(applied_project_toml)
+    language_ids = {row["id"] for row in applied_cfg["languages"]}
+    # Both the harness's own rows (dotnet/python) and the derived javascript row are present.
+    assert "javascript" in language_ids
+    assert {"dotnet", "python"} <= language_ids
+
+    facts = build_facts(
+        manifest_paths=[
+            {"path": "apps/widget-app/package.json", "kind": "package.json"},
+            {"path": "packages/widget-shared/package.json", "kind": "package.json"},
+        ],
+        repo_root=apply_target,
+    )
+
+    profile = conventions_for(
+        "apps/widget-app/index.js",
+        cfg=applied_cfg,
+        facts=facts,
+    )
+
+    assert profile["lint"] == "pnpm run lint"
+    assert profile["test"] == "pnpm run test"
+
+    # W-10 (mandatory record-keeping, not a code fix): the applied harness/project.toml no longer
+    # matches any entry in destinations.harness_proposed_hashes() — a Phase-53 managed re-run will
+    # classify this one destination as `conflict`, not the observable no-op Phase 53's SC-2
+    # assumes. See the SUMMARY's W-10 section for the statement this proves.
+    applied_digest = hashlib.sha256(applied_project_toml.read_bytes()).hexdigest()
+    proposed = harness_proposed_hashes()
+    assert applied_digest != proposed.get("harness/project.toml")
+
+
+def test_no_sidecar_applied_project_toml_is_byte_identical_to_harness_checkout(
+    task_dir: Path, synthetic_target: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A target with no languages.toml sidecar (no pnpm-workspace.yaml/package.json): the applied
+    harness/project.toml is byte-identical to the harness's own checkout copy — no phantom row."""
+    apply_target = tmp_path / "apply-target"
+    apply_target.mkdir()
+
+    _draft_and_apply(task_dir, synthetic_target, apply_target, monkeypatch)
+
+    applied_project_toml = apply_target / "harness" / "project.toml"
+    assert applied_project_toml.is_file()
+    assert applied_project_toml.read_bytes() == Path("harness/project.toml").read_bytes()
+
+
+def test_splice_never_touches_any_other_destination(
+    task_dir: Path, tmp_pnpm_target: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """W-4 leak detection, scoped correctly: every OTHER create-disposition destination
+    byte-equals its _harness_payload; MARKER_CAPABLE destinations are excluded from that equality
+    (their applied bytes are a splice_managed_block/merge_settings result, never byte-equal to
+    _harness_payload even with zero leak) and instead checked separately for sidecar literals."""
+    apply_target = tmp_path / "apply-target"
+    apply_target.mkdir()
+
+    _batch_root, manifest = _draft_and_apply(task_dir, tmp_pnpm_target, apply_target, monkeypatch)
+
+    create_destinations = [
+        record["destination"]
+        for record in manifest["dispositions"]
+        if record["disposition"] == "create"
+    ]
+    assert create_destinations
+
+    for destination in create_destinations:
+        if destination == "harness/project.toml":
+            continue
+        applied_path = apply_target / destination
+        if not applied_path.is_file():
+            continue
+        assert applied_path.read_bytes() == cli_module._harness_payload(destination), destination
+
+    sidecar_literals = (
+        "pnpm run lint",
+        'bash_scope = "pnpm *"',
+        cli_module._DERIVED_PROVENANCE_COMMENT,
+    )
+    for marker_destination in MARKER_CAPABLE:
+        applied_path = apply_target / marker_destination
+        if not applied_path.is_file():
+            continue
+        content = applied_path.read_text(encoding="utf-8")
+        for literal in sidecar_literals:
+            assert literal not in content, f"{marker_destination} leaked {literal!r}"

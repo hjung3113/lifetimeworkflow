@@ -228,6 +228,20 @@ def _cmd_apply(args: argparse.Namespace) -> int:
         elif disposition_value == "marker-merge":
             block_bodies[destination] = _harness_block_body(destination)
 
+    # OBS-D-03 / D-12 (52-CONTEXT.md): the ONE sanctioned CR-01 exception — target-derived
+    # [[languages]] row, appended ONLY to the "harness/project.toml" payload, ONLY when the batch
+    # carries a draft-time-derived sidecar. Every other destination stays the harness's own
+    # checkout bytes verbatim (T-52-10 — the splice guard is the exact literal destination string,
+    # never a prefix/glob match).
+    sidecar_path = batch_root / _DERIVED_LANGUAGES_SIDECAR
+    if "harness/project.toml" in payloads and sidecar_path.is_file():
+        sidecar_bytes = sidecar_path.read_bytes()
+        payloads["harness/project.toml"] = payloads["harness/project.toml"] + b"\n" + sidecar_bytes
+        print(
+            f"spliced {sidecar_path} into harness/project.toml payload (OBS-D-03 / D-12)",
+            file=sys.stderr,
+        )
+
     try:
         summary = apply_manifest(
             manifest, Path(args.target), payloads=payloads, block_bodies=block_bodies
