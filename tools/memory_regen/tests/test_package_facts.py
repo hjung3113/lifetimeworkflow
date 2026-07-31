@@ -236,6 +236,40 @@ def test_package_json_dependency_add_remove_round_trip(tmp_path: Path) -> None:
     assert facts_after["edges"] == []
 
 
+# OBS-D-02 / D-18 (52-CONTEXT.md): lock-in for the Phase-51 OBS-03 REFUTATION — detect.py:273
+# discards version strings and resolves by name. If this goes red, someone reintroduced
+# version-string-sensitive resolution.
+def test_workspace_star_dependency_edges_resolve_by_name(tmp_path: Path) -> None:
+    (tmp_path / "packages" / "widget-shared").mkdir(parents=True)
+    (tmp_path / "packages" / "widget-shared" / "package.json").write_text(
+        '{"name": "@widget/shared"}\n', encoding="utf-8"
+    )
+    (tmp_path / "apps" / "widget-app").mkdir(parents=True)
+    (tmp_path / "apps" / "widget-app" / "package.json").write_text(
+        '{"name": "widget-app", "dependencies": {"@widget/shared": "workspace:*"}}\n',
+        encoding="utf-8",
+    )
+    (tmp_path / "apps" / "widget-service").mkdir(parents=True)
+    (tmp_path / "apps" / "widget-service" / "package.json").write_text(
+        '{"name": "widget-service",'
+        ' "devDependencies": {"@widget/shared": "workspace:^", "@widget/ghost": "workspace:*"}}\n',
+        encoding="utf-8",
+    )
+    manifests = [
+        _widget_manifest("packages/widget-shared/package.json", "package.json"),
+        _widget_manifest("apps/widget-app/package.json", "package.json"),
+        _widget_manifest("apps/widget-service/package.json", "package.json"),
+    ]
+
+    facts = package_facts.build_facts(manifest_paths=manifests, repo_root=tmp_path)
+
+    assert {"from": "widget-app", "to": "@widget/shared", "kind": "runtime"} in facts["edges"]
+    assert {"from": "widget-service", "to": "@widget/shared", "kind": "dev"} in facts["edges"]
+    # An unresolvable dependency (no manifest declares "@widget/ghost") yields no edge — the
+    # existing no-fabrication guarantee, re-asserted alongside the workspace:* lock-in.
+    assert not any(edge["to"] == "@widget/ghost" for edge in facts["edges"])
+
+
 def test_csproj_project_reference_add_remove_round_trip(tmp_path: Path) -> None:
     (tmp_path / "WidgetCore").mkdir()
     (tmp_path / "WidgetCore" / "WidgetCore.csproj").write_text(
