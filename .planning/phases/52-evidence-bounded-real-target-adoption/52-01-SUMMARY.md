@@ -139,3 +139,8 @@ None - no external service configuration required.
 ---
 *Phase: 52-evidence-bounded-real-target-adoption*
 *Completed: 2026-08-01*
+
+## Self-Check: PASSED
+
+All claimed files exist (applier script, this summary) and all four claimed commit hashes
+(`edf7380`, `6924c1b`, `2d84709`, `753c752`) are present in `git log --oneline --all`.
