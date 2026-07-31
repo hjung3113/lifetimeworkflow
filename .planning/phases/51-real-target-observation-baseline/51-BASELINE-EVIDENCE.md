@@ -62,3 +62,7 @@ The evidence is from `evidence/downstream/workspace-edge-comparison.json`, with 
 ## Pre-disposal status
 
 The record is complete; the detached worktree will be discarded only after the human disposal checkpoint.
+
+## Disposal result
+
+`git -C /Users/hyojung/Desktop/2026/FeedbackOps worktree remove --force /Users/hyojung/Desktop/2026/FeedbackOps-worktrees/v27-51-baseline` exited `0` (see `evidence/disposal/`). The final worktree list contains no Phase-51 worktree. Post-disposal comparison remains honest: status/untracked set are equal; HEAD/index remain unequal solely due to documented external develop drift.
