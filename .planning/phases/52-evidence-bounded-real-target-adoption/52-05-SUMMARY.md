@@ -125,3 +125,10 @@ None — no external service configuration required.
 ---
 *Phase: 52-evidence-bounded-real-target-adoption*
 *Completed: 2026-08-01*
+
+## Self-Check: PASSED
+
+All claimed files exist (`scripts/compare-worktree-writes.py`, `evidence/metadata/target.develop.sha.txt`,
+`evidence/discover/inventory.json`, `evidence/discover/member-comparison.json`,
+`evidence/apply/worktree.changed-paths.json`, this summary) and all four claimed commit hashes
+(`11a1623`, `62ed25b`, `33977ca`, `ef46b53`) are present in `git log --oneline --all`.
