@@ -404,7 +404,10 @@ def test_marker_merge_acquires_exclusive_flock(tmp_path, monkeypatch):
     apply._apply_marker_merge("AGENTS.md", target, block_body="## Block A\n\nContent A.\n")
 
     assert flock_spy.call_count >= 1
-    assert any(call.args[1] == fcntl.LOCK_EX for call in flock_spy.call_args_list)
+    # Task 2 (D-16) tries a non-blocking LOCK_EX|LOCK_NB acquisition first, falling back to a
+    # blocking LOCK_EX only when that fails — so the LOCK_EX bit must be set on at least one call,
+    # not necessarily as the bare unmasked flag value.
+    assert any(call.args[1] & fcntl.LOCK_EX == fcntl.LOCK_EX for call in flock_spy.call_args_list)
 
 
 # --- OBS-D-04 (51-BASELINE-EVIDENCE.md) / D-15 — declared, never-unlinked lock sidecars ---------
@@ -454,6 +457,62 @@ def test_harness_managed_lock_sidecars_is_the_three_phase51_paths():
         ".CLAUDE.md.lock",
         ".claude/.settings.json.lock",
     }
+
+
+# --- OBS-D-04 / D-16 — a prior-run sidecar is reported on stderr, honestly scoped -----------------
+
+
+def test_prior_run_lock_sidecar_is_reported_on_stderr(tmp_path, capsys):
+    target = tmp_path / "AGENTS.md"
+    target.write_text("# Repo agents\n\nSome human prose.\n", encoding="utf-8")
+    lock_path = target.with_name(".AGENTS.md.lock")
+    lock_path.write_bytes(b"")  # a sidecar left over from a prior run
+
+    apply._apply_marker_merge("AGENTS.md", target, block_body="## New\n")
+
+    captured = capsys.readouterr()
+    assert "lock sidecar from a prior run" in captured.err
+    assert str(lock_path) in captured.err
+
+
+def test_fresh_target_emits_no_prior_run_lock_sidecar_report(tmp_path, capsys):
+    """Negative control: on a target with no leftover sidecar, the report is silent.
+
+    This is what stops the report from degenerating into an always-true log line — a first run
+    against a fresh target must never claim a prior-run sidecar existed.
+    """
+    target = tmp_path / "AGENTS.md"
+    target.write_text("# Repo agents\n\nSome human prose.\n", encoding="utf-8")
+    assert not target.with_name(".AGENTS.md.lock").exists()
+
+    apply._apply_marker_merge("AGENTS.md", target, block_body="## New\n")
+
+    captured = capsys.readouterr()
+    assert "lock sidecar from a prior run" not in captured.err
+
+
+def test_held_lock_still_blocks_and_emits_no_prior_run_report(tmp_path, monkeypatch):
+    """When another holder currently holds the lock, the call still blocks/serializes and no
+    prior-run report is emitted for a genuinely held lock (T-52-12)."""
+    max_concurrent, events, _ = _observe_marker_merge_concurrency(tmp_path, monkeypatch)
+    _assert_mutual_exclusion(max_concurrent, events)
+
+
+def test_prior_run_report_does_not_change_merged_content(tmp_path):
+    """The report changes signalling only — merged output byte-equals a fresh run's output."""
+    fresh_target = tmp_path / "fresh" / "AGENTS.md"
+    fresh_target.parent.mkdir(parents=True)
+    fresh_target.write_text("# Repo agents\n\nSome human prose.\n", encoding="utf-8")
+    apply._apply_marker_merge("AGENTS.md", fresh_target, block_body="## New\n")
+    fresh_bytes = fresh_target.read_bytes()
+
+    prior_run_target = tmp_path / "prior-run" / "AGENTS.md"
+    prior_run_target.parent.mkdir(parents=True)
+    prior_run_target.write_text("# Repo agents\n\nSome human prose.\n", encoding="utf-8")
+    prior_run_target.with_name(".AGENTS.md.lock").write_bytes(b"")
+    apply._apply_marker_merge("AGENTS.md", prior_run_target, block_body="## New\n")
+
+    assert prior_run_target.read_bytes() == fresh_bytes
 
 
 def test_marker_merge_refuses_symlink_read(tmp_path):

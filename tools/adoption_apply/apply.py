@@ -334,12 +334,31 @@ def _apply_marker_merge(destination: str, target_path: Path, block_body: str = "
     (mirroring ``batch.py::update_status``'s exact idiom) so two concurrent ``apply`` invocations
     against the same target never interleave (WR-01). The read itself refuses to follow a symlink
     at the destination (``_read_target_no_symlink``).
+
+    # OBS-D-04 / D-16 (52-CONTEXT.md): a visible signal beats a quiet resume. Scope note: with
+    # D-15's no-unlink rule this predicate cannot distinguish a normal re-run from a
+    # crash-interrupted one — it reports PROVENANCE, not staleness. A real staleness probe
+    # (recorded owner pid + liveness, or mtime vs run start) is unbuilt on purpose (NG-01, no
+    # observation behind it).
     """
     target_path = Path(target_path)
     lock_path = target_path.with_name(f".{target_path.name}.lock")
     lock_path.parent.mkdir(parents=True, exist_ok=True)
+    pre_existed = lock_path.exists()
     with lock_path.open("a+b") as lock:
-        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        try:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            if pre_existed:
+                print(
+                    f"apply: lock sidecar from a prior run at {lock_path} — acquired, not "
+                    "silently reused (sidecars are never unlinked, D-15)",
+                    file=sys.stderr,
+                )
+        except (BlockingIOError, OSError):
+            # A genuinely held lock (another holder currently inside the critical section) —
+            # wait for it, exactly as before. No prior-run report here: this branch means the
+            # lock is CURRENTLY held, not merely that a sidecar was left over from a prior run.
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
         if destination.endswith(".json"):
             existing_text = _read_target_no_symlink(target_path)
             existing: dict[str, Any] = (
