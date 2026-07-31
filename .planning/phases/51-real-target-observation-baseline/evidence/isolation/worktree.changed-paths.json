@@ -9,8 +9,8 @@
     ".memory/README.md",
     ".memory/agreements/README.md",
     ".memory/agreements/_TEMPLATE.md",
-    "1 .M N... 100644 100644 100644 2e6ba57137d605a065ca7cb4f52a45dccbc1ba44 2e6ba57137d605a065ca7cb4f52a45dccbc1ba44 CLAUDE.md",
-    "1 .M N... 100644 100644 100644 6f21f4753a7a7003601f6d5c29f2150f0c30bc18 6f21f4753a7a7003601f6d5c29f2150f0c30bc18 AGENTS.md",
+    "AGENTS.md",
+    "CLAUDE.md",
     "docs/explanation/README.md",
     "docs/explanation/agent-workflow-skillset-design-guide.md",
     "docs/explanation/next-milestone-task-control-plane.md",
@@ -167,8 +167,8 @@
     ".memory/README.md",
     ".memory/agreements/README.md",
     ".memory/agreements/_TEMPLATE.md",
-    "1 .M N... 100644 100644 100644 2e6ba57137d605a065ca7cb4f52a45dccbc1ba44 2e6ba57137d605a065ca7cb4f52a45dccbc1ba44 CLAUDE.md",
-    "1 .M N... 100644 100644 100644 6f21f4753a7a7003601f6d5c29f2150f0c30bc18 6f21f4753a7a7003601f6d5c29f2150f0c30bc18 AGENTS.md",
+    "AGENTS.md",
+    "CLAUDE.md",
     "docs/explanation/README.md",
     "docs/explanation/agent-workflow-skillset-design-guide.md",
     "docs/explanation/next-milestone-task-control-plane.md",
@@ -475,9 +475,7 @@
   "unexpected_paths": [
     ".AGENTS.md.lock",
     ".CLAUDE.md.lock",
-    ".claude/.settings.json.lock",
-    "1 .M N... 100644 100644 100644 2e6ba57137d605a065ca7cb4f52a45dccbc1ba44 2e6ba57137d605a065ca7cb4f52a45dccbc1ba44 CLAUDE.md",
-    "1 .M N... 100644 100644 100644 6f21f4753a7a7003601f6d5c29f2150f0c30bc18 6f21f4753a7a7003601f6d5c29f2150f0c30bc18 AGENTS.md"
+    ".claude/.settings.json.lock"
   ],
   "matches": false
 }
