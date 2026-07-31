@@ -99,9 +99,13 @@ implementation, so no separate Wave-0 plan is required.
 
 ## Wave 0 Requirements
 
-All Wave-0 artifacts are created **in-task** by the `tdd="true"` tasks that consume them — the RED
-step precedes the implementation in the same task, so no separate Wave-0 plan exists or is needed.
-Each box below names the task that owns it.
+All Wave-0 artifacts are created **in-plan, before the consuming task** — creation always precedes
+consumption in task order within the same plan, so no separate Wave-0 plan exists or is needed. Note
+that not every creating task is a `tdd="true"` task: `52-02-T2` (the `tmp_pnpm_workspace` fixture)
+and `52-01-T1` (the applier script) are plain `type="auto"` tasks whose output is consumed by a
+LATER task in the same plan; the `tdd="true"` cases additionally have the RED step precede the
+implementation inside a single task. Either way the ordering guarantee holds, so `wave_0_complete:
+true` stands. Each box below names the task that owns it.
 
 - [x] `tools/adoption_scan/tests/conftest.py` — `tmp_pnpm_workspace`, a SECOND synthetic fixture
       carrying `pnpm-workspace.yaml` plus one non-member manifest under a nested path, with
