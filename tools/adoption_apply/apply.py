@@ -41,9 +41,10 @@ from __future__ import annotations
 import fcntl
 import json
 import os
+import sys
 import tempfile
-from pathlib import Path
-from typing import Any
+from pathlib import Path, PurePosixPath
+from typing import Any, Iterable
 
 from tools.adoption_scan.destinations import DISPOSITION_ENUM, MARKER_CAPABLE, _existing_hash
 from tools.harness_emit.merge import merge_settings, splice_managed_block
@@ -287,6 +288,38 @@ def _read_target_no_symlink(path: Path) -> str | None:
         ) from exc
     with os.fdopen(descriptor, "rb") as handle:
         return handle.read().decode("utf-8")
+
+
+def lock_sidecar_for(destination: str) -> str:
+    """Return the ``.lock`` sidecar path ``_apply_marker_merge`` would create for ``destination``.
+
+    Pure, POSIX-relative, no filesystem access — reproduces ``_apply_marker_merge``'s
+    ``target_path.with_name(f".{target_path.name}.lock")`` rule for a repo-relative destination
+    string rather than an already-resolved ``Path``, so it is checkable both against the naming
+    RULE and (in tests) against what the writer actually creates on disk.
+    """
+    posix_destination = PurePosixPath(destination)
+    return str(posix_destination.with_name(f".{posix_destination.name}.lock"))
+
+
+def expected_lock_sidecars(destinations: Iterable[str]) -> set[str]:
+    """The set of ``.lock`` sidecars marker-merge creates for the ``MARKER_CAPABLE`` members of
+    ``destinations``.
+
+    A destination outside ``MARKER_CAPABLE`` (imported from ``destinations.py``, never retyped)
+    contributes no sidecar — only the 3 marker-merge destinations ever acquire one.
+    """
+    return {
+        lock_sidecar_for(destination)
+        for destination in destinations
+        if destination in MARKER_CAPABLE
+    }
+
+
+# OBS-D-04 (51-BASELINE-EVIDENCE.md) — purpose 4: sidecars are DECLARED, never unlinked (D-15);
+# comparison scope is phase-local (D-21). Plan 05's apply comparison imports this frozenset as its
+# allowlist for the matches/unexpected_paths computation rather than recomputing the naming rule.
+HARNESS_MANAGED_LOCK_SIDECARS: frozenset[str] = frozenset(expected_lock_sidecars(MARKER_CAPABLE))
 
 
 def _apply_marker_merge(destination: str, target_path: Path, block_body: str = "") -> None:

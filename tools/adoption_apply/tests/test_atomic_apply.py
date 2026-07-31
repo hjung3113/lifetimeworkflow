@@ -407,6 +407,55 @@ def test_marker_merge_acquires_exclusive_flock(tmp_path, monkeypatch):
     assert any(call.args[1] == fcntl.LOCK_EX for call in flock_spy.call_args_list)
 
 
+# --- OBS-D-04 (51-BASELINE-EVIDENCE.md) / D-15 — declared, never-unlinked lock sidecars ---------
+
+
+def test_lock_sidecar_for_matches_the_three_phase51_paths():
+    assert apply.lock_sidecar_for("AGENTS.md") == ".AGENTS.md.lock"
+    assert apply.lock_sidecar_for("CLAUDE.md") == ".CLAUDE.md.lock"
+    assert apply.lock_sidecar_for(".claude/settings.json") == ".claude/.settings.json.lock"
+
+
+def test_expected_lock_sidecars_ignores_non_marker_capable_destinations():
+    result = apply.expected_lock_sidecars(["AGENTS.md", "docs/how-to/x.md"])
+    assert result == {".AGENTS.md.lock"}
+
+
+def test_expected_lock_sidecars_matches_filesystem_after_every_marker_merge(tmp_path):
+    """The declaration is checked against the REAL filesystem, never a restatement of itself.
+
+    Runs `_apply_marker_merge` for every `MARKER_CAPABLE` destination in a temp target, then
+    compares the resulting on-disk `*.lock` set (via `rglob`) to `expected_lock_sidecars` —
+    proving the declaration matches what the writer actually creates, not just its own formula.
+    """
+    from tools.adoption_scan.destinations import MARKER_CAPABLE
+
+    (tmp_path / ".claude").mkdir()
+    (tmp_path / ".claude" / "settings.json").write_text("{}\n", encoding="utf-8")
+    (tmp_path / "AGENTS.md").write_text("# Repo agents\n\nProse.\n", encoding="utf-8")
+    (tmp_path / "CLAUDE.md").write_text("# Claude\n\nProse.\n", encoding="utf-8")
+
+    for destination in MARKER_CAPABLE:
+        target_path = tmp_path / destination
+        block_body = "" if destination.endswith(".json") else "## Managed\n"
+        apply._apply_marker_merge(destination, target_path, block_body=block_body)
+
+    on_disk = {str(path.relative_to(tmp_path)) for path in tmp_path.rglob("*.lock")}
+    assert on_disk == apply.expected_lock_sidecars(MARKER_CAPABLE)
+
+    # Sidecars are declared, never unlinked (D-15) — they persist after the merge completes.
+    for sidecar in on_disk:
+        assert (tmp_path / sidecar).exists()
+
+
+def test_harness_managed_lock_sidecars_is_the_three_phase51_paths():
+    assert apply.HARNESS_MANAGED_LOCK_SIDECARS == {
+        ".AGENTS.md.lock",
+        ".CLAUDE.md.lock",
+        ".claude/.settings.json.lock",
+    }
+
+
 def test_marker_merge_refuses_symlink_read(tmp_path):
     """`_apply_marker_merge`'s read side must not follow a symlink into arbitrary content.
 
