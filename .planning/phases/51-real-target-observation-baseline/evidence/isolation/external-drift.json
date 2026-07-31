@@ -19,16 +19,20 @@
     }
   ],
   "drifting_commits": [
+    {"hash":"2a13c79e26e5052b000e925c12d0d0970c2caedd","author_date":"2026-07-31T07:26:50+09:00","subject":"docs(agents): record that FE chunks are exempt from AC-ID discovery"},
     {
       "hash": "86e7673c8b9476c1a1a53828c0a250d5fe0d8009",
       "author_date": "2026-07-31T07:27:02+09:00",
       "subject": "Merge pull request #254 from hjung3113/chore/fe-ac-id-exemption"
     },
+    {"hash":"6fae48fadc41124f2b54cf53a136c8fbb69d4a60","author_date":"2026-07-31T07:42:17+09:00","subject":"chore(verify): add the clean-state probe canonical verification requires"},
     {
       "hash": "59688d25a5386676443e72fad706bd75a1a5e907",
       "author_date": "2026-07-31T07:42:42+09:00",
       "subject": "Merge pull request #256 from hjung3113/feature/255-clean-probe"
-    }
+    },
+    {"hash":"a8823f8f51a5fffa9ce79da0577823d9b05ef3f5","author_date":"2026-07-31T07:58:04+09:00","subject":"feat(surveys): produce request_task with its own permission model"},
+    {"hash":"4f16525478e0ddeeb10ebe90960c33beb385a942","author_date":"2026-07-31T07:58:34+09:00","subject":"Merge pull request #257 from hjung3113/feature/239-request-task"}
   ],
   "unrelated_worktrees": [
     {
