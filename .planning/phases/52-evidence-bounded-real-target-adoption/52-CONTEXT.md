@@ -109,10 +109,27 @@ spent repairing pnpm `workspace:*` edge resolution.
   observation with **no** repair must still terminate in either a lock-in test or a written
   evidence-backed confirmation — SC-5 admits no third outcome.
 
+### Post-research decisions (locked after 52-RESEARCH.md surfaced the contract cost)
+
+- **D-20 (supersedes D-08's shape only, not its intent):** the non-member manifest diagnostic is
+  recorded by **extending the existing `excludedEntry.excluded` enum** in
+  `contracts/harness/adoption/inventory.schema.json` with one new reason value — **not** by adding a
+  parallel top-level `skipped` array. The schema is `additionalProperties: false` with an enumerated
+  `required` list, so a new top-level key is the larger contract-shape change; an additive enum value
+  reuses existing machinery. Both paths change the schema hash, so this remains a **contract-first**
+  change: contract entry first, then `/contract-check` (check-jsonschema + RFC 8785 schema-hash drift
+  gate) and the paired golden update. The contract **count stays 6** — NG-01 holds.
+- **D-21 (resolves the D-15 open question):** the lock-sidecar declaration lives in **phase-local
+  comparison scope**, mirroring Phase 51, where the `matches`/`unexpected_paths` logic was plan-inline
+  rather than a shared tool. No write into the target's `.gitignore` (it is a governed disposition
+  destination but is **not** marker-capable — there is no safe merge primitive against an existing
+  target `.gitignore` today), and no pull-in of `manifest.schema.json`, which research confirmed has
+  zero impact from this phase. No new surface — NG-01 holds.
+
 ### Claude's Discretion
 
 - Exact fresh-worktree path and evidence sub-file naming.
-- Shape of the `skipped` diagnostic list (key name, per-entry fields) in the inventory artifact.
+- The new `excluded` enum value's literal name and any per-entry fields it implies (D-20).
 - Synthetic pnpm fixture layout and where it lives, subject to D-17's "next to the tool" siting.
 - How the lock-sidecar declaration is expressed (managed-artifact list vs comparison exclusion),
   provided `matches` becomes true without weakening the comparison for real unlisted writes.
