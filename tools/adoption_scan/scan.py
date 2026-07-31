@@ -40,6 +40,7 @@ import hashlib
 import json
 import re
 import subprocess
+import sys
 from pathlib import Path, PurePosixPath
 
 from tools.adoption_scan import detect
@@ -338,15 +339,34 @@ def build_inventory(
     # change. The manifest is read HERE (never inside detect.py, which stays filesystem-free).
     workspace_globs: list[str] | None = None
     workspace_manifest_path = target / detect.PNPM_WORKSPACE_MANIFEST
-    if workspace_manifest_path.is_file():
+    # WR-04 (52-REVIEW.md): `is_file()` alone follows symlinks, so a `pnpm-workspace.yaml`
+    # symlinked outside the target root would be opened and read — while classify_exclusions
+    # refuses to even stat() through an escaping symlink. Reuse this module's own `_confined`
+    # idiom so the posture is consistent, and cap the read at _CONTENT_PREFIX_BYTES like every
+    # other read here (an unbounded read_text() would load a multi-GB manifest whole).
+    if workspace_manifest_path.is_file() and _confined(workspace_manifest_path, target):
         try:
-            workspace_manifest_text = workspace_manifest_path.read_text(
-                encoding="utf-8", errors="replace"
-            )
+            with workspace_manifest_path.open("rb") as handle:
+                raw = handle.read(_CONTENT_PREFIX_BYTES)
+            workspace_manifest_text = raw.decode("utf-8", "replace")
         except OSError:
             workspace_manifest_text = None
         if workspace_manifest_text is not None:
-            workspace_globs = detect.parse_pnpm_workspace_globs(workspace_manifest_text)
+            parsed = detect.parse_pnpm_workspace_globs(workspace_manifest_text)
+            # CR-02 (52-REVIEW.md): a manifest we could extract NO glob from must degrade to the
+            # D-10 unchanged path (workspace_globs stays None), exactly as the OSError branch
+            # above does — never to `[]`, which is_workspace_member reads as "this workspace has
+            # exactly one member, the root", silently excluding every non-root manifest as
+            # `non-workspace-member`. Real shapes that land here: a pnpm-10 settings-only
+            # manifest with no `packages:` key, and a `packages:` key with an empty body.
+            if parsed:
+                workspace_globs = parsed
+            else:
+                print(
+                    f"scan: {detect.PNPM_WORKSPACE_MANIFEST} declared no parsable 'packages:' "
+                    "globs — workspace scoping disabled for this target (D-10 path)",
+                    file=sys.stderr,
+                )
 
     included: list[dict] = []
     excluded: list[dict] = []
@@ -372,9 +392,23 @@ def build_inventory(
                 # (reusing this module's own _confined idiom, T-52-03) — a glob must never widen
                 # scope beyond `target`, even though `candidate` is already a confined,
                 # already-enumerated path at this point.
-                if _confined(candidate, target) and not detect.is_workspace_member(
-                    manifest_dir, workspace_globs
-                ):
+                #
+                # WR-10 (52-REVIEW.md): this guard FAILS CLOSED. The previous
+                # `if _confined(...) and not is_workspace_member(...)` let an UNCONFINED
+                # candidate fall straight through to `included.append(...)` — a confinement check
+                # whose failure mode was "include it anyway" is not a confinement check. The path
+                # is effectively unreachable today (classify_exclusions already rejects escaping
+                # symlinks), which is why it is defense in depth and not the primary guard.
+                if not _confined(candidate, target):
+                    excluded.append(
+                        {
+                            "path": rel,
+                            "size": candidate.lstat().st_size,
+                            "excluded": "symlink-escape",
+                        }
+                    )
+                    continue
+                if not detect.is_workspace_member(manifest_dir, workspace_globs):
                     size = candidate.stat().st_size
                     excluded.append({"path": rel, "size": size, "excluded": "non-workspace-member"})
                     continue

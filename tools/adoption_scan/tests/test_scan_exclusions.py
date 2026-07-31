@@ -373,3 +373,138 @@ def test_pnpm_non_workspace_member_reason_validates_against_ratified_schema(
 
     errors = list(Draft202012Validator(schema).iter_errors(inventory))
     assert not errors, [error.message for error in errors]
+
+
+# ── 52-REVIEW.md CR-02 / WR-04 / WR-10 repairs ───────────────────────────────────────────────
+
+_ALL_FIXTURE_MANIFESTS = {
+    "package.json",
+    "apps/widget-app/package.json",
+    "apps/widget-service/package.json",
+    "packages/widget-shared/package.json",
+    "packages/widget-ui/package.json",
+    "docs/design-prototype/package.json",
+}
+
+
+@pytest.mark.parametrize(
+    ("manifest_text", "shape"),
+    [
+        ("onlyBuiltDependencies:\n  - esbuild\n", "pnpm-10 settings-only, no packages: key"),
+        ("packages:\n", "packages: key with an empty body"),
+        ("packages:\nother_key: value\n", "packages: key immediately followed by another key"),
+    ],
+)
+def test_pnpm_unparsable_workspace_manifest_degrades_to_d10_not_to_zero_members(
+    tmp_pnpm_workspace: Path, manifest_text: str, shape: str
+) -> None:
+    """CR-02: a workspace manifest yielding NO parsable globs must take the D-10 unchanged path.
+
+    Pre-repair, `workspace_globs` was assigned the parser's `[]`, which is NOT `None`, so
+    `is_workspace_member` rejected every directory except "." and EVERY non-root manifest was
+    silently stamped `non-workspace-member`. Restoring the unconditional
+    `workspace_globs = parse_pnpm_workspace_globs(...)` assignment reds this test.
+    """
+    (tmp_pnpm_workspace / "pnpm-workspace.yaml").write_text(manifest_text, encoding="utf-8")
+
+    inventory = scan.build_inventory(tmp_pnpm_workspace)
+
+    included_paths = {entry["path"] for entry in inventory["included"]}
+    assert _ALL_FIXTURE_MANIFESTS <= included_paths, f"{shape}: inventory collapsed to root-only"
+    reasons = {entry["excluded"] for entry in inventory["excluded"]}
+    assert "non-workspace-member" not in reasons, f"{shape}: scoping applied with zero globs"
+
+
+def test_pnpm_flow_style_workspace_manifest_scopes_members_normally(
+    tmp_pnpm_workspace: Path,
+) -> None:
+    """CR-02: flow style is a real pnpm shape and must scope exactly like block style — the
+    fixture's four declared members plus the root stay included, and only the one non-member
+    manifest is excluded."""
+    (tmp_pnpm_workspace / "pnpm-workspace.yaml").write_text(
+        'packages: ["apps/*", "packages/*"]\n', encoding="utf-8"
+    )
+
+    inventory = scan.build_inventory(tmp_pnpm_workspace)
+
+    included_paths = {entry["path"] for entry in inventory["included"]}
+    assert "docs/design-prototype/package.json" not in included_paths
+    assert _ALL_FIXTURE_MANIFESTS - {"docs/design-prototype/package.json"} <= included_paths
+    excluded_by_path = {entry["path"]: entry for entry in inventory["excluded"]}
+    assert (
+        excluded_by_path["docs/design-prototype/package.json"]["excluded"] == "non-workspace-member"
+    )
+
+
+def test_pnpm_workspace_manifest_symlinked_outside_target_is_not_read(tmp_path: Path) -> None:
+    """WR-04: `is_file()` alone follows symlinks, so an escaping `pnpm-workspace.yaml` was opened
+    and read — while classify_exclusions refuses to even stat() through an escaping symlink.
+
+    The outside manifest declares `packages: ["apps/*"]`; if it were read, `sink/package.json`
+    would be scoped out as `non-workspace-member`. Dropping the `_confined(...)` conjunct reds
+    this test.
+    """
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "pnpm-workspace.yaml").write_text('packages:\n  - "apps/*"\n', encoding="utf-8")
+
+    root = tmp_path / "target"
+    root.mkdir()
+    (root / "package.json").write_text('{"name": "root"}\n', encoding="utf-8")
+    sink = root / "sink"
+    sink.mkdir()
+    (sink / "package.json").write_text('{"name": "sink"}\n', encoding="utf-8")
+    try:
+        (root / "pnpm-workspace.yaml").symlink_to(outside / "pnpm-workspace.yaml")
+    except OSError:
+        pytest.skip("unprivileged symlink creation is not permitted on this filesystem")
+
+    inventory = scan.build_inventory(root)
+
+    reasons = {entry["excluded"] for entry in inventory["excluded"]}
+    assert "non-workspace-member" not in reasons, "an escaping workspace manifest was read"
+
+
+def test_pnpm_workspace_manifest_read_is_capped(tmp_pnpm_workspace: Path) -> None:
+    """WR-04: every other read in scan.py is capped; this one was an unbounded read_text().
+
+    The declared globs sit past `_CONTENT_PREFIX_BYTES` behind a comment block, so a capped read
+    sees no globs (-> D-10 path, everything included) while an unbounded read would apply scoping
+    and exclude the non-member manifest. Removing the read cap reds this test.
+    """
+    padding = "# " + ("x" * 78) + "\n"
+    filler = padding * ((scan._CONTENT_PREFIX_BYTES // len(padding)) + 2)
+    (tmp_pnpm_workspace / "pnpm-workspace.yaml").write_text(
+        filler + 'packages:\n  - "apps/*"\n', encoding="utf-8"
+    )
+
+    inventory = scan.build_inventory(tmp_pnpm_workspace)
+
+    reasons = {entry["excluded"] for entry in inventory["excluded"]}
+    assert "non-workspace-member" not in reasons, "the workspace manifest was read past the cap"
+
+
+def test_membership_confinement_guard_fails_closed(monkeypatch, tmp_pnpm_workspace: Path) -> None:
+    """WR-10: a defense-in-depth confinement check whose failure mode is "include it anyway" is
+    not a check.
+
+    The pre-repair `if _confined(candidate, target) and not is_workspace_member(...)` let an
+    UNCONFINED candidate fall through to `included.append(...)` and be hashed and recorded.
+    Forcing `_confined` False for one manifest must now EXCLUDE it as `symlink-escape`; restoring
+    the `and`-form reds this test (the manifest reappears in `included`).
+    """
+    real_confined = scan._confined
+    victim = tmp_pnpm_workspace / "apps" / "widget-app" / "package.json"
+
+    def fake_confined(path: Path, base_resolved: Path) -> bool:
+        if Path(path) == victim:
+            return False
+        return real_confined(path, base_resolved)
+
+    monkeypatch.setattr(scan, "_confined", fake_confined)
+    inventory = scan.build_inventory(tmp_pnpm_workspace)
+
+    included_paths = {entry["path"] for entry in inventory["included"]}
+    excluded_by_path = {entry["path"]: entry for entry in inventory["excluded"]}
+    assert "apps/widget-app/package.json" not in included_paths
+    assert excluded_by_path["apps/widget-app/package.json"]["excluded"] == "symlink-escape"
