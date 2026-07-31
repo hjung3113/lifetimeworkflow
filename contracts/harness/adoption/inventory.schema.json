@@ -113,9 +113,10 @@
             "generated",
             "source-dump",
             "size-capped",
-            "symlink-escape"
+            "symlink-escape",
+            "non-workspace-member"
           ],
-          "description": "D-10: exclusion reason. Deliberately no sibling sha256 property anywhere in this def — a secret-flagged exclusion cannot structurally carry a content hash or excerpt."
+          "description": "D-10: exclusion reason. Deliberately no sibling sha256 property anywhere in this def — a secret-flagged exclusion cannot structurally carry a content hash or excerpt. OBS-D-01 (51-BASELINE-EVIDENCE.md, purpose 2 / D-20): non-workspace-member records a manifest found by the walk that lies outside the target's declared pnpm workspace globs — excluded from the member set, never silently dropped."
         }
       }
     },
