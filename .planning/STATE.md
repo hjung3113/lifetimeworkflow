@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.7
 milestone_name: Real-Target Adoption
 status: executing
-last_updated: "2026-07-31T17:42:04.300Z"
-last_activity: 2026-07-31
+last_updated: "2026-08-01T00:00:00.000Z"
+last_activity: 2026-08-01
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 9
-  completed_plans: 4
-  percent: 44
+  completed_plans: 5
+  percent: 56
 ---
 
 # Project State
@@ -22,17 +22,35 @@ See: .planning/PROJECT.md (updated 2026-07-30)
 **Core value:** 계약(contracts)을 단일 정본으로 두고, 폴리글랏 표현차·레거시 전환 리스크를 하네스가 자동으로 강제·검증한다 — "어떻게 개발·유지보수·리팩토링하는가"가 실행 가능한 스킬·커맨드·훅으로 박혀 있다.
 
 **Current focus:** Phase 52 — Evidence-Bounded Real-Target Adoption
-2026-07-31, verified 4/4. Phase 52 (Evidence-Bounded Real-Target Adoption) — all 6 plans landed
-(52-01/02/03/04 numbered plus wave sequencing); ready for phase-level verification against
+2026-08-01. Plans 52-01..52-05 landed (5 of 6); the real-target discover -> draft -> apply
+cycle (52-05) ran cleanly against a freshly provisioned FeedbackOps worktree. 52-06 (phase
+record + after-proof + worktree disposal) remains before phase-level verification against
 `51-BASELINE-EVIDENCE.md`'s OBS-D-01..04.
 
 ## Current Position
 
 Phase: 52 (Evidence-Bounded Real-Target Adoption) — EXECUTING
-Plan: 6 of 6 (52-02 just completed — the phase's final wave (wave 3) closes; all 5 numbered
-plans plus the enum-contract plan have now landed)
-Status: Ready for phase verification
-Last activity: 2026-08-01 -- Plan 52-02 complete (see 52-02-SUMMARY.md): `tools/adoption_scan/
+Plan: 6 of 6 (52-05 just completed — the real-target discover -> draft -> apply cycle ran
+against a freshly provisioned worktree, wave 4; only 52-06 (the phase-record + disposal plan)
+remains)
+Status: Ready for 52-06 (phase-record, after-proof, worktree disposal)
+Last activity: 2026-08-01 -- Plan 52-05 complete (see 52-05-SUMMARY.md): a freshly detached
+worktree of FeedbackOps was provisioned at the run-time develop HEAD (re-read live as
+`919d152a56ed096c0fdef12b9bfb892d6ef4ced6` — third movement past both the Phase-51 baseline
+`1d1c8ed` and the STATE.md-carried `4f16525`, attributed as expected third-party drift per
+D-02). Discover enumerated exactly the five real pnpm workspace members and recorded
+`docs/design-prototype/package.json` as `excluded: "non-workspace-member"` (SC-2/RTA-02 proven
+on the real target). Draft wrote an unedited batch plus a target-derived `languages.toml`
+sidecar. Apply ran once (exit 0, applied=154/skipped=86/refused=23); the new phase-local
+`scripts/compare-worktree-writes.py` (D-21) proved `matches: true`, zero product-code writes,
+and the three lock sidecars declared rather than unlisted (OBS-D-04 real-target proof). The
+`--target` mis-targeting guard was confirmed to fire on a synthetic mistargeted argv before being
+trusted. The original FeedbackOps `develop` checkout stayed byte-identical to its before-proof
+throughout; no harness code was touched (`git diff --quiet` on `tools/`/`harness/`/`contracts/`);
+full suite still green (1023 passed). The fresh worktree was deliberately left in place — 52-06
+owns the after-proof and disposal.
+
+Prior: Plan 52-02 complete (see 52-02-SUMMARY.md): `tools/adoption_scan/
 detect.py` gained a pure, filesystem-free `parse_pnpm_workspace_globs`/`is_workspace_member`
 pair (pnpm-workspace.yaml deliberately NOT registered in `_MANIFEST_KIND_BY_NAME` — taught as
 its own constant + parser instead, per the interfaces section's documented deviation from D-07's
@@ -47,7 +65,7 @@ cannot fail") and were replaced with genuinely discriminating cases, each confir
 observed-RED-then-reverted mutation (see 52-02-SUMMARY.md). Full suite green (1023 passed, up
 from 1006). OBS-D-01 is now repaired at the source (RTA-02).
 
-Prior: Plan 52-04 complete: the 3 marker-merge `.lock`
+Earlier: Plan 52-04 complete: the 3 marker-merge `.lock`
 sidecars are declared as known harness-managed artifacts (`lock_sidecar_for`/`expected_lock_sidecars`/
 `HARNESS_MANAGED_LOCK_SIDECARS`, checked against the real filesystem, never unlinked — D-15), a
 sidecar left over from a prior run is announced on stderr with wording that claims only provenance,

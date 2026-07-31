@@ -11,7 +11,7 @@
 
 ### A. 격리 도입 (RTA)
 
-- [ ] **RTA-01**: 개발자가 FeedbackOps의 격리된 git 워크트리를 타깃으로 `/adopt`를 실행할 수 있고,
+- [x] **RTA-01**: 개발자가 FeedbackOps의 격리된 git 워크트리를 타깃으로 `/adopt`를 실행할 수 있고,
   원본 `develop` 체크아웃은 한 바이트도 바뀌지 않는다.
 - [x] **RTA-02**: `/adopt` discover 단계가 실제 pnpm 워크스페이스 멤버 5개(root · `packages/ui` ·
   `packages/shared` · `apps/frontend` · `apps/backend`)를 인벤토리에 빠짐없이 올린다.
