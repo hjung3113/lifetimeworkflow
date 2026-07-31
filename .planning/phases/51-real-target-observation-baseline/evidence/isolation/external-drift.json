@@ -6,6 +6,11 @@
       "capture": "external-drift-observation",
       "observed_at": "2026-07-30T22:55:16.125118+00:00",
       "observed_sha": "59688d25a5386676443e72fad706bd75a1a5e907"
+    },
+    {
+      "capture": "after-proof",
+      "observed_at": "2026-07-31T02:02:03.554520+00:00",
+      "observed_sha": "4f16525478e0ddeeb10ebe90960c33beb385a942"
     }
   ],
   "drifting_commits": [

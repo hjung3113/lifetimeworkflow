@@ -1,0 +1,39 @@
+{
+  "expected_edges": [
+    {
+      "from": "@fops/frontend",
+      "to": "@fops/shared",
+      "kind": "runtime"
+    },
+    {
+      "from": "@fops/backend",
+      "to": "@fops/shared",
+      "kind": "runtime"
+    },
+    {
+      "from": "@fops/ui",
+      "to": "@fops/shared",
+      "kind": "runtime"
+    }
+  ],
+  "observed_edges": [
+    {
+      "from": "@fops/backend",
+      "kind": "runtime",
+      "to": "@fops/shared"
+    },
+    {
+      "from": "@fops/frontend",
+      "kind": "runtime",
+      "to": "@fops/shared"
+    },
+    {
+      "from": "@fops/ui",
+      "kind": "runtime",
+      "to": "@fops/shared"
+    }
+  ],
+  "missing_edges": [],
+  "unexpected_edges": [],
+  "result": "refuted"
+}
