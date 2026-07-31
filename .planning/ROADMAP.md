@@ -27,7 +27,7 @@ file keeps only the milestone-level index so it stays constant-size as milestone
 - ✅ **v2.5 De-ceremony** — Phases 39–46 (shipped 2026-07-30)
 - ✅ **v2.6 Minimal Monorepo Core** — Phases 47, 48, 49, 50a shipped 2026-07-30; **50b BLOCKED and
   carried to v2.7** (no real multi-package target repo — MONO-12)
-- 📋 **v2.7 Real-Target Adoption** — Phases 51–54 (planned)
+- 🔄 **v2.7 Real-Target Adoption** — Phases 51–54; **51 shipped 2026-07-31** (OBS-03 refuted), 52–54 planned
 
 ## Phases
 
