@@ -279,11 +279,20 @@ contracts 6, and CI jobs and gates do not increase. Runtime artifacts are author
   5. Every change made in this phase traces to a Phase 51 observation within purpose ①②③④ and has a regression test; observations requiring no change remain evidence-backed confirmations.
 **Plans**: 6 plans
 Plans:
+**Wave 1**
 - [ ] 52-01-PLAN.md — Contract-first: add the `non-workspace-member` reason to `inventory.schema.json`, rebaseline the schema hash, regenerate the derived plane (D-20)
-- [ ] 52-02-PLAN.md — OBS-D-01: pnpm workspace member scoping in `detect.py`/`scan.py` + synthetic fixture + regression tests
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 52-03-PLAN.md — OBS-D-03: permanent `lint` key on `conventions_for()` + target-derived JS `[[languages]]` row through draft/apply
 - [ ] 52-04-PLAN.md — OBS-D-04: declare the marker-merge lock sidecars, report a stale one on stderr; OBS-D-02 `workspace:*` lock-in test
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 52-02-PLAN.md — OBS-D-01: pnpm workspace member scoping in `detect.py`/`scan.py` + synthetic fixture + regression tests
+
+**Wave 4** *(blocked on Wave 3 completion)*
 - [ ] 52-05-PLAN.md — Fresh detached FeedbackOps worktree: before-proof, discover → draft → apply captures, apply-write comparison
+
+**Wave 5** *(blocked on Wave 4 completion)*
 - [ ] 52-06-PLAN.md — Downstream observations, after-proof with drift attribution, auto-disposal, and the SC-5 trace ledger
 
 ### Phase 53: Managed Adopt Updates

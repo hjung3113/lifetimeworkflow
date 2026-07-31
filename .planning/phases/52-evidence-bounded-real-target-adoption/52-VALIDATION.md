@@ -37,7 +37,7 @@ plans execute **concurrently in one working tree**. That fact governs which gate
 | Wave | Plans | Full-suite `uv run pytest -q`? | Why |
 |------|-------|-------------------------------|-----|
 | 1 | 52-01 | **yes** (Task 3) | Alone in its wave. Between its Task 2 (schema + hash land) and Task 3 (derived regen), `tools/memory_regen/tests/test_contracts_index.py` is RED *by construction*; isolating the wave closes that window instead of exporting it to a sibling. |
-| 2 | 52-03, 52-04 | **no — subtree gates only** | Two concurrent `tdd="true"` plans in one tree; each would otherwise observe the other's transient RED and be tempted to weaken an assertion. Cross-plan fences here are **commit-scoped** (`git show --name-only --format= HEAD`), never `git diff` on a sibling's file. |
+| 2 | 52-03, 52-04 | **no — subtree gates only** | Two concurrent `tdd="true"` plans in one tree; each would otherwise observe the other's transient RED and be tempted to weaken an assertion. Cross-plan fences here are scoped to **the plan's own authorship** — its own commits over `$BASE..HEAD` filtered `--grep '<plan-id>'`, plus `git diff --cached` — never `git diff` on a sibling's file, and **never bare `HEAD`** (in a shared tree `HEAD` is frequently the sibling's commit, so a bare-`HEAD` fence is silent when guilty and loud when innocent). |
 | 3 | 52-02 | **yes** (Task 3) | Alone in its wave — the phase's single authoritative full-suite gate, run after every repair has landed. |
 | 4 | 52-05 | n/a (evidence run) | Asserts `git diff --quiet -- tools/ harness/ contracts/`: no code changes. |
 | 5 | 52-06 | **yes** (Task 3) | Phase close: full suite + drift gate green. |
