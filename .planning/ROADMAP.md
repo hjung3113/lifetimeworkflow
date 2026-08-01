@@ -303,7 +303,20 @@ Plans:
   1. The adoption manifest records every file managed by `/adopt`.
   2. A re-run updates changed managed content, while a re-run with no source or target changes is an observable no-op.
   3. A target-side divergence in a managed file produces a conflict report and leaves that file byte-unchanged.
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+
+**Wave 1** *(constitution-plane gate — blocking human checkpoint)*
+- [ ] 53-01-PLAN.md — Extend `manifest.schema.json` in place with the 7th `dispositionEnum` value `update`, `$defs.installedRecord`, and one optional top-level `installed[]`; rebaseline the hash and regenerate the derived plane. No new contract file — count stays 6.
+
+**Wave 2** *(blocked on Wave 1 — no code may emit `update` before the contract lands)*
+- [ ] 53-02-PLAN.md — `disposition()` gains the `installed_sha` step between `preserve` and `conflict`; `tools/adoption_apply/installed.py` reads/writes the target-resident record, validated on read and write; paired safety assertions, mutation-tested.
+
+**Wave 3** *(blocked on Wave 2)*
+- [ ] 53-03-PLAN.md — `apply.py`'s `update` branch via `_atomic_replace` + six-way summary; CLI wiring (post-splice comparison hash, no-op-guarded record write, stderr conflict summary); paired SC-2a/2b and SC-3 end-to-end coverage. Closes WR-07 and WR-08.
+
+**Wave 4** *(blocked on Wave 3)*
+- [ ] 53-04-PLAN.md — Four-cycle real-target re-run on a fresh FeedbackOps worktree (first adopt, no-op, harness-source move, target divergence) with evidence capture and disposal; `/adopt` docs updated in place and re-emitted. No governed-surface growth.
 
 ### Phase 54: Surface Budget Closeout
 **Goal**: The milestone closes with the named duplication removed and no growth in governed harness surfaces
