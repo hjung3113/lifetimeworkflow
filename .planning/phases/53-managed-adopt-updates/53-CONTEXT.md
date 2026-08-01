@@ -33,25 +33,35 @@ is a surface-*shrink* phase), and the deferred B-model gRPC boundary.
   `.harness/adoption/installed.json`. A re-run happens from a fresh batch directory in a new
   session, so the task-local batch dir under `.workflow/tasks/**` cannot carry it; the target is
   the only durable anchor.
-- Its contract is a **new sibling schema**, `contracts/harness/adoption/installed.schema.json`,
-  not an extension of `manifest.schema.json`. This leaves the drafted-manifest contract's
-  RFC 8785 hash untouched; the only edit to the existing manifest contract is the enum change in
-  Area 2.
-- Each managed entry records: `destination`, `installed_sha256` (the bytes **as actually
-  written**, post-splice), `source_sha256` (the harness-template hash at draft time),
-  `disposition`, and `batch_id`. Two hashes — not one — is precisely what makes
-  "harness source moved" distinguishable from "human edited the target", and is what resolves
-  WR-08.
-- Both `contracts/` writes (the new schema and the enum change) are **constitution-plane** and
-  therefore human-gated: prepare an **off-plane script** carrying the exact content and let the
-  human run it. Never write `contracts/` or `docs/adr/` directly — `contract_guard` refuses it,
-  and the repo's established pattern is script-then-human-runs.
+- **[SUPERSEDED 2026-08-01]** ~~Its contract is a **new sibling schema**,
+  `contracts/harness/adoption/installed.schema.json`.~~ The stated rationale — "leaves the
+  drafted-manifest contract's RFC 8785 hash untouched" — is **void**: Area 2's `update` enum
+  value changes that hash regardless, so separation bought nothing.
+- **Its contract EXTENDS the existing `contracts/harness/adoption/manifest.schema.json`** with
+  ONE new **optional** top-level array, `installed[]`. No new contract file is created.
+  **Why:** `.planning/ROADMAP.md:229` binds the whole v2.7 milestone to "contracts 6 … do not
+  increase", and Phase 54's SC-2 (`ROADMAP.md:313`) re-checks "no greater than … 6 contracts".
+  A sibling schema would make 7 and red Phase 54 before it runs. Retiring
+  `contracts/sample/greeting.schema.json` to make room was priced and rejected — it is
+  load-bearing across ~10 test modules and fixture trees.
+- Each managed entry records exactly: `destination`, `installed_sha256` (the bytes **as actually
+  written**, post-splice), and `batch_id`.
+  **[SCOPE-CUT 2026-08-01]** An earlier draft of this decision also stored `source_sha256`.
+  Dropped as unnecessary: `draft` already recomputes the harness source hash every run
+  (`destinations.harness_proposed_hashes()`) and already reconstructs the full payload including
+  the derived splice, so "did the source move?" is answered by comparing the **recomputed
+  payload hash** against the recorded `installed_sha256`. Storing a second hash adds a field
+  that can go stale and answers nothing the recomputation does not. One stored hash.
+- The `contracts/` edit (one file: the enum value plus the one optional array) is
+  **constitution-plane** and therefore human-gated: prepare an **off-plane script** carrying the
+  exact content and let the human run it. Never write `contracts/` or `docs/adr/` directly —
+  `contract_guard` refuses it, and the repo's established pattern is script-then-human-runs.
 
 ### Re-run semantics (SC-2)
 
 - "Update" is expressed as a **7th `dispositionEnum` value, `update`**, fired when the target's
-  current hash **equals** the recorded `installed_sha256` **and** the harness source hash now
-  differs. Reusing `create` with replace semantics was rejected: it would destroy `apply.py`'s
+  current hash **equals** the recorded `installed_sha256` **and** the recomputed harness payload
+  hash now differs. Reusing `create` with replace semantics was rejected: it would destroy `apply.py`'s
   "never silently overwrite" invariant (`atomic_create`'s `os.link` collision check), which is
   the module's core safety property. This is a manifest-contract change and carries a paired
   golden update through the contract-drift gate.
@@ -71,13 +81,18 @@ is a surface-*shrink* phase), and the deferred B-model gRPC boundary.
 - Divergence test: `sha256(target file) != recorded installed_sha256` → a **target-side edit** →
   disposition `conflict`, and the file is left **byte-unchanged**. Comparing against the source
   hash instead cannot tell who changed what and was rejected.
-- The conflict report is written **batch-locally** as `conflicts.json` (schema-validated, same
-  confinement rules as the other batch artifacts via `refuse_if_outside_root`), plus a stderr
-  summary naming each diverged destination and **both** hashes. stderr-only was rejected as not
-  machine-checkable.
-- Conflicts exit with a **distinct exit code 3**. A conflict is an expected outcome requiring a
-  human decision — not a clean run (0) and not a fault (1). Note the existing CLI already maps
-  integrity faults and routine refusals both onto exit 1 (AD-04); exit 3 does not disturb that.
+- **The conflict report is the drafted `manifest.json` itself** — it already carries a
+  `disposition: "conflict"` row per diverged destination, is already schema-validated, and is
+  already written batch-locally under `refuse_if_outside_root`. Apply adds a **stderr summary**
+  naming each diverged destination with its recorded and current hash.
+  **[SCOPE-CUT 2026-08-01]** An earlier draft added a separate `conflicts.json` artifact and a
+  `conflicts[]` contract array. Dropped: it restates what `dispositions[]` already says, and
+  MONO-12 SC-3 asks for "a conflict report", which the manifest is. No new file, no second
+  contract array.
+- **[SCOPE-CUT 2026-08-01]** An earlier draft assigned conflicts a **distinct exit code 3**.
+  Dropped: no MONO-12 success criterion mentions exit codes, and no caller reads adoption-apply's
+  exit code by number today. Existing 0/1/2 semantics stay untouched. Revisit only if a real CI
+  gate needs it.
 - A conflict **never aborts** the run. All safe rows keep applying; conflicts accumulate and are
   reported at the end.
 
@@ -98,8 +113,8 @@ is a surface-*shrink* phase), and the deferred B-model gRPC boundary.
 ### Claude's Discretion
 
 - Exact module placement of the record reader/writer (new `tools/adoption_apply/installed.py`
-  vs. extending `apply.py`), the internal function signatures, and the `conflicts.json` field
-  names beyond the two required hashes.
+  vs. extending `apply.py`), the internal function signatures, and the exact wording of the
+  stderr conflict summary.
 - Plan decomposition and commit granularity, subject to the constitution-plane script gate above
   landing before any code that depends on the new enum value.
 
@@ -116,7 +131,8 @@ is a surface-*shrink* phase), and the deferred B-model gRPC boundary.
   (WR-03) is already the seam for feeding it a recorded hash.
 - `tools/adoption_scan/destinations.py::harness_proposed_hashes()` — already produces
   `{destination: source_sha256}` from the harness checkout, independent of the target (CR-01).
-  This is the `source_sha256` half of the record, at no extra cost.
+  This is what makes storing a second hash unnecessary — the source side is recomputed every
+  run, so only the installed side needs to be remembered.
 - `tools/adoption_apply/apply.py::atomic_create` / `_atomic_replace` — the two durable-write
   idioms (mkstemp in-dir → write/flush/fsync → link-or-replace → dir fsync). An `update`
   disposition uses `_atomic_replace`; `create` keeps the collision-checking `os.link` path.
@@ -155,7 +171,7 @@ is a surface-*shrink* phase), and the deferred B-model gRPC boundary.
   values, falling through to `skipped`) and `apply_manifest`'s summary buckets, which gain
   `updated` and `conflicts`.
 - `tools/adoption_apply/cli.py::_cmd_apply` — reads the target's installed record before
-  applying, writes it after, emits `conflicts.json`, and returns exit 3 when conflicts exist.
+  applying, writes it after, and prints the stderr conflict summary. Exit codes unchanged.
 - `harness/commands/adopt.md` and the `brownfield-adoption` skill — documentation only; the
   re-run-is-update behavior must be described without adding a sub-verb.
 
