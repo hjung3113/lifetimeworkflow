@@ -1,55 +1,65 @@
 {
   "version": "1.0",
-  "timestamp": "2026-07-30T12:16:01.870Z",
-  "phase": null,
-  "phase_name": null,
-  "phase_dir": null,
-  "plan": null,
-  "task": null,
-  "total_tasks": null,
-  "status": "between_milestones",
-  "milestone": "v2.6",
-  "milestone_name": "Minimal Monorepo Core",
-  "milestone_status": "shipped_archived_tagged_merged",
+  "timestamp": "2026-08-02T14:19:59.036Z",
+  "phase": "53",
+  "phase_name": "Managed Adopt Updates",
+  "phase_dir": ".planning/phases/53-managed-adopt-updates",
+  "milestone": "v2.7",
+  "milestone_name": "Real-Target Adoption",
+  "plan": 1,
+  "task": 1,
+  "total_tasks": 12,
+  "status": "paused",
   "completed_tasks": [
-    {"id": 1, "name": "Phase 47 Package Facts (5 plans, MONO-01..04)", "status": "done", "commit": "c343515", "note": "committed derived package + dependency graph; every edge parsed from the manifests themselves across 5 kinds; [[components]] demoted to an override slot; contract->owning-package attribution. Report-only, +0 gates/CI jobs."},
-    {"id": 2, "name": "Phase 48 Convention Profiles (3 plans, MONO-05..07)", "status": "done", "commit": "82d7bc4", "note": "conventions_for(path) nearest-wins; lint/test commands DERIVED from [[languages]], never restated; /component step 2 populates. Extended the existing package-facts artifact rather than adding a sibling, so ci.yml diff stayed empty."},
-    {"id": 3, "name": "Phase 49 Contract Impact (2 plans, MONO-08..09)", "status": "done", "commit": "6f8a56b", "note": "/impact <contract> over the EXISTING direct/reverse/transitive + package facts; replaced the inline one-liner in orchestrator.md's contract-change route. The milestone's one sanctioned +1 command (18 -> 19)."},
-    {"id": 4, "name": "Phase 50a Harness Authoring (1 plan, MONO-10..11)", "status": "done", "commit": "470df6a", "note": "harness-author absorbed skill-creator at skills 8 -> 8, widened to skills+commands+agents, every default cited as a path:line that must resolve (new citation-integrity gate)."},
-    {"id": 5, "name": "Milestone audit", "status": "done", "commit": "f032b21", "note": "status tech_debt, 0 gaps, 11/12 requirements, integration 11/11 verified by execution."},
-    {"id": 6, "name": "Archive v2.6 + clean up 22 stale phase dirs from earlier milestones", "status": "done", "commit": "295993d"},
-    {"id": 7, "name": "Ruff ratchet repair after CI went red on the PR", "status": "done", "commit": "a919596", "note": "v2.6 had added 23 violations (E501 +19, B905 +2, I001 +2). Fixed, then recorded the shrink 74 -> 67."},
-    {"id": 8, "name": "PR #7 merged to main", "status": "done", "commit": "e9824cd", "note": "all 12 CI jobs green including the gate fan-in; 100 commits, 422 files, +16,158/-1,547."}
+    {"id": 0, "name": "Smart discuss — 4 grey areas, 16 decisions", "status": "done", "commit": "daa37be"},
+    {"id": 0, "name": "Research — 53-RESEARCH.md, file:line citations throughout", "status": "done", "commit": "9c19ad9"},
+    {"id": 0, "name": "SCOPE CUT — dropped conflicts.json, source_sha256, exit code 3; contract EXTENDED not added", "status": "done", "commit": "61bdc79", "note": "User intervened mid-planning to stop scope expansion. Three items cut. Every plan now carries grep guards asserting those strings never appear in the implementation."},
+    {"id": 0, "name": "Validation strategy — 53-VALIDATION.md with the anti-vacuous test contract", "status": "done", "commit": "a7ac3d8"},
+    {"id": 0, "name": "Planning — 4 plans, 4 sequential waves", "status": "done", "commit": "1186547"},
+    {"id": 0, "name": "Plan verification — run INLINE, passed", "status": "done", "commit": "1186547", "note": "gsd-plan-checker subagent died on a session limit before reading any file. Every check assigned to it was performed inline instead: sequencing gate, contract-count gate, cut-item leakage, splice-fix enforcement, anti-vacuous pairing, MONO-12 coverage. Plans ARE verified."}
   ],
   "remaining_tasks": [
-    {"id": 9, "name": "Scope v2.7 via /gsd:new-milestone", "status": "not_started", "why": "Candidate inputs are already written up in .planning/NEXT-SESSION-PROMPT.md: MONO-12 (blocked only on naming a target repo), three recorded tech-debt items, and two process findings from this session."}
+    {"id": 1, "plan": "53-01", "name": "Author the idempotent off-plane manifest-schema applier and prove it is write-free today", "status": "not_started"},
+    {"id": 2, "plan": "53-01", "name": "Human runs the constitution-plane write", "status": "not_started", "human_action": true},
+    {"id": 3, "plan": "53-01", "name": "Run /contract-check in full, prove backward compatibility, regenerate the derived plane", "status": "not_started"},
+    {"id": 4, "plan": "53-02", "name": "Widen the disposition chain with the `update` step and thread installed records through build_manifest", "status": "not_started"},
+    {"id": 5, "plan": "53-02", "name": "The target-resident installed-record reader/writer, validated on read and on write", "status": "not_started"},
+    {"id": 6, "plan": "53-02", "name": "Paired positive/negative coverage for the update branch, the record round-trip, and catalog isolation", "status": "not_started"},
+    {"id": 7, "plan": "53-03", "name": "The `update` branch and the six-way apply summary", "status": "not_started"},
+    {"id": 8, "plan": "53-03", "name": "CLI wiring — record read at draft, post-splice comparison, no-op-guarded record write, stderr conflict summary", "status": "not_started"},
+    {"id": 9, "plan": "53-03", "name": "End-to-end paired coverage for SC-1, SC-2a/2b, SC-3, and the WR-07/WR-08 closures", "status": "not_started"},
+    {"id": 10, "plan": "53-04", "name": "The phase-local re-run driver", "status": "not_started"},
+    {"id": 11, "plan": "53-04", "name": "Four-cycle real-target run, evidence capture, and disposal", "status": "not_started"},
+    {"id": 12, "plan": "53-04", "name": "Document re-run-as-update on the existing surface and re-emit both runtimes", "status": "not_started"}
   ],
   "blockers": [
     {
-      "description": "MONO-12 / phase 50b (managed /adopt install-update over one manifest with conflict reporting): needs a REAL multi-package target repo. This checkout has only synthetic targets (three adoption fixtures + the in-repo 2-member demo workspace in workspace.toml).",
-      "type": "external",
-      "workaround": "Name a real multi-package target repo, then re-plan phase 50b against it. Nothing in the code is missing. Note WHY it was not resolved opportunistically: /adopt writes into its target, so pointing it at the unrelated sibling repos on this machine would be an unauthorized outward-facing change."
+      "description": "Plan 53-01 Task 2 cannot be done by an agent. contracts/ is the constitution plane; tools/hooks/contract_guard.py structurally refuses agent writes there and CODEOWNERS gates it. The agent authors an off-plane script; the human runs it.",
+      "type": "human_action",
+      "workaround": "None, by design. This is the intended gate, encoded as depends_on: 53-01 on every later plan — it cannot be skipped accidentally."
     },
     {
-      "description": "BOOT-01 .NET 10 SDK install is egress-denied in this container; local .NET-side execution stays gated.",
-      "type": "human_action",
-      "workaround": "Allowlist the .NET download hosts (or ship a pre-installed SDK), then run tools/bootstrap/install.sh && tools/bootstrap/verify.sh. CI's dotnet lang-tests job passes independently, so this does not block merges."
+      "description": "gsd-plan-checker subagent terminated on an Anthropic session limit before reading any file.",
+      "type": "external",
+      "workaround": "Already worked around — verification was performed inline and passed. Re-running the checker is optional, not required. Do NOT treat the plans as unverified."
     }
   ],
   "human_actions_pending": [
-    {"action": "Decide whether to push the local v2.6 git tag", "context": "Created locally and intentionally not pushed, matching the existing v2.1/v2.3/v2.5 tags which are also local-only.", "blocking": false},
-    {"action": "Name a real multi-package target repo if MONO-12 should ship in v2.7", "context": "The sole precondition for phase 50b.", "blocking": false}
+    {
+      "action": "Run .planning/phases/53-managed-adopt-updates/scripts/apply-manifest-update-enum.py (authored by 53-01 Task 1) to edit contracts/harness/adoption/manifest.schema.json",
+      "context": "Adds the 7th dispositionEnum value `update` and the optional top-level installed[] array to the EXISTING schema. No new contract file — the v2.7 milestone binds contracts at 6 (ROADMAP.md:229) and Phase 54 SC-2 (ROADMAP.md:313) re-checks it. Nothing in waves 2-4 can land until this runs and `python -m tools.contract_drift` is clean.",
+      "blocking": true
+    }
   ],
   "decisions": [
-    {"decision": "Record phase 50b BLOCKED and carry MONO-12 rather than designate an unrelated repo as the adoption target", "rationale": "/adopt writes into its target; conscripting an out-of-scope repo is an unauthorized outward-facing change, and a manufactured fixture target would satisfy the phase's own criterion 4 only on paper. Owner chose block-and-carry at the phase boundary.", "phase": "50b"},
-    {"decision": "Merge tasks 2+3 of plan 50a-01 into ONE atomic task before executing", "rationale": "generate.py's validate.check_skill_set raises before any write on a mismatched skill set, so the per-task auto-commit between the absorption and the re-emit would have committed a state that cannot even regenerate. The plan-checker caught that the plan's prose said 'one commit' while the executor harness had no mechanism to honour it.", "phase": "50a"},
-    {"decision": "Extend package-facts.md with a Convention Profiles section instead of a sibling derived artifact", "rationale": "A second artifact would have required re-widening ci.yml's stale-derived job — exactly the growth v2.6 forbids. Result: zero ci.yml and zero .gitignore diff for phase 48.", "phase": "48"},
-    {"decision": "Accept the recorded tech debt and archive rather than fix inline", "rationale": "Audit status tech_debt with 0 gaps; no item blocks the milestone goal. All three are written into the audit with locations.", "phase": "milestone"},
-    {"decision": "Reconcile the four nyquist_compliant flags to true at audit time", "rationale": "Every Wave-0 test file shipped and every task carried an automated verify command; only the frontmatter flag had never been flipped. Records drift, not coverage drift.", "phase": "milestone"},
-    {"decision": "Record the ruff baseline shrink 74 -> 67 after repairing the ratchet", "rationale": "The ratchet permits the baseline to shrink only; recording it means the seven reflowed lines cannot silently come back.", "phase": "post-milestone"},
-    {"decision": "Use strict=True for both new zip() call sites in test_orchestrator_topology.py", "rationale": "positions is built as a 1:1 comprehension over _ROUTE_SUBSECTIONS, so equal length is structurally guaranteed; strict=True turns that invariant into something enforced rather than assumed.", "phase": "post-milestone"}
+    {"decision": "Extend contracts/harness/adoption/manifest.schema.json in place instead of adding a sibling installed.schema.json", "rationale": "ROADMAP.md:229 binds v2.7 to 'contracts 6 ... do not increase' and Phase 54 SC-2 re-checks it; a sibling would make 7 and red Phase 54 before it runs. Retiring contracts/sample/greeting.schema.json to make room was priced and rejected — load-bearing across ~10 test modules and fixture trees. The original discuss decision's rationale ('keeps the manifest hash clean') was void anyway: the `update` enum changes that hash regardless.", "phase": "53"},
+    {"decision": "Store exactly ONE hash per managed entry — installed_sha256. Dropped source_sha256.", "rationale": "draft already recomputes the harness source hash every run via destinations.harness_proposed_hashes() and already reconstructs the full payload including the derived splice. 'Did the source move?' is answered by comparing the recomputed payload hash against the recorded installed_sha256. A stored second hash only goes stale.", "phase": "53"},
+    {"decision": "No conflicts.json artifact and no conflicts[] contract array — the drafted manifest.json IS the conflict report.", "rationale": "manifest.json already carries a disposition: 'conflict' row per diverged destination, is already schema-validated, and is already batch-local. MONO-12 SC-3 asks for 'a conflict report' — that is it. Apply adds only a stderr summary naming each diverged destination with both hashes.", "phase": "53"},
+    {"decision": "No distinct exit code 3 for conflicts — existing 0/1/2 semantics untouched.", "rationale": "No MONO-12 success criterion mentions exit codes, and no caller reads adoption-apply's exit code by number today. Revisit only if a real CI gate needs it.", "phase": "53"},
+    {"decision": "The manifest must compare harness/project.toml against the POST-splice payload hash, not the raw harness_proposed_hashes() value.", "rationale": "cli.py:292 writes that destination as `harness_payload + b'\\n' + sidecar_bytes`. If the manifest keeps comparing against the raw proposed hash, post-splice bytes never match, `preserve` can never fire, and the NEW update step fires on every re-run — a permanent rewrite that silently breaks SC-2's no-op. WR-08 would not die, it would INVERT. Pinned in 53-03 Task 2: the splice expression is factored into one helper (_spliced_project_toml) so the two call sites cannot drift, and mutation check (a) requires the WR-08 test to red if the override is removed.", "phase": "53"},
+    {"decision": "Skipped the gsd-pattern-mapper agent.", "rationale": "53-CONTEXT.md's <code_context> already names every analog file with its role; a PATTERNS.md would be a redundant artifact — the opposite of the direction the user steered mid-phase.", "phase": "53"}
   ],
   "uncommitted_files": [],
-  "next_action": "Read .planning/NEXT-SESSION-PROMPT.md, then run /gsd:new-milestone to scope v2.7.",
-  "context_notes": "v2.6 is a CLEAN BOUNDARY, not a pause: audited, archived, tagged locally, PR #7 merged to main (e9824cd), all 12 CI jobs green, working tree clean. .planning/phases/ is empty and .planning/REQUIREMENTS.md is intentionally absent (archived to .planning/milestones/v2.6-REQUIREMENTS.md) — /gsd:new-milestone writes the fresh one. Live surface: 19 commands, 8 skills, 6 contracts, 981 tests. THE PROCESS LESSON THAT MATTERS MOST THIS SESSION: the in-session gate I actually ran (uv run pytest) was NOT the CI gate, and I reported the tree green several times before CI caught 23 ruff violations the ratchet would have caught locally. /verify-work already includes lint; the phase executors never went through it. Run `uv run python -m tools.ruff_baseline` before claiming green. SECOND LESSON: adversarial review found 8 critical defects that phase verification had already passed over — verification and review do different jobs, and the data argues against trimming review."
+  "next_action": "Run /gsd:execute-phase 53. It starts at plan 53-01 Task 1, which authors the off-plane constitution-plane script and then STOPS for the human to run it (53-01 is autonomous: false).",
+  "context_notes": "Phase 53 is fully planned and verified; ZERO execution has happened. The whole phase turns on one idea: /adopt starts writing a target-side .harness/adoption/installed.json recording ONE hash per managed file (the bytes as actually written, post-splice). That single stored hash is what lets a re-run distinguish 'the harness source moved' (-> new `update` disposition, rewrite) from 'a human edited the target' (-> conflict, byte-unchanged, named on stderr). Phase 52's deferred WR-08 and WR-07 die as side effects. THE PROCESS LESSON FROM THIS SESSION: the user stopped me mid-planning because I was expanding past MONO-12, and was right — three items were cut and the contract change shrank from 1-2 new files to one optional array on an existing file. Treat any further addition with the same suspicion; the plans carry grep guards so a resuming agent cannot quietly reintroduce them. Carried forward from v2.6: run `uv run python -m tools.ruff_baseline` before claiming the tree is green — pytest alone is NOT the CI gate."
 }
