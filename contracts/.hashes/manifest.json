@@ -1,6 +1,6 @@
 {
   "contracts/harness/adoption/inventory.schema.json": "688b75206df61d4b94ab071c1d1ec2ad686d4e434e33eca99774684050302396",
-  "contracts/harness/adoption/manifest.schema.json": "c10b9b9e22d7002bf9527e5b648b1bb59c7c27126ac76b5912b06d7149a25471",
+  "contracts/harness/adoption/manifest.schema.json": "85dab9bfffd9090131a8b726e835d68f2a2fd064e91bfa62f01c0330b17273d7",
   "contracts/harness/adoption/plan.schema.json": "5c4f2db58648ed4e5482d46359bad30b08c3729f69b8edc419e48adc3fa107f6",
   "contracts/harness/topology/relationship.schema.json": "27377a8867084ed7121baf3f59a413432824fa58702084a6fd05d41900f9fc38",
   "contracts/normalization/format-conventions.schema.json": "1af8935bf997faf80939db7228366c311c17f14729a0b9eee914799854d85ffc",
