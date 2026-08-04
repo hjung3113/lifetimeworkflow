@@ -1,5 +1,9 @@
 {
   "changed_paths": [],
+  "content_changed_paths": [
+    ".harness/adoption/installed.json",
+    ".memory/README.md"
+  ],
   "disposition_counts": {
     "conflict": 3,
     "derived-regenerate": 84,
@@ -8,6 +12,10 @@
     "preserve": 149,
     "update": 1
   },
+  "effective_changed_paths": [
+    ".harness/adoption/installed.json",
+    ".memory/README.md"
+  ],
   "expected_disposition_paths": [
     ".claude/settings.json",
     ".memory/README.md",

@@ -48,10 +48,38 @@ test rather than slipping in.
 
 Cycle 2 stderr, literal: `applied=0 updated=0 unchanged=154 conflicts=2 skipped=85 refused=23`.
 
-`compare.json` for cycle 2: `matches: true`, `changed_paths: []`, `unexpected_paths: []`,
-`product_code_paths: []`, and the driver was run with `--require-no-writes`, which exits non-zero on
-any non-sidecar write. Cycle 2's installed record sha256 is **identical** to cycle 1's
-(`41de1aa61f31…`) — the no-op did not rewrite the record.
+The deciding value is the **per-file content digest** of the whole worktree taken immediately before
+and after each apply (53-CONTEXT.md's "before/after tree hash"):
+
+| cycle | files whose CONTENT changed | which |
+|---|---|---|
+| 1 | 159 | the 155 written destinations + 3 lock sidecars + the installed record |
+| 2 | **0** | — |
+| 3 | 2 | `.memory/README.md`, `.harness/adoption/installed.json` |
+| 4 | 2 | `.memory/README.md`, `.harness/adoption/installed.json` |
+
+Cycle 2 changed **nothing on disk**. Not "nothing unexpected" — nothing at all. Cycle 2's installed
+record sha256 is identical to cycle 1's (`41de1aa61f31…`), which is the same fact seen from the
+record's side.
+
+**Read the `changed_paths` field with care.** It is a `git status --porcelain=v2` *path-set*
+difference and is therefore blind to a file whose content was rewritten while its path stayed in the
+set — which, after cycle 1, is every managed destination. `changed_paths` is `[]` for cycles 3 and 4
+too, and those cycles demonstrably wrote a file. The path-set delta is a supporting signal, not the
+proof; `content_changed_paths` and the record hash are what decide SC-2. The first version of this
+document named `--require-no-writes` on the path-set delta as the proof, which it never was.
+
+The instrument was then proven able to fail, in `evidence/isolation/instrument-guards.txt`. Given
+cycle 2's real captures and a copy of its after-tree in which exactly ONE already-present file
+carries a different digest — path set untouched:
+
+```
+control  (unmutated after-tree)                        -> exit=0
+mutated  (one file's CONTENT differs)                  -> exit=1
+SAME mutation, tree digests omitted (path-set only)    -> exit=0
+```
+
+The third line is the point: the old instrument passes the very mutation the new one catches.
 
 The two cycle-2 conflicts are both correct and neither is a managed-file rewrite:
 
@@ -97,7 +125,10 @@ and cycle 3 did not touch.
 ```
 
 The post-apply hash equals the pre-apply hash **exactly** — byte-unchanged, not merely "different
-from the harness content". The apply names it on stderr with both hashes:
+from the harness content". Independently confirmed from the other side: cycle 4's
+`content_changed_paths` is `['.harness/adoption/installed.json', '.memory/README.md']` and
+`.github/CODEOWNERS` is **absent** from it, so the conflicted file was not among the files written.
+The apply names it on stderr with both hashes:
 
 ```
 conflict destination=.github/CODEOWNERS installed_sha256=ade9ff75048f3c4334b4c94199d01af5b1fef1121b78e70716f7070cbc1a3b2f current_sha256=be23af81e526c5699298c6ca4e2ba834f3f86b7f558fc15a8c9969e4b8630ebd
@@ -113,24 +144,23 @@ separate conflict artifact and no exit code by number.
 
 ```json
 {
-  "before_head": "bc9788bc6d57d0284173164e4a6da150b99f6760",
-  "after_head": "bc9788bc6d57d0284173164e4a6da150b99f6760",
+  "before_head": "146d7fb0956861340e4704a92ff5c349825af5d2",
+  "after_head": "146d7fb0956861340e4704a92ff5c349825af5d2",
   "head_equal": true, "index_equal": true,
   "untracked_equal": true, "status_equal": true,
   "post_disposal": { "equal_to_before": true, "disposal_exit_code": 0 }
 }
 ```
 
-The mis-targeting guard was **proven to fire before it was trusted**: run against a hand-written
+The mis-targeting guard was **proven to fire before it was trusted**, and the proof is captured in
+`evidence/isolation/instrument-guards.txt` rather than merely asserted here: against a hand-written
 argv line ending in `--target /Users/hyojung/Desktop/2026/FeedbackOps` the anchored pattern matched
-(the verify block would exit 1), and against the legitimate worktree path it did not match. The
-run driver additionally refuses structurally, before any subprocess starts, if `--target` resolves
-to the original checkout — that refusal was also observed firing.
+(the verify block would exit 1), and against the legitimate worktree path it did not match.
 
 Third-party movement of the checkout is attributed in `evidence/isolation/external-drift.json`, not
-left unexplained: the checkout now sits on `feature/293-presubmit-similar-voc` and moved again after
-disposal. All of that is outside this run's window; within the window the checkout was byte-identical
-throughout. The worktree is disposed and absent from `git worktree list`.
+left unexplained: the checkout sits on `feature/293-presubmit-similar-voc` and moved twice during
+this phase's work. All of that is outside this run's window; within the window the checkout was
+byte-identical throughout. The worktree is disposed and absent from `git worktree list`.
 
 ---
 

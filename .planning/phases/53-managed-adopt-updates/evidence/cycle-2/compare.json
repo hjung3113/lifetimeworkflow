@@ -1,5 +1,6 @@
 {
   "changed_paths": [],
+  "content_changed_paths": [],
   "disposition_counts": {
     "conflict": 2,
     "derived-regenerate": 84,
@@ -7,6 +8,7 @@
     "marker-merge": 3,
     "preserve": 151
   },
+  "effective_changed_paths": [],
   "expected_disposition_paths": [
     ".claude/settings.json",
     "AGENTS.md",

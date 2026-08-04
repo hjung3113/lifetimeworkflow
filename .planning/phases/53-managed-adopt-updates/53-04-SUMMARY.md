@@ -99,10 +99,20 @@ happening. Only running the real target repeatedly exposed it.
   Editing `adopt.md`/`SKILL.md` necessarily moves
   `tools/harness_emit/tests/__snapshots__/test_emit_determinism.ambr`, a derived artifact of those
   files. `contracts/` stayed clean throughout, which is the part that matters.
-- **The driver's porcelain-based `changed_paths` cannot see content changes to untracked files.**
-  `.harness/adoption/installed.json` is untracked, so a rewrite of it left `changed_paths` empty and
-  `matches: true` even while the record hash was advancing. The record-hash invariant is what caught
-  it. Noted because a future reader could over-trust `matches`.
+- **The driver's porcelain-based `changed_paths` could not see content rewrites at all** — not just
+  for untracked files, as an earlier draft of this summary said. It is a path-SET difference, so any
+  file whose path was already in the set (i.e. every managed destination after cycle 1) could be
+  rewritten invisibly. Phase verification caught the evidence document naming
+  `--require-no-writes` on that delta as the proof of the no-op, which it never was.
+
+  Rather than reword the claim, the instrument was fixed to match what `53-CONTEXT.md` actually
+  specified: the driver now takes before/after per-file content digests of the whole target
+  (`--before-tree`/`--after-tree`), and every verdict plus `--require-no-writes` is computed from the
+  union of the path delta and the content delta. The four cycles were re-run against the real target
+  with it. Cycle 2's `content_changed_paths` is `[]` — the no-op is now proven directly rather than
+  inferred. The new instrument was itself proven able to fail
+  (`evidence/isolation/instrument-guards.txt`): a content-only mutation with an unchanged path set
+  exits 1 with the digests and exits 0 without them.
 
 ## Verification
 

@@ -15,23 +15,18 @@
     {
       "when": "phase-53 evidence run (this one)",
       "develop_sha": "a4e8e646b5c0169cf4f1978e64adc8b97dad66a9",
-      "checkout_head": "bc9788bc6d57d0284173164e4a6da150b99f6760",
-      "checkout_branch": "feature/293-presubmit-similar-voc",
-      "note": "The checkout is no longer sitting on develop; its HEAD is a feature branch. The worktree was provisioned at the DEVELOP sha re-read live at run start, exactly as the plan requires, not at the checkout's HEAD."
-    },
-    {
-      "when": "immediately after this evidence run completed",
       "checkout_head": "146d7fb0956861340e4704a92ff5c349825af5d2",
-      "note": "The checkout moved again after disposal — a live third-party repository under active development. Outside this run's window; not caused by it."
+      "checkout_branch": "feature/293-presubmit-similar-voc",
+      "note": "The checkout is no longer sitting on develop; its HEAD is a feature branch that moved twice during this phase's work (bc9788bc -> 146d7fb0), which is ordinary activity in a live repository. The worktree was provisioned at the DEVELOP sha re-read live at run start, exactly as the plan requires, never at the checkout's HEAD."
     }
   ],
   "within_run_isolation": {
-    "before_head": "bc9788bc6d57d0284173164e4a6da150b99f6760",
-    "after_head": "bc9788bc6d57d0284173164e4a6da150b99f6760",
-    "final_head_post_disposal": "bc9788bc6d57d0284173164e4a6da150b99f6760",
+    "before_head": "146d7fb0956861340e4704a92ff5c349825af5d2",
+    "after_head": "146d7fb0956861340e4704a92ff5c349825af5d2",
+    "final_head_post_disposal": "146d7fb0956861340e4704a92ff5c349825af5d2",
     "index_unchanged": true,
     "untracked_set_unchanged": true,
     "porcelain_status_unchanged": true,
-    "verdict": "The original checkout was never written to. Every --target argument named the detached worktree; the mis-target guard was proven to fire against a hand-written mis-targeted argv before the run."
+    "verdict": "The original checkout was never written to. Every --target argument named the detached worktree; the anchored mis-target guard was proven to fire against a hand-written mis-targeted argv, and not to fire against the legitimate worktree path, before the run was trusted — see instrument-guards.txt."
   }
 }
