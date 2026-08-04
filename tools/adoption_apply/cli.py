@@ -26,6 +26,7 @@ scanned target itself.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -33,6 +34,7 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 
 from tools.adoption_apply import apply as apply_module
+from tools.adoption_apply import installed
 from tools.adoption_apply.apply import apply_manifest, refuse_if_outside_root
 from tools.adoption_apply.batch import create_or_resume_batch
 from tools.adoption_scan import destinations, scan
@@ -158,12 +160,45 @@ def _cmd_draft(args: argparse.Namespace) -> int:
     batch_id = status["batch_id"]
     batch_root = _batch_root(args.task_dir, batch_id)
 
+    try:
+        installed_records = installed.read_installed_record(target)
+    except installed.InstalledRecordError as exc:
+        print(
+            f"tools.adoption_apply draft: unreadable installed record: {exc}",
+            file=sys.stderr,
+        )
+        return 1
+
+    # OBS-D-03 / D-12 (52-CONTEXT.md): the ONE sanctioned CR-01 exception — target-derived
+    # [[languages]] row. Derive before building the manifest so its post-splice bytes become the
+    # proposed hash for harness/project.toml (WR-08).
+    derived: str | None = None
+    workspace_marker = target / "pnpm-workspace.yaml"
+    root_manifest = target / "package.json"
+    if workspace_marker.is_file() and root_manifest.is_file():
+        try:
+            manifest_text: str | None = root_manifest.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            print(
+                f"tools.adoption_apply draft: unreadable target package.json: {exc} — "
+                "no derived [[languages]] sidecar written",
+                file=sys.stderr,
+            )
+            manifest_text = None
+        derived = derive_language_rows(manifest_text) if manifest_text is not None else None
+
     # Identical scan -> plan -> manifest sequence tools.adoption_scan.cli.main uses — never
     # re-implemented. Target is read strictly read-only.
     inventory = scan.build_inventory(target)
     plan_doc = plan_mod.build_plan(inventory)
     proposed_hashes = destinations.harness_proposed_hashes()
-    manifest_doc = destinations.build_manifest(inventory, target, proposed_hashes)
+    if derived is not None:
+        proposed_hashes["harness/project.toml"] = hashlib.sha256(
+            _spliced_project_toml(_harness_payload("harness/project.toml"), derived.encode("utf-8"))
+        ).hexdigest()
+    manifest_doc = destinations.build_manifest(
+        inventory, target, proposed_hashes, installed=installed_records
+    )
 
     documents: dict[str, dict] = {
         "inventory": inventory,
@@ -189,34 +224,11 @@ def _cmd_draft(args: argparse.Namespace) -> int:
         out_path.write_bytes(scan._dump(documents[name]))
         print(f"wrote {out_path}", file=sys.stderr)
 
-    # OBS-D-03 / D-12 (52-CONTEXT.md): the ONE sanctioned CR-01 exception — target-derived
-    # [[languages]] row, derived here at draft time from the target's OWN root package.json, only
-    # when the target declares itself a pnpm workspace. Batch-local sidecar data, never a
-    # contract/command/skill (NG-01 untouched).
-    workspace_marker = target / "pnpm-workspace.yaml"
-    root_manifest = target / "package.json"
-    if workspace_marker.is_file() and root_manifest.is_file():
-        # WR-06 (52-REVIEW.md): `read_text` on TARGET-controlled content raised
-        # UnicodeDecodeError/OSError straight out of `main()` as an unhandled traceback — and it
-        # did so AFTER inventory.json / plan.json / manifest.json were already written, leaving a
-        # batch that looks drafted but carries no sidecar and no error record. Every other
-        # failure in _cmd_draft returns a clean exit code; this one now degrades with a named
-        # message and the draft completes without a sidecar.
-        try:
-            manifest_text: str | None = root_manifest.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError) as exc:
-            print(
-                f"tools.adoption_apply draft: unreadable target package.json: {exc} — "
-                "no derived [[languages]] sidecar written",
-                file=sys.stderr,
-            )
-            manifest_text = None
-        derived = derive_language_rows(manifest_text) if manifest_text is not None else None
-        if derived is not None:
-            sidecar_path = batch_root / _DERIVED_LANGUAGES_SIDECAR
-            refuse_if_outside_root(sidecar_path, batch_root)
-            sidecar_path.write_text(derived, encoding="utf-8")
-            print(f"wrote {sidecar_path}", file=sys.stderr)
+    if derived is not None:
+        sidecar_path = batch_root / _DERIVED_LANGUAGES_SIDECAR
+        refuse_if_outside_root(sidecar_path, batch_root)
+        sidecar_path.write_text(derived, encoding="utf-8")
+        print(f"wrote {sidecar_path}", file=sys.stderr)
 
     return 0
 
@@ -228,6 +240,11 @@ def _harness_payload(destination: str) -> bytes:
     if not candidate.is_file():
         return b""
     return candidate.read_bytes()
+
+
+def _spliced_project_toml(payload: bytes, sidecar_bytes: bytes) -> bytes:
+    """Return the exact post-splice project payload used for draft comparison and apply (WR-08)."""
+    return payload + b"\n" + sidecar_bytes
 
 
 def _harness_block_body(destination: str) -> str:
@@ -266,7 +283,7 @@ def _cmd_apply(args: argparse.Namespace) -> int:
     for record in manifest["dispositions"]:
         destination = record["destination"]
         disposition_value = record["disposition"]
-        if disposition_value == "create":
+        if disposition_value in ("create", "update"):
             payloads[destination] = _harness_payload(destination)
         elif disposition_value == "marker-merge":
             block_bodies[destination] = _harness_block_body(destination)
@@ -277,31 +294,20 @@ def _cmd_apply(args: argparse.Namespace) -> int:
     # checkout bytes verbatim (T-52-10 — the splice guard is the exact literal destination string,
     # never a prefix/glob match).
     #
-    # WR-08 (52-REVIEW.md), recorded consequence — NOT repaired here. The applied bytes are
-    # `harness_payload + b"\n" + sidecar_bytes`, so `sha256(existing) != proposed_sha` on the next
-    # draft: `destinations.disposition()` step 6 (`preserve`) can never fire for
-    # harness/project.toml again and step 7 classifies it `conflict` permanently, with nothing in
-    # the manifest recording that the divergence is harness-DERIVED rather than a human edit.
-    # Recording that provenance needs a new field on the disposition record, i.e. a change to
-    # contracts/harness/adoption/manifest.schema.json — the constitution plane, which is
-    # human-gated and closed for this phase. Noted here so Phase 53's re-run-as-update work does
-    # not rediscover it.
     sidecar_path = batch_root / _DERIVED_LANGUAGES_SIDECAR
     if "harness/project.toml" in payloads and sidecar_path.is_file():
         sidecar_bytes = sidecar_path.read_bytes()
-        payloads["harness/project.toml"] = payloads["harness/project.toml"] + b"\n" + sidecar_bytes
+        payloads["harness/project.toml"] = _spliced_project_toml(
+            payloads["harness/project.toml"], sidecar_bytes
+        )
         print(
             f"spliced {sidecar_path} into harness/project.toml payload (OBS-D-03 / D-12)",
             file=sys.stderr,
         )
     elif sidecar_path.is_file():
-        # WR-07 (52-REVIEW.md): `payloads` is populated ONLY for `create` dispositions. If the
-        # target already carries a harness/project.toml the disposition is `preserve` or
-        # `conflict`, so the sidecar was silently ignored — the D-12 repair did nothing and said
-        # nothing. Reachable on every re-adoption, i.e. the whole Phase-53 update scenario.
         print(
             f"tools.adoption_apply apply: derived languages sidecar present at {sidecar_path} "
-            "but harness/project.toml is not a 'create' destination — NOT spliced "
+            "but harness/project.toml is not a create/update destination — NOT spliced "
             "(OBS-D-03 / D-12)",
             file=sys.stderr,
         )
@@ -326,13 +332,44 @@ def _cmd_apply(args: argparse.Namespace) -> int:
         IsADirectoryError,
         FileExistsError,
         NotADirectoryError,
+        installed.InstalledRecordError,
     ) as exc:
         print(f"tools.adoption_apply apply: {exc}", file=sys.stderr)
         return 1
 
+    try:
+        previous = installed.read_installed_record(args.target)
+        records_by_destination = {record["destination"]: record for record in previous}
+        for destination, installed_sha in summary["written_hashes"].items():
+            records_by_destination[destination] = {
+                "destination": destination,
+                "installed_sha256": installed_sha,
+                "batch_id": args.batch_id,
+            }
+        records = [records_by_destination[key] for key in sorted(records_by_destination)]
+        if records != previous:
+            installed.write_installed_record(args.target, records)
+    except installed.InstalledRecordError as exc:
+        print(f"tools.adoption_apply apply: {exc}", file=sys.stderr)
+        return 1
+
+    recorded_hashes = {
+        record["destination"]: record["installed_sha256"]
+        for record in manifest.get("installed", [])
+    }
+    for destination in summary["conflicts"]:
+        current_sha = apply_module._existing_hash(Path(args.target) / destination)
+        print(
+            f"conflict destination={destination} "
+            f"installed_sha256={recorded_hashes.get(destination, 'none-recorded')} "
+            f"current_sha256={current_sha}",
+            file=sys.stderr,
+        )
+
     print(
-        f"applied={len(summary['applied'])} skipped={len(summary['skipped'])} "
-        f"refused={len(summary['refused'])}",
+        f"applied={len(summary['applied'])} updated={len(summary['updated'])} "
+        f"unchanged={len(summary['unchanged'])} conflicts={len(summary['conflicts'])} "
+        f"skipped={len(summary['skipped'])} refused={len(summary['refused'])}",
         file=sys.stderr,
     )
     return 0
