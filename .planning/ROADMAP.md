@@ -235,7 +235,7 @@ contracts 6, and CI jobs and gates do not increase. Runtime artifacts are author
   target and capture reproducible evidence before designing repairs.
 - [x] **Phase 52: Evidence-Bounded Real-Target Adoption** - Make the required adoption capabilities (completed 2026-07-31)
   work using only failures established by Phase 51.
-- [ ] **Phase 53: Managed Adopt Updates** - Prove install-to-update behavior, unchanged no-op, and
+- [x] **Phase 53: Managed Adopt Updates** - Prove install-to-update behavior, unchanged no-op, and (completed 2026-08-04)
   divergence-safe conflict handling on the real target.
 - [ ] **Phase 54: Surface Budget Closeout** - Remove the named duplicate adapter and close the
   milestone without growing commands, skills, contracts, CI jobs, or gates.
@@ -316,7 +316,7 @@ Plans:
 - [x] 53-03-PLAN.md — `apply.py`'s `update` branch via `_atomic_replace` + six-way summary; CLI wiring (post-splice comparison hash, no-op-guarded record write, stderr conflict summary); paired SC-2a/2b and SC-3 end-to-end coverage. Closes WR-07 and WR-08.
 
 **Wave 4** *(blocked on Wave 3)*
-- [ ] 53-04-PLAN.md — Four-cycle real-target re-run on a fresh FeedbackOps worktree (first adopt, no-op, harness-source move, target divergence) with evidence capture and disposal; `/adopt` docs updated in place and re-emitted. No governed-surface growth.
+- [x] 53-04-PLAN.md — Four-cycle real-target re-run on a fresh FeedbackOps worktree (first adopt, no-op, harness-source move, target divergence) with evidence capture and disposal; `/adopt` docs updated in place and re-emitted. No governed-surface growth.
 
 ### Phase 54: Surface Budget Closeout
 **Goal**: The milestone closes with the named duplication removed and no growth in governed harness surfaces
@@ -368,7 +368,7 @@ Plans:
 | 50b | v2.6 | — | **BLOCKED** — no real multi-package target repo; MONO-12 carried | - |
 | 51. Real-Target Observation Baseline | v2.7 | 3/3 | Complete (verified 4/4; OBS-03 **refuted**) | 2026-07-31 |
 | 52. Evidence-Bounded Real-Target Adoption | v2.7 | 6/6 | Complete   | 2026-07-31 |
-| 53. Managed Adopt Updates | v2.7 | 3/4 | In Progress|  |
+| 53. Managed Adopt Updates | v2.7 | 4/4 | Complete   | 2026-08-04 |
 | 54. Surface Budget Closeout | v2.7 | 0/TBD | Not started | - |
 
 Per-phase plan counts for v1.0–v2.2 are preserved in the milestone archives under
