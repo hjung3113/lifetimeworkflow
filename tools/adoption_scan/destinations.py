@@ -406,15 +406,16 @@ def build_manifest(
     add/remove never reds a snapshot test built over an explicit fixed catalog.
 
     WR-03: the existing-file hash used for the step-6/7 comparison is sourced from ``inventory``
-    when available — the already-computed ``sha256`` for an ``included`` destination, or the
-    :data:`_EXCLUDED_SENTINEL` (never a real hash) for an ``excluded`` one — rather than an
-    unconditional re-read of the target file inside :func:`disposition`.
+    when available — the already-computed ``sha256`` for an ``included`` destination, a fresh
+    hash only for a scope-excluded destination, or :data:`_EXCLUDED_SENTINEL` (never a real hash)
+    for a content refusal — rather than an unconditional re-read of the target file inside
+    :func:`disposition`.
 
     ``installed`` is copied verbatim (including each ``batch_id``) when non-empty, making the
     manifest self-describing about the recorded hashes used for its comparisons.
     """
     included_hashes = {entry["path"]: entry["sha256"] for entry in inventory.get("included", [])}
-    excluded_paths = {entry["path"] for entry in inventory.get("excluded", [])}
+    excluded_by_path = {entry["path"]: entry for entry in inventory.get("excluded", [])}
     installed_hashes = {row["destination"]: row["installed_sha256"] for row in installed or []}
 
     dispositions: list[dict] = []
@@ -424,8 +425,12 @@ def build_manifest(
         destination = row["destination"]
         if destination in included_hashes:
             existing_sha = included_hashes[destination]
-        elif destination in excluded_paths:
-            existing_sha = _EXCLUDED_SENTINEL
+        elif (excluded_entry := excluded_by_path.get(destination)) is not None:
+            existing_sha = (
+                _existing_hash(Path(target_root) / destination)
+                if excluded_entry["excluded"] in scan.REHASHABLE_EXCLUSION_REASONS
+                else _EXCLUDED_SENTINEL
+            )
         else:
             existing_sha = None
         result = disposition(

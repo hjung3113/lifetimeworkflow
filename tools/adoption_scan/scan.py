@@ -118,6 +118,16 @@ _SOURCE_DUMP_BANNER_MARKERS = (
 # Path-segment tokens for D-08 reading (b): over-cap PLUS a dump/snapshot/backup segment.
 _SOURCE_DUMP_SEGMENT_TOKENS = ("dump", "snapshot", "backup")
 
+GENERATED_EXCLUSION_REASON = "generated"
+NON_WORKSPACE_MEMBER_EXCLUSION_REASON = "non-workspace-member"
+
+# Exclusions that are outside the target inventory but remain safe to hash when a catalogued
+# destination needs its current bytes for re-adoption classification. Every other exclusion is a
+# content refusal and must never be re-read by destinations.build_manifest (WR-03).
+REHASHABLE_EXCLUSION_REASONS: frozenset[str] = frozenset(
+    {NON_WORKSPACE_MEMBER_EXCLUSION_REASON, GENERATED_EXCLUSION_REASON}
+)
+
 _BINARY_SCAN_BYTES = 8192
 _MARKER_SCAN_BYTES = 2048
 _CONTENT_PREFIX_BYTES = 64 * 1024
@@ -231,7 +241,7 @@ def classify_exclusions(path: Path, *, base: Path, max_bytes: int) -> dict | Non
     # 2. Generated segment (path-only, no open()).
     if any(seg in _GENERATED_SEGMENTS for seg in parts):
         size = path.stat().st_size
-        return {"path": rel, "size": size, "excluded": "generated"}
+        return {"path": rel, "size": size, "excluded": GENERATED_EXCLUSION_REASON}
 
     # 3. Size cap — checked BEFORE any open(). Distinguishes D-08 reading (b) (over-cap + a
     #    dump/snapshot/backup path segment -> source-dump) from a plain over-cap file
@@ -263,7 +273,7 @@ def classify_exclusions(path: Path, *, base: Path, max_bytes: int) -> dict | Non
 
     # 5. Generated content marker (narrow set — never the harness's own "do not hand-edit" text).
     if any(marker in head for marker in _GENERATED_MARKERS):
-        return {"path": rel, "size": size, "excluded": "generated"}
+        return {"path": rel, "size": size, "excluded": GENERATED_EXCLUSION_REASON}
 
     # 6. Secret-path glob (this module's own SECRET_PATH_GLOBS, resolved via the repo's ONE
     #    last-wins glob resolver).
@@ -410,7 +420,13 @@ def build_inventory(
                     continue
                 if not detect.is_workspace_member(manifest_dir, workspace_globs):
                     size = candidate.stat().st_size
-                    excluded.append({"path": rel, "size": size, "excluded": "non-workspace-member"})
+                    excluded.append(
+                        {
+                            "path": rel,
+                            "size": size,
+                            "excluded": NON_WORKSPACE_MEMBER_EXCLUSION_REASON,
+                        }
+                    )
                     continue
 
         included.append(

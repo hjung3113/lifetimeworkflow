@@ -8,10 +8,11 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
-from tools.adoption_scan import cli, destinations
+from tools.adoption_scan import cli, destinations, scan
 from tools.harness_emit.manifest import is_gsd_owned
 
 # WR-11: a loose sanity floor on the real, git-tracked-filtered catalog size — not an exact count
@@ -202,6 +203,81 @@ def test_build_manifest_unrecorded_divergence_conflicts_not_updates(tmp_path: Pa
 
     assert without_record["dispositions"] == [{"destination": rel, "disposition": "conflict"}]
     assert with_matching_record["dispositions"] == [{"destination": rel, "disposition": "update"}]
+
+
+def test_scope_excluded_destination_preserves_or_updates_from_its_recorded_hash(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    assert scan.REHASHABLE_EXCLUSION_REASONS == {
+        scan.GENERATED_EXCLUSION_REASON,
+        scan.NON_WORKSPACE_MEMBER_EXCLUSION_REASON,
+    }
+    rel = "tools/widget/pyproject.toml"
+    target = tmp_path / rel
+    target.parent.mkdir(parents=True)
+    target.write_text("installed bytes\n", encoding="utf-8")
+    installed_sha = destinations._existing_hash(target)
+    inventory = {
+        "target_ref": "target",
+        "included": [],
+        "excluded": [
+            {
+                "path": rel,
+                "size": target.stat().st_size,
+                "excluded": scan.GENERATED_EXCLUSION_REASON,
+            }
+        ],
+    }
+    catalog = [{"destination": rel}]
+    hash_spy = MagicMock(wraps=destinations._existing_hash)
+    monkeypatch.setattr(destinations, "_existing_hash", hash_spy)
+
+    preserve = destinations.build_manifest(
+        inventory,
+        tmp_path,
+        {rel: installed_sha},
+        catalog=catalog,
+        installed=[{"destination": rel, "installed_sha256": installed_sha, "batch_id": "batch-1"}],
+    )
+    update = destinations.build_manifest(
+        inventory,
+        tmp_path,
+        {rel: "0" * 64},
+        catalog=catalog,
+        installed=[{"destination": rel, "installed_sha256": installed_sha, "batch_id": "batch-1"}],
+    )
+
+    assert hash_spy.call_count == 2
+    assert preserve["dispositions"] == [{"destination": rel, "disposition": "preserve"}]
+    assert update["dispositions"] == [{"destination": rel, "disposition": "update"}]
+
+
+def test_content_excluded_destination_conflicts_without_a_reread(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    rel = "binary.dat"
+    target = tmp_path / rel
+    target.write_bytes(b"\0unsafe")
+    inventory = {
+        "target_ref": "target",
+        "included": [],
+        "excluded": [{"path": rel, "size": target.stat().st_size, "excluded": "binary"}],
+    }
+    monkeypatch.setattr(
+        destinations,
+        "_existing_hash",
+        lambda _path: pytest.fail("content-excluded destination was re-read"),
+    )
+
+    manifest = destinations.build_manifest(
+        inventory,
+        tmp_path,
+        {rel: "a" * 64},
+        catalog=[{"destination": rel}],
+        installed=[{"destination": rel, "installed_sha256": "a" * 64, "batch_id": "batch-1"}],
+    )
+
+    assert manifest["dispositions"] == [{"destination": rel, "disposition": "conflict"}]
 
 
 def test_update_is_reachable_when_the_recorded_hash_matches(tmp_path: Path) -> None:

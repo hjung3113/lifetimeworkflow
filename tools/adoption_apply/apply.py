@@ -322,7 +322,7 @@ def expected_lock_sidecars(destinations: Iterable[str]) -> set[str]:
 HARNESS_MANAGED_LOCK_SIDECARS: frozenset[str] = frozenset(expected_lock_sidecars(MARKER_CAPABLE))
 
 
-def _apply_marker_merge(destination: str, target_path: Path, block_body: str = "") -> None:
+def _apply_marker_merge(destination: str, target_path: Path, block_body: str = "") -> bool:
     """Merge the harness-managed content into ``target_path`` and publish it atomically.
 
     ``.json`` destinations (``.claude/settings.json``) go through ``merge_settings``; every other
@@ -370,7 +370,10 @@ def _apply_marker_merge(destination: str, target_path: Path, block_body: str = "
             existing_text = _read_target_no_symlink(target_path)
             merged_text = splice_managed_block(existing_text or "", block_body)
             payload = merged_text.encode("utf-8")
+        if payload == (existing_text.encode("utf-8") if existing_text is not None else b""):
+            return False
         _atomic_replace(target_path, payload)
+        return True
 
 
 def apply_disposition(
@@ -430,7 +433,12 @@ def apply_disposition(
             raise ValueError(
                 f"'{destination}' is not marker-capable; the disposition manifest is malformed"
             )
-        _apply_marker_merge(destination, target_path, block_body)
+        if not _apply_marker_merge(destination, target_path, block_body):
+            return {
+                "destination": destination,
+                "disposition": disposition_value,
+                "status": "unchanged",
+            }
         return {
             "destination": destination,
             "disposition": disposition_value,
@@ -506,7 +514,7 @@ def apply_manifest(
             summary["written_hashes"][destination] = result["installed_sha256"]
         if result["status"] in ("applied", "updated"):
             summary[result["status"]].append(destination)
-        elif result["disposition"] == "preserve":
+        elif result["status"] == "unchanged" or result["disposition"] == "preserve":
             summary["unchanged"].append(destination)
         elif result["disposition"] == "conflict":
             summary["conflicts"].append(destination)
