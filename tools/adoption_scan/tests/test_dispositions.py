@@ -1,5 +1,5 @@
 """Task 1: destinations.py — totality over the rule-derived, real-file catalog +
-each-of-6-dispositions-reachable + marker-capable-set-is-exactly-3 + constitution-always-wins +
+each-of-7-dispositions-reachable + marker-capable-set-is-exactly-3 + constitution-always-wins +
 hash-equal/hash-differ collision rule + GSD-owned exclusion."""
 
 from __future__ import annotations
@@ -48,6 +48,12 @@ def test_total(tmp_path: Path) -> None:
     assert dispositioned  # non-vacuous: at least one row actually gets a disposition
     assert len(dispositioned) + len(excluded) == len(catalog)
     assert set(dispositioned) <= set(destinations.DISPOSITION_ENUM)
+    schema_path = (
+        Path(__file__).resolve().parents[3]
+        / "contracts/harness/adoption/manifest.schema.json"
+    )
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    assert set(destinations.DISPOSITION_ENUM) == set(schema["$defs"]["dispositionEnum"]["enum"])
 
 
 def test_catalog_invariant_to_untracked_local_state(repo_root: Path, tmp_path: Path) -> None:
@@ -168,6 +174,123 @@ def test_each_disposition_reachable(tmp_path: Path) -> None:
         )
         == "human-ratification-required"
     )
+
+
+def test_build_manifest_unrecorded_divergence_conflicts_not_updates(tmp_path: Path) -> None:
+    rel = "docs/how-to/managed.md"
+    target = tmp_path / rel
+    target.parent.mkdir(parents=True)
+    target.write_text("adopted bytes\n", encoding="utf-8")
+    existing_sha = destinations._existing_hash(target)
+    moved_payload = tmp_path / "moved-payload"
+    moved_payload.write_text("moved harness bytes\n", encoding="utf-8")
+    moved_sha = destinations._existing_hash(moved_payload)
+
+    inventory = {"target_ref": "target", "included": [{"path": rel, "sha256": existing_sha}]}
+    catalog = [{"destination": rel}]
+
+    without_record = destinations.build_manifest(
+        inventory, tmp_path, {rel: moved_sha}, catalog=catalog
+    )
+    with_matching_record = destinations.build_manifest(
+        inventory,
+        tmp_path,
+        {rel: moved_sha},
+        catalog=catalog,
+        installed=[{"destination": rel, "installed_sha256": existing_sha, "batch_id": "batch-1"}],
+    )
+
+    assert without_record["dispositions"] == [{"destination": rel, "disposition": "conflict"}]
+    assert with_matching_record["dispositions"] == [{"destination": rel, "disposition": "update"}]
+
+
+def test_update_is_reachable_when_the_recorded_hash_matches(tmp_path: Path) -> None:
+    rel = "docs/how-to/managed.md"
+    target = tmp_path / rel
+    target.parent.mkdir(parents=True)
+    target.write_text("adopted bytes\n", encoding="utf-8")
+    existing_sha = destinations._existing_hash(target)
+    moved_payload = tmp_path / "moved-payload"
+    moved_payload.write_text("moved harness bytes\n", encoding="utf-8")
+
+    assert (
+        destinations.disposition(
+            rel,
+            tmp_path,
+            destinations._existing_hash(moved_payload),
+            existing_sha=existing_sha,
+            installed_sha=existing_sha,
+        )
+        == "update"
+    )
+
+
+def test_preserve_still_wins_over_update(tmp_path: Path) -> None:
+    rel = "docs/how-to/managed.md"
+    target = tmp_path / rel
+    target.parent.mkdir(parents=True)
+    target.write_text("unchanged bytes\n", encoding="utf-8")
+    existing_sha = destinations._existing_hash(target)
+
+    assert (
+        destinations.disposition(
+            rel,
+            tmp_path,
+            existing_sha,
+            existing_sha=existing_sha,
+            installed_sha=existing_sha,
+        )
+        == "preserve"
+    )
+
+
+def test_target_side_edit_is_conflict_not_update(tmp_path: Path) -> None:
+    rel = "docs/how-to/managed.md"
+    target = tmp_path / rel
+    target.parent.mkdir(parents=True)
+    target.write_text("human edit\n", encoding="utf-8")
+    existing_sha = destinations._existing_hash(target)
+    installed_payload = tmp_path / "installed-payload"
+    installed_payload.write_text("adopted bytes\n", encoding="utf-8")
+    proposed_payload = tmp_path / "proposed-payload"
+    proposed_payload.write_text("moved harness bytes\n", encoding="utf-8")
+
+    assert (
+        destinations.disposition(
+            rel,
+            tmp_path,
+            destinations._existing_hash(proposed_payload),
+            existing_sha=existing_sha,
+            installed_sha=destinations._existing_hash(installed_payload),
+        )
+        == "conflict"
+    )
+
+
+def test_build_manifest_threads_installed_records(tmp_path: Path) -> None:
+    rel = "docs/how-to/managed.md"
+    target = tmp_path / rel
+    target.parent.mkdir(parents=True)
+    target.write_text("adopted bytes\n", encoding="utf-8")
+    existing_sha = destinations._existing_hash(target)
+    installed = [{"destination": rel, "installed_sha256": existing_sha, "batch_id": "batch-1"}]
+    moved_payload = tmp_path / "moved-payload"
+    moved_payload.write_text("moved harness bytes\n", encoding="utf-8")
+    inventory = {"target_ref": "target", "included": [{"path": rel, "sha256": existing_sha}]}
+
+    manifest = destinations.build_manifest(
+        inventory,
+        tmp_path,
+        {rel: destinations._existing_hash(moved_payload)},
+        catalog=[{"destination": rel}],
+        installed=installed,
+    )
+    assert manifest["dispositions"] == [{"destination": rel, "disposition": "update"}]
+    assert manifest["installed"] == installed
+    empty_manifest = destinations.build_manifest(
+        inventory, tmp_path, {}, catalog=[], installed=[]
+    )
+    assert "installed" not in empty_manifest
 
 
 def test_constitution_always_ratification(tmp_path: Path) -> None:
