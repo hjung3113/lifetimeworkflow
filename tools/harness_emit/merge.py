@@ -51,7 +51,8 @@ def splice_managed_block(existing_text: str, block_body: str) -> str:
     block = f"{BEGIN_MARKER}\n{body}\n{END_MARKER}"
 
     begin_idx = existing.find(BEGIN_MARKER)
-    end_idx = existing.find(END_MARKER)
+    # The body can legitimately carry its own fence, so the first END is not the outer region end.
+    end_idx = existing.rfind(END_MARKER)
 
     if begin_idx != -1 and end_idx != -1 and end_idx > begin_idx:
         # Markers present → replace ONLY the fenced region, preserve before/after verbatim.
