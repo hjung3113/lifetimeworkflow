@@ -1,0 +1,6 @@
+{
+  "destination": ".github/CODEOWNERS",
+  "pre_apply_sha256": "be23af81e526c5699298c6ca4e2ba834f3f86b7f558fc15a8c9969e4b8630ebd",
+  "post_apply_sha256": "be23af81e526c5699298c6ca4e2ba834f3f86b7f558fc15a8c9969e4b8630ebd",
+  "byte_unchanged": true
+}

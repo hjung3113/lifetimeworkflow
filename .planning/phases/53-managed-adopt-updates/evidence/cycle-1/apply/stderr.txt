@@ -1,0 +1,3 @@
+spliced /Users/hyojung/Desktop/2026/lifetimeworkflow/.planning/phases/53-managed-adopt-updates/evidence/cycle-1/draft/artifacts/adoption/1c897dc6f2fc4355/languages.toml into harness/project.toml payload (OBS-D-03 / D-12)
+conflict destination=.gitignore installed_sha256=none-recorded current_sha256=3ce726ba31ada08c9ef2a8ecd71d9ba331c7273c47b80c068319a8ec296cf00f
+applied=155 updated=0 unchanged=0 conflicts=1 skipped=85 refused=23

@@ -1,0 +1,19 @@
+{
+  "before_head": "bc9788bc6d57d0284173164e4a6da150b99f6760",
+  "after_head": "bc9788bc6d57d0284173164e4a6da150b99f6760",
+  "before_index_sha256": "c40e25df123a1cce043d1a4ea495cf7117b805cd4e79e92920911d3a6c02fbce",
+  "after_index_sha256": "c40e25df123a1cce043d1a4ea495cf7117b805cd4e79e92920911d3a6c02fbce",
+  "before_untracked_set_sha256": "4d8948b99454963d7942746262322f551e8c264dbbc077136db713390b7c3d11",
+  "after_untracked_set_sha256": "4d8948b99454963d7942746262322f551e8c264dbbc077136db713390b7c3d11",
+  "head_equal": true,
+  "index_equal": true,
+  "untracked_equal": true,
+  "status_equal": true,
+  "post_disposal": {
+    "final_head": "bc9788bc6d57d0284173164e4a6da150b99f6760",
+    "final_index_sha256": "c40e25df123a1cce043d1a4ea495cf7117b805cd4e79e92920911d3a6c02fbce",
+    "final_untracked_set_sha256": "4d8948b99454963d7942746262322f551e8c264dbbc077136db713390b7c3d11",
+    "equal_to_before": true,
+    "disposal_exit_code": 0
+  }
+}

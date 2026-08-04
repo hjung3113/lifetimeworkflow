@@ -1,0 +1,1 @@
+uv run python -m tools.adoption_apply apply --task-dir /Users/hyojung/Desktop/2026/lifetimeworkflow/.planning/phases/53-managed-adopt-updates/evidence/cycle-4/draft --batch-id 1c897dc6f2fc4355 --target /Users/hyojung/Desktop/2026/FeedbackOps-worktrees/v27-53-rerun
