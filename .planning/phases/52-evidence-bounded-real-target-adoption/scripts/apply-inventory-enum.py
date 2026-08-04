@@ -17,9 +17,10 @@ Two modes:
                       `contracts/.hashes/manifest.json` in the same invocation. Re-running
                       --write after a successful run is a no-op and exits 0.
 
-Usage (from repo root, human-run only):
-    uv run python .planning/phases/52-evidence-bounded-real-target-adoption/scripts/apply-inventory-enum.py --check
-    GOLDEN_APPROVE_HUMAN=1 uv run python .planning/phases/52-evidence-bounded-real-target-adoption/scripts/apply-inventory-enum.py --write
+Usage (from repo root, human-run only), where SCRIPT is
+.planning/phases/52-evidence-bounded-real-target-adoption/scripts/apply-inventory-enum.py:
+    uv run python "$SCRIPT" --check
+    GOLDEN_APPROVE_HUMAN=1 uv run python "$SCRIPT" --write
 """
 
 from __future__ import annotations

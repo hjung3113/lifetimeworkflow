@@ -43,8 +43,9 @@ import json
 import os
 import sys
 import tempfile
+from collections.abc import Iterable
 from pathlib import Path, PurePosixPath
-from typing import Any, Iterable
+from typing import Any
 
 from tools.adoption_scan.destinations import DISPOSITION_ENUM, MARKER_CAPABLE, _existing_hash
 from tools.harness_emit.merge import merge_settings, splice_managed_block
