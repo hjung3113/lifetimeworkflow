@@ -310,7 +310,7 @@ Plans:
 - [x] 53-01-PLAN.md — Extend `manifest.schema.json` in place with the 7th `dispositionEnum` value `update`, `$defs.installedRecord`, and one optional top-level `installed[]`; rebaseline the hash and regenerate the derived plane. No new contract file — count stays 6.
 
 **Wave 2** *(blocked on Wave 1 — no code may emit `update` before the contract lands)*
-- [ ] 53-02-PLAN.md — `disposition()` gains the `installed_sha` step between `preserve` and `conflict`; `tools/adoption_apply/installed.py` reads/writes the target-resident record, validated on read and write; paired safety assertions, mutation-tested.
+- [x] 53-02-PLAN.md — `disposition()` gains the `installed_sha` step between `preserve` and `conflict`; `tools/adoption_apply/installed.py` reads/writes the target-resident record, validated on read and write; paired safety assertions, mutation-tested.
 
 **Wave 3** *(blocked on Wave 2)*
 - [ ] 53-03-PLAN.md — `apply.py`'s `update` branch via `_atomic_replace` + six-way summary; CLI wiring (post-splice comparison hash, no-op-guarded record write, stderr conflict summary); paired SC-2a/2b and SC-3 end-to-end coverage. Closes WR-07 and WR-08.
@@ -368,7 +368,7 @@ Plans:
 | 50b | v2.6 | — | **BLOCKED** — no real multi-package target repo; MONO-12 carried | - |
 | 51. Real-Target Observation Baseline | v2.7 | 3/3 | Complete (verified 4/4; OBS-03 **refuted**) | 2026-07-31 |
 | 52. Evidence-Bounded Real-Target Adoption | v2.7 | 6/6 | Complete   | 2026-07-31 |
-| 53. Managed Adopt Updates | v2.7 | 1/4 | In Progress|  |
+| 53. Managed Adopt Updates | v2.7 | 2/4 | In Progress|  |
 | 54. Surface Budget Closeout | v2.7 | 0/TBD | Not started | - |
 
 Per-phase plan counts for v1.0–v2.2 are preserved in the milestone archives under
