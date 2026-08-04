@@ -39,6 +39,7 @@
   | --- | --- | --- | --- | --- |
   | dispositions | array | yes |  |  |
   | excluded | array | yes |  |  |
+  | installed | array | no |  | Optional (MONO-12): the installed-file records this manifest's dispositions were resolved against, copied verbatim from the target's .harness/adoption/installed.json. Absent on a first-ever adopt and on every Phase-52-era manifest — this array is never added to `required`, so older documents stay valid. |
   | target_ref | string | yes |  | Ties this manifest to the same scan as the inventory's target_ref (same shape: a git ref, or the literal "unknown"). |
   
   ===== plan =====

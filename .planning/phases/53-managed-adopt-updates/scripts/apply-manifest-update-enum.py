@@ -19,9 +19,10 @@ Two modes:
                       `contracts/.hashes/manifest.json` in the same invocation. Re-running
                       --write after a successful run is a no-op and exits 0.
 
-Usage (from repo root, human-run only):
-    uv run python .planning/phases/53-managed-adopt-updates/scripts/apply-manifest-update-enum.py --check
-    GOLDEN_APPROVE_HUMAN=1 uv run python .planning/phases/53-managed-adopt-updates/scripts/apply-manifest-update-enum.py --write
+Usage (from repo root, human-run only), where SCRIPT is
+.planning/phases/53-managed-adopt-updates/scripts/apply-manifest-update-enum.py:
+    uv run python "$SCRIPT" --check
+    GOLDEN_APPROVE_HUMAN=1 uv run python "$SCRIPT" --write
 """
 
 from __future__ import annotations
@@ -131,7 +132,8 @@ def apply_edit(schema: dict) -> dict:
                 "description": (
                     "sha256 of the bytes /adopt actually wrote at this destination, AS WRITTEN "
                     "(post-splice for harness/project.toml). Exactly one hash is stored: the "
-                    "source side is recomputed every run by destinations.harness_proposed_hashes(), "
+                    "source side is recomputed every run by "
+                    "destinations.harness_proposed_hashes(), "
                     "so a second source_sha256 field would only go stale."
                 ),
             },
