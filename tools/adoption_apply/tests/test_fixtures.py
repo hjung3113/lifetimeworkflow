@@ -162,7 +162,8 @@ def test_polyglot_single_end_to_end(tmp_path):
     assert dispositions["widget_c.py"] == "create"
 
     assert result["summary"]["applied"] == ["AGENTS.md", "widget_c.py"]
-    assert result["summary"]["skipped"] == ["pyproject.toml", "widget_a.py", "widget_b.py"]
+    assert result["summary"]["unchanged"] == ["pyproject.toml", "widget_a.py"]
+    assert result["summary"]["conflicts"] == ["widget_b.py"]
     assert result["summary"]["refused"] == []
 
     assert (target / "widget_c.py").read_bytes() == widget_c_payload
@@ -305,7 +306,8 @@ def test_partial_collision_crlf_end_to_end(tmp_path):
     assert dispositions["widget_c.py"] == "create"
 
     assert result["summary"]["applied"] == ["AGENTS.md", "widget_c.py"]
-    assert result["summary"]["skipped"] == ["widget_a.py", "widget_b.py"]
+    assert result["summary"]["unchanged"] == ["widget_a.py"]
+    assert result["summary"]["conflicts"] == ["widget_b.py"]
     assert result["summary"]["refused"] == []
 
     # The CRLF/BOM input file's post-apply bytes match harness_emit.merge._normalize's own

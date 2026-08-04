@@ -842,8 +842,50 @@ def test_apply_reports_when_the_sidecar_is_present_but_not_spliced(
     assert apply_exit == 0
     err = capsys.readouterr().err
     assert "NOT spliced" in err
-    assert "not a 'create' destination" in err
+    assert "not a create/update destination" in err
     # The diagnostic reports a real no-op: the derived row genuinely did not land.
     assert "javascript" not in (apply_target / "harness" / "project.toml").read_text(
         encoding="utf-8"
     )
+
+
+def test_cli_draft_rejects_tampered_installed_record(
+    task_dir: Path, synthetic_target: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    record = synthetic_target / ".harness" / "adoption" / "installed.json"
+    record.parent.mkdir(parents=True)
+    record.write_text("not json", encoding="utf-8")
+
+    exit_code = main(["draft", "--task-dir", str(task_dir), "--target", str(synthetic_target)])
+
+    assert exit_code == 1
+    assert "unreadable installed record" in capsys.readouterr().err
+
+
+def test_cli_conflict_exits_zero_and_names_missing_record(
+    task_dir: Path, synthetic_target: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    (synthetic_target / "managed.txt").write_bytes(b"human edit\n")
+    manifest = {
+        "target_ref": "unknown",
+        "dispositions": [{"destination": "managed.txt", "disposition": "conflict"}],
+        "excluded": [],
+    }
+    batch_id, _ = _seed_batch_with_manifest(task_dir, manifest)
+
+    exit_code = main(
+        [
+            "apply",
+            "--task-dir",
+            str(task_dir),
+            "--batch-id",
+            batch_id,
+            "--target",
+            str(synthetic_target),
+        ]
+    )
+
+    output = capsys.readouterr().err
+    assert exit_code == 0
+    assert "installed_sha256=none-recorded" in output
+    assert "applied=0 updated=0 unchanged=0 conflicts=1 skipped=0 refused=0" in output

@@ -2,7 +2,7 @@
 
 Covers: idempotent re-apply, concurrent-drift refusal, marker-merge idempotence, no-arbitrary-
 command-execution, draft-mode artifact-root confinement (ADOPT-05 clause 1), and the SC-2 full
-apply-cycle integration proof (one of each of the 6 dispositions in a single manifest).
+apply-cycle integration proof (one of each of the 7 dispositions in a single manifest).
 """
 
 from __future__ import annotations
@@ -43,7 +43,7 @@ def test_idempotent_reapply(tmp_path):
     }
     summary_2 = apply.apply_manifest(manifest_redraft, tmp_path, payloads=payloads)
 
-    assert summary_2["skipped"] == ["src/widget.py"]
+    assert summary_2["unchanged"] == ["src/widget.py"]
     assert target.read_bytes() == original_bytes
 
 
@@ -136,6 +136,9 @@ def test_sc2_full_apply_cycle(tmp_path):
     settings_target.write_text("{}\n", encoding="utf-8")
 
     constitution_target = "contracts/new-widget.schema.json"
+    update_target = tmp_path / "src" / "update.py"
+    update_target.parent.mkdir(parents=True)
+    update_target.write_bytes(b"old update payload\n")
 
     manifest = {
         "target_ref": "unknown",
@@ -144,6 +147,7 @@ def test_sc2_full_apply_cycle(tmp_path):
             {"destination": ".claude/settings.json", "disposition": "marker-merge"},
             {"destination": "src/existing.py", "disposition": "preserve"},
             {"destination": "src/other.py", "disposition": "conflict"},
+            {"destination": "src/update.py", "disposition": "update"},
             {"destination": "docs/reference/index.md", "disposition": "derived-regenerate"},
             {"destination": constitution_target, "disposition": "human-ratification-required"},
         ],
@@ -155,7 +159,9 @@ def test_sc2_full_apply_cycle(tmp_path):
     try:
         apply.atomic_create = create_spy
         summary = apply.apply_manifest(
-            manifest, tmp_path, payloads={"src/widget.py": b"print(1)\n"}
+            manifest,
+            tmp_path,
+            payloads={"src/widget.py": b"print(1)\n", "src/update.py": b"new update payload\n"},
         )
     finally:
         apply.atomic_create = original_atomic_create
@@ -170,13 +176,17 @@ def test_sc2_full_apply_cycle(tmp_path):
     # create row lands atomically.
     assert "src/widget.py" in summary["applied"]
     assert (tmp_path / "src" / "widget.py").read_bytes() == b"print(1)\n"
+    assert summary["updated"] == ["src/update.py"]
+    assert update_target.read_bytes() == b"new update payload\n"
 
     # marker-merge row applied on the first pass.
     assert ".claude/settings.json" in summary["applied"]
 
-    # preserve/conflict/derived-regenerate are all no-ops.
+    # preserve/conflict/derived-regenerate are all no-ops in their honest buckets.
+    assert summary["unchanged"] == ["src/existing.py"]
+    assert summary["conflicts"] == ["src/other.py"]
+    assert summary["skipped"] == ["docs/reference/index.md"]
     for skipped_destination in ("src/existing.py", "src/other.py", "docs/reference/index.md"):
-        assert skipped_destination in summary["skipped"]
         assert not (tmp_path / skipped_destination).exists()
 
     # marker-merge row is idempotent on a second pass — everything else re-drafted to preserve.
@@ -188,6 +198,7 @@ def test_sc2_full_apply_cycle(tmp_path):
             {"destination": ".claude/settings.json", "disposition": "marker-merge"},
             {"destination": "src/existing.py", "disposition": "preserve"},
             {"destination": "src/other.py", "disposition": "conflict"},
+            {"destination": "src/update.py", "disposition": "preserve"},
             {"destination": "docs/reference/index.md", "disposition": "derived-regenerate"},
             {"destination": constitution_target, "disposition": "human-ratification-required"},
         ],
@@ -197,10 +208,39 @@ def test_sc2_full_apply_cycle(tmp_path):
     assert settings_target.read_bytes() == first_settings_bytes
     assert constitution_target in summary_2["refused"]
 
-    # summary dict correctly buckets all 6 rows in the first pass.
-    assert sorted(summary["applied"] + summary["skipped"] + summary["refused"]) == sorted(
-        record["destination"] for record in manifest["dispositions"]
+    # The six buckets are a complete, disjoint partition of all seven dispositions.
+    assert sorted(
+        summary["applied"]
+        + summary["updated"]
+        + summary["unchanged"]
+        + summary["conflicts"]
+        + summary["skipped"]
+        + summary["refused"]
+    ) == sorted(record["destination"] for record in manifest["dispositions"])
+
+
+def test_writing_dispositions_return_installed_hashes_only(tmp_path):
+    (tmp_path / "AGENTS.md").write_text("# Target\n", encoding="utf-8")
+    (tmp_path / "update.py").write_bytes(b"old\n")
+    records = [
+        {"destination": "create.py", "disposition": "create"},
+        {"destination": "update.py", "disposition": "update"},
+        {"destination": "AGENTS.md", "disposition": "marker-merge"},
+        {"destination": "preserve.py", "disposition": "preserve"},
+        {"destination": "conflict.py", "disposition": "conflict"},
+        {"destination": "docs/reference/index.md", "disposition": "derived-regenerate"},
+    ]
+
+    summary = apply.apply_manifest(
+        {"target_ref": "unknown", "dispositions": records, "excluded": []},
+        tmp_path,
+        payloads={"create.py": b"create\n", "update.py": b"update\n"},
+        block_bodies={"AGENTS.md": "managed\n"},
     )
+
+    assert set(summary["written_hashes"]) == {"AGENTS.md", "create.py", "update.py"}
+    for destination, installed_sha in summary["written_hashes"].items():
+        assert installed_sha == apply._existing_hash(tmp_path / destination)
 
 
 # --- CR-02 (27.1-01) — apply_manifest-level zero-write proof for escaped destinations ----------
