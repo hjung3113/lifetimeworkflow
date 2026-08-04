@@ -1,0 +1,26 @@
+{
+  "candidate_process_boundaries": [
+    ".",
+    "apps/backend",
+    "apps/frontend",
+    "packages/shared",
+    "packages/ui"
+  ],
+  "candidate_process_boundaries_count": 5,
+  "manifests": [
+    "apps/backend/package.json",
+    "apps/frontend/package.json",
+    "package.json",
+    "packages/shared/package.json",
+    "packages/ui/package.json"
+  ],
+  "manifests_count": 5,
+  "members_equal_expected_five": true,
+  "non_member_recorded": true,
+  "non_workspace_member_excluded_entries": [
+    {
+      "excluded": "non-workspace-member",
+      "path": "docs/design-prototype/package.json"
+    }
+  ]
+}

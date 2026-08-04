@@ -1,0 +1,32 @@
+{
+  "_comment": "Third-party movement of the ORIGINAL FeedbackOps checkout, attributed per D-02. This file records movement that happened OUTSIDE this evidence run's window. Within the run, the original checkout was byte-identical before, after, and post-disposal (see comparison.json: head_equal, index_equal, untracked_equal, status_equal, equal_to_before all true).",
+  "original_checkout": "/Users/hyojung/Desktop/2026/FeedbackOps",
+  "observed": [
+    {
+      "when": "phase-51 baseline",
+      "develop_sha": "1d1c8ed",
+      "note": "recorded in 51-BASELINE-EVIDENCE.md"
+    },
+    {
+      "when": "phase-52 run",
+      "develop_sha": "919d152a56ed096c0fdef12b9bfb892d6ef4ced6",
+      "note": "second observed movement, attributed as expected third-party drift in 52-ADOPTION-EVIDENCE.md"
+    },
+    {
+      "when": "phase-53 evidence run (this one)",
+      "develop_sha": "a4e8e646b5c0169cf4f1978e64adc8b97dad66a9",
+      "checkout_head": "146d7fb0956861340e4704a92ff5c349825af5d2",
+      "checkout_branch": "feature/293-presubmit-similar-voc",
+      "note": "The checkout is no longer sitting on develop; its HEAD is a feature branch that moved twice during this phase's work (bc9788bc -> 146d7fb0), which is ordinary activity in a live repository. The worktree was provisioned at the DEVELOP sha re-read live at run start, exactly as the plan requires, never at the checkout's HEAD."
+    }
+  ],
+  "within_run_isolation": {
+    "before_head": "146d7fb0956861340e4704a92ff5c349825af5d2",
+    "after_head": "146d7fb0956861340e4704a92ff5c349825af5d2",
+    "final_head_post_disposal": "146d7fb0956861340e4704a92ff5c349825af5d2",
+    "index_unchanged": true,
+    "untracked_set_unchanged": true,
+    "porcelain_status_unchanged": true,
+    "verdict": "The original checkout was never written to. Every --target argument named the detached worktree; the anchored mis-target guard was proven to fire against a hand-written mis-targeted argv, and not to fire against the legitimate worktree path, before the run was trusted — see instrument-guards.txt."
+  }
+}

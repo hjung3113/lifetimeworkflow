@@ -1,0 +1,1 @@
+yes — batch 7bc665fa91e12a8a contains artifacts/adoption/7bc665fa91e12a8a/languages.toml (id = "javascript")

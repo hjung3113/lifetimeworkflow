@@ -26,7 +26,8 @@ file keeps only the milestone-level index so it stays constant-size as milestone
   v2.5 phase 39)
 - ✅ **v2.5 De-ceremony** — Phases 39–46 (shipped 2026-07-30)
 - ✅ **v2.6 Minimal Monorepo Core** — Phases 47, 48, 49, 50a shipped 2026-07-30; **50b BLOCKED and
-  carried** (no real multi-package target repo — MONO-12 carried, see the Carried section)
+  carried to v2.7** (no real multi-package target repo — MONO-12)
+- 🔄 **v2.7 Real-Target Adoption** — Phases 51–54; **51 shipped 2026-07-31** (OBS-03 refuted), 52–54 planned
 
 ## Phases
 
@@ -219,14 +220,28 @@ nothing injected into SessionStart. 981 tests passing at close.
 
 </details>
 
-### 📋 Carried to a later milestone
+### 📋 v2.7 Real-Target Adoption (Phases 51–54) — PLANNED
 
-- **MONO-12** managed `/adopt` install/update over one manifest with conflict reporting — **carried
-  out of v2.6 with phase 50b BLOCKED** (2026-07-30). Blocked on a hard *external* precondition, not on
-  code: no real multi-package target repo. Unblock by naming one, then re-plan phase 50b against it.
-  All three of its success criteria (manifest records managed files; re-run updates instead of
-  re-installing and is a no-op when unchanged; a diverged managed file is reported as a conflict and
-  left untouched) remain as specified.
+**Milestone Goal:** Adopt the harness into an isolated worktree of the real FeedbackOps monorepo,
+observe the unrepaired result before designing changes, and repair only failures that the run proves
+matter to the harness's four purposes. The original `develop` checkout stays byte-unchanged.
+
+Binding boundary: Phase 51 must finish its evidence record before any repair phase begins. A
+confirmed or refuted OBS-03 hypothesis is equally successful. Commands remain 19, skills 8,
+contracts 6, and CI jobs and gates do not increase. Runtime artifacts are authored only in
+`harness/` and changed through re-emission; new repository artifacts contain no model identifiers.
+
+- [x] **Phase 51: Real-Target Observation Baseline** - Run the current harness against the isolated
+  target and capture reproducible evidence before designing repairs.
+- [x] **Phase 52: Evidence-Bounded Real-Target Adoption** - Make the required adoption capabilities (completed 2026-07-31)
+  work using only failures established by Phase 51.
+- [x] **Phase 53: Managed Adopt Updates** - Prove install-to-update behavior, unchanged no-op, and (completed 2026-08-04)
+  divergence-safe conflict handling on the real target.
+- [ ] **Phase 54: Surface Budget Closeout** - Remove the named duplicate adapter and close the
+  milestone without growing commands, skills, contracts, CI jobs, or gates.
+
+### 📋 Deferred beyond v2.7
+
 - **EVOL-02** contract versioning / compatibility engine — the only survivor; still a standalone
   engine needing its own ADR.
 - **D-24** CODEOWNERS advisory on this repo — re-openable as a machine-side check on golden baseline
@@ -238,6 +253,81 @@ nothing injected into SessionStart. 981 tests passing at close.
   the docs-review plane deleted in phase 41; **SEAL-04** is moot once `secret_scan` is deleted
   (phase 44) and **SEAL-05** (portable ratification record) is withdrawn by phase 39's recorded
   decision.
+
+## Phase Details
+
+### Phase 51: Real-Target Observation Baseline
+**Goal**: The current harness's behavior on the isolated FeedbackOps worktree is known from reproducible evidence before any repair is designed
+**Depends on**: Phase 50a and an isolated FeedbackOps worktree
+**Requirements**: OBS-01, OBS-03
+**Success Criteria** (what must be TRUE):
+  1. A baseline `/adopt` discover → draft → apply attempt runs against the isolated worktree only, and before/after evidence shows the original `develop` checkout is byte-unchanged. The attempt is permitted to fail or produce wrong output — its purpose is evidence, not success — and whatever state it leaves behind is discarded, so Phase 52 starts from a freshly created worktree.
+  2. Every adoption defect observed in the baseline has a record containing its symptom, reproducible path, and implicated code location.
+  3. The pnpm `workspace:*` hypothesis has a reproducible verdict: confirmed by incorrect dependency output or refuted by evidence that the current output already records the workspace edge.
+  4. No repair design or implementation precedes the completed baseline evidence record.
+**Plans**: TBD
+
+### Phase 52: Evidence-Bounded Real-Target Adoption
+**Goal**: FeedbackOps receives the required adoption capabilities, with changes limited to purpose-relevant failures proven by Phase 51
+**Depends on**: Phase 51
+**Requirements**: RTA-01, RTA-02, RTA-03, RTA-04, OBS-02
+**Success Criteria** (what must be TRUE):
+  1. A developer can complete `/adopt` discover → draft → apply against the isolated FeedbackOps worktree while the original `develop` checkout remains byte-unchanged.
+  2. The adoption inventory contains all five real workspace members: root, `packages/ui`, `packages/shared`, `apps/frontend`, and `apps/backend`.
+  3. Generated package facts contain the real `packages/shared` dependency edges to both `apps/frontend` and `apps/backend`.
+  4. Each adopted package resolves a nearest-wins convention profile containing its lint and test commands.
+  5. Every change made in this phase traces to a Phase 51 observation within purpose ①②③④ and has a regression test; observations requiring no change remain evidence-backed confirmations.
+**Plans**: 6 plans
+Plans:
+**Wave 1**
+- [x] 52-01-PLAN.md — Contract-first: add the `non-workspace-member` reason to `inventory.schema.json`, rebaseline the schema hash, regenerate the derived plane (D-20)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 52-03-PLAN.md — OBS-D-03: permanent `lint` key on `conventions_for()` + target-derived JS `[[languages]]` row through draft/apply
+- [x] 52-04-PLAN.md — OBS-D-04: declare the marker-merge lock sidecars, report a prior-run one on stderr (provenance, not staleness — D-15 forbids unlinking, so the sidecar exists on every run after the first); OBS-D-02 `workspace:*` lock-in test
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 52-02-PLAN.md — OBS-D-01: pnpm workspace member scoping in `detect.py`/`scan.py` + synthetic fixture + regression tests
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 52-05-PLAN.md — Fresh detached FeedbackOps worktree: before-proof, discover → draft → apply captures, apply-write comparison
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 52-06-PLAN.md — Downstream observations, after-proof with drift attribution, auto-disposal, and the SC-5 trace ledger
+
+### Phase 53: Managed Adopt Updates
+**Goal**: Re-running `/adopt` safely manages installed harness files instead of reinstalling them
+**Depends on**: Phase 52
+**Requirements**: MONO-12
+**Success Criteria** (what must be TRUE):
+  1. The adoption manifest records every file managed by `/adopt`.
+  2. A re-run updates changed managed content, while a re-run with no source or target changes is an observable no-op.
+  3. A target-side divergence in a managed file produces a conflict report and leaves that file byte-unchanged.
+**Plans**: 4 plans
+Plans:
+
+**Wave 1** *(constitution-plane gate — blocking human checkpoint)*
+- [x] 53-01-PLAN.md — Extend `manifest.schema.json` in place with the 7th `dispositionEnum` value `update`, `$defs.installedRecord`, and one optional top-level `installed[]`; rebaseline the hash and regenerate the derived plane. No new contract file — count stays 6.
+
+**Wave 2** *(blocked on Wave 1 — no code may emit `update` before the contract lands)*
+- [x] 53-02-PLAN.md — `disposition()` gains the `installed_sha` step between `preserve` and `conflict`; `tools/adoption_apply/installed.py` reads/writes the target-resident record, validated on read and write; paired safety assertions, mutation-tested.
+
+**Wave 3** *(blocked on Wave 2)*
+- [x] 53-03-PLAN.md — `apply.py`'s `update` branch via `_atomic_replace` + six-way summary; CLI wiring (post-splice comparison hash, no-op-guarded record write, stderr conflict summary); paired SC-2a/2b and SC-3 end-to-end coverage. Closes WR-07 and WR-08.
+
+**Wave 4** *(blocked on Wave 3)*
+- [x] 53-04-PLAN.md — Four-cycle real-target re-run on a fresh FeedbackOps worktree (first adopt, no-op, harness-source move, target divergence) with evidence capture and disposal; `/adopt` docs updated in place and re-emitted. No governed-surface growth.
+
+### Phase 54: Surface Budget Closeout
+**Goal**: The milestone closes with the named duplication removed and no growth in governed harness surfaces
+**Depends on**: Phase 53
+**Requirements**: DEBT-01, NG-01
+**Success Criteria** (what must be TRUE):
+  1. `conventions_for()` and `report()` use one shared `"dir"`-filter helper, with no duplicated adapter implementation and unchanged caller-visible results.
+  2. Closeout counts are no greater than the milestone baseline: 19 commands, 8 skills, 6 contracts, and unchanged-or-lower CI job and gate counts.
+  3. Any runtime-surface change originates under `harness/`, and a re-emit leaves `.opencode/` and `.claude/` synchronized with that source.
+  4. Repository artifacts added by v2.7 contain no model identifiers.
+**Plans**: TBD
 
 ## Progress
 
@@ -276,6 +366,10 @@ nothing injected into SessionStart. 981 tests passing at close.
 | 46. Product Flow | v2.5 | 3/3 | Complete   | 2026-07-29 |
 | 47–50a | v2.6 | 11/11 | Complete (see archive) | 2026-07-30 |
 | 50b | v2.6 | — | **BLOCKED** — no real multi-package target repo; MONO-12 carried | - |
+| 51. Real-Target Observation Baseline | v2.7 | 3/3 | Complete (verified 4/4; OBS-03 **refuted**) | 2026-07-31 |
+| 52. Evidence-Bounded Real-Target Adoption | v2.7 | 6/6 | Complete   | 2026-07-31 |
+| 53. Managed Adopt Updates | v2.7 | 4/4 | Complete   | 2026-08-04 |
+| 54. Surface Budget Closeout | v2.7 | 0/TBD | Not started | - |
 
 Per-phase plan counts for v1.0–v2.2 are preserved in the milestone archives under
 `.planning/milestones/`; they are not restated here so this table stays a fixed size.

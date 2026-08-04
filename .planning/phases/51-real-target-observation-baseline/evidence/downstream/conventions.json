@@ -1,0 +1,90 @@
+{
+  "config_source": "/Users/hyojung/Desktop/2026/FeedbackOps-worktrees/v27-51-baseline/harness/project.toml",
+  "packages": [
+    {
+      "conventions": {
+        "agents_md": "AGENTS.md",
+        "bash_scope": null,
+        "dir": "apps/backend",
+        "format": null,
+        "is_default": false,
+        "language": "javascript",
+        "package": "@fops/backend",
+        "test": null
+      },
+      "dir": "apps/backend",
+      "package": "@fops/backend"
+    },
+    {
+      "conventions": {
+        "agents_md": "AGENTS.md",
+        "bash_scope": null,
+        "dir": "apps/frontend",
+        "format": null,
+        "is_default": false,
+        "language": "javascript",
+        "package": "@fops/frontend",
+        "test": null
+      },
+      "dir": "apps/frontend",
+      "package": "@fops/frontend"
+    },
+    {
+      "conventions": {
+        "agents_md": "AGENTS.md",
+        "bash_scope": null,
+        "dir": "docs/design-prototype",
+        "format": null,
+        "is_default": false,
+        "language": "javascript",
+        "package": "845745f6-c3e4-495c-b5dc-121f71bac734",
+        "test": null
+      },
+      "dir": "docs/design-prototype",
+      "package": "845745f6-c3e4-495c-b5dc-121f71bac734"
+    },
+    {
+      "conventions": {
+        "agents_md": "AGENTS.md",
+        "bash_scope": null,
+        "dir": ".",
+        "format": null,
+        "is_default": true,
+        "language": "javascript",
+        "package": "feedbackops",
+        "test": null
+      },
+      "dir": ".",
+      "package": "feedbackops"
+    },
+    {
+      "conventions": {
+        "agents_md": "AGENTS.md",
+        "bash_scope": null,
+        "dir": "packages/shared",
+        "format": null,
+        "is_default": false,
+        "language": "javascript",
+        "package": "@fops/shared",
+        "test": null
+      },
+      "dir": "packages/shared",
+      "package": "@fops/shared"
+    },
+    {
+      "conventions": {
+        "agents_md": "AGENTS.md",
+        "bash_scope": null,
+        "dir": "packages/ui",
+        "format": null,
+        "is_default": false,
+        "language": "javascript",
+        "package": "@fops/ui",
+        "test": null
+      },
+      "dir": "packages/ui",
+      "package": "@fops/ui"
+    }
+  ],
+  "repo_root": "/Users/hyojung/Desktop/2026/FeedbackOps-worktrees/v27-51-baseline"
+}

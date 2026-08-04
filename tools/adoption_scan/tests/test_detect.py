@@ -4,9 +4,11 @@ end-to-end)."""
 
 from __future__ import annotations
 
+import fnmatch
 import json
 from pathlib import Path
 
+import pytest
 from jsonschema import Draft202012Validator
 
 from tools.adoption_scan import detect, scan
@@ -248,6 +250,80 @@ def test_unrecognized_kind_returns_empty_list() -> None:
     assert detect.detect_dependencies("x", "unknown-kind", "") == []
 
 
+def test_pnpm_workspace_globs_parsed_quotes_stripped_order_preserved() -> None:
+    text = 'packages:\n  - "apps/*"\n  - "packages/*"\n'
+    assert detect.parse_pnpm_workspace_globs(text) == ["apps/*", "packages/*"]
+
+
+def test_pnpm_workspace_globs_bare_and_single_quoted_parse_identically() -> None:
+    bare = "packages:\n  - apps/*\n  - packages/*\n"
+    single_quoted = "packages:\n  - 'apps/*'\n  - 'packages/*'\n"
+    double_quoted = 'packages:\n  - "apps/*"\n  - "packages/*"\n'
+    expected = ["apps/*", "packages/*"]
+    assert detect.parse_pnpm_workspace_globs(bare) == expected
+    assert detect.parse_pnpm_workspace_globs(single_quoted) == expected
+    assert detect.parse_pnpm_workspace_globs(double_quoted) == expected
+
+
+def test_pnpm_workspace_globs_comments_and_blanks_ignored_key_ends_block() -> None:
+    text = (
+        "packages:\n"
+        "  # a comment inside the block\n"
+        "\n"
+        '  - "apps/*"\n'
+        "  # another comment\n"
+        '  - "packages/*"\n'
+        "other_key: value\n"
+        "  - not-a-member-of-packages\n"
+    )
+    assert detect.parse_pnpm_workspace_globs(text) == ["apps/*", "packages/*"]
+
+
+def test_pnpm_workspace_globs_malformed_or_empty_returns_empty_list_never_raises() -> None:
+    assert detect.parse_pnpm_workspace_globs("") == []
+    assert detect.parse_pnpm_workspace_globs("not: yaml: at: all: {{{[[[") == []
+    assert detect.parse_pnpm_workspace_globs("packages:\n") == []
+    assert detect.parse_pnpm_workspace_globs("no packages key here\njust prose\n") == []
+    # Genuine negative control: a non-str input reaches `.splitlines()` and raises
+    # AttributeError with no `try`/`except` around the body. Deleting the wrapping try/except
+    # must red this assertion (it would raise instead of degrading to `[]`).
+    assert detect.parse_pnpm_workspace_globs(None) == []  # type: ignore[arg-type]
+
+
+def test_workspace_member_matches_declared_globs() -> None:
+    globs = ["apps/*", "packages/*"]
+    assert detect.is_workspace_member("apps/widget-app", globs) is True
+    assert detect.is_workspace_member("docs/design-prototype", globs) is False
+
+
+def test_workspace_member_root_always_true_regardless_of_globs() -> None:
+    assert detect.is_workspace_member(".", []) is True
+    assert detect.is_workspace_member(".", ["apps/*"]) is True
+
+
+def test_workspace_member_single_segment_star_does_not_match_nested_dir() -> None:
+    assert detect.is_workspace_member("apps/widget-app/nested", ["apps/*"]) is False
+
+
+def test_workspace_member_traversal_glob_contributes_no_members() -> None:
+    # Segment-count mismatch alone would already reject these (glob has one more segment than
+    # the directory), so they exercise the traversal guard only incidentally.
+    assert detect.is_workspace_member("outside", ["../outside/*"]) is False
+    assert detect.is_workspace_member("outside/nested", ["../outside/*"]) is False
+    # A genuine negative control: segment COUNTS match (4 vs 4) and every non-".." segment
+    # matches too, so only the explicit ".."-segment rejection stops this from matching.
+    # Deleting that rejection must red this assertion.
+    assert detect.is_workspace_member("sub/../sibling/foo", ["sub/../sibling/*"]) is False
+
+
+def test_workspace_member_absolute_glob_contributes_no_members() -> None:
+    assert detect.is_workspace_member("etc", ["/etc/*"]) is False
+
+
+def test_pnpm_workspace_manifest_not_registered_in_manifest_kind_table() -> None:
+    assert "pnpm-workspace.yaml" not in detect._MANIFEST_KIND_BY_NAME
+
+
 def test_root_and_nested_agents_md_get_per_file_surface_records() -> None:
     """WR-01 (26-REVIEW.md): a root AGENTS.md and every nested AGENTS.md each get their OWN
     surfaceRecord keyed by their actual path — never collapsed into a single fixed-literal-target
@@ -271,3 +347,96 @@ def test_root_and_nested_agents_md_get_per_file_surface_records() -> None:
         # Each record's evidence must point ONLY at its own file, never at a sibling's.
         assert len(surface["evidence"]) == 1
         assert surface["evidence"][0]["path"] == surface["target"]
+
+
+# ── 52-REVIEW.md repairs — parser + matcher (CR-02, WR-01, WR-02, WR-03, WR-09) ──────────────
+
+
+def test_pnpm_workspace_globs_flow_style_sequence_parsed() -> None:
+    """CR-02: `packages: ["apps/*", "packages/*"]` is valid YAML and a common pnpm manifest shape.
+
+    Before the repair the parser only entered its block on a BARE `packages:` line, so flow style
+    yielded `[]` — which scan.py then read as "this workspace has exactly one member", collapsing
+    the whole inventory to root-only. Reverting the `_parse_flow_sequence` branch reds this.
+    """
+    assert detect.parse_pnpm_workspace_globs('packages: ["apps/*", "packages/*"]\n') == [
+        "apps/*",
+        "packages/*",
+    ]
+    assert detect.parse_pnpm_workspace_globs("packages: [apps/*, 'packages/*']\n") == [
+        "apps/*",
+        "packages/*",
+    ]
+    # A literally empty flow sequence really does declare no globs.
+    assert detect.parse_pnpm_workspace_globs("packages: []\n") == []
+
+
+def test_pnpm_workspace_globs_settings_only_manifest_yields_no_globs() -> None:
+    """A pnpm-10 settings-only manifest declares no `packages:` key at all (CR-02 row 2)."""
+    text = "onlyBuiltDependencies:\n  - esbuild\n"
+    assert detect.parse_pnpm_workspace_globs(text) == []
+
+
+def test_pnpm_workspace_globs_narrow_except_does_not_swallow_programming_errors() -> None:
+    """WR-09: the handler is narrowed to input-SHAPE faults only.
+
+    A non-str input still degrades to `[]` (AttributeError on `.splitlines()`), but an unexpected
+    exception raised from inside the loop must PROPAGATE rather than being silently converted into
+    "this workspace declares zero members". Widening the handler back to `except Exception` reds
+    the second half of this test.
+    """
+    assert detect.parse_pnpm_workspace_globs(None) == []  # type: ignore[arg-type]
+
+    class Exploding(str):
+        def splitlines(self):  # type: ignore[override]
+            raise ZeroDivisionError("a genuine programming error, not an input-shape fault")
+
+    with pytest.raises(ZeroDivisionError):
+        detect.parse_pnpm_workspace_globs(Exploding("packages:\n"))
+
+
+def test_workspace_member_globstar_matches_any_depth() -> None:
+    """WR-01: `**` means any depth (pnpm's own documented example), not exactly one segment.
+
+    The pre-repair `len(glob_parts) != len(directory_parts): continue` rule made `packages/**` a
+    single-segment match, so `packages/b/deep` was silently excluded as `non-workspace-member`.
+    """
+    globs = ["packages/**"]
+    assert detect.is_workspace_member("packages/b", globs) is True
+    assert detect.is_workspace_member("packages/b/deep", globs) is True
+    assert detect.is_workspace_member("packages/b/deep/deeper", globs) is True
+    # `**` must not escape its own prefix.
+    assert detect.is_workspace_member("apps/a", globs) is False
+    # A single `*` still matches exactly one segment (unchanged semantics).
+    assert detect.is_workspace_member("apps/a/nested", ["apps/*"]) is False
+
+
+def test_workspace_member_matching_is_case_sensitive_on_every_platform(monkeypatch) -> None:
+    """WR-02: `fnmatch.fnmatch` normcases both operands, making membership — and therefore
+    `inventory.json` — platform-dependent; `fnmatchcase` does not.
+
+    The monkeypatch is what gives this test teeth. `posixpath.normcase` is the IDENTITY function,
+    so on this repo's CI/dev platforms a plain `assert is_workspace_member("apps/Widget",
+    ["apps/widget"]) is False` passes with `fnmatch` too — a check that cannot fail. Substituting
+    a lowercasing normcase reproduces `ntpath.normcase`, which is exactly the Windows behaviour
+    the finding is about; with `fnmatchcase` the substitution is inert, with `fnmatch` it makes
+    the two directories compare equal and reds the assertion.
+    """
+    monkeypatch.setattr(fnmatch.os.path, "normcase", str.lower)
+    assert detect.is_workspace_member("apps/Widget", ["apps/widget"]) is False
+    assert detect.is_workspace_member("Apps/widget", ["apps/*"]) is False
+    assert detect.is_workspace_member("apps/widget", ["apps/widget"]) is True
+
+
+def test_workspace_member_honours_negation_globs() -> None:
+    """WR-03: a `!`-prefixed glob is a pnpm EXCLUSION, not a positive membership pattern.
+
+    Pre-repair, `!packages/legacy` was stored verbatim and never interpreted, so
+    `is_workspace_member("packages/legacy", ["packages/*", "!packages/legacy"])` returned True and
+    the inventory over-included.
+    """
+    globs = ["packages/*", "!packages/legacy"]
+    assert detect.is_workspace_member("packages/legacy", globs) is False
+    assert detect.is_workspace_member("packages/widget", globs) is True
+    # A negation alone grants membership to nothing (no positive match).
+    assert detect.is_workspace_member("packages/widget", ["!packages/legacy"]) is False

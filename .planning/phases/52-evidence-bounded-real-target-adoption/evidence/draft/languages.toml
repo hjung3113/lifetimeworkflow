@@ -1,0 +1,7 @@
+# Derived by tools.adoption_apply from the adopted target's own package.json scripts (OBS-D-03 / D-12).
+[[languages]]
+id = "javascript"
+bash_scope = "pnpm *"
+lint = "pnpm run lint"
+test = "pnpm run test"
+format = "pnpm run format"

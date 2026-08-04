@@ -1,0 +1,4 @@
+wrote /Users/hyojung/Desktop/2026/lifetimeworkflow/.planning/phases/53-managed-adopt-updates/evidence/cycle-2/draft/artifacts/adoption/1c897dc6f2fc4355/inventory.json
+wrote /Users/hyojung/Desktop/2026/lifetimeworkflow/.planning/phases/53-managed-adopt-updates/evidence/cycle-2/draft/artifacts/adoption/1c897dc6f2fc4355/plan.json
+wrote /Users/hyojung/Desktop/2026/lifetimeworkflow/.planning/phases/53-managed-adopt-updates/evidence/cycle-2/draft/artifacts/adoption/1c897dc6f2fc4355/manifest.json
+wrote /Users/hyojung/Desktop/2026/lifetimeworkflow/.planning/phases/53-managed-adopt-updates/evidence/cycle-2/draft/artifacts/adoption/1c897dc6f2fc4355/languages.toml

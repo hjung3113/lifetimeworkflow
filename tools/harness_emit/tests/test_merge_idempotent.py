@@ -15,6 +15,8 @@ the whole reason the merge is a marker splice and never a full-write (threat T-0
 
 from __future__ import annotations
 
+import pytest
+
 from tools.harness_emit import merge
 
 _BEGIN = merge.BEGIN_MARKER
@@ -52,6 +54,18 @@ def test_second_run_is_byte_identical() -> None:
     once = merge.splice_managed_block(existing, _NEW_BODY)
     twice = merge.splice_managed_block(once, _NEW_BODY)
     assert once == twice
+
+
+def test_nested_body_uses_the_outer_end_marker() -> None:
+    """A fenced body is legitimate input, so the outer fence must remain idempotent."""
+    nested_body = f"{_BEGIN}\n## Nested Managed\n{_END}\n"
+    once = merge.splice_managed_block(
+        _with_block(_HUMAN_BEFORE, _OLD_BODY, _HUMAN_AFTER), nested_body
+    )
+    twice = merge.splice_managed_block(once, nested_body)
+
+    assert once == twice
+    assert once.count(_END) == nested_body.count(_END) + 1
 
 
 def test_appends_block_exactly_once_when_markers_absent() -> None:
@@ -106,11 +120,15 @@ def test_output_is_lf_no_bom_single_trailing_newline() -> None:
     assert not result.endswith("\n\n")
 
 
-def test_malformed_single_marker_raises() -> None:
-    """A file with exactly one marker is ambiguous and must fail loud rather than corrupt it."""
-    only_begin = f"# Title\n\n{_BEGIN}\nno end marker here\n"
-    try:
-        merge.splice_managed_block(only_begin, _NEW_BODY)
-    except ValueError:
-        return
-    raise AssertionError("expected ValueError on a single-marker (malformed) managed block")
+@pytest.mark.parametrize(
+    "malformed",
+    [
+        f"# Title\n\n{_BEGIN}\nno end marker here\n",
+        f"# Title\n\n{_END}\ncontent\n{_BEGIN}\n",
+    ],
+    ids=["single-marker", "end-before-begin"],
+)
+def test_malformed_fences_raise(malformed: str) -> None:
+    """Single markers and reversed fences must fail loud rather than corrupt the file."""
+    with pytest.raises(ValueError):
+        merge.splice_managed_block(malformed, _NEW_BODY)

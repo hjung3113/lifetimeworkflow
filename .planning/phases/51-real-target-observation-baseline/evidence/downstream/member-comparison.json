@@ -1,0 +1,40 @@
+{
+  "expected_manifests": [
+    "package.json",
+    "packages/ui/package.json",
+    "packages/shared/package.json",
+    "apps/frontend/package.json",
+    "apps/backend/package.json"
+  ],
+  "discover_observed_manifests": [
+    "apps/backend/package.json",
+    "apps/frontend/package.json",
+    "docs/design-prototype/package.json",
+    "package.json",
+    "packages/shared/package.json",
+    "packages/ui/package.json"
+  ],
+  "package_facts_observed_manifests": [
+    "apps/backend/package.json",
+    "apps/frontend/package.json",
+    "docs/design-prototype/package.json",
+    "package.json",
+    "packages/shared/package.json",
+    "packages/ui/package.json"
+  ],
+  "discover_status": "observed",
+  "discover_comparison": {
+    "missing": [],
+    "unexpected": [
+      "docs/design-prototype/package.json"
+    ],
+    "matches": false
+  },
+  "package_facts_comparison": {
+    "missing": [],
+    "unexpected": [
+      "docs/design-prototype/package.json"
+    ],
+    "matches": false
+  }
+}

@@ -1,0 +1,2240 @@
+{
+  "dispositions": [
+    {
+      "destination": ".claude/agents/code-reviewer.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/agents/curator.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/agents/explorer.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/agents/orchestrator.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/agents/python-engineer.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/add-language.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/adopt.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/adr.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/agree.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/build.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/checkpoint.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/component.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/contract-check.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/docs-sync.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/fan-out-synthesize.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/flow.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/impact.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/lint.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/new-contract-rule.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/orient.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/refresh-memory.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/review.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/test.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/commands/verify-work.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/settings.json",
+      "disposition": "marker-merge"
+    },
+    {
+      "destination": ".claude/skills/brownfield-adoption/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/skills/context-budget/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/skills/data-contracts/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/skills/fan-out-synthesize/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/skills/fan-out-synthesize/references/fan-out-return.schema.json",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/skills/harness-author/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/skills/polyglot-boundary/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/skills/polyglot-boundary/references/canonicalization-table.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/skills/python-conventions/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".claude/skills/two-plane-memory/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".github/CODEOWNERS",
+      "disposition": "preserve"
+    },
+    {
+      "destination": ".github/workflows/ci.yml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": ".gitignore",
+      "disposition": "conflict"
+    },
+    {
+      "destination": ".memory/README.md",
+      "disposition": "update"
+    },
+    {
+      "destination": ".memory/agreements/README.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": ".memory/agreements/_TEMPLATE.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": ".memory/derived/contracts-index.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".memory/derived/package-facts.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".memory/state/activeContext.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".memory/state/progress.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/agent/code-reviewer.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/agent/curator.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/agent/explorer.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/agent/orchestrator.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/agent/python-engineer.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/add-language.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/adopt.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/adr.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/agree.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/build.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/checkpoint.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/component.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/contract-check.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/docs-sync.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/fan-out-synthesize.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/flow.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/impact.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/lint.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/new-contract-rule.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/orient.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/refresh-memory.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/review.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/test.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/command/verify-work.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/plugin/contract-guard.ts",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/plugin/format-on-write.ts",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/plugin/polyglot-lint.ts",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/plugin/session-inject.ts",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/skill/brownfield-adoption/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/skill/context-budget/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/skill/data-contracts/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/skill/fan-out-synthesize/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/skill/fan-out-synthesize/references/fan-out-return.schema.json",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/skill/harness-author/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/skill/polyglot-boundary/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/skill/polyglot-boundary/references/canonicalization-table.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/skill/python-conventions/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": ".opencode/skill/two-plane-memory/SKILL.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": "AGENTS.md",
+      "disposition": "marker-merge"
+    },
+    {
+      "destination": "CLAUDE.md",
+      "disposition": "marker-merge"
+    },
+    {
+      "destination": "contracts/.hashes/manifest.json",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "contracts/README.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "contracts/harness/adoption/inventory.schema.json",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "contracts/harness/adoption/manifest.schema.json",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "contracts/harness/adoption/plan.schema.json",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "contracts/harness/topology/relationship.schema.json",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "contracts/normalization/format-conventions.schema.json",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "contracts/sample/greeting.schema.json",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/adr/0001-walking-skeleton-golden-core.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/adr/0002-general-template-de-specialization.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/adr/0003-pipeline-topology-slot-and-instance-overlay.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/adr/0004-constitution-hook-fail-open-posture.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/adr/0005-golden-comparator-structural-only.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/adr/0006-process-memory-channel-and-provenance-reframe.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/adr/0007-constitution-gate-dev-enforce-decoupling.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/adr/0008-task-control-plane-lifecycle.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/adr/0009-contract-relationship-graph-model.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/adr/0010-human-docs-review-obligation-model.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/adr/0011-gate-right-sizing-dev-light-ci-strong.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/adr/0012-ci-and-merge-as-decision-authority.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/adr/0013-task-control-plane-retirement.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/adr/README.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/explanation/README.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "docs/explanation/agent-workflow-skillset-design-guide.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "docs/explanation/next-milestone-task-control-plane.md",
+      "disposition": "conflict"
+    },
+    {
+      "destination": "docs/explanation/template-and-instances.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "docs/glossary.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "docs/how-to/README.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "docs/reference/README.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": "docs/reference/format-conventions.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": "docs/reference/greeting.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": "docs/reference/inventory.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": "docs/reference/manifest.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": "docs/reference/plan.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": "docs/reference/relationship.md",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": "docs/tutorials/README.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/agents/code-reviewer.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/agents/curator.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/agents/explorer.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/agents/orchestrator.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/agents/python-engineer.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/agents/templates/component-engineer.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/agents/templates/engineer.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/add-language.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/adopt.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/adr.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/agree.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/build.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/checkpoint.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/component.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/contract-check.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/docs-sync.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/fan-out-synthesize.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/flow.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/impact.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/lint.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/new-contract-rule.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/orient.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/refresh-memory.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/review.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/test.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/commands/verify-work.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/git-hooks/pre-commit",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/opencode.config.schema.json",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/opencode.json",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/permission-matrix.json",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/plugins/contract-guard.ts",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/plugins/format-on-write.ts",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/plugins/polyglot-lint.ts",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/plugins/session-inject.ts",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/project.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/skills/brownfield-adoption/SKILL.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/skills/context-budget/SKILL.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/skills/data-contracts/SKILL.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/skills/fan-out-synthesize/SKILL.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/skills/fan-out-synthesize/references/fan-out-return.schema.json",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/skills/harness-author/SKILL.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/skills/polyglot-boundary/SKILL.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/skills/polyglot-boundary/references/canonicalization-table.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/skills/python-conventions/SKILL.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "harness/skills/two-plane-memory/SKILL.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "libs/normalize-fixtures/bom_crlf.json",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "libs/normalize-fixtures/decimal_locale.json",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "libs/normalize-fixtures/null_vs_empty.json",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "libs/normalize-fixtures/tz_iso8601.json",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "libs/normalize-spec.md",
+      "disposition": "human-ratification-required"
+    },
+    {
+      "destination": "libs/python/AGENTS.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "libs/python/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "opencode.json",
+      "disposition": "derived-regenerate"
+    },
+    {
+      "destination": "pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_apply/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_apply/__main__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_apply/apply.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_apply/batch.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_apply/cli.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_apply/installed.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_apply/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_scan/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_scan/__main__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_scan/cli.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_scan/destinations.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_scan/detect.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_scan/plan.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_scan/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/adoption_scan/scan.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/agree/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/agree/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/agree/write.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/bootstrap/README.md",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/bootstrap/install.sh",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/bootstrap/verify.sh",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/contract_drift/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/contract_drift/check.sh",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/contract_drift/drift.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/contract_drift/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/contract_graph/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/contract_graph/compile.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/contract_graph/impact.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/contract_graph/ownership.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/contract_graph/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/contract_graph/query.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/contract_hash/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/contract_hash/hash.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/contract_hash/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/docs_sync/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/docs_sync/__main__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/docs_sync/generate.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/docs_sync/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_config/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_config/loader.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_config/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_emit/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_emit/__main__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_emit/emit-manifest.json",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_emit/generate.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_emit/manifest.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_emit/merge.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_emit/permissions.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_emit/project_agent.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_emit/project_command.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_emit/project_skill.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_emit/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_emit/validate.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_lint/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_lint/agreements.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_lint/caps.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_lint/frontmatter.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_lint/provenance.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_lint/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_lint/workspace_check.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_perms/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_perms/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/harness_perms/resolver.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/hooks/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/hooks/_stdin.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/hooks/commit_gate.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/hooks/contract_guard.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/hooks/format_on_write.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/hooks/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/memory_regen/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/memory_regen/contracts_index.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/memory_regen/inject.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/memory_regen/package_facts.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/memory_regen/pointer_index.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/memory_regen/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/memory_regen/queries.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/memory_regen/repo_map.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/polyglot_lint/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/polyglot_lint/lint.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/polyglot_lint/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/ruff_baseline/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/ruff_baseline/__main__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/ruff_baseline/baseline.json",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/ruff_baseline/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/ruff_baseline/ratchet.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/workspace_config/__init__.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/workspace_config/loader.py",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "tools/workspace_config/pyproject.toml",
+      "disposition": "preserve"
+    },
+    {
+      "destination": "workspace.toml",
+      "disposition": "preserve"
+    }
+  ],
+  "excluded": [
+    {
+      "destination": ".claude/agents/gsd-advisor-researcher.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-ai-researcher.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-assumptions-analyzer.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-code-fixer.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-code-reviewer.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-codebase-mapper.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-debug-session-manager.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-debugger.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-doc-classifier.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-doc-synthesizer.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-doc-verifier.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-doc-writer.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-domain-researcher.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-eval-auditor.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-eval-planner.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-executor.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-framework-selector.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-integration-checker.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-intel-updater.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-nyquist-auditor.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-pattern-mapper.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-phase-researcher.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-plan-checker.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-planner.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-project-researcher.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-research-synthesizer.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-roadmapper.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-security-auditor.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-ui-auditor.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-ui-checker.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-ui-researcher.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-user-profiler.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/agents/gsd-verifier.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/add-tests.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/ai-integration-phase.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/audit-fix.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/audit-milestone.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/audit-uat.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/autonomous.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/capture.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/cleanup.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/code-review.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/complete-milestone.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/config.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/debug.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/discuss-phase.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/docs-update.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/eval-review.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/execute-phase.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/explore.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/extract-learnings.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/fast.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/forensics.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/graphify.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/health.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/help.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/import.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/inbox.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/ingest-docs.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/manager.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/map-codebase.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/milestone-summary.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/mvp-phase.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/new-milestone.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/new-project.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/ns-context.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/ns-ideate.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/ns-manage.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/ns-project.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/ns-review.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/ns-workflow.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/pause-work.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/phase.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/plan-phase.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/plan-review-convergence.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/pr-branch.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/profile-user.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/progress.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/quick.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/resume-work.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/review-backlog.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/review.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/secure-phase.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/settings.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/ship.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/sketch.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/spec-phase.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/spike.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/stats.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/surface.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/thread.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/ui-phase.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/ui-review.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/ultraplan-phase.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/undo.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/update.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/validate-phase.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/verify-work.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/workspace.md",
+      "reason": "gsd-owned"
+    },
+    {
+      "destination": ".claude/commands/gsd/workstreams.md",
+      "reason": "gsd-owned"
+    }
+  ],
+  "installed": [
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": ".claude/settings.json",
+      "installed_sha256": "3d73a60fe9f1311a08c379c6fb1bf5260ac27a332374fb6d47b76a95abaa1111"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": ".github/CODEOWNERS",
+      "installed_sha256": "ade9ff75048f3c4334b4c94199d01af5b1fef1121b78e70716f7070cbc1a3b2f"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": ".github/workflows/ci.yml",
+      "installed_sha256": "96e36dd273fc94573d738b59c05d5eb8cb14881fdb3af6d9ff2843817635bd35"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": ".memory/README.md",
+      "installed_sha256": "dca8df52e64b75c2de166fdf1e20c8ca691f2894634e5b4de3203ed99936cfe5"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": ".memory/agreements/README.md",
+      "installed_sha256": "57b60667fde4ebaa046de8491d8c9e19051ac38ace2ed479b6c702c594543fc0"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": ".memory/agreements/_TEMPLATE.md",
+      "installed_sha256": "c98b63802deecde92889c77d16fb5ab3cc12f8449fc959fdf1f0d125bfc787ed"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "AGENTS.md",
+      "installed_sha256": "494cf1f2e4c3310f46bebe650abe03b360dfdac1480e07c3eea21a4db30b98a5"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "CLAUDE.md",
+      "installed_sha256": "558b8fe2e5693c9c3a121e391a1266d193dca4bd2131fb39d51003a14c28eb06"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "docs/explanation/README.md",
+      "installed_sha256": "44832eec1eb581b59f2d07e5b6c228d0ddb0b20dfc4f69ce4955b57c7d22d648"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "docs/explanation/agent-workflow-skillset-design-guide.md",
+      "installed_sha256": "a25b049f3bc7300a640740b4b1fb3a72a6454ff129da1e12ae72a448440e871b"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "docs/explanation/next-milestone-task-control-plane.md",
+      "installed_sha256": "04355882a5b99a14dfd4e60324792984a76a37f1cc5239b0e40449d2e377701d"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "docs/explanation/template-and-instances.md",
+      "installed_sha256": "73e34a6eaf0f51b46487de5ffc8d367b145e3eb95e15d91e0f7f8cdbda29dee8"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "docs/how-to/README.md",
+      "installed_sha256": "6b1781b370b42942a77e30be19b4a5cfcaa0e4377df28eff92e834487125f85e"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "docs/tutorials/README.md",
+      "installed_sha256": "ee622bad95caa2ac791c47be3d774fdf729d4c2c250444bbec851330acd2c94d"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/agents/code-reviewer.md",
+      "installed_sha256": "846b2ac3f2f1be0435e8bbf7f2bba52811664ec50193feefe5baa6c9be26756b"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/agents/curator.md",
+      "installed_sha256": "d58afdbd05484eafce6377d3018e1e423e2055d73257d26f31cc78279e18e6f8"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/agents/explorer.md",
+      "installed_sha256": "2777a2d60cf83d438cf684303806a2b5b70a5da22384083efbea1c143de8c780"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/agents/orchestrator.md",
+      "installed_sha256": "b896a6eb8a7399581343de608268306ce31419cc37ab6d6061f12f376f043854"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/agents/python-engineer.md",
+      "installed_sha256": "4fd4d77a8d08571480041d2d47440cba919fd9a67c8fc18a089c438bb33c2e67"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/agents/templates/component-engineer.md",
+      "installed_sha256": "e97782d780b4a3284102bc60cffb4241483e87db4880ef2b557c833b3ffb9bf2"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/agents/templates/engineer.md",
+      "installed_sha256": "b7fa26bcfd1b49b4820fa348b61daf97a1eac50f3bb7eae945da6ecb202414a0"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/add-language.md",
+      "installed_sha256": "3f98580150f8e0e80214a89fa5c1ca1bb408845f9a723104c0bc17e9786fa9a4"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/adopt.md",
+      "installed_sha256": "0209d61b2e51813bc6ba5b405a07fd25296c6f8cc1b8f840b267afb36865ad09"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/adr.md",
+      "installed_sha256": "f8c2abdb9bf340966b9170313a43ce8e5d657c18e9a2e6622055f53dcf5d6652"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/agree.md",
+      "installed_sha256": "2fe525c922d74eb001da8a953f02cda4939ca24508bf774132dfc9eb004f5053"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/build.md",
+      "installed_sha256": "2aae7467b4b2298997f47617af3efddfcee4b89e1efb5d27180f8b8a7396c5b7"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/checkpoint.md",
+      "installed_sha256": "adb7f43c1d7d4aefaf9553033634f8fc5ccdfc8c44a7f9eb135ae94bfbd45e88"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/component.md",
+      "installed_sha256": "15ab02cb105482dd8935203f769d0c662d8ba806b2090aba96bafabc158ea38c"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/contract-check.md",
+      "installed_sha256": "48baa7523f5c53717a6ba35cdad67624a8ef1c92ea4ef8a495ab7a8b0db982f0"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/docs-sync.md",
+      "installed_sha256": "2da82ae5ff7d44c2c0f756782baaea352f703419dc5454af79c19d91a4d47fd0"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/fan-out-synthesize.md",
+      "installed_sha256": "cdd5cf6bc67457cdbb9a0ea8aa6423014de1fe8c638a13bc83866d175a0f6996"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/flow.md",
+      "installed_sha256": "bb7a5392a14d90f874d865c6500cc5a4dee4339afe048c96f5340b33c902170a"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/impact.md",
+      "installed_sha256": "90a159ca5bf53624705e62d38a47522f4881ecf2823091756049564e07da37d9"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/lint.md",
+      "installed_sha256": "ca2bc89effe4c31a6a21d82e02afcb83655a488fa0bcf2ffd01da6c362cb7731"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/new-contract-rule.md",
+      "installed_sha256": "f366ad33a5284fddb8ef400b9359b712af59e2e29bf6398dd6fb147319a43025"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/orient.md",
+      "installed_sha256": "03cf725a690dab17a8ad7943e6ee1cde9f02454d8eef467f1aa427a2735ac9e4"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/refresh-memory.md",
+      "installed_sha256": "ddda856206519bf1f5bd1f9fccd57f62d3c50d43e8bade663dff48613e38995f"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/review.md",
+      "installed_sha256": "df9570f91be489c775e10257482434a37af2b4fa4e4c06c7a43dc2c12e45ab6b"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/test.md",
+      "installed_sha256": "5e53d7e7ef27829a1128db7980e4742d5b7342b5b3c803c665ff8ea0a8cfb2ac"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/commands/verify-work.md",
+      "installed_sha256": "1049a40699a8383370aab57dedf4a2013c2dedadaff6c3c3e75bc7e70579f007"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/git-hooks/pre-commit",
+      "installed_sha256": "d671c2dadbd7b5535e32edf72d1d399ea35843a2f041787f64befea52b0ae48a"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/opencode.config.schema.json",
+      "installed_sha256": "df112f6a9eed4d6934254c07f0a36c1f32e472256514e0fd8785ff15530c4388"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/opencode.json",
+      "installed_sha256": "94cc389af5de491aeaac1fd3a828d49fb1fa70fba1222e687836ba87abc0b57f"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/permission-matrix.json",
+      "installed_sha256": "21fb3a939e9b591e4014398d0d8599d8b647e464f7a41f37bf679b3cbc77f34d"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/plugins/contract-guard.ts",
+      "installed_sha256": "56c15ba9e16b2c71824a2e14dd034473335a6d2362d644cba3db98032f40099e"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/plugins/format-on-write.ts",
+      "installed_sha256": "8eee518eb57eb4b9fe69b522d70bac3598c296f453c3e8bc3f1f68d86fd5b893"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/plugins/polyglot-lint.ts",
+      "installed_sha256": "d9cb21b390e4ae64c40af6b30c82e7f1930469538e1ec57e840abbad3c7c9ed1"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/plugins/session-inject.ts",
+      "installed_sha256": "5a7c009c1f938da4a4148134f6bf6eda0f46b436af1dc7c7aacd9c049f54f4c5"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/project.toml",
+      "installed_sha256": "cfa00564664d728d31be8965f41ad4217b4a39f6f21f7cd95bd28bf01adbcbd3"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/skills/brownfield-adoption/SKILL.md",
+      "installed_sha256": "5c57ffedbac884d3cb2604af8470ee6b5d7f2b6a7388127c9b479f50162fd6a9"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/skills/context-budget/SKILL.md",
+      "installed_sha256": "35b366812eaa80dbe4652d7b4c7a90b6ce98fa25bd8587afa5b008bc88d50fcb"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/skills/data-contracts/SKILL.md",
+      "installed_sha256": "99597b138ec78c0265072c94a841570340a401325793a4b044ae0af547f712d8"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/skills/fan-out-synthesize/SKILL.md",
+      "installed_sha256": "21780bbf18790509a9f3313c701c7140a6ee7bdd856720b63f3d8940394809da"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/skills/fan-out-synthesize/references/fan-out-return.schema.json",
+      "installed_sha256": "0bab99f200e089e717d72b12e8aed68a054ce9929481c034bf619c9c8c7f002d"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/skills/harness-author/SKILL.md",
+      "installed_sha256": "f7c12714d710bef8cc24f9d77509677f000125a7495b5a7b381dbb8c9a0658a3"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/skills/polyglot-boundary/SKILL.md",
+      "installed_sha256": "c1c4a0787e5d447e28972d4866dd54dd1f6a511617cca9d939dc8bb65ca602a7"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/skills/polyglot-boundary/references/canonicalization-table.md",
+      "installed_sha256": "cb7a002fe7ba2d6926dcebdee55644078f6e02075fb7ea1ba9ba4596c52b0382"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/skills/python-conventions/SKILL.md",
+      "installed_sha256": "2e09b9200f041300e51ed841167d4f0c8e9c2188e314549e13469e0cd6491a3b"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "harness/skills/two-plane-memory/SKILL.md",
+      "installed_sha256": "952f529d02fbe7c1e9aeeead6bff408973ccafd063e9f6d0047ffb117569f3a3"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "libs/normalize-fixtures/bom_crlf.json",
+      "installed_sha256": "1678bd9845f8973613ea92718e3d92a6633ad26d912a886aee294a293d65a499"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "libs/normalize-fixtures/decimal_locale.json",
+      "installed_sha256": "845f2e962a10cbace7e7555d596d911aee2cd3f806d482239c728e30a6f11573"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "libs/normalize-fixtures/null_vs_empty.json",
+      "installed_sha256": "c73d17818a349e2893e6ee944765b2155b496850d8140f026d9b7353f0f74567"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "libs/normalize-fixtures/tz_iso8601.json",
+      "installed_sha256": "cb3cf2be5ba520b8e28233f159b5f32be62b82f56c688e8d235d08ead0363a7d"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "libs/python/AGENTS.md",
+      "installed_sha256": "fa11cf4564aab453ef830e41b1e7e213d63025642557d40289d2ed83e4636e76"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "libs/python/pyproject.toml",
+      "installed_sha256": "2937b1a1969e1d97622703dadad10394bf3123c8b201deaeeb3fa0fcaac76898"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "pyproject.toml",
+      "installed_sha256": "02ac1b2f1ed06c46d29864e784d99e2c27be7e246df4b57c3d87a92a8af33a44"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_apply/__init__.py",
+      "installed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_apply/__main__.py",
+      "installed_sha256": "db397640dec758e9eaf6ead1794f3b1f86f26fc7aafe844b4facfbbf38811df2"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_apply/apply.py",
+      "installed_sha256": "f3307551e9afb023a77b5dc2d074c32efe4aefc0710dd44fd6375a7d85348aed"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_apply/batch.py",
+      "installed_sha256": "986004abcf87adb4fe2c6dc64a861ad3ddf79496a99d9a342875ac1bd9d3d340"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_apply/cli.py",
+      "installed_sha256": "aa103c60da413254f6ca8a233d6c074f1439a0108630e654cab5703543bc9855"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_apply/installed.py",
+      "installed_sha256": "8bd19c6e6e86b826607647ded69c660fadf340288b8ea3979639397e5446a4e8"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_apply/pyproject.toml",
+      "installed_sha256": "efd11461f8996499ac65a2fc4e6096553716aee57c3d1c40ef701d696ae764ec"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_scan/__init__.py",
+      "installed_sha256": "9f0f953262f0239d90925febbf639e325b7f7561a69575dd6426a8eb05e4e705"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_scan/__main__.py",
+      "installed_sha256": "9ac77d559fccfe5430b755a3bc004b2808f63e338b51ac8428fc9780892dc210"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_scan/cli.py",
+      "installed_sha256": "12cc407cfe55f9dbbef75328f9789a8ba00c14beaf599d1cb91df408183ad26a"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_scan/destinations.py",
+      "installed_sha256": "cb8e0373647a616d29512ae160b3bd8982c433c2fd3c03cf8da2a4bf3dd0ad8a"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_scan/detect.py",
+      "installed_sha256": "f5b3b965ae0138aa5583db1f2ce9bf0f113a3b7bbe23fbb1cec2bb947886b6fb"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_scan/plan.py",
+      "installed_sha256": "1e3e14efd1e28c78648b87f86ab4011018ad7afb476d4335d04b87f12e95a844"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_scan/pyproject.toml",
+      "installed_sha256": "09d11f8964906e0674854f9359482e51cf8e163d3bc430ac669ffe7488ee76c5"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/adoption_scan/scan.py",
+      "installed_sha256": "86428569c715aa6b9d513dea8df71267df4a3a10f7af6a2ececdcb41dd644cd7"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/agree/__init__.py",
+      "installed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/agree/pyproject.toml",
+      "installed_sha256": "42d1d5ea512f930b06692d874585a5a9d9c0a4e8b9450ced4205a69574c03db0"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/agree/write.py",
+      "installed_sha256": "9946eaa3958b18e6caeea238aef2bf86632ec9790e7929d453115d50217cfd39"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/bootstrap/README.md",
+      "installed_sha256": "5062cbf8b479f207d8e2b4400f14bf81fb98107680bd5c581e9f07deab49adb1"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/bootstrap/install.sh",
+      "installed_sha256": "5135a034c3ffcc16378418fb5f67d03cffb9c874234e1ac18e2beef289a1f364"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/bootstrap/verify.sh",
+      "installed_sha256": "4233ec76d817829fe9f7d24fe4504981681a5a5be9fa87dbca2f54465e67afb6"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/contract_drift/__init__.py",
+      "installed_sha256": "7f1b8c67046f0857d9fae1646314d9b682f507bd2d1dd3d0e7ce4640733a71db"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/contract_drift/check.sh",
+      "installed_sha256": "f80a60e6cb99e7fca82be306c49ef3867fb57c5fdbf9499083c9ec33c422258c"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/contract_drift/drift.py",
+      "installed_sha256": "b12bf6359d6f72f51abea12b45dff4f391c42bc985e8bdc49e02c1c0918c1344"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/contract_drift/pyproject.toml",
+      "installed_sha256": "e5ccba52095ed320e16adfc8b749275889e0c3185975b8141b8192d953977102"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/contract_graph/__init__.py",
+      "installed_sha256": "65429ac4c05b7078f6c6cf3336e91fc0d9425a7dd5c081291fc8ca7fbaf9e578"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/contract_graph/compile.py",
+      "installed_sha256": "3deddcec1a8c80f7a414e31f08914ed4d0a0e42564f88efa600ff83fbf0013a7"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/contract_graph/impact.py",
+      "installed_sha256": "10d04e11e4b7f742ebf8a91eb7e0680ff039741e7ef7d6fd28f1caa16ce68a44"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/contract_graph/ownership.py",
+      "installed_sha256": "a2bf7c5b858589dfe52b3ddc69380ee7fa6721c7b5769ec8a6cf5a71a8099b29"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/contract_graph/pyproject.toml",
+      "installed_sha256": "0b2f2282f3640915f0d287b17de77fa54b3acfe25dcb66d51bb16657dcce2206"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/contract_graph/query.py",
+      "installed_sha256": "d2abd255d2528f1522747dc2027c22aadbbf41b94417e9b433960ad8c4ddeca5"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/contract_hash/__init__.py",
+      "installed_sha256": "0e38664df6440dc293ff26d366a620e56e2f576544c9fd32b77887011ebeffca"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/contract_hash/hash.py",
+      "installed_sha256": "91c4d74ad69fd72911c0b972a2301f1ebe43f68d0a0f23fca4f1af9f5bc2bbad"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/contract_hash/pyproject.toml",
+      "installed_sha256": "fb632589b4fda77b6bad91244988c8a779ae113cdee445001eaae2705e231b8c"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/docs_sync/__init__.py",
+      "installed_sha256": "8315b78a119c78ed8d837bb1c1f18fa06ad7ec19566755464bb0a16471f847ad"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/docs_sync/__main__.py",
+      "installed_sha256": "8f55b425ce73eb9f114c69ecf37eaa39241e1bef8c6def259721f2c3313fd092"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/docs_sync/generate.py",
+      "installed_sha256": "aa19c6974f03982bfaab1f45d29a70a2b8f7daa4a4b0e18005950a022e32ab08"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/docs_sync/pyproject.toml",
+      "installed_sha256": "35f1ff4dd0cc588197b5c1c1d99c6bc304893d87bf8ff0f81078094f169dcb89"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_config/__init__.py",
+      "installed_sha256": "f8912cfba89c7af43f22f7fe5420c6fb6fa0bb6a6faaef9ab8ee2b25a5576a0c"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_config/loader.py",
+      "installed_sha256": "3f8ed17fe293eddadbee0622f650f4142a7ca7c2aaead183b5302f628a572ef3"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_config/pyproject.toml",
+      "installed_sha256": "5b5ef4c1457f1b2529565138db77ec9feb23a485614df007cd75cc6ac51b9d2d"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_emit/__init__.py",
+      "installed_sha256": "69e6f4fb801e96ce96bde53f6b5761b83433a6d2f90c765e679d1d6b8545fb50"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_emit/__main__.py",
+      "installed_sha256": "ed9383a614d661f3264d2e687a298e2dedd20700abdfba187f4af329dcce9cc7"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_emit/emit-manifest.json",
+      "installed_sha256": "2d0ab122c569add41891fedbe883c1e481b94f750da49be67784cb9bc96d5da1"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_emit/generate.py",
+      "installed_sha256": "5713d0d5758ed7989313d1b7b3d3fceaed34983da89fb41e06fd5677a58539a3"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_emit/manifest.py",
+      "installed_sha256": "d16dce4f0bc488959722911fa39196e719c46d514db4ddd998deaa3b794e01a4"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_emit/merge.py",
+      "installed_sha256": "81ed2f621a4bc94e001659487cf6e7306239aa8adc247312a2069705afd7947a"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_emit/permissions.py",
+      "installed_sha256": "ba5039ddc03e480182ed64fa9cf1d75a55c35e4953d8552def7ed98b67da539d"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_emit/project_agent.py",
+      "installed_sha256": "e5c2bfb4ddc4addc493561883219ec48609a6d0b88eeef551def8e4764505d57"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_emit/project_command.py",
+      "installed_sha256": "51c813394440512e275caa0a3603cc6f3ddc5745f4c51ceaa10a1504fa3ef04a"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_emit/project_skill.py",
+      "installed_sha256": "07d27ea140a7c2ed2635d0ba591f9ae3b2a409e9477e25032c536480b4a0ce61"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_emit/pyproject.toml",
+      "installed_sha256": "f3bc710d8bd0bfcdb1001cb889560c8bfac49916b0ef7a205436a40d2eb22bad"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_emit/validate.py",
+      "installed_sha256": "87e13a2d82ad399e57949912bd08a7a3a3c424997a0149aa635f6db48a60183b"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_lint/__init__.py",
+      "installed_sha256": "300d88f87c50fd17a40f9e72627bcd8fba138a8de3dcdf93b12745cbea9ab8f1"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_lint/agreements.py",
+      "installed_sha256": "1aa89fba3dd68fbc10474acb6f66f55b4472d52f39062a9e6ad0539cc3a06f58"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_lint/caps.py",
+      "installed_sha256": "3ea8da980c788eb516803cc446d6e6a62fb9ce0b435a75b5e1e8895b4d6db81a"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_lint/frontmatter.py",
+      "installed_sha256": "c49bcf14e586a5a7a3fec297a8b514c98a7c26c5437d9eea6c74de6d5a62508b"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_lint/provenance.py",
+      "installed_sha256": "f7bfcd6e80617972bba903695bc65295fc6ff42d6db6fbbfbbfe746cd1012529"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_lint/pyproject.toml",
+      "installed_sha256": "b7d4fa1cddaabcb2d8707c43a1adba71d3235480accb3d42d73a1927a99c2240"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_lint/workspace_check.py",
+      "installed_sha256": "d2f35512aefc839b3b97ee04b16f33bebbed6cd7cb30a62b5f9c13d318d6fbbb"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_perms/__init__.py",
+      "installed_sha256": "b834cf6871f98771924188cfdf24cdd4b7950811cbbd0185da394a4220a54879"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_perms/pyproject.toml",
+      "installed_sha256": "89e6b2cb93f605b89227d8c536c1f1a2262c20fdec2bd60d465410ea5133f5ec"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/harness_perms/resolver.py",
+      "installed_sha256": "8e78ac5ccd6cfdfdfb9dcd018c196928811609f3d09b637d950e081ea8c8017a"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/hooks/__init__.py",
+      "installed_sha256": "d2f5ae274c43b86b32e33e3627f1b7dc55d547bcb9a705d8d0fbe3b8d24746a2"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/hooks/_stdin.py",
+      "installed_sha256": "bd05d73c62dabe2af40a83a233aae8ff0cd266a410072235b7d1f97606e36eea"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/hooks/commit_gate.py",
+      "installed_sha256": "b9ea944c1bd00244c60d38cd6bdf19532c7903b2359769237153341bf11c4510"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/hooks/contract_guard.py",
+      "installed_sha256": "466bcc51464759aa42960064120fa857111ea7068a39e1cfff51c0ea4328f4f0"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/hooks/format_on_write.py",
+      "installed_sha256": "b2f45f21515fe247237fa0512ccfddb208a377c6a03f53bac078591b0a4201b6"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/hooks/pyproject.toml",
+      "installed_sha256": "ecbd4349ef6a69c6fcd2ee1e7037769833a9af097e7634a32363c3f4aef58a2e"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/memory_regen/__init__.py",
+      "installed_sha256": "4cf674c33d439c4e30aadaa65501bb7b9ce89d87f377780d99780a8f4636c572"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/memory_regen/contracts_index.py",
+      "installed_sha256": "340c4d55002a132abd2627db77bd36aa32cf40214e4afac9bbd01778545b84dd"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/memory_regen/inject.py",
+      "installed_sha256": "b8ffd57fc2054300468a35bfc89eafd8cef3804409497c3a8674d4228dfa259e"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/memory_regen/package_facts.py",
+      "installed_sha256": "ecc530dd6daaf82e8d62f2a13f7b51df145019f261b9eaff2f9d1846ba873e3f"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/memory_regen/pointer_index.py",
+      "installed_sha256": "c85cb60868c3b243717c18f67913355469b205e8b82b73339abc6ac67dc6adb8"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/memory_regen/pyproject.toml",
+      "installed_sha256": "1efce83825a93ba1e1dc93b1b9089d121b5e773046a8f8f558bd671863779c44"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/memory_regen/queries.py",
+      "installed_sha256": "b876b759fa29169ec6d1e0df9b57fb6e2ff02ca6678c5e72021bb23aaefa7e6f"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/memory_regen/repo_map.py",
+      "installed_sha256": "91d8e5b27b1a358d484d02bfae4e35d9721cf65a17109e7754c19a9b8835fc31"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/polyglot_lint/__init__.py",
+      "installed_sha256": "c15ec76f2ffcdbbf3681acce2645626fec46f3950470427a136f244bce8307ed"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/polyglot_lint/lint.py",
+      "installed_sha256": "c56969332bcd4fec37667232833b15167a239a5c893b8db4791929b1a04fe2b6"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/polyglot_lint/pyproject.toml",
+      "installed_sha256": "b05c7b75df14acdfa2bbf32c8907c3058dfd4bb55d60e6ae516f4f39ec35af28"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/ruff_baseline/__init__.py",
+      "installed_sha256": "30e1fd53b84fb2ea206c892567207f04f07e7f6b55f633ee19f5529fa3f8ac30"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/ruff_baseline/__main__.py",
+      "installed_sha256": "52717ca373579789dece7b99e47dd99b216fe28d5e07d937bd5e5ca0edda7de4"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/ruff_baseline/baseline.json",
+      "installed_sha256": "5e26fc6f178d5b08a7ffd94719d0395de95d9e9a6890f02ddbc3154c6f4a98f7"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/ruff_baseline/pyproject.toml",
+      "installed_sha256": "8dc7e10048afb545781e04209c28af8c0ad29c2d9435dc468c64e296b98677fa"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/ruff_baseline/ratchet.py",
+      "installed_sha256": "5b04a17f152d047817c6f78d62bed534c5c3ae1918745cc89ce5ee335f637955"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/workspace_config/__init__.py",
+      "installed_sha256": "a15d1890b9d6d0d6a54c44164365a7e1c0d4631e455c936d0d44efe71a0499c1"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/workspace_config/loader.py",
+      "installed_sha256": "81899c07ad4078e75329af79a04cca58808c8e992e2d18447eb303a9a0f082f3"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "tools/workspace_config/pyproject.toml",
+      "installed_sha256": "b73825bf75175a4fc6f47915ef310d9f8d26c30e98d17cbf53dd12bec4749bb8"
+    },
+    {
+      "batch_id": "1c897dc6f2fc4355",
+      "destination": "workspace.toml",
+      "installed_sha256": "1c4c8656f35ae25fbae80b76d13c046ac82aa40c931f1f463d86f4720422c93e"
+    }
+  ],
+  "target_ref": "a4e8e646b5c0169cf4f1978e64adc8b97dad66a9"
+}

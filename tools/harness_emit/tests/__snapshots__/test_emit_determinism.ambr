@@ -982,6 +982,12 @@
   
   !`python -m tools.adoption_apply apply $ARGUMENTS`
   
+  On a re-run, `/adopt` updates files it previously installed instead of reinstalling them. Its
+  target-side record is `.harness/adoption/installed.json`. When neither source nor target changed,
+  it writes nothing and reports `applied=0 updated=0 unchanged=N conflicts=0`; a target-side edit to
+  a managed file is reported on stderr as a conflict and left byte-unchanged. Conflicts do not abort
+  the remaining safe rows or change the command's exit status.
+  
   ## Notes
   
   - **No arbitrary command execution.** Every invocation above is a fixed `python -m
@@ -990,6 +996,7 @@
   - **Discovery is read-only**; `apply` never touches the constitution plane. Review of an applied
     batch's decisions happens at the PR that carries it, not inside this command. See
     `harness/skills/brownfield-adoption/SKILL.md` for the full discover/draft/review/apply runbook.
+  - The drafted `manifest.json` is the conflict report; there is no separate conflict artifact.
   
   ===== claude-command/adopt =====
   ---
@@ -1030,6 +1037,12 @@
   
   !`python -m tools.adoption_apply apply $ARGUMENTS`
   
+  On a re-run, `/adopt` updates files it previously installed instead of reinstalling them. Its
+  target-side record is `.harness/adoption/installed.json`. When neither source nor target changed,
+  it writes nothing and reports `applied=0 updated=0 unchanged=N conflicts=0`; a target-side edit to
+  a managed file is reported on stderr as a conflict and left byte-unchanged. Conflicts do not abort
+  the remaining safe rows or change the command's exit status.
+  
   ## Notes
   
   - **No arbitrary command execution.** Every invocation above is a fixed `python -m
@@ -1038,6 +1051,7 @@
   - **Discovery is read-only**; `apply` never touches the constitution plane. Review of an applied
     batch's decisions happens at the PR that carries it, not inside this command. See
     `harness/skills/brownfield-adoption/SKILL.md` for the full discover/draft/review/apply runbook.
+  - The drafted `manifest.json` is the conflict report; there is no separate conflict artifact.
   
   ===== opencode-command/adr =====
   ---
@@ -2507,6 +2521,13 @@
   against an unchanged target is a no-op), and structurally refuses every constitution-plane
   (`contracts/` · `docs/adr/` · `docs/glossary.md`) destination before any filesystem write — independent of
   any Claude tool-call hook, since a bare CLI/CI invocation has no hook in the loop at all.
+  
+  Re-running a batch manages the files `/adopt` previously installed, recorded at the target's
+  `.harness/adoption/installed.json`: unchanged source and target means no writes and an
+  `applied=0 updated=0 unchanged=N conflicts=0` summary; changed harness content updates its managed
+  file; and a target-side edit is reported on stderr as a conflict while that file remains
+  byte-unchanged. Conflicts leave other safe rows running and do not change the command's exit status;
+  the drafted `manifest.json` is the conflict report.
   
   ## Related
   

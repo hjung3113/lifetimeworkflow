@@ -1,0 +1,23 @@
+1 .M N... 100644 100644 100644 b93c9a8c9c8086cc1fc9a4e9256c27961f9a4e31 b93c9a8c9c8086cc1fc9a4e9256c27961f9a4e31 apps/backend/src/server.ts
+1 .M N... 100644 100644 100644 a94ef704f8eef13faae0518b11900dc8e50f1e33 a94ef704f8eef13faae0518b11900dc8e50f1e33 apps/frontend/src/features/integration/routes/LinksRoute.tsx
+1 .M N... 100644 100644 100644 5b2745af070be9130b1d8cffdff633400c066fc4 5b2745af070be9130b1d8cffdff633400c066fc4 apps/frontend/src/features/voc/components/create/VocCreateScreen.tsx
+1 .M N... 100644 100644 100644 6944b2a4cadfdc13e5b0a95e0a1032dbab437ab5 6944b2a4cadfdc13e5b0a95e0a1032dbab437ab5 apps/frontend/tests/visual/support/mock-api.ts
+1 .M N... 100644 100644 100644 e64588256ed6191bfaff1be87f575f5f5ec29174 e64588256ed6191bfaff1be87f575f5f5ec29174 docs/adr/0031-similar-voc-same-managed-system-heuristic.md
+1 .M N... 100644 100644 100644 c724de6696b0e241c272e50e487a38d4a3591479 c724de6696b0e241c272e50e487a38d4a3591479 docs/design/04-voc-system.md
+1 .M N... 100644 100644 100644 ec420f1fac70bf8b2d9de9fe93f9e59118531a84 ec420f1fac70bf8b2d9de9fe93f9e59118531a84 docs/frontend/specs/voc.md
+1 .M N... 100644 100644 100644 043ee1a8221d19eef13cbdc28403a238c44ba4c7 043ee1a8221d19eef13cbdc28403a238c44ba4c7 docs/implementation/03-api-contracts.md
+1 .M N... 100644 100644 100644 afe9b230dda3d8356eed584247718a916b1c1ef2 afe9b230dda3d8356eed584247718a916b1c1ef2 packages/shared/src/vocs/index.ts
+1 .M N... 100644 100644 100644 f4667c447bd7b3f0b7bf87cffdbed0b4b8c4f56d f4667c447bd7b3f0b7bf87cffdbed0b4b8c4f56d scripts/gates/frontend-biome-allowlist.txt
+? apps/backend/src/modules/voc/pre-submit-peers/__tests__/pre-submit-peers.integration.test.ts
+? apps/backend/src/modules/voc/pre-submit-peers/index.ts
+? apps/backend/src/modules/voc/pre-submit-peers/repo.ts
+? apps/backend/src/modules/voc/pre-submit-peers/routes.ts
+? apps/backend/src/modules/voc/pre-submit-peers/service.ts
+? apps/frontend/src/features/voc/components/create/SimilarVocPanel.tsx
+? apps/frontend/src/features/voc/components/create/__tests__/SimilarVocPanel.test.tsx
+? apps/frontend/src/features/voc/hooks/__tests__/useVocPreSubmitPeers.test.ts
+? apps/frontend/src/features/voc/hooks/useVocPreSubmitPeers.ts
+? apps/frontend/tests/visual/baselines/darwin/chromium/voc-create.visual.spec.ts/voc-create.png
+? apps/frontend/tests/visual/fixtures/voc-create.ts
+? apps/frontend/tests/visual/voc-create.visual.spec.ts
+? packages/shared/src/vocs/pre-submit-peers.ts

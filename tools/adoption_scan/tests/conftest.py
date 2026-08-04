@@ -14,10 +14,18 @@ ambiguous/extensionless file, an escaping symlink, a manifest, a CI surface, a t
 ADR surface, and a marker-capable root AGENTS.md. This same tree seeds Phase 27's future
 application fixtures. Domain-neutral vocabulary only (widget/source/sink — never
 log-parser/dotnet/semiconductor terms, per GEN-04/Pitfall 4).
+
+``tmp_pnpm_workspace`` (52-02, OBS-D-01) is a SECOND, additive fixture — the one deliberate
+exception to D-06's single-fixture rule. ``tmp_minirepo`` must stay byte-identical (D-10: the
+committed ``test_snapshots.py`` syrupy snapshot proves the no-workspace-manifest discovery path
+is unchanged), which would be impossible if the pnpm-workspace case were bolted onto the same
+tree — any addition to ``tmp_minirepo`` moves that snapshot. So the pnpm case gets its own
+tree instead of touching the D-06 fixture at all.
 """
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -154,5 +162,108 @@ def tmp_minirepo(tmp_path: Path) -> Path:
     tools_dir = root / "tools"
     tools_dir.mkdir()
     (tools_dir / "widget_tool.schema.json").write_text('{"type": "object"}\n', encoding="utf-8")
+
+    return root
+
+
+@pytest.fixture()
+def tmp_pnpm_workspace(tmp_path: Path) -> Path:
+    """A SECOND, additive synthetic tree (52-02, OBS-D-01) — a pnpm workspace with a declared
+    ``packages:`` glob list, four members, and one non-member manifest outside those globs
+    (the neutral analogue of the Phase-51 ``docs/design-prototype/package.json`` symptom).
+
+    Does NOT modify ``tmp_minirepo`` in any way — see the module docstring for why this fixture
+    exists separately. Domain-neutral vocabulary only (widget/source/sink) — never a real-target
+    scoped name or an org-specific package-scope prefix (GEN-04).
+    """
+    root = tmp_path / "pnpm-workspace"
+    root.mkdir()
+
+    # The workspace manifest: two bare glob entries, no negation, no `**` (D-09/NG-01 — mirrors
+    # exactly the real target's shape, 52-RESEARCH.md, read live 2026-07-31).
+    (root / "pnpm-workspace.yaml").write_text(
+        'packages:\n  - "apps/*"\n  - "packages/*"\n', encoding="utf-8"
+    )
+
+    # Root package.json (the implicit workspace-root member).
+    (root / "package.json").write_text(
+        json.dumps(
+            {
+                "name": "widget-workspace",
+                "private": True,
+                "scripts": {"lint": "eslint .", "test": "vitest run", "format": "prettier -w ."},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (root / ".gitignore").write_text("node_modules/\n", encoding="utf-8")
+
+    # Four declared members (apps/*, packages/*), mirroring the real target's five (root + 4).
+    apps_dir = root / "apps"
+    packages_dir = root / "packages"
+
+    widget_app_dir = apps_dir / "widget-app"
+    widget_app_dir.mkdir(parents=True)
+    (widget_app_dir / "package.json").write_text(
+        json.dumps(
+            {
+                "name": "widget-app",
+                "private": True,
+                "dependencies": {"@widget/shared": "workspace:*"},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (widget_app_dir / "index.js").write_text("console.log('widget-app');\n", encoding="utf-8")
+
+    widget_service_dir = apps_dir / "widget-service"
+    widget_service_dir.mkdir(parents=True)
+    (widget_service_dir / "package.json").write_text(
+        json.dumps(
+            {
+                "name": "widget-service",
+                "private": True,
+                "dependencies": {"@widget/shared": "workspace:*"},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (widget_service_dir / "index.js").write_text(
+        "console.log('widget-service');\n", encoding="utf-8"
+    )
+
+    widget_shared_dir = packages_dir / "widget-shared"
+    widget_shared_dir.mkdir(parents=True)
+    (widget_shared_dir / "package.json").write_text(
+        json.dumps({"name": "@widget/shared", "private": True}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (widget_shared_dir / "index.js").write_text("module.exports = {};\n", encoding="utf-8")
+
+    widget_ui_dir = packages_dir / "widget-ui"
+    widget_ui_dir.mkdir(parents=True)
+    (widget_ui_dir / "package.json").write_text(
+        json.dumps({"name": "widget-ui", "private": True}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (widget_ui_dir / "index.js").write_text("module.exports = {};\n", encoding="utf-8")
+
+    # ONE non-member manifest — the neutral analogue of the Phase-51 symptom
+    # (docs/design-prototype/package.json).
+    design_prototype_dir = root / "docs" / "design-prototype"
+    design_prototype_dir.mkdir(parents=True)
+    (design_prototype_dir / "package.json").write_text(
+        json.dumps({"name": "design-prototype", "private": True}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (design_prototype_dir / "README.md").write_text(
+        "# Design Prototype\n\nNot a workspace member.\n", encoding="utf-8"
+    )
 
     return root

@@ -1,0 +1,4 @@
+wrote .planning/phases/52-evidence-bounded-real-target-adoption/evidence/draft/artifacts/adoption/7bc665fa91e12a8a/inventory.json
+wrote .planning/phases/52-evidence-bounded-real-target-adoption/evidence/draft/artifacts/adoption/7bc665fa91e12a8a/plan.json
+wrote .planning/phases/52-evidence-bounded-real-target-adoption/evidence/draft/artifacts/adoption/7bc665fa91e12a8a/manifest.json
+wrote .planning/phases/52-evidence-bounded-real-target-adoption/evidence/draft/artifacts/adoption/7bc665fa91e12a8a/languages.toml

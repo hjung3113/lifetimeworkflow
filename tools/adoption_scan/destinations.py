@@ -10,9 +10,9 @@ file, emitted `.opencode`/`.claude` artifact, and nested `AGENTS.md` — never a
 sample per category, and never one of the confirmed-nonexistent placeholder paths a prior static
 sample contained (e.g. ``harness/agents/widget-engineer.md``).
 
-Every non-GSD-owned catalog row resolves to EXACTLY ONE of the 6 `dispositionEnum` values
+Every non-GSD-owned catalog row resolves to EXACTLY ONE of the 7 `dispositionEnum` values
 (``create``/``preserve``/``conflict``/``marker-merge``/``derived-regenerate``/
-``human-ratification-required``) — totality, proven by
+``human-ratification-required``/``update``) — totality, proven by
 ``tools/adoption_scan/tests/test_dispositions.py::test_total``. A GSD-owned row (``is_gsd_owned``)
 is EXCLUDED from disposition resolution, never assigned a disposition (recorded in
 ``manifest["excluded"]`` instead).
@@ -113,7 +113,7 @@ DERIVED_GLOBS: list[str] = [
     "opencode.json",
 ]
 
-# The exact 6-value dispositionEnum (contracts/harness/adoption/manifest.schema.json).
+# The exact 7-value dispositionEnum (contracts/harness/adoption/manifest.schema.json).
 DISPOSITION_ENUM: tuple[str, ...] = (
     "create",
     "preserve",
@@ -121,6 +121,7 @@ DISPOSITION_ENUM: tuple[str, ...] = (
     "marker-merge",
     "derived-regenerate",
     "human-ratification-required",
+    "update",
 )
 
 # Rule-derived category globs (26-RESEARCH.md "Authoritative Harness Destination Catalog" — same
@@ -184,6 +185,9 @@ _CATEGORY_GLOBS: tuple[str, ...] = (
 # exclusion, enforced structurally, independent of _CATEGORY_GLOBS' contents).
 _EXCLUDED_PREFIX: tuple[str, str] = (".workflow", "tasks")
 
+# Adopt's own installed record is target bookkeeping, never a self-referential catalog destination.
+_BOOKKEEPING_DIR_NAME = ".harness"
+
 # GEN-04 core->instance independence: this catalog must never cross into the domain instance tree
 # nested under this checkout's top-level instance directory (a moved-asset AGENTS.md/pyproject.toml
 # there is legitimately matched by the "**/AGENTS.md"/"**/pyproject.toml" nested globs above, but
@@ -244,7 +248,8 @@ def destination_catalog() -> list[dict]:
     (WR-04 — ``resolved`` is used ONLY for the containment check; deriving identity from it would
     collapse two distinct symlinks pointing at the same target into one deduplicated row). Skips a
     candidate whose parts start with :data:`_EXCLUDED_PREFIX`, whose first part is
-    :data:`_INSTANCE_DIR_NAME`, whose parts intersect :data:`_SKIP_SEGMENTS` (WR-02), or — the CR-01
+    :data:`_BOOKKEEPING_DIR_NAME` or :data:`_INSTANCE_DIR_NAME`, whose parts intersect
+    :data:`_SKIP_SEGMENTS` (WR-02), or — the CR-01
     fix this plan (26-07) adds — whose destination is not git-tracked (per
     :func:`_tracked_repo_files`, called ONCE up front and reused across the whole loop for both
     determinism and performance; when git is unavailable, the filter is a no-op and enumeration
@@ -269,6 +274,8 @@ def destination_catalog() -> list[dict]:
             destination = candidate.relative_to(_REPO_ROOT).as_posix()
             parts = destination.split("/")
             if tuple(parts[: len(_EXCLUDED_PREFIX)]) == _EXCLUDED_PREFIX:
+                continue
+            if parts[0] == _BOOKKEEPING_DIR_NAME:
                 continue
             if parts[0] == _INSTANCE_DIR_NAME:
                 continue
@@ -329,8 +336,9 @@ def disposition(
     proposed_sha: str | None,
     *,
     existing_sha: str | None = None,
+    installed_sha: str | None = None,
 ) -> str | None:
-    """The total, ordered 7-step disposition rule chain (D-03/D-04).
+    """The total, ordered 8-step disposition rule chain (D-03/D-04, MONO-12).
 
     1. ``is_gsd_owned(rel)``                              -> ``None`` (excluded, not a destination)
     2. constitution-plane (``CONSTITUTION_GLOBS`` deny, or the ``libs/normalize-spec.md`` special
@@ -339,13 +347,18 @@ def disposition(
     4. ``rel in MARKER_CAPABLE``                           -> ``marker-merge``
     5. no existing file at ``target_root / rel``           -> ``create``
     6. ``sha256(existing) == proposed_sha``                -> ``preserve``
-    7. otherwise                                           -> ``conflict``
+    7. recorded ``installed_sha`` equals ``sha256(existing)`` -> ``update``
+    8. otherwise                                           -> ``conflict``
 
     ``existing_sha`` (WR-03) is an optional caller-supplied hash for the existing target file at
     ``rel``, reused instead of a fresh (cap/binary-check-bypassing) re-read via
     :func:`_existing_hash`. :func:`build_manifest` supplies this from the scan's already-computed
     inventory; a bare call (as in most of this module's own unit tests) falls back to
     :func:`_existing_hash`, preserving prior direct-call behavior.
+
+    ``installed_sha`` is the recorded hash of bytes adopt previously wrote. It, rather than
+    ``proposed_sha``, distinguishes a harness-side payload move from a target-side edit: the
+    proposed hash alone cannot identify who changed the existing target bytes.
     """
     if is_gsd_owned(rel):
         return None
@@ -363,6 +376,10 @@ def disposition(
         existing_sha = _existing_hash(existing)
     if existing_sha == proposed_sha:
         return "preserve"
+    # Currently redundant: existing_sha is non-None by step 7. Keep it so a future optional
+    # existing_sha cannot turn None == None into a spurious update.
+    if installed_sha is not None and existing_sha == installed_sha:
+        return "update"
     return "conflict"
 
 
@@ -372,6 +389,7 @@ def build_manifest(
     proposed_hashes: dict[str, str],
     *,
     catalog: list[dict] | None = None,
+    installed: list[dict] | None = None,
 ) -> dict:
     """Assemble the ``manifest.schema.json``-conformant document over the destination catalog.
 
@@ -388,12 +406,17 @@ def build_manifest(
     add/remove never reds a snapshot test built over an explicit fixed catalog.
 
     WR-03: the existing-file hash used for the step-6/7 comparison is sourced from ``inventory``
-    when available — the already-computed ``sha256`` for an ``included`` destination, or the
-    :data:`_EXCLUDED_SENTINEL` (never a real hash) for an ``excluded`` one — rather than an
-    unconditional re-read of the target file inside :func:`disposition`.
+    when available — the already-computed ``sha256`` for an ``included`` destination, a fresh
+    hash only for a scope-excluded destination, or :data:`_EXCLUDED_SENTINEL` (never a real hash)
+    for a content refusal — rather than an unconditional re-read of the target file inside
+    :func:`disposition`.
+
+    ``installed`` is copied verbatim (including each ``batch_id``) when non-empty, making the
+    manifest self-describing about the recorded hashes used for its comparisons.
     """
     included_hashes = {entry["path"]: entry["sha256"] for entry in inventory.get("included", [])}
-    excluded_paths = {entry["path"] for entry in inventory.get("excluded", [])}
+    excluded_by_path = {entry["path"]: entry for entry in inventory.get("excluded", [])}
+    installed_hashes = {row["destination"]: row["installed_sha256"] for row in installed or []}
 
     dispositions: list[dict] = []
     excluded: list[dict] = []
@@ -402,8 +425,12 @@ def build_manifest(
         destination = row["destination"]
         if destination in included_hashes:
             existing_sha = included_hashes[destination]
-        elif destination in excluded_paths:
-            existing_sha = _EXCLUDED_SENTINEL
+        elif (excluded_entry := excluded_by_path.get(destination)) is not None:
+            existing_sha = (
+                _existing_hash(Path(target_root) / destination)
+                if excluded_entry["excluded"] in scan.REHASHABLE_EXCLUSION_REASONS
+                else _EXCLUDED_SENTINEL
+            )
         else:
             existing_sha = None
         result = disposition(
@@ -411,6 +438,7 @@ def build_manifest(
             target_root,
             proposed_hashes.get(destination),
             existing_sha=existing_sha,
+            installed_sha=installed_hashes.get(destination),
         )
         if result is None:
             excluded.append({"destination": destination, "reason": "gsd-owned"})
@@ -420,8 +448,11 @@ def build_manifest(
     dispositions.sort(key=lambda entry: entry["destination"])
     excluded.sort(key=lambda entry: entry["destination"])
 
-    return {
+    manifest = {
         "target_ref": inventory["target_ref"],
         "dispositions": dispositions,
         "excluded": excluded,
     }
+    if installed:
+        manifest["installed"] = sorted(installed, key=lambda row: row["destination"])
+    return manifest

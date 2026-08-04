@@ -7,15 +7,21 @@ check). The former ADOPT-06 promote/approval gate is deleted (D-01); the review 
 
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
+import tomllib
 from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 
-from tools.adoption_apply.cli import main
+from tools.adoption_apply import cli as cli_module
+from tools.adoption_apply.cli import derive_language_rows, main
+from tools.adoption_scan.destinations import MARKER_CAPABLE, harness_proposed_hashes
+from tools.harness_config.loader import conventions_for, load_project
+from tools.memory_regen.package_facts import build_facts
 
 _TASK_ID = "T-20260721040000-cli-test"
 
@@ -430,3 +436,456 @@ def test_cli_apply_refuses_directory_shaped_destination(
     # No directory-shaped row may leave anything behind in the target tree.
     assert not (apply_target / "newdir").exists(), case_name
     assert list(apply_target.iterdir()) == [], case_name
+
+
+# --- Task 2 (OBS-D-03 / D-12): derive_language_rows() + draft-time sidecar write ------------------
+
+
+def test_derive_language_rows_renders_expected_shape() -> None:
+    rendered = derive_language_rows(
+        json.dumps({"scripts": {"lint": "eslint .", "test": "vitest run"}})
+    )
+    assert rendered is not None
+    parsed = tomllib.loads(rendered)
+    assert len(parsed["languages"]) == 1
+    row = parsed["languages"][0]
+    assert row["id"] == "javascript"
+    assert row["bash_scope"] == "pnpm *"
+    assert row["lint"] == "pnpm run lint"
+    assert row["test"] == "pnpm run test"
+    # CR-03 (52-REVIEW.md): a script the target does not declare is OMITTED, never `""`.
+    assert "format" not in row
+
+
+def test_derive_language_rows_emits_exact_key_set() -> None:
+    """The row carries exactly the keys the target actually declares, plus id/bash_scope.
+
+    CR-03: `persona` and `test_paths` stay absent on purpose — neither is derivable from a
+    package.json, and the gate that subscripts them (tools/harness_lint/tests/) is excluded from
+    the destination catalog by `destinations._SKIP_SEGMENTS`, so it never reaches a target.
+    """
+    rendered = derive_language_rows(json.dumps({"scripts": {"test": "vitest run"}}))
+    assert rendered is not None
+    row = tomllib.loads(rendered)["languages"][0]
+    assert set(row.keys()) == {"id", "bash_scope", "test"}
+
+    full = derive_language_rows(
+        json.dumps({"scripts": {"lint": "eslint .", "test": "vitest run", "format": "prettier -w"}})
+    )
+    assert full is not None
+    assert set(tomllib.loads(full)["languages"][0].keys()) == {
+        "id",
+        "bash_scope",
+        "lint",
+        "test",
+        "format",
+    }
+
+
+def test_derive_language_rows_never_emits_an_empty_string_command() -> None:
+    """CR-03: `""` is a second spelling of "absent" that every consumer reads as a real command.
+
+    Reinstating the `value = f"pnpm run {key}" if key in scripts else ""` blanking reds this.
+    """
+    rendered = derive_language_rows(json.dumps({"scripts": {"test": "vitest run"}}))
+    assert rendered is not None
+    for key, value in tomllib.loads(rendered)["languages"][0].items():
+        assert value != "", f"{key} was emitted as an empty string"
+
+
+def test_derive_language_rows_without_a_test_script_emits_no_row_at_all() -> None:
+    """CR-03: the adopted target inherits `.github/workflows/ci.yml`, whose `setup` job
+    `sys.exit`s on a `[[languages]]` entry with an empty `test` — so a target declaring `lint`
+    but no `test` (extremely common) previously shipped a config that stopped its own CI from
+    starting. Nothing safe is derivable in that case, so no row is emitted.
+
+    Relaxing the guard back to `any(key in scripts for key in _DERIVED_SCRIPT_KEYS)` reds this.
+    """
+    assert derive_language_rows(json.dumps({"scripts": {"lint": "eslint ."}})) is None
+    assert derive_language_rows(json.dumps({"scripts": {"format": "prettier -w"}})) is None
+    assert (
+        derive_language_rows(json.dumps({"scripts": {"lint": "eslint .", "test": "vitest run"}}))
+        is not None
+    )
+
+
+@pytest.mark.parametrize(
+    "scripts",
+    [
+        pytest.param({"lint": "eslint ."}, id="lint-only"),
+        pytest.param({"format": "prettier -w"}, id="format-only"),
+        pytest.param({"lint": "eslint .", "format": "prettier -w"}, id="lint-and-format-no-test"),
+        pytest.param({"test": "vitest run"}, id="test-only"),
+        pytest.param({"lint": "eslint .", "test": "vitest run"}, id="lint-and-test"),
+    ],
+)
+def test_whatever_is_derived_satisfies_the_shipped_ci_setup_language_gate(
+    scripts: dict[str, str],
+) -> None:
+    """The one consuming gate the apply cycle really does install into the adopted target.
+
+    Re-implements `.github/workflows/ci.yml`'s `setup` step check verbatim (non-empty `id` and
+    `test`; `test_paths` read with `.get(..., [])`) against whatever this function renders, so a
+    future change that reintroduces a partially-shaped row fails HERE rather than in a stranger's
+    CI. `None` is a passing outcome — no row means nothing for CI to reject.
+
+    The `no-test` params are what give this teeth: the pre-repair code rendered `test = ""` for
+    them, so it fails this gate. Asserting only against a package.json that declares `test` would
+    have been a check that cannot fail.
+    """
+    rendered = derive_language_rows(json.dumps({"scripts": scripts}))
+    if rendered is None:
+        assert "test" not in scripts, "a target declaring `test` must still yield a usable row"
+        return
+    rows = tomllib.loads(rendered)["languages"]
+    assert rows
+    for lang in rows:
+        missing = [k for k in ("id", "test") if not str(lang.get(k, "")).strip()]
+        assert not missing, f"the adopted target's CI setup job would sys.exit: missing {missing}"
+        assert isinstance(lang.get("test_paths", []), list)
+
+
+def test_derive_language_rows_never_copies_script_values() -> None:
+    """Script VALUES never flow into the rendered text — only the fixed 'pnpm run <key>' literal
+    keyed by allowlisted script NAMES (T-52-07)."""
+    rendered = derive_language_rows(
+        json.dumps({"scripts": {"lint": "eslint .", "test": "vitest run"}})
+    )
+    assert rendered is not None
+    assert "eslint" not in rendered
+    assert "vitest" not in rendered
+
+
+def test_derive_language_rows_no_scripts_object_returns_none() -> None:
+    assert derive_language_rows(json.dumps({"name": "widget-root"})) is None
+
+
+def test_derive_language_rows_scripts_with_none_of_the_allowlisted_keys_returns_none() -> None:
+    assert derive_language_rows(json.dumps({"scripts": {"build": "tsc"}})) is None
+
+
+def test_derive_language_rows_malformed_json_returns_none() -> None:
+    assert derive_language_rows("not json") is None
+
+
+def test_derive_language_rows_non_object_json_returns_none() -> None:
+    assert derive_language_rows(json.dumps([1, 2, 3])) is None
+
+
+def test_cli_draft_against_pnpm_target_writes_languages_sidecar(
+    task_dir: Path, tmp_pnpm_target: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(Path(__file__).resolve().parents[3])
+
+    exit_code = main(
+        [
+            "draft",
+            "--task-dir",
+            str(task_dir),
+            "--target",
+            str(tmp_pnpm_target),
+        ]
+    )
+
+    assert exit_code == 0
+    batch_dirs = list((task_dir / "artifacts" / "adoption").iterdir())
+    assert len(batch_dirs) == 1
+    batch_root = batch_dirs[0]
+    sidecar = batch_root / "languages.toml"
+    assert sidecar.is_file()
+    parsed = tomllib.loads(sidecar.read_text(encoding="utf-8"))
+    row = parsed["languages"][0]
+    assert row["id"] == "javascript"
+    assert row["lint"] == "pnpm run lint"
+    assert row["test"] == "pnpm run test"
+
+
+def test_cli_draft_against_non_pnpm_target_writes_no_languages_sidecar(
+    task_dir: Path, synthetic_target: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A target with no pnpm-workspace.yaml: batch_root contains exactly the three draft
+    artifacts, no languages.toml."""
+    monkeypatch.chdir(Path(__file__).resolve().parents[3])
+
+    exit_code = main(
+        [
+            "draft",
+            "--task-dir",
+            str(task_dir),
+            "--target",
+            str(synthetic_target),
+        ]
+    )
+
+    assert exit_code == 0
+    batch_dirs = list((task_dir / "artifacts" / "adoption").iterdir())
+    assert len(batch_dirs) == 1
+    batch_root = batch_dirs[0]
+    names = {p.name for p in batch_root.iterdir()}
+    assert "languages.toml" not in names
+    assert {"inventory.json", "plan.json", "manifest.json"} <= names
+
+
+# --- Task 3 (OBS-D-03 / D-12): splice the derived row into applied harness/project.toml ----------
+
+
+def _draft_and_apply(
+    task_dir: Path, target: Path, apply_target: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[Path, dict]:
+    """Shared draft->apply harness for the Task-3 tests. Returns (batch_root, manifest)."""
+    monkeypatch.chdir(Path(__file__).resolve().parents[3])
+
+    draft_exit = main(["draft", "--task-dir", str(task_dir), "--target", str(target)])
+    assert draft_exit == 0
+
+    batch_dirs = list((task_dir / "artifacts" / "adoption").iterdir())
+    assert len(batch_dirs) == 1
+    batch_root = batch_dirs[0]
+    batch_id = batch_root.name
+
+    apply_exit = main(
+        [
+            "apply",
+            "--task-dir",
+            str(task_dir),
+            "--batch-id",
+            batch_id,
+            "--target",
+            str(apply_target),
+        ]
+    )
+    assert apply_exit == 0
+
+    manifest = json.loads((batch_root / "manifest.json").read_bytes())
+    return batch_root, manifest
+
+
+def test_end_to_end_pnpm_target_resolves_lint_and_test_through_real_config(
+    task_dir: Path, tmp_pnpm_target: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The repo-local SC-4 proof: draft -> apply against tmp_pnpm_target, then resolve the
+    profile with the TARGET's OWN config and facts — never this repo's.
+
+    Removing the splice, the sidecar write, or the Task-1 `lint` key must each red this
+    independently: no splice -> applied harness/project.toml has no `javascript` row -> `lang` is
+    None in conventions_for -> lint/test are None; no sidecar write -> nothing to splice, same
+    failure; no Task-1 `lint` key -> `conventions_for` never returns a `lint` key at all -> the
+    `profile["lint"]` access itself raises `KeyError`.
+    """
+    apply_target = tmp_path / "apply-target"
+    apply_target.mkdir()
+
+    _draft_and_apply(task_dir, tmp_pnpm_target, apply_target, monkeypatch)
+
+    applied_project_toml = apply_target / "harness" / "project.toml"
+    assert applied_project_toml.is_file()
+    applied_cfg = load_project(applied_project_toml)
+    language_ids = {row["id"] for row in applied_cfg["languages"]}
+    # Both the harness's own rows (dotnet/python) and the derived javascript row are present.
+    assert "javascript" in language_ids
+    assert {"dotnet", "python"} <= language_ids
+
+    facts = build_facts(
+        manifest_paths=[
+            {"path": "apps/widget-app/package.json", "kind": "package.json"},
+            {"path": "packages/widget-shared/package.json", "kind": "package.json"},
+        ],
+        repo_root=apply_target,
+    )
+
+    profile = conventions_for(
+        "apps/widget-app/index.js",
+        cfg=applied_cfg,
+        facts=facts,
+    )
+
+    assert profile["lint"] == "pnpm run lint"
+    assert profile["test"] == "pnpm run test"
+
+    # W-10 (mandatory record-keeping, not a code fix): the applied harness/project.toml no longer
+    # matches any entry in destinations.harness_proposed_hashes() — a Phase-53 managed re-run will
+    # classify this one destination as `conflict`, not the observable no-op Phase 53's SC-2
+    # assumes. See the SUMMARY's W-10 section for the statement this proves.
+    applied_digest = hashlib.sha256(applied_project_toml.read_bytes()).hexdigest()
+    proposed = harness_proposed_hashes()
+    assert applied_digest != proposed.get("harness/project.toml")
+
+
+def test_no_sidecar_applied_project_toml_is_byte_identical_to_harness_checkout(
+    task_dir: Path, synthetic_target: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A target with no languages.toml sidecar (no pnpm-workspace.yaml/package.json): the applied
+    harness/project.toml is byte-identical to the harness's own checkout copy — no phantom row."""
+    apply_target = tmp_path / "apply-target"
+    apply_target.mkdir()
+
+    _draft_and_apply(task_dir, synthetic_target, apply_target, monkeypatch)
+
+    applied_project_toml = apply_target / "harness" / "project.toml"
+    assert applied_project_toml.is_file()
+    assert applied_project_toml.read_bytes() == Path("harness/project.toml").read_bytes()
+
+
+def test_splice_never_touches_any_other_destination(
+    task_dir: Path, tmp_pnpm_target: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """W-4 leak detection, scoped correctly: every OTHER create-disposition destination
+    byte-equals its _harness_payload; MARKER_CAPABLE destinations are excluded from that equality
+    (their applied bytes are a splice_managed_block/merge_settings result, never byte-equal to
+    _harness_payload even with zero leak) and instead checked separately for sidecar literals."""
+    apply_target = tmp_path / "apply-target"
+    apply_target.mkdir()
+
+    _batch_root, manifest = _draft_and_apply(task_dir, tmp_pnpm_target, apply_target, monkeypatch)
+
+    create_destinations = [
+        record["destination"]
+        for record in manifest["dispositions"]
+        if record["disposition"] == "create"
+    ]
+    assert create_destinations
+
+    for destination in create_destinations:
+        if destination == "harness/project.toml":
+            continue
+        applied_path = apply_target / destination
+        if not applied_path.is_file():
+            continue
+        assert applied_path.read_bytes() == cli_module._harness_payload(destination), destination
+
+    sidecar_literals = (
+        "pnpm run lint",
+        'bash_scope = "pnpm *"',
+        cli_module._DERIVED_PROVENANCE_COMMENT,
+    )
+    for marker_destination in MARKER_CAPABLE:
+        applied_path = apply_target / marker_destination
+        if not applied_path.is_file():
+            continue
+        content = applied_path.read_text(encoding="utf-8")
+        for literal in sidecar_literals:
+            assert literal not in content, f"{marker_destination} leaked {literal!r}"
+
+
+# --- 52-REVIEW.md WR-06 / WR-07 -----------------------------------------------------------------
+
+
+def test_draft_on_non_utf8_target_package_json_degrades_cleanly(
+    task_dir: Path, tmp_pnpm_target: Path, monkeypatch: pytest.MonkeyPatch, capsys
+) -> None:
+    """WR-06: `read_text(encoding="utf-8")` on TARGET-controlled bytes raised UnicodeDecodeError
+    straight out of `main()` as an unhandled traceback — and it did so AFTER inventory/plan/
+    manifest were written, leaving a batch that looks drafted but has no sidecar and no error
+    record. Every other failure in `_cmd_draft` returns a clean exit code.
+
+    Removing the try/except reds this with `UnicodeDecodeError: 'utf-8' codec can't decode ...`.
+    """
+    monkeypatch.chdir(Path(__file__).resolve().parents[3])
+    (tmp_pnpm_target / "package.json").write_bytes(b'{"scripts": {"test": "\xff\xfe"}}\n')
+
+    exit_code = main(["draft", "--task-dir", str(task_dir), "--target", str(tmp_pnpm_target)])
+
+    assert exit_code == 0
+    batch_root = next((task_dir / "artifacts" / "adoption").iterdir())
+    names = {p.name for p in batch_root.iterdir()}
+    assert {"inventory.json", "plan.json", "manifest.json"} <= names
+    assert "languages.toml" not in names, "no sidecar may be derived from undecodable bytes"
+    assert "unreadable target package.json" in capsys.readouterr().err
+
+
+def test_apply_reports_when_the_sidecar_is_present_but_not_spliced(
+    task_dir: Path, tmp_pnpm_target: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
+) -> None:
+    """WR-07: `payloads` is populated ONLY for `create` dispositions, so on a target that already
+    carries a harness/project.toml the disposition is `preserve`/`conflict` and the sidecar was
+    silently ignored — the D-12 repair did nothing and said nothing. Reachable on every
+    re-adoption, i.e. the whole Phase-53 update scenario.
+
+    Deleting the `elif sidecar_path.is_file():` branch reds this.
+    """
+    monkeypatch.chdir(Path(__file__).resolve().parents[3])
+
+    # Make harness/project.toml a NON-`create` destination: the target already carries one at
+    # DRAFT time, so disposition() resolves it to preserve/conflict, never create. This is the
+    # re-adoption / Phase-53 update shape.
+    existing = "# a pre-existing target config\n"
+    for root in (tmp_pnpm_target, tmp_path / "apply-target"):
+        (root / "harness").mkdir(parents=True, exist_ok=True)
+        (root / "harness" / "project.toml").write_text(existing, encoding="utf-8")
+    apply_target = tmp_path / "apply-target"
+
+    draft_exit = main(["draft", "--task-dir", str(task_dir), "--target", str(tmp_pnpm_target)])
+    assert draft_exit == 0
+    batch_root = next((task_dir / "artifacts" / "adoption").iterdir())
+    assert (batch_root / "languages.toml").is_file()
+    manifest = json.loads((batch_root / "manifest.json").read_bytes())
+    project_toml_disposition = next(
+        record["disposition"]
+        for record in manifest["dispositions"]
+        if record["destination"] == "harness/project.toml"
+    )
+    assert project_toml_disposition != "create", "fixture must exercise the non-create path"
+    capsys.readouterr()
+
+    apply_exit = main(
+        [
+            "apply",
+            "--task-dir",
+            str(task_dir),
+            "--batch-id",
+            batch_root.name,
+            "--target",
+            str(apply_target),
+        ]
+    )
+
+    assert apply_exit == 0
+    err = capsys.readouterr().err
+    assert "NOT spliced" in err
+    assert "not a create/update destination" in err
+    # The diagnostic reports a real no-op: the derived row genuinely did not land.
+    assert "javascript" not in (apply_target / "harness" / "project.toml").read_text(
+        encoding="utf-8"
+    )
+
+
+def test_cli_draft_rejects_tampered_installed_record(
+    task_dir: Path, synthetic_target: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    record = synthetic_target / ".harness" / "adoption" / "installed.json"
+    record.parent.mkdir(parents=True)
+    record.write_text("not json", encoding="utf-8")
+
+    exit_code = main(["draft", "--task-dir", str(task_dir), "--target", str(synthetic_target)])
+
+    assert exit_code == 1
+    assert "unreadable installed record" in capsys.readouterr().err
+
+
+def test_cli_conflict_exits_zero_and_names_missing_record(
+    task_dir: Path, synthetic_target: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    (synthetic_target / "managed.txt").write_bytes(b"human edit\n")
+    manifest = {
+        "target_ref": "unknown",
+        "dispositions": [{"destination": "managed.txt", "disposition": "conflict"}],
+        "excluded": [],
+    }
+    batch_id, _ = _seed_batch_with_manifest(task_dir, manifest)
+
+    exit_code = main(
+        [
+            "apply",
+            "--task-dir",
+            str(task_dir),
+            "--batch-id",
+            batch_id,
+            "--target",
+            str(synthetic_target),
+        ]
+    )
+
+    output = capsys.readouterr().err
+    assert exit_code == 0
+    assert "installed_sha256=none-recorded" in output
+    assert "applied=0 updated=0 unchanged=0 conflicts=1 skipped=0 refused=0" in output

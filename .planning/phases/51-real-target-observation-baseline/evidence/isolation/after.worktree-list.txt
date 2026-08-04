@@ -1,0 +1,8 @@
+worktree /Users/hyojung/Desktop/2026/FeedbackOps
+HEAD 4f16525478e0ddeeb10ebe90960c33beb385a942
+branch refs/heads/develop
+
+worktree /Users/hyojung/Desktop/2026/FeedbackOps-worktrees/v27-51-baseline
+HEAD 1d1c8eda9ed7dd4d79652224b2f3cc92a8dd535a
+detached
+

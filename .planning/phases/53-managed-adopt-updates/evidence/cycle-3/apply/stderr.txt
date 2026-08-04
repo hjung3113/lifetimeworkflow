@@ -1,0 +1,7 @@
+tools.adoption_apply apply: derived languages sidecar present at /Users/hyojung/Desktop/2026/lifetimeworkflow/.planning/phases/53-managed-adopt-updates/evidence/cycle-3/draft/artifacts/adoption/1c897dc6f2fc4355/languages.toml but harness/project.toml is not a create/update destination — NOT spliced (OBS-D-03 / D-12)
+apply: lock sidecar from a prior run at /Users/hyojung/Desktop/2026/FeedbackOps-worktrees/v27-53-rerun/.claude/.settings.json.lock — acquired, not silently reused (sidecars are never unlinked, D-15)
+apply: lock sidecar from a prior run at /Users/hyojung/Desktop/2026/FeedbackOps-worktrees/v27-53-rerun/.AGENTS.md.lock — acquired, not silently reused (sidecars are never unlinked, D-15)
+apply: lock sidecar from a prior run at /Users/hyojung/Desktop/2026/FeedbackOps-worktrees/v27-53-rerun/.CLAUDE.md.lock — acquired, not silently reused (sidecars are never unlinked, D-15)
+conflict destination=.gitignore installed_sha256=none-recorded current_sha256=3ce726ba31ada08c9ef2a8ecd71d9ba331c7273c47b80c068319a8ec296cf00f
+conflict destination=docs/explanation/next-milestone-task-control-plane.md installed_sha256=04355882a5b99a14dfd4e60324792984a76a37f1cc5239b0e40449d2e377701d current_sha256=04355882a5b99a14dfd4e60324792984a76a37f1cc5239b0e40449d2e377701d
+applied=0 updated=1 unchanged=153 conflicts=2 skipped=85 refused=23

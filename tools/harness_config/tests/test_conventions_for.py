@@ -190,6 +190,84 @@ def test_package_whose_language_is_absent_from_languages_reports_no_commands() -
     assert profile["format"] is None
 
 
+# ---- OBS-D-03/D-11: `lint` is a permanent key, not a null-to-populate --------------------------
+
+
+def test_conventions_for_always_returns_lint_key_including_no_matching_language_row() -> None:
+    """The returned key set is exactly the documented 9 keys — including `lint` — for both a
+    package whose language matches a `[[languages]]` row and one whose language matches none."""
+    facts = {
+        "packages": [
+            {"id": "root", "manifest": "pyproject.toml", "dir": ".", "language": "python"},
+            {"id": "a", "manifest": "a/pyproject.toml", "dir": "a", "language": "rust"},
+        ]
+    }
+    cfg = {"languages": [{"id": "python", "test": "t", "format": "f", "bash_scope": "uv *"}]}
+    expected_keys = {
+        "package",
+        "dir",
+        "language",
+        "test",
+        "format",
+        "lint",
+        "bash_scope",
+        "agents_md",
+        "is_default",
+    }
+
+    matched = conventions_for("pyproject.toml", cfg=cfg, facts=facts)
+    unmatched = conventions_for("a/whatever.rs", cfg=cfg, facts=facts)
+
+    assert set(matched.keys()) == expected_keys
+    assert set(unmatched.keys()) == expected_keys
+
+
+def test_lint_is_none_when_language_row_declares_no_lint_key() -> None:
+    """This repo's own `python`/`dotnet` rows declare no `lint` key — `.get`, not a subscript, so
+    the call must not raise `KeyError` and `lint` resolves to `None`."""
+    facts = {
+        "packages": [{"id": "root", "manifest": "pyproject.toml", "dir": ".", "language": "python"}]
+    }
+    cfg = {"languages": [{"id": "python", "test": "t", "format": "f", "bash_scope": "uv *"}]}
+
+    profile = conventions_for("whatever.py", cfg=cfg, facts=facts)
+
+    assert profile["lint"] is None
+
+
+def test_lint_value_is_read_from_the_matched_language_row_not_hardcoded() -> None:
+    """A language row that DOES declare `lint` must have it surface verbatim — proving the value
+    is read from config, not a hardcoded `None` shape stub (D-11)."""
+    facts = {
+        "packages": [{"id": "root", "manifest": "pyproject.toml", "dir": ".", "language": "python"}]
+    }
+    cfg = {
+        "languages": [
+            {"id": "python", "test": "t", "format": "f", "lint": "ruff check", "bash_scope": "uv *"}
+        ]
+    }
+
+    profile = conventions_for("whatever.py", cfg=cfg, facts=facts)
+
+    assert profile["lint"] == "ruff check"
+
+
+def test_no_matching_language_row_leaves_test_format_bash_scope_and_lint_all_none() -> None:
+    """When no `[[languages]]` row matches at all, `test`/`format`/`bash_scope` AND `lint` are all
+    `None` (unchanged prior behavior plus the new key)."""
+    facts = {
+        "packages": [{"id": "a", "manifest": "a/pyproject.toml", "dir": "a", "language": "rust"}]
+    }
+    cfg = {"languages": [{"id": "python", "test": "t", "format": "f", "bash_scope": "uv *"}]}
+
+    profile = conventions_for("a/whatever.rs", cfg=cfg, facts=facts)
+
+    assert profile["test"] is None
+    assert profile["format"] is None
+    assert profile["bash_scope"] is None
+    assert profile["lint"] is None
+
+
 def test_synthetic_two_language_nested_pair_commands_differ() -> None:
     """Supplementary fixture (RESEARCH.md Q4): proves the commands-DO-differ case the real tree
     can't."""
@@ -215,3 +293,39 @@ def test_synthetic_two_language_nested_pair_commands_differ() -> None:
     inner = conventions_for("inner/x.cs", cfg=cfg, facts=facts)
 
     assert outer["test"] != inner["test"]
+
+
+# ---- CR-03 (52-REVIEW.md): a [[languages]] row may legitimately OMIT a command --------------
+
+
+def test_conventions_for_tolerates_a_row_omitting_test_format_bash_scope() -> None:
+    """`conventions_for` read `test`/`format`/`bash_scope` by SUBSCRIPT, so a row could not omit
+    any of them — which is exactly what forced `tools.adoption_apply.cli.derive_language_rows` to
+    emit `""` for a script the adopted target does not declare, and an empty `test` stops that
+    target's own CI `setup` job from starting (CR-03).
+
+    `.get` matches what these keys are already documented to return ("None when the matched row
+    declares no such command") and matches the `lint` treatment D-11 established. Reverting any
+    one of the three `.get`s to a subscript reds this with a KeyError.
+    """
+    facts = {
+        "packages": [
+            {"id": "root", "manifest": "package.json", "dir": ".", "language": "javascript"}
+        ]
+    }
+    cfg = {"languages": [{"id": "javascript", "test": "pnpm run test"}]}
+
+    profile = conventions_for("index.js", cfg=cfg, facts=facts)
+
+    assert profile["language"] == "javascript"
+    assert profile["test"] == "pnpm run test"
+    assert profile["format"] is None
+    assert profile["lint"] is None
+    assert profile["bash_scope"] is None
+
+    # Second case so the `test` key's own `.get` is covered too: with `test` present above, a
+    # `lang["test"]` subscript would still pass — a check that cannot fail for that one key.
+    bare = conventions_for("index.js", cfg={"languages": [{"id": "javascript"}]}, facts=facts)
+    assert bare["test"] is None
+    assert bare["format"] is None
+    assert bare["bash_scope"] is None

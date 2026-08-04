@@ -68,8 +68,16 @@
   "mode": "yolo",
   "granularity": "standard",
   "model_overrides": {
-    "gsd-planner": "sonnet",
-    "gsd-plan-checker": "sonnet"
+    "code-reviewer": "opus",
+    "gsd-code-reviewer": "opus",
+    "gsd-verifier": "opus",
+    "gsd-plan-checker": "opus",
+    "gsd-doc-verifier": "opus",
+    "gsd-integration-checker": "opus",
+    "gsd-nyquist-auditor": "opus",
+    "gsd-security-auditor": "opus",
+    "gsd-eval-auditor": "opus",
+    "gsd-ui-auditor": "opus"
   },
   "dynamic_routing": {
     "enabled": true,
@@ -80,5 +88,6 @@
     },
     "escalate_on_failure": true,
     "max_escalations": 1
-  }
+  },
+  "_model_routing_note": "DEV-plane routing policy (see ~/.claude/skills/model-routing). Opus is reserved for whole-session orchestration and for every judgement role above (review / verify / audit). All other work — planning, implementation, fixing, docs, recon — dispatches to codex gpt-5.6-{sol,terra,luna} through orca worktrees/terminals, which the Agent tool cannot express. model_overrides therefore lists ONLY the roles that stay on Claude; a role absent here is not 'default Claude', it is codex-routed."
 }

@@ -40,7 +40,8 @@ import hashlib
 import json
 import re
 import subprocess
-from pathlib import Path
+import sys
+from pathlib import Path, PurePosixPath
 
 from tools.adoption_scan import detect
 from tools.harness_perms import resolve_path
@@ -116,6 +117,16 @@ _SOURCE_DUMP_BANNER_MARKERS = (
 
 # Path-segment tokens for D-08 reading (b): over-cap PLUS a dump/snapshot/backup segment.
 _SOURCE_DUMP_SEGMENT_TOKENS = ("dump", "snapshot", "backup")
+
+GENERATED_EXCLUSION_REASON = "generated"
+NON_WORKSPACE_MEMBER_EXCLUSION_REASON = "non-workspace-member"
+
+# Exclusions that are outside the target inventory but remain safe to hash when a catalogued
+# destination needs its current bytes for re-adoption classification. Every other exclusion is a
+# content refusal and must never be re-read by destinations.build_manifest (WR-03).
+REHASHABLE_EXCLUSION_REASONS: frozenset[str] = frozenset(
+    {NON_WORKSPACE_MEMBER_EXCLUSION_REASON, GENERATED_EXCLUSION_REASON}
+)
 
 _BINARY_SCAN_BYTES = 8192
 _MARKER_SCAN_BYTES = 2048
@@ -230,7 +241,7 @@ def classify_exclusions(path: Path, *, base: Path, max_bytes: int) -> dict | Non
     # 2. Generated segment (path-only, no open()).
     if any(seg in _GENERATED_SEGMENTS for seg in parts):
         size = path.stat().st_size
-        return {"path": rel, "size": size, "excluded": "generated"}
+        return {"path": rel, "size": size, "excluded": GENERATED_EXCLUSION_REASON}
 
     # 3. Size cap — checked BEFORE any open(). Distinguishes D-08 reading (b) (over-cap + a
     #    dump/snapshot/backup path segment -> source-dump) from a plain over-cap file
@@ -262,7 +273,7 @@ def classify_exclusions(path: Path, *, base: Path, max_bytes: int) -> dict | Non
 
     # 5. Generated content marker (narrow set — never the harness's own "do not hand-edit" text).
     if any(marker in head for marker in _GENERATED_MARKERS):
-        return {"path": rel, "size": size, "excluded": "generated"}
+        return {"path": rel, "size": size, "excluded": GENERATED_EXCLUSION_REASON}
 
     # 6. Secret-path glob (this module's own SECRET_PATH_GLOBS, resolved via the repo's ONE
     #    last-wins glob resolver).
@@ -279,6 +290,17 @@ def classify_exclusions(path: Path, *, base: Path, max_bytes: int) -> dict | Non
         return {"path": rel, "size": size, "excluded": "secret-content"}
 
     return None
+
+
+def _manifest_kind_for_name(name: str) -> str | None:
+    """Reuse ``detect._MANIFEST_KIND_BY_NAME`` / the ``.csproj`` suffix rule (never retyped
+    here) to decide whether a candidate's basename is a recognized manifest name at all — the
+    OBS-D-01 non-member-scoping branch only ever looks at recognized manifests, never every
+    file."""
+    kind = detect._MANIFEST_KIND_BY_NAME.get(name)
+    if kind is None and name.endswith(".csproj"):
+        kind = "*.csproj"
+    return kind
 
 
 def _target_ref(target: Path) -> str:
@@ -320,14 +342,93 @@ def build_inventory(
     computed_paths, mode = enumerate_target(target)
     paths = list(_paths) if _paths is not None else computed_paths
 
+    # OBS-D-01 (51-BASELINE-EVIDENCE.md) — purpose 2; contract value ratified by 52-01 (D-20).
+    # D-10 additive branch: when no pnpm-workspace.yaml exists at the target root,
+    # workspace_globs stays None and every candidate below takes the exact pre-existing path —
+    # discovery output for a target with no workspace manifest is byte-identical to before this
+    # change. The manifest is read HERE (never inside detect.py, which stays filesystem-free).
+    workspace_globs: list[str] | None = None
+    workspace_manifest_path = target / detect.PNPM_WORKSPACE_MANIFEST
+    # WR-04 (52-REVIEW.md): `is_file()` alone follows symlinks, so a `pnpm-workspace.yaml`
+    # symlinked outside the target root would be opened and read — while classify_exclusions
+    # refuses to even stat() through an escaping symlink. Reuse this module's own `_confined`
+    # idiom so the posture is consistent, and cap the read at _CONTENT_PREFIX_BYTES like every
+    # other read here (an unbounded read_text() would load a multi-GB manifest whole).
+    if workspace_manifest_path.is_file() and _confined(workspace_manifest_path, target):
+        try:
+            with workspace_manifest_path.open("rb") as handle:
+                raw = handle.read(_CONTENT_PREFIX_BYTES)
+            workspace_manifest_text = raw.decode("utf-8", "replace")
+        except OSError:
+            workspace_manifest_text = None
+        if workspace_manifest_text is not None:
+            parsed = detect.parse_pnpm_workspace_globs(workspace_manifest_text)
+            # CR-02 (52-REVIEW.md): a manifest we could extract NO glob from must degrade to the
+            # D-10 unchanged path (workspace_globs stays None), exactly as the OSError branch
+            # above does — never to `[]`, which is_workspace_member reads as "this workspace has
+            # exactly one member, the root", silently excluding every non-root manifest as
+            # `non-workspace-member`. Real shapes that land here: a pnpm-10 settings-only
+            # manifest with no `packages:` key, and a `packages:` key with an empty body.
+            if parsed:
+                workspace_globs = parsed
+            else:
+                print(
+                    f"scan: {detect.PNPM_WORKSPACE_MANIFEST} declared no parsable 'packages:' "
+                    "globs — workspace scoping disabled for this target (D-10 path)",
+                    file=sys.stderr,
+                )
+
     included: list[dict] = []
     excluded: list[dict] = []
     for candidate in paths:
+        # classify_exclusions runs FIRST and unchanged — the security-first ordering (symlink
+        # escape -> vendored -> generated -> size cap -> binary -> generated marker ->
+        # secret-path -> source-dump -> secret-content) is preserved verbatim. The
+        # non-workspace-member branch below only ever fires when this already returned None (the
+        # file would otherwise be included), so a manifest that is ALSO secret-path/vendored/
+        # size-capped/etc. keeps its original exclusion reason (T-52-06).
         exclusion = classify_exclusions(candidate, base=target, max_bytes=max_bytes)
         if exclusion is not None:
             excluded.append(exclusion)
             continue
+
         rel = candidate.relative_to(target).as_posix()
+
+        if workspace_globs is not None:
+            manifest_kind = _manifest_kind_for_name(candidate.name)
+            if manifest_kind is not None:
+                manifest_dir = str(PurePosixPath(rel).parent)
+                # Re-validate confinement before ever treating a glob-derived path as a member
+                # (reusing this module's own _confined idiom, T-52-03) — a glob must never widen
+                # scope beyond `target`, even though `candidate` is already a confined,
+                # already-enumerated path at this point.
+                #
+                # WR-10 (52-REVIEW.md): this guard FAILS CLOSED. The previous
+                # `if _confined(...) and not is_workspace_member(...)` let an UNCONFINED
+                # candidate fall straight through to `included.append(...)` — a confinement check
+                # whose failure mode was "include it anyway" is not a confinement check. The path
+                # is effectively unreachable today (classify_exclusions already rejects escaping
+                # symlinks), which is why it is defense in depth and not the primary guard.
+                if not _confined(candidate, target):
+                    excluded.append(
+                        {
+                            "path": rel,
+                            "size": candidate.lstat().st_size,
+                            "excluded": "symlink-escape",
+                        }
+                    )
+                    continue
+                if not detect.is_workspace_member(manifest_dir, workspace_globs):
+                    size = candidate.stat().st_size
+                    excluded.append(
+                        {
+                            "path": rel,
+                            "size": size,
+                            "excluded": NON_WORKSPACE_MEMBER_EXCLUSION_REASON,
+                        }
+                    )
+                    continue
+
         included.append(
             {
                 "path": rel,

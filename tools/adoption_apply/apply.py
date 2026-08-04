@@ -21,15 +21,14 @@ guidance:
 * :func:`atomic_create` — ``os.link``-based; raises ``FileExistsError`` -> :class:`CollisionError`
   on an existing target. Never silently overwrites. Used for the ``create`` disposition, where a
   target is NOT expected to exist yet.
-* :func:`_atomic_replace` — ``os.replace``-based. Used ONLY by :func:`_apply_marker_merge`, where a
-  marker-merge target already exists by definition (``AGENTS.md``/``CLAUDE.md``/
-  ``.claude/settings.json`` always pre-exist in a real target tree).
+* :func:`_atomic_replace` — ``os.replace``-based. Used by ``update`` and
+  :func:`_apply_marker_merge`, where the target may already exist.
 
 Marker-merge for the 3 ``MARKER_CAPABLE`` destinations reuses ``tools.harness_emit.merge``'s
 ``splice_managed_block``/``merge_settings`` verbatim — no second fence/marker scheme.
 
 :func:`apply_manifest` iterates ``manifest["dispositions"]`` ONLY (never ``excluded[]``, never a
-destination absent from both) and is TOTAL over the 6-value ``DISPOSITION_ENUM`` — any other value
+destination absent from both) and is TOTAL over the 7-value ``DISPOSITION_ENUM`` — any other value
 raises :class:`UnknownDispositionError` rather than silently defaulting to ``create``.
 
 No arbitrary command execution: this module never builds a ``subprocess`` argv from manifest/draft
@@ -41,8 +40,10 @@ from __future__ import annotations
 import fcntl
 import json
 import os
+import sys
 import tempfile
-from pathlib import Path
+from collections.abc import Iterable
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from tools.adoption_scan.destinations import DISPOSITION_ENUM, MARKER_CAPABLE, _existing_hash
@@ -240,8 +241,8 @@ def _atomic_replace(path: Path, payload: bytes) -> None:
 
     Writes ``payload`` (raw ``bytes``) to a same-directory temp file, flushes and fsyncs it, then
     publishes via ``os.replace`` -> fsyncs the containing directory, unlinking the temp file on any
-    exception. Only used by :func:`_apply_marker_merge`, where the target already exists by
-    definition.
+    exception. Used by ``update`` and :func:`_apply_marker_merge`, where replacing an existing
+    target is intentional.
     """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -289,7 +290,39 @@ def _read_target_no_symlink(path: Path) -> str | None:
         return handle.read().decode("utf-8")
 
 
-def _apply_marker_merge(destination: str, target_path: Path, block_body: str = "") -> None:
+def lock_sidecar_for(destination: str) -> str:
+    """Return the ``.lock`` sidecar path ``_apply_marker_merge`` would create for ``destination``.
+
+    Pure, POSIX-relative, no filesystem access — reproduces ``_apply_marker_merge``'s
+    ``target_path.with_name(f".{target_path.name}.lock")`` rule for a repo-relative destination
+    string rather than an already-resolved ``Path``, so it is checkable both against the naming
+    RULE and (in tests) against what the writer actually creates on disk.
+    """
+    posix_destination = PurePosixPath(destination)
+    return str(posix_destination.with_name(f".{posix_destination.name}.lock"))
+
+
+def expected_lock_sidecars(destinations: Iterable[str]) -> set[str]:
+    """The set of ``.lock`` sidecars marker-merge creates for the ``MARKER_CAPABLE`` members of
+    ``destinations``.
+
+    A destination outside ``MARKER_CAPABLE`` (imported from ``destinations.py``, never retyped)
+    contributes no sidecar — only the 3 marker-merge destinations ever acquire one.
+    """
+    return {
+        lock_sidecar_for(destination)
+        for destination in destinations
+        if destination in MARKER_CAPABLE
+    }
+
+
+# OBS-D-04 (51-BASELINE-EVIDENCE.md) — purpose 4: sidecars are DECLARED, never unlinked (D-15);
+# comparison scope is phase-local (D-21). Plan 05's apply comparison imports this frozenset as its
+# allowlist for the matches/unexpected_paths computation rather than recomputing the naming rule.
+HARNESS_MANAGED_LOCK_SIDECARS: frozenset[str] = frozenset(expected_lock_sidecars(MARKER_CAPABLE))
+
+
+def _apply_marker_merge(destination: str, target_path: Path, block_body: str = "") -> bool:
     """Merge the harness-managed content into ``target_path`` and publish it atomically.
 
     ``.json`` destinations (``.claude/settings.json``) go through ``merge_settings``; every other
@@ -301,12 +334,31 @@ def _apply_marker_merge(destination: str, target_path: Path, block_body: str = "
     (mirroring ``batch.py::update_status``'s exact idiom) so two concurrent ``apply`` invocations
     against the same target never interleave (WR-01). The read itself refuses to follow a symlink
     at the destination (``_read_target_no_symlink``).
+
+    # OBS-D-04 / D-16 (52-CONTEXT.md): a visible signal beats a quiet resume. Scope note: with
+    # D-15's no-unlink rule this predicate cannot distinguish a normal re-run from a
+    # crash-interrupted one — it reports PROVENANCE, not staleness. A real staleness probe
+    # (recorded owner pid + liveness, or mtime vs run start) is unbuilt on purpose (NG-01, no
+    # observation behind it).
     """
     target_path = Path(target_path)
     lock_path = target_path.with_name(f".{target_path.name}.lock")
     lock_path.parent.mkdir(parents=True, exist_ok=True)
+    pre_existed = lock_path.exists()
     with lock_path.open("a+b") as lock:
-        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        try:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            if pre_existed:
+                print(
+                    f"apply: lock sidecar from a prior run at {lock_path} — acquired, not "
+                    "silently reused (sidecars are never unlinked, D-15)",
+                    file=sys.stderr,
+                )
+        except (BlockingIOError, OSError):
+            # A genuinely held lock (another holder currently inside the critical section) —
+            # wait for it, exactly as before. No prior-run report here: this branch means the
+            # lock is CURRENTLY held, not merely that a sidecar was left over from a prior run.
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
         if destination.endswith(".json"):
             existing_text = _read_target_no_symlink(target_path)
             existing: dict[str, Any] = (
@@ -318,7 +370,10 @@ def _apply_marker_merge(destination: str, target_path: Path, block_body: str = "
             existing_text = _read_target_no_symlink(target_path)
             merged_text = splice_managed_block(existing_text or "", block_body)
             payload = merged_text.encode("utf-8")
+        if payload == (existing_text.encode("utf-8") if existing_text is not None else b""):
+            return False
         _atomic_replace(target_path, payload)
+        return True
 
 
 def apply_disposition(
@@ -335,9 +390,10 @@ def apply_disposition(
     ``..``-escaping, or resolves onto the constitution plane (including via a symlink or a
     case-variant spelling) is refused regardless of its disposition value (CR-01/CR-02). The
     returned, already-resolved ``target_path`` is reused by every branch below instead of being
-    recomputed. Returns ``{"destination", "disposition", "status"}`` where ``status`` is
-    ``"applied"`` or ``"skipped"``. Raises on any refusal/error rather than returning a refused
-    status — the caller (``apply_manifest``) decides which exceptions to bucket vs. propagate.
+    recomputed. Returns ``{"destination", "disposition", "status"}``; writing dispositions also
+    include the sha256 read back from the landed file as ``installed_sha256``. Raises on any
+    refusal/error rather than returning a refused status — the caller (``apply_manifest``) decides
+    which exceptions to bucket vs. propagate.
     """
     destination = record["destination"]
     disposition_value = record["disposition"]
@@ -356,15 +412,39 @@ def apply_disposition(
                 "the manifest recorded no existing target for a 'create' disposition at draft time"
             )
         atomic_create(target_path, payload)
-        return {"destination": destination, "disposition": disposition_value, "status": "applied"}
+        return {
+            "destination": destination,
+            "disposition": disposition_value,
+            "status": "applied",
+            "installed_sha256": _existing_hash(target_path),
+        }
+
+    if disposition_value == "update":
+        _atomic_replace(target_path, payload)
+        return {
+            "destination": destination,
+            "disposition": disposition_value,
+            "status": "updated",
+            "installed_sha256": _existing_hash(target_path),
+        }
 
     if disposition_value == "marker-merge":
         if destination not in MARKER_CAPABLE:
             raise ValueError(
                 f"'{destination}' is not marker-capable; the disposition manifest is malformed"
             )
-        _apply_marker_merge(destination, target_path, block_body)
-        return {"destination": destination, "disposition": disposition_value, "status": "applied"}
+        if not _apply_marker_merge(destination, target_path, block_body):
+            return {
+                "destination": destination,
+                "disposition": disposition_value,
+                "status": "unchanged",
+            }
+        return {
+            "destination": destination,
+            "disposition": disposition_value,
+            "status": "applied",
+            "installed_sha256": _existing_hash(target_path),
+        }
 
     # preserve / conflict / derived-regenerate / human-ratification-required: never written by
     # apply.py. human-ratification-required destinations are expected to already be refused above
@@ -379,7 +459,7 @@ def apply_manifest(
     *,
     payloads: dict[str, bytes] | None = None,
     block_bodies: dict[str, str] | None = None,
-) -> dict[str, list[str]]:
+) -> dict[str, Any]:
     """Apply every record in ``manifest["dispositions"]`` (never ``excluded[]``) against
     ``target_root``.
 
@@ -402,12 +482,21 @@ def apply_manifest(
     as a routine path refusal, so the integrity-fault-vs-refusal distinction drawn here is NOT
     preserved in the process exit code — only in the exception type seen by an in-process caller.
 
-    Returns ``{"applied": [...], "skipped": [...], "refused": [...]}`` — destinations only.
+    Returns six disjoint destination buckets plus ``written_hashes``. The six buckets' union is
+    exactly the input ``dispositions[]`` destination set.
     """
     target_root = Path(target_root)
     payloads = payloads or {}
     block_bodies = block_bodies or {}
-    summary: dict[str, list[str]] = {"applied": [], "skipped": [], "refused": []}
+    summary: dict[str, Any] = {
+        "applied": [],
+        "updated": [],
+        "unchanged": [],
+        "conflicts": [],
+        "skipped": [],
+        "refused": [],
+        "written_hashes": {},
+    }
 
     for record in sorted(manifest["dispositions"], key=lambda r: r["destination"]):
         destination = record["destination"]
@@ -421,6 +510,15 @@ def apply_manifest(
         except ConstitutionRefusal:
             summary["refused"].append(destination)
             continue
-        summary["applied" if result["status"] == "applied" else "skipped"].append(destination)
+        if "installed_sha256" in result:
+            summary["written_hashes"][destination] = result["installed_sha256"]
+        if result["status"] in ("applied", "updated"):
+            summary[result["status"]].append(destination)
+        elif result["status"] == "unchanged" or result["disposition"] == "preserve":
+            summary["unchanged"].append(destination)
+        elif result["disposition"] == "conflict":
+            summary["conflicts"].append(destination)
+        else:
+            summary["skipped"].append(destination)
 
     return summary

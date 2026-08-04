@@ -1,0 +1,3 @@
+/Users/hyojung/Desktop/2026/FeedbackOps                            146d7fb [feature/293-presubmit-similar-voc]
+/Users/hyojung/Desktop/2026/FeedbackOps-worktrees/v27-53-rerun     a4e8e64 (detached HEAD)
+/Users/hyojung/orca/workspaces/FeedbackOps/fix-327-whitespace-voc  45e76f2 [fix/327-whitespace-voc]

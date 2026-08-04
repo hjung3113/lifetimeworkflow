@@ -42,6 +42,12 @@ before any write:
 
 !`python -m tools.adoption_apply apply $ARGUMENTS`
 
+On a re-run, `/adopt` updates files it previously installed instead of reinstalling them. Its
+target-side record is `.harness/adoption/installed.json`. When neither source nor target changed,
+it writes nothing and reports `applied=0 updated=0 unchanged=N conflicts=0`; a target-side edit to
+a managed file is reported on stderr as a conflict and left byte-unchanged. Conflicts do not abort
+the remaining safe rows or change the command's exit status.
+
 ## Notes
 
 - **No arbitrary command execution.** Every invocation above is a fixed `python -m
@@ -50,3 +56,4 @@ before any write:
 - **Discovery is read-only**; `apply` never touches the constitution plane. Review of an applied
   batch's decisions happens at the PR that carries it, not inside this command. See
   `harness/skills/brownfield-adoption/SKILL.md` for the full discover/draft/review/apply runbook.
+- The drafted `manifest.json` is the conflict report; there is no separate conflict artifact.

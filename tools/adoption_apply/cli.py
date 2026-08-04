@@ -26,6 +26,7 @@ scanned target itself.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -33,6 +34,7 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 
 from tools.adoption_apply import apply as apply_module
+from tools.adoption_apply import installed
 from tools.adoption_apply.apply import apply_manifest, refuse_if_outside_root
 from tools.adoption_apply.batch import create_or_resume_batch
 from tools.adoption_scan import destinations, scan
@@ -43,6 +45,85 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 _SCHEMA_DIR = _REPO_ROOT / "contracts" / "harness" / "adoption"
 
 _DRAFT_ARTIFACTS: tuple[str, ...] = ("inventory", "plan", "manifest")
+
+# OBS-D-03 / D-12 (52-CONTEXT.md): target-derived [[languages]] row — the ONE sanctioned CR-01
+# exception. Every other draft/apply artifact stays the harness's own checkout bytes (CR-01); this
+# is the single deliberate splice, computed at draft time from the TARGET's own package.json.
+_DERIVED_LANGUAGE_ID = "javascript"
+_DERIVED_BASH_SCOPE = "pnpm *"
+_DERIVED_SCRIPT_KEYS: tuple[str, ...] = ("lint", "test", "format")
+_DERIVED_LANGUAGES_SIDECAR = "languages.toml"
+_DERIVED_PROVENANCE_COMMENT = (
+    "# Derived by tools.adoption_apply from the adopted target's own package.json scripts "
+    "(OBS-D-03 / D-12)."
+)
+
+
+def derive_language_rows(package_json_text: str) -> str | None:
+    """Pure, filesystem-free: render a ``[[languages]]`` TOML table from a target's own
+    ``package.json`` ``scripts`` object, or ``None`` when there is nothing to derive.
+
+    OBS-D-03 / D-12 (52-CONTEXT.md): the ONE sanctioned CR-01 exception — target-derived content
+    flowing into ``harness/project.toml``, computed here at draft time. Script VALUES are never
+    copied into the row and never executed: only the fixed literal ``"pnpm run <key>"`` command
+    strings are emitted, keyed by which of the allowlisted ``_DERIVED_SCRIPT_KEYS`` names exist
+    (T-52-07 — no subprocess argv is ever built from manifest/draft content).
+
+    Returns ``None`` on malformed JSON, a non-object top level, a missing/non-dict ``scripts``, or
+    a ``scripts`` object that does not declare ``test`` — nothing is invented, and nothing
+    partially-shaped is emitted.
+
+    CR-03 (52-REVIEW.md) — WHY ``test`` is the one hard requirement, and why the other keys are
+    omitted rather than blanked. The apply cycle installs ``tools/**`` and
+    ``.github/workflows/**`` into the adopted target, so the target inherits the consumers of
+    this row. Traced against what each ACTUALLY does with it:
+
+    - ``.github/workflows/ci.yml`` (SHIPPED) — the ``setup`` job ``sys.exit``s when any
+      ``[[languages]]`` entry has an empty ``id`` or ``test``. The previous ``test = ""`` for a
+      target declaring ``lint`` but no ``test`` (extremely common) therefore made the adopted
+      target's CI unable to start. Hence: no ``test`` script -> no row at all. That job reads
+      ``test_paths`` with ``.get(..., [])``, and a bare ``pnpm run test`` at a workspace root is
+      the correct invocation, so an absent ``test_paths`` is right, not merely tolerated.
+    - ``tools/harness_config/loader.py::conventions_for`` (SHIPPED) — reads the row by subscript.
+      Made ``.get``-tolerant in the same commit, matching the ``lint`` treatment D-11 already
+      established, so an omitted ``format`` resolves to ``None`` instead of raising.
+    - ``tools/harness_lint/tests/test_language_config.py`` (NOT SHIPPED) — the ``persona``
+      subscript, the ``test_paths`` non-empty check and the ``bash_scope`` set-equality check all
+      live here, and ``destinations._SKIP_SEGMENTS`` excludes every ``tools/**`` path with a
+      ``tests`` segment from the catalog, so none of those three reaches an adopted target.
+      That is what makes omitting ``persona``/``test_paths`` the honest answer rather than a
+      shortcut: neither is derivable from a ``package.json`` at all (there is no javascript
+      persona in ``harness/agents/``, and a target's test paths are unknowable from its
+      manifest), and inventing either would be exactly the fabrication D-02 forbids.
+
+    ``bash_scope`` is still emitted. The target's copied ``harness/permission-matrix.json`` has no
+    ``pnpm *`` allow key, so pnpm commands there fall to the matrix's ``*: ask`` catch-all — a
+    safe-by-default degradation, not a break, and the only gate that would call the divergence an
+    error is the unshipped one above. Dropping the key would discard true, useful data and buy
+    nothing.
+    """
+    try:
+        data = json.loads(package_json_text)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(data, dict):
+        return None
+    scripts = data.get("scripts")
+    if not isinstance(scripts, dict) or "test" not in scripts:
+        return None
+
+    lines = [
+        _DERIVED_PROVENANCE_COMMENT,
+        "[[languages]]",
+        f'id = "{_DERIVED_LANGUAGE_ID}"',
+        f'bash_scope = "{_DERIVED_BASH_SCOPE}"',
+    ]
+    # Omit, never blank: an empty string is a second spelling of "absent" that every consumer
+    # above reads as a real-but-empty command.
+    for key in _DERIVED_SCRIPT_KEYS:
+        if key in scripts:
+            lines.append(f'{key} = "pnpm run {key}"')
+    return "\n".join(lines) + "\n"
 
 
 def _load_schema(name: str) -> dict:
@@ -79,12 +160,45 @@ def _cmd_draft(args: argparse.Namespace) -> int:
     batch_id = status["batch_id"]
     batch_root = _batch_root(args.task_dir, batch_id)
 
+    try:
+        installed_records = installed.read_installed_record(target)
+    except installed.InstalledRecordError as exc:
+        print(
+            f"tools.adoption_apply draft: unreadable installed record: {exc}",
+            file=sys.stderr,
+        )
+        return 1
+
+    # OBS-D-03 / D-12 (52-CONTEXT.md): the ONE sanctioned CR-01 exception — target-derived
+    # [[languages]] row. Derive before building the manifest so its post-splice bytes become the
+    # proposed hash for harness/project.toml (WR-08).
+    derived: str | None = None
+    workspace_marker = target / "pnpm-workspace.yaml"
+    root_manifest = target / "package.json"
+    if workspace_marker.is_file() and root_manifest.is_file():
+        try:
+            manifest_text: str | None = root_manifest.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            print(
+                f"tools.adoption_apply draft: unreadable target package.json: {exc} — "
+                "no derived [[languages]] sidecar written",
+                file=sys.stderr,
+            )
+            manifest_text = None
+        derived = derive_language_rows(manifest_text) if manifest_text is not None else None
+
     # Identical scan -> plan -> manifest sequence tools.adoption_scan.cli.main uses — never
     # re-implemented. Target is read strictly read-only.
     inventory = scan.build_inventory(target)
     plan_doc = plan_mod.build_plan(inventory)
     proposed_hashes = destinations.harness_proposed_hashes()
-    manifest_doc = destinations.build_manifest(inventory, target, proposed_hashes)
+    if derived is not None:
+        proposed_hashes["harness/project.toml"] = hashlib.sha256(
+            _spliced_project_toml(_harness_payload("harness/project.toml"), derived.encode("utf-8"))
+        ).hexdigest()
+    manifest_doc = destinations.build_manifest(
+        inventory, target, proposed_hashes, installed=installed_records
+    )
 
     documents: dict[str, dict] = {
         "inventory": inventory,
@@ -110,6 +224,12 @@ def _cmd_draft(args: argparse.Namespace) -> int:
         out_path.write_bytes(scan._dump(documents[name]))
         print(f"wrote {out_path}", file=sys.stderr)
 
+    if derived is not None:
+        sidecar_path = batch_root / _DERIVED_LANGUAGES_SIDECAR
+        refuse_if_outside_root(sidecar_path, batch_root)
+        sidecar_path.write_text(derived, encoding="utf-8")
+        print(f"wrote {sidecar_path}", file=sys.stderr)
+
     return 0
 
 
@@ -120,6 +240,11 @@ def _harness_payload(destination: str) -> bytes:
     if not candidate.is_file():
         return b""
     return candidate.read_bytes()
+
+
+def _spliced_project_toml(payload: bytes, sidecar_bytes: bytes) -> bytes:
+    """Return the exact post-splice project payload used for draft comparison and apply (WR-08)."""
+    return payload + b"\n" + sidecar_bytes
 
 
 def _harness_block_body(destination: str) -> str:
@@ -158,10 +283,34 @@ def _cmd_apply(args: argparse.Namespace) -> int:
     for record in manifest["dispositions"]:
         destination = record["destination"]
         disposition_value = record["disposition"]
-        if disposition_value == "create":
+        if disposition_value in ("create", "update"):
             payloads[destination] = _harness_payload(destination)
         elif disposition_value == "marker-merge":
             block_bodies[destination] = _harness_block_body(destination)
+
+    # OBS-D-03 / D-12 (52-CONTEXT.md): the ONE sanctioned CR-01 exception — target-derived
+    # [[languages]] row, appended ONLY to the "harness/project.toml" payload, ONLY when the batch
+    # carries a draft-time-derived sidecar. Every other destination stays the harness's own
+    # checkout bytes verbatim (T-52-10 — the splice guard is the exact literal destination string,
+    # never a prefix/glob match).
+    #
+    sidecar_path = batch_root / _DERIVED_LANGUAGES_SIDECAR
+    if "harness/project.toml" in payloads and sidecar_path.is_file():
+        sidecar_bytes = sidecar_path.read_bytes()
+        payloads["harness/project.toml"] = _spliced_project_toml(
+            payloads["harness/project.toml"], sidecar_bytes
+        )
+        print(
+            f"spliced {sidecar_path} into harness/project.toml payload (OBS-D-03 / D-12)",
+            file=sys.stderr,
+        )
+    elif sidecar_path.is_file():
+        print(
+            f"tools.adoption_apply apply: derived languages sidecar present at {sidecar_path} "
+            "but harness/project.toml is not a create/update destination — NOT spliced "
+            "(OBS-D-03 / D-12)",
+            file=sys.stderr,
+        )
 
     try:
         summary = apply_manifest(
@@ -183,13 +332,44 @@ def _cmd_apply(args: argparse.Namespace) -> int:
         IsADirectoryError,
         FileExistsError,
         NotADirectoryError,
+        installed.InstalledRecordError,
     ) as exc:
         print(f"tools.adoption_apply apply: {exc}", file=sys.stderr)
         return 1
 
+    try:
+        previous = installed.read_installed_record(args.target)
+        records_by_destination = {record["destination"]: record for record in previous}
+        for destination, installed_sha in summary["written_hashes"].items():
+            records_by_destination[destination] = {
+                "destination": destination,
+                "installed_sha256": installed_sha,
+                "batch_id": args.batch_id,
+            }
+        records = [records_by_destination[key] for key in sorted(records_by_destination)]
+        if records != previous:
+            installed.write_installed_record(args.target, records)
+    except installed.InstalledRecordError as exc:
+        print(f"tools.adoption_apply apply: {exc}", file=sys.stderr)
+        return 1
+
+    recorded_hashes = {
+        record["destination"]: record["installed_sha256"]
+        for record in manifest.get("installed", [])
+    }
+    for destination in summary["conflicts"]:
+        current_sha = apply_module._existing_hash(Path(args.target) / destination)
+        print(
+            f"conflict destination={destination} "
+            f"installed_sha256={recorded_hashes.get(destination, 'none-recorded')} "
+            f"current_sha256={current_sha}",
+            file=sys.stderr,
+        )
+
     print(
-        f"applied={len(summary['applied'])} skipped={len(summary['skipped'])} "
-        f"refused={len(summary['refused'])}",
+        f"applied={len(summary['applied'])} updated={len(summary['updated'])} "
+        f"unchanged={len(summary['unchanged'])} conflicts={len(summary['conflicts'])} "
+        f"skipped={len(summary['skipped'])} refused={len(summary['refused'])}",
         file=sys.stderr,
     )
     return 0

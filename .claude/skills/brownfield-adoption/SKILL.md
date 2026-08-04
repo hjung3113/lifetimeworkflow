@@ -47,6 +47,13 @@ against an unchanged target is a no-op), and structurally refuses every constitu
 (`contracts/` · `docs/adr/` · `docs/glossary.md`) destination before any filesystem write — independent of
 any Claude tool-call hook, since a bare CLI/CI invocation has no hook in the loop at all.
 
+Re-running a batch manages the files `/adopt` previously installed, recorded at the target's
+`.harness/adoption/installed.json`: unchanged source and target means no writes and an
+`applied=0 updated=0 unchanged=N conflicts=0` summary; changed harness content updates its managed
+file; and a target-side edit is reported on stderr as a conflict while that file remains
+byte-unchanged. Conflicts leave other safe rows running and do not change the command's exit status;
+the drafted `manifest.json` is the conflict report.
+
 ## Related
 
 - `harness/commands/adopt.md` — the `/adopt` command invokes each stage's module by a fixed

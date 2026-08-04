@@ -1,0 +1,16 @@
+# Instrument guard proofs — each gate observed FIRING before it was trusted
+# (53-VALIDATION.md's rule: a gate never observed failing is decoration.)
+
+## 1. --require-no-writes must catch a CONTENT-only rewrite
+Setup: cycle-2's real captures, with a COPY of the after-tree in which exactly one
+already-present file (AGENTS.md) carries a different digest. The porcelain PATH SET is
+identical between before and after — this is precisely the case a path-set delta cannot see.
+
+  control  (unmutated after-tree)                 -> exit=0  (expected 0)
+  mutated  (one file's CONTENT differs)           -> exit=1  (expected 1)
+  SAME mutation, tree digests OMITTED (the old     -> exit=0  (expected 0 — THIS is why the path-set delta alone is not the proof)
+            path-set-only instrument)
+
+## 2. anchored mis-target argv guard (53-04-PLAN.md Task 2 verify block)
+  hand-written MIS-TARGETED argv -> guard matches, verify would exit 1: YES
+  legitimate worktree argv       -> guard does NOT match (no false positive): YES

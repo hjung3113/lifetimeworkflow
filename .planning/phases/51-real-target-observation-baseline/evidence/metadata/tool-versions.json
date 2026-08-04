@@ -1,0 +1,44 @@
+{
+  "git": {
+    "argv": [
+      "git",
+      "--version"
+    ],
+    "cwd": "/Users/hyojung/Desktop/2026/lifetimeworkflow",
+    "exit_code": 0,
+    "stdout": "git version 2.50.1 (Apple Git-155)\n",
+    "stderr": ""
+  },
+  "uv": {
+    "argv": [
+      "uv",
+      "--version"
+    ],
+    "cwd": "/Users/hyojung/Desktop/2026/lifetimeworkflow",
+    "exit_code": 0,
+    "stdout": "uv 0.11.6 (65950801c 2026-04-09 aarch64-apple-darwin)\n",
+    "stderr": ""
+  },
+  "python": {
+    "argv": [
+      "uv",
+      "run",
+      "python",
+      "--version"
+    ],
+    "cwd": "/Users/hyojung/Desktop/2026/lifetimeworkflow",
+    "exit_code": 0,
+    "stdout": "Python 3.11.15\n",
+    "stderr": ""
+  },
+  "pnpm": {
+    "argv": [
+      "pnpm",
+      "--version"
+    ],
+    "cwd": "/Users/hyojung/Desktop/2026/lifetimeworkflow",
+    "exit_code": 0,
+    "stdout": "11.1.1\n",
+    "stderr": ""
+  }
+}

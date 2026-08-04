@@ -20,6 +20,7 @@ scope here — that evidence ladder step belongs to Plan 03's ``plan.py``.
 
 from __future__ import annotations
 
+import fnmatch
 import json
 import re
 import tomllib
@@ -43,12 +44,201 @@ _LANGUAGE_BY_EXTENSION: dict[str, str] = {
 }
 
 # Manifest filename -> kind (observed on literal file existence, D-02).
+#
+# `pnpm-workspace.yaml` is deliberately NOT registered here. This table drives
+# `detect_manifests` -> `detect_candidate_process_boundaries`, so registering it would emit a
+# 6th manifest record and a duplicate root boundary, directly defeating RTA-02's "exactly the
+# five members" (52-CONTEXT.md D-07's literal wording vs its intent — see PNPM_WORKSPACE_MANIFEST
+# below, which teaches the workspace manifest as its own module-level constant + pure parser
+# instead, scoping membership at the source without growing this kind table).
 _MANIFEST_KIND_BY_NAME: dict[str, str] = {
     "pyproject.toml": "pyproject.toml",
     "package.json": "package.json",
     "go.mod": "go.mod",
     "Cargo.toml": "Cargo.toml",
 }
+
+# OBS-D-01 (51-BASELINE-EVIDENCE.md) — purpose 2: pnpm workspace member scoping.
+PNPM_WORKSPACE_MANIFEST = "pnpm-workspace.yaml"
+
+
+def _strip_matched_quotes(item: str) -> str:
+    """Strip ONE pair of matched surrounding quotes, if present."""
+    if len(item) >= 2 and item[0] == item[-1] and item[0] in "\"'":
+        return item[1:-1]
+    return item
+
+
+def _parse_flow_sequence(remainder: str) -> list[str] | None:
+    """Parse a single-line YAML flow sequence (``["apps/*", 'packages/*']``) into its items.
+
+    Returns ``None`` when *remainder* is not a complete single-line flow sequence (so the caller
+    can fall back to block-style handling); returns ``[]`` for a literally empty ``[]``.
+
+    Scope note, deliberately narrow (same zero-new-external-deps reasoning as
+    :func:`parse_pnpm_workspace_globs`): items are split on ``,``, so a glob containing a literal
+    comma inside quotes would split wrongly. pnpm workspace globs are path patterns and do not
+    contain commas; a multi-line flow sequence is likewise not handled and falls through to the
+    "no globs parsed" degrade path rather than being half-parsed.
+    """
+    stripped = remainder.strip()
+    if not (stripped.startswith("[") and stripped.endswith("]")):
+        return None
+    body = stripped[1:-1].strip()
+    if not body:
+        return []
+    items: list[str] = []
+    for raw_item in body.split(","):
+        item = _strip_matched_quotes(raw_item.strip())
+        if item:
+            items.append(item)
+    return items
+
+
+# OBS-D-01 (51-BASELINE-EVIDENCE.md) — purpose 2: pnpm workspace member scoping.
+def parse_pnpm_workspace_globs(text: str) -> list[str]:
+    """Narrow line-based reader of a ``pnpm-workspace.yaml``'s top-level ``packages:`` value.
+
+    Deliberately NOT a general YAML parser (52-RESEARCH.md § Don't Hand-Roll) — this repo's
+    ``pyproject.toml`` carries a zero-new-external-deps invariant, so pulling in a full
+    third-party YAML library for one four-line list-of-globs shape is out of proportion. Scope
+    is exactly pnpm's ``packages:`` list-of-glob-strings, in BOTH of the shapes real pnpm
+    manifests use:
+
+    - block style — collect ``- glob`` / ``- "glob"`` / ``- 'glob'`` list items inside the block
+      (surrounding matched quotes stripped, order preserved), skip ``#`` comment lines and blank
+      lines, and stop the block at the next top-level key (a non-blank, non-comment,
+      non-list-item line).
+    - flow style — ``packages: ["apps/*", "packages/*"]`` on one line (CR-02, 52-REVIEW.md: valid
+      YAML and a common pnpm manifest shape; before this it never entered the block at all and
+      silently mis-scoped the whole target).
+
+    No filesystem access — this function only ever sees text handed to it (module docstring
+    invariant: detection can never diverge from what was hashed).
+
+    Malformed / non-YAML / empty text degrades to ``[]`` rather than raising, mirroring
+    ``package_facts.py:176-182``'s degrade-per-file posture (T-52-04). CR-02 (52-REVIEW.md):
+    ``[]`` here means "no globs could be extracted", which the CALLER
+    (``scan.build_inventory``) must read as "no workspace scoping — take the D-10 unchanged
+    path", NEVER as "this workspace declares zero members". Returning ``[]`` is not itself the
+    downgrade; the caller performs it.
+    """
+    try:
+        globs: list[str] = []
+        in_block = False
+        for raw_line in text.splitlines():
+            stripped = raw_line.strip()
+            if not in_block:
+                if stripped == "packages:":
+                    in_block = True
+                elif stripped.startswith("packages:"):
+                    flow = _parse_flow_sequence(stripped[len("packages:") :])
+                    if flow is not None:
+                        globs.extend(flow)
+                continue
+            if not stripped or stripped.startswith("#"):
+                continue
+            if not stripped.startswith("-"):
+                # A non-blank, non-comment, non-list-item line is the next top-level key.
+                in_block = False
+                continue
+            item = stripped[1:].strip()
+            if not item or item.startswith("#"):
+                continue
+            if not item.startswith(('"', "'")):
+                hash_idx = item.find("#")
+                if hash_idx != -1:
+                    item = item[:hash_idx].strip()
+            item = _strip_matched_quotes(item)
+            if item:
+                globs.append(item)
+        return globs
+    # WR-09 (52-REVIEW.md): narrowed from a bare `except Exception`, which swallowed genuine
+    # programming errors introduced later and discarded already-parsed globs. These are exactly
+    # the input-SHAPE faults a non-str / undecodable `text` produces; anything else is a bug and
+    # must surface.
+    except (AttributeError, TypeError, UnicodeError):
+        return []
+
+
+def _segments_match(directory_parts: tuple[str, ...], glob_parts: tuple[str, ...]) -> bool:
+    """Per-segment match of ``directory_parts`` against ``glob_parts``, honouring ``**``.
+
+    WR-01 (52-REVIEW.md): a ``**`` segment matches ZERO OR MORE directory segments (standard
+    globstar, which is what pnpm's own documented ``packages/**`` example means); every other
+    segment matches EXACTLY one segment via :func:`fnmatch.fnmatchcase`. WR-02: ``fnmatchcase``,
+    not ``fnmatch`` — ``fnmatch`` applies ``os.path.normcase`` to both operands, which makes
+    membership case-insensitive on Windows and so makes ``inventory.json`` platform-dependent,
+    breaking ``scan.py``'s byte-determinism invariant.
+    """
+    if not glob_parts:
+        return not directory_parts
+    head, rest = glob_parts[0], glob_parts[1:]
+    if head == "**":
+        return any(
+            _segments_match(directory_parts[i:], rest) for i in range(len(directory_parts) + 1)
+        )
+    if not directory_parts:
+        return False
+    if not fnmatch.fnmatchcase(directory_parts[0], head):
+        return False
+    return _segments_match(directory_parts[1:], rest)
+
+
+def _usable_glob_parts(glob: str) -> tuple[str, ...] | None:
+    """Split *glob* into path segments, or ``None`` when the T-52-03 traversal guard rejects it.
+
+    A glob that is absolute or contains a ``..`` segment contributes NO members: membership is
+    computed on repo-relative POSIX directories only.
+    """
+    if glob.startswith("/") or PurePosixPath(glob).is_absolute():
+        return None
+    glob_parts = PurePosixPath(glob).parts
+    if any(part == ".." for part in glob_parts):
+        return None
+    return glob_parts
+
+
+# OBS-D-01 (51-BASELINE-EVIDENCE.md) — purpose 2: pnpm workspace member scoping.
+def is_workspace_member(directory: str, globs: list[str]) -> bool:
+    """True if ``directory`` (a repo-relative POSIX dir, ``"."`` for the workspace root)
+    matches one of the pnpm workspace ``globs``.
+
+    The workspace root (``"."``) is always a member, regardless of ``globs`` — pnpm's own
+    implicit-root semantics. A glob that is absolute or contains a ``..`` segment contributes NO
+    members (T-52-03 traversal guard), and the caller (``scan.py``) re-validates any glob-derived
+    path with its own ``_confined`` idiom before ever treating it as a member.
+
+    Matching is per-path-segment (:func:`_segments_match`): a bare ``*`` matches exactly one
+    directory segment, so ``apps/*`` matches ``apps/widget-app`` but NOT
+    ``apps/widget-app/nested``; a ``**`` segment matches any depth, so ``packages/**`` matches
+    both ``packages/b`` and ``packages/b/deep`` (WR-01).
+
+    WR-03: a ``!``-prefixed glob is a pnpm NEGATION, not a positive pattern. A directory is a
+    member iff it matches at least one positive glob AND no negative glob — previously the ``!``
+    was stored verbatim and never interpreted, so ``["packages/*", "!packages/legacy"]``
+    reported ``packages/legacy`` as a member and the inventory over-included.
+    """
+    if directory == ".":
+        return True
+    directory_parts = PurePosixPath(directory).parts
+
+    positive: list[tuple[str, ...]] = []
+    negative: list[tuple[str, ...]] = []
+    for glob in globs:
+        bucket = negative if glob.startswith("!") else positive
+        pattern = glob[1:] if glob.startswith("!") else glob
+        if not pattern:
+            continue
+        parts = _usable_glob_parts(pattern)
+        if parts is None:
+            continue
+        bucket.append(parts)
+
+    if not any(_segments_match(directory_parts, parts) for parts in positive):
+        return False
+    return not any(_segments_match(directory_parts, parts) for parts in negative)
+
 
 # WR-06 (26-REVIEW.md): all three GitHub-honored CODEOWNERS locations — a repo may place the
 # file at the root, under .github/, or under docs/, and GitHub resolves whichever is present.
