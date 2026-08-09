@@ -72,6 +72,15 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if not args.out.resolve().is_relative_to(PHASE_ROOT):
         parser.error(f"--out must stay under {PHASE_ROOT}")
+    # Without the tree digests the gate degrades to the path-SET delta, which cannot see a
+    # content rewrite of an already-present path — the exact blindness this instrument was fixed
+    # to remove (evidence/isolation/instrument-guards.txt row 3: same mutation, digests omitted,
+    # exit 0). Refuse rather than pass vacuously.
+    if args.require_no_writes and not (args.before_tree and args.after_tree):
+        parser.error(
+            "--require-no-writes requires --before-tree and --after-tree; "
+            "the path-set delta alone cannot see a content-only rewrite"
+        )
 
     changed_paths = sorted(
         parse_porcelain_v2_paths(args.after.read_text())
