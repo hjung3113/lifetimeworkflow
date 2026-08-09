@@ -47,6 +47,7 @@ from tools.harness_config.loader import (
     effective_relationships,
     languages,
     load_project,
+    ownership_packages,
 )
 from tools.workspace_config import members
 
@@ -183,14 +184,7 @@ def report(
     # reason. A record carrying "manifest" (meaning it came from build_facts()) but no "dir" is the
     # malformed case — surface it on stderr instead of silently dropping it, exactly as
     # conventions_for() does at the sibling call site.
-    for p in pkgs:
-        if "dir" not in p and "manifest" in p:
-            print(
-                f"impact: package {p.get('id')!r} has 'manifest' but no 'dir' — excluded from "
-                "ownership resolution (malformed record, not a declared-only component)",
-                file=sys.stderr,
-            )
-    dir_pkgs = [p for p in pkgs if "dir" in p]
+    dir_pkgs = ownership_packages(pkgs, "impact")
     affected_packages = sorted({p["id"] for p in dir_pkgs if p["id"] in node_set})
 
     # WR-03 (49-REVIEW.md): only ever pass `safe_path` — the CR-01-validated, normalized path —

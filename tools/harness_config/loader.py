@@ -294,6 +294,19 @@ def _nearest_agents_md(dir_: str) -> str | None:
     return None
 
 
+def ownership_packages(packages: list[dict], reporter: str) -> list[dict]:
+    """Return packages safe for ``owning_package()``, reporting malformed records."""
+    for package in packages:
+        if "dir" not in package and "manifest" in package:
+            print(
+                f"{reporter}: package {package.get('id')!r} has 'manifest' but no 'dir' — "
+                "excluded from ownership resolution (malformed record, not a declared-only "
+                "component)",
+                file=sys.stderr,
+            )
+    return [package for package in packages if "dir" in package]
+
+
 def conventions_for(path: str, cfg: dict | None = None, facts: dict | None = None) -> dict:
     """Answer "which conventions apply at ``path``?" (MONO-05/MONO-06).
 
@@ -329,15 +342,7 @@ def conventions_for(path: str, cfg: dict | None = None, facts: dict | None = Non
     # component overriding one, but is missing "dir" for some other reason). The latter must not
     # be silently dropped with no trace — surface it on stderr so a data bug stays visible instead
     # of letting an unrelated ancestor package quietly "win" ownership of its path.
-    for p in pkgs:
-        if "dir" not in p and "manifest" in p:
-            print(
-                f"conventions_for: package {p.get('id')!r} has 'manifest' but no 'dir' — "
-                "excluded from ownership resolution (malformed record, not a declared-only "
-                "component)",
-                file=sys.stderr,
-            )
-    dir_pkgs = [p for p in pkgs if "dir" in p]
+    dir_pkgs = ownership_packages(pkgs, "conventions_for")
     owner_id = owning_package(dir_pkgs, path)
     owner = next(p for p in dir_pkgs if p["id"] == owner_id)
     lang = next((entry for entry in languages(cfg) if entry["id"] == owner.get("language")), None)
