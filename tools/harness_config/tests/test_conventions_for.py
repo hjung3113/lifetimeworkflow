@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 
 from tools.harness_config import conventions_for
-from tools.harness_config.loader import _nearest_agents_md
+from tools.harness_config.loader import _nearest_agents_md, ownership_packages
 
 # ---- CR-01 (48-REVIEW.md): _nearest_agents_md must never walk above the repo root -------------
 
@@ -62,6 +62,17 @@ def test_conventions_for_propagates_out_of_root_dir_as_scoped_value_error() -> N
 
 
 # ---- WR-02 (48-REVIEW.md): the "dir" filter must distinguish declared-only from malformed ------
+
+
+def test_ownership_packages_filters_only_dir_records_and_reports_malformed_records(capsys) -> None:
+    packages = [
+        {"id": "usable", "dir": "pkg"},
+        {"id": "declared-only"},
+        {"id": "malformed", "manifest": "malformed/pyproject.toml"},
+    ]
+
+    assert ownership_packages(packages, "test") == [{"id": "usable", "dir": "pkg"}]
+    assert "test: package 'malformed' has 'manifest' but no 'dir'" in capsys.readouterr().err
 
 
 def test_malformed_component_missing_dir_but_has_manifest_is_reported_on_stderr(capsys) -> None:

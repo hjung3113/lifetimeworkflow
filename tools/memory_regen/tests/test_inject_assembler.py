@@ -121,6 +121,23 @@ def test_no_full_contract_schema_body_leaks() -> None:
     assert "$schema" not in inject.assemble()
 
 
+def test_active_context_pointer_is_ordered_ahead_of_the_elastic_repo_map() -> None:
+    """The fixed-size pointer must never be the section a growing repo map squeezes out.
+
+    ``test_active_context_is_pointer_not_body`` only catches this when the LIVE repo map happens to
+    sit exactly at the budget edge — it did, once, after an unrelated public symbol was added
+    elsewhere in the tree, which is precisely how accidental that guard is. Ordering is the actual
+    fix, so assert the ordering: whichever section comes last is the one the budget drops.
+    """
+    payload = inject.assemble()
+    assert inject.ACTIVE_HEADER in payload
+    assert payload.index(inject.ACTIVE_HEADER) < payload.index(inject.REPO_MAP_HEADER)
+    # ...and putting the pointer first must not cost the whole map: the map is trimmed to fit,
+    # not skipped. Dropping it entirely to save a 179-char pointer would be the worse trade.
+    assert inject.REPO_MAP_HEADER in payload
+    assert len(payload) <= 4000
+
+
 def test_active_context_is_pointer_not_body(repo_root: Path) -> None:
     payload = inject.assemble()
     body = (repo_root / ".memory/state/activeContext.md").read_text(encoding="utf-8")

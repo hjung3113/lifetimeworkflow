@@ -40,5 +40,5 @@ uv run python -m tools.agree.write capture-scope \
   --title "Capture scope" \
   --rule "Confirm the requested scope before expanding work." \
   --because "Please keep the implementation limited to the requested scope." \
-  --related "[PROJECT](../../.planning/PROJECT.md)"
+  --related "[ADR-0002](../../docs/adr/0002-general-template-de-specialization.md)"
 ```
