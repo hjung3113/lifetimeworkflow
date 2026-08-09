@@ -368,7 +368,7 @@ handoff는 `/checkpoint`·`/orient`·SessionStart·commit/ref 재개를 소유�
 
 - GSD 대체 또는 두 번째 사용자 대면 orchestrator 도입.
 - OpenSpec, Superpowers, gstack, BMAD, Spec Kit 전체 설치.
-- `opencode-matt-workflows` bundle, installer, flow-* 19종 vendor.
+- Vendored workflow bundle and installer.
 - 기존 `/review`, `/verify-work`, `/checkpoint`, CI 검증 로직 재구현.
 - contract hash, golden comparator, §4.3–4.6 normalization 재구현.
 - LLM router persona 또는 LLM 기반 lane 결정.
