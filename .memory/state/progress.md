@@ -1,5 +1,5 @@
 ---
-updated: "2026-07-30"
+updated: "2026-08-10"
 ---
 
 # progress — terse running log (COMMITTED)
@@ -10,24 +10,31 @@ updated: "2026-07-30"
 
 ## Recently done (last 5)
 
-- v1.0 (phases 1–8), v2.0 (9–11), v2.1–v2.3 and now **v2.5**: complete + archived.
-- **v2.5 De-ceremony shipped 2026-07-30** — 8 phases (39–46), 33 plans, 16/16 requirements,
-  net −27,398 LOC outside `.planning/`. ADR-0012 made CI and the merge the authority; human-authored
-  gates 5 kinds → 0; constitution plane 4 → 3 members; product gained 4 routes + `/flow`.
-- **Milestone-close PR #5** — the first CI run on any v2.5 work (`ci.yml` is `pull_request`-only),
-  all 11 jobs plus `gate` green, which finally satisfied Phase 43's SC-1.
-- **PR #6 closed the four leftovers** — ADR-0013 (retires ADR-0008, ratifies "a path cited by an
-  accepted ADR is corrected or marked historical, never deleted"), the two `docs/glossary.md` rows,
-  the README test counts 982 → 881, and D-24 accepted as a documented residual.
-- **Archived + tagged `v2.5`** (`e3b3cd2`) — two stale declarations corrected first rather than
-  preserved by the archive: phases 43–46 unchecked in ROADMAP, and CER-01/02/03 reading
-  `Not started`.
+- v1.0 (1–8), v2.0 (9–11), v2.1–v2.3, v2.5 (39–46) and v2.6 (47–50a): complete + archived.
+  v2.6 carried 50b to v2.7 for want of a real multi-package target.
+- **v2.7 phases 51–53 shipped** (PR #9) — a real-target observation baseline, adoption capabilities
+  bounded to failures that baseline actually established, and managed install → update → no-op
+  semantics for `/adopt` backed by a per-destination `installed.json`.
+- **Three defects the fixtures could not reach** surfaced only by running the real target four
+  times: scanner-excluded destinations could never leave `conflict`; `marker-merge` rewrote
+  unconditionally and advanced the record on a no-op; and the marker splice used `find()` where the
+  body legitimately contains an inner fence, appending an extra `END HARNESS-MANAGED` to a third
+  party's `AGENTS.md` on every run. The last was unbounded corruption of someone else's file.
+- **Phase 54 SC-1 + two silent gates** (PR #10) — `conventions_for()` and `report()` now share one
+  `"dir"`-filter helper (DEBT-01); `/contract-check` stage 1 got its first instance to validate,
+  having exited 0 while checking nothing; and the SessionStart repo map stopped silently evicting
+  the activeContext pointer, which adding one public symbol was enough to trigger.
+- **Docs cleaned for internal distribution** (PR #11) — README.ko.md brought to roadmap parity with
+  the English file, both license statements set to internal-use-only, and `docs/references/`
+  (79 vendored third-party files, one character from the generated `docs/reference/`) removed.
 
 ## Remaining
 
-- **v2.6 Minimal Monorepo Core (phases 47–50)** — scoped, not started: package facts, convention
-  profiles, contract impact, `harness-author` + managed adopt. Start with `/gsd:new-milestone`.
-- Carried debt (detail in `.planning/milestones/v2.5-ROADMAP.md`): the core suite's six-test coupling
-  to the reference instance (deferred whole — four of the six are ADR-0002's design); GEN-04's
-  `_CORE_ROOTS` seeing neither `pyproject.toml` nor `.github/`; `ci.yml` giving no CI signal until a
-  milestone's close PR; VERIFICATION.md absent for phases 40/44/45/46, recorded not backfilled.
+- **Phase 54 SC-2/3/4** — closeout counts, harness-sourced runtime changes, and the no-model-
+  identifiers sweep are unverified. SC-1 is done.
+- **A filtered distribution snapshot.** `.planning/` is ~half the tracked files and GSD reads a
+  populated one as an already-initialized project. Documented in both READMEs; not structurally
+  solved.
+- Carried debt (detail in `.planning/milestones/v2.5-ROADMAP.md`): the core suite's six-test
+  coupling to the reference instance; GEN-04's `_CORE_ROOTS` seeing neither `pyproject.toml` nor
+  `.github/`; VERIFICATION.md absent for phases 40/44/45/46, recorded not backfilled.
