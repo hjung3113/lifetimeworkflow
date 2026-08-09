@@ -110,8 +110,24 @@ AGENTS.md CLAUDE.md  # nearest-wins 에이전트 규칙
 전제하므로 새 체크아웃에서는 잘못된 진입점이다.
 
 > **이 레포의 `.planning/`은 원본 프로젝트의 이력이지 당신 것이 아니다.** GSD는 내용이 있는
-> `.planning/`을 "이미 초기화된 프로젝트"로 인식하므로, `/gsd:new-project` 전에 비우거나 깨끗한
-> 스냅샷에서 시작할 것.
+> `.planning/`을 "이미 초기화된 프로젝트"로 인식해서 `/gsd:new-project`가 그 위에 초기화하지
+> 않는다. 먼저 지울 것 — 추적 파일의 절반가량이며, 당신 프로젝트를 설명하는 내용은 하나도 없다.
+
+```bash
+# 이 템플릿으로 새 프로젝트 시작하기
+git clone <this-repo> my-project && cd my-project
+rm -rf .planning .git                  # 원본 프로젝트 이력만 버리고 하네스는 유지
+git init && git add -A && git commit -m "initial: harness template"
+uv sync --all-packages && uv run pytest -q      # 1078 passed
+# 그다음 에이전트 런타임에서:  /gsd:new-project
+```
+
+**테스트 전에 먼저 커밋할 것.** 일부 게이트(contract-drift 베이스라인, package facts)가 `git`으로
+커밋된 상태를 읽기 때문에, 커밋이 하나도 없는 레포에서는 실패한다. 위 절차를 스크래치 클론에
+그대로 재생해 검증했다 — 1078 passed, 원본 트리와 동일.
+
+하네스 본체(`harness/`·`contracts/`·`tools/`·`libs/`·`docs/`·`.github/`·생성된 `.opencode/`
++ `.claude/`)는 `.planning/`에 의존하지 않는다.
 
 ## 기여 규칙
 
