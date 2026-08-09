@@ -57,7 +57,7 @@
 # 1. uv 워크스페이스 동기화 (루트 pyproject.toml + 모든 tools/ + libs/python 멤버)
 uv sync --all-packages
 
-# 2. 전체 하네스 테스트 스위트 (1075 통과)
+# 2. 전체 하네스 테스트 스위트 (1078 통과)
 uv run pytest -q
 
 # 3. harness/ 소스에서 런타임 표면 재방출 후 byte-identical 확인
@@ -94,6 +94,16 @@ AGENTS.md CLAUDE.md  # nearest-wins 에이전트 규칙
   injector 리프레임 · `/agree` write 경로 · emit round-trip 게이트 · 로컬 메모리 web UI.
 - 🗑 **v2.2 — Adaptive Task Control Plane (Phase 18–23)**: 6개 phase로 출시(ADR-0008 비준)했으나
   v2.5에서 CER-07에 따라 전량 제거됨. 저장소에 남은 산출물 없음 — 마일스톤 이력으로만 기록.
+- ✅ **v2.3 — Contract Graph, Brownfield Adoption, Living Docs (Phase 24–29)**: contract 관계 그래프 +
+  `/impact` · brownfield-adoption 스킬 · `docs_sync` 기반 파생 Diátaxis reference quadrant.
+- ⚠ **v2.4 — Gate Right-Sizing, Carried Debt, Lane Discipline (Phase 30–38) — closed PARTIAL**: Phase 34–37
+  shipped · 30 partial · 31/32/33 cut · 38은 코드로 반영되어 v2.5 Phase 39에서 정식화.
+- ✅ **v2.5 — De-ceremony (Phase 39–46)**: 근거 없는 ceremony를 제거하고 v2.2 task-control plane을 포함한
+  하네스 표면을 필요한 범위로 축소.
+- ✅ **v2.6 — Minimal Monorepo Core (Phase 47–50a)**: 최소 monorepo core + `harness-author` 스킬.
+  50b(managed adopt/upgrade)는 실제 다중 패키지 대상 부재로 BLOCKED되어 v2.7로 이월.
+- 🔄 **v2.7 — Real-Target Adoption (Phase 51–54) — in progress**: 실제 대상 adoption 진행 · Phase 54
+  surface budget closeout open.
 
 개발은 **GSD** 워크플로우(`.planning/` + `/gsd:*` 커맨드)로 진행. 템플릿으로 받아서 시작한다면
 **`/gsd:new-project`** 부터 — `/gsd:new-milestone`은 기존 `PROJECT.md`와 이전 마일스톤 이력을
@@ -110,6 +120,11 @@ AGENTS.md CLAUDE.md  # nearest-wins 에이전트 규칙
 - 가장 가까운 [`AGENTS.md`](AGENTS.md) 먼저 읽기. 서브트리별 `AGENTS.md`가 비협상 규칙을 재진술.
 - push 전: `uv run pytest -q`, 재방출 후 `git diff` clean 확인, contract-drift/golden 게이트 green 유지.
   `/verify-work`가 세션 내 복합 게이트를 실행.
+
+## 📄 라이선스
+
+이 저장소는 내부 사용 목적으로만 배포되며, 오픈소스 라이선스가 적용되지 않습니다.
+공개 배포는 허용되지 않습니다.
 
 ---
 

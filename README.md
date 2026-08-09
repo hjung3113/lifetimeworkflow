@@ -9,13 +9,13 @@ responsibility-split **polyglot** monorepo — where "how we develop here" lives
 **skills, commands, and hooks**, not tribal knowledge.
 
 [![CI](https://img.shields.io/badge/CI-fan--in%20gate-2ea44f)](.github/workflows/ci.yml)
-[![tests](https://img.shields.io/badge/tests-1075%20passing-2ea44f)](#-quickstart)
+[![tests](https://img.shields.io/badge/tests-1078%20passing-2ea44f)](#-quickstart)
 [![runtimes](https://img.shields.io/badge/runtimes-opencode%20%2B%20Claude%20Code-blue)](#-single-source--dual-runtime)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](harness/project.toml)
 [![Python](https://img.shields.io/badge/Python-3.11%2B%20(uv)-3776AB)](pyproject.toml)
 [![milestones](https://img.shields.io/badge/milestones-v1.0–v2.6%20shipped%20·%20v2.7%20in%20progress-purple)](.planning/MILESTONES.md)
 [![한글](https://img.shields.io/badge/설명서-한글-red)](README.ko.md)
-[![license](https://img.shields.io/badge/license-TBD-lightgrey)](#-license)
+[![license](https://img.shields.io/badge/license-internal%20use%20only-lightgrey)](#-license)
 
 [What it is](#-what-it-is) · [Why](#-why) · [Features](#-features) · [Architecture](#-architecture) · [Quickstart](#-quickstart) · [Layout](#-repository-layout) · [Concepts](#-core-concepts) · [Roadmap](#-roadmap) · [한글 설명서](README.ko.md)
 
@@ -104,7 +104,7 @@ secondary **Claude Code**.
 # 1. Sync the uv workspace (root pyproject.toml + all tools/ + libs/python members)
 uv sync --all-packages
 
-# 2. Run the full harness test suite  (1075 passing)
+# 2. Run the full harness test suite  (1078 passing)
 uv run pytest -q
 
 # 3. Re-emit the runtime surfaces from harness/ source, then prove it's byte-identical
@@ -263,8 +263,8 @@ the Korean guide: **[README.ko.md](README.ko.md)**.
 
 ## 📄 License
 
-No `LICENSE` file is present yet. Add one before any public distribution — until then, all rights
-are reserved by the repository owner.
+This repository is distributed for internal use only. It carries no open-source license, and public
+distribution is not permitted.
 
 ---
 

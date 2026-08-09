@@ -189,10 +189,9 @@ jobs:
   # findings, zero CI jobs looking at them, and an advisory /lint command that was always red —
   # which is worse than absent, because an operator learns to ignore it.
   #
-  # This job does NOT run a bare `ruff check .`, and that is deliberate. 393 genuine findings
-  # remain (the 193 in the vendored docs/references/opencode-matt-workflows tree left via
-  # `extend-exclude`; ruff's safe autofixes took another 31). A bare check would make this job
-  # permanently red, i.e. exactly the same non-gate it replaces. It becomes a step when the
+  # This job does NOT run a bare `ruff check .`, and that is deliberate. Findings still remain
+  # (see tools/ruff_baseline/baseline.json for the live count), so a bare check would make this
+  # job permanently red — exactly the same non-gate it replaces. It becomes a step when the
   # baseline reaches zero, and not before.
   #
   # Instead the gate is a RATCHET: tools/ruff_baseline/baseline.json records the per-rule counts,
