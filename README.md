@@ -242,8 +242,14 @@ upgrade) was BLOCKED** for want of a real multi-package target and carried into 
   surface budget.
 </details>
 
-Development is driven by the **GSD** workflow (`.planning/` + `/gsd:*` commands). Start a new
-milestone with `/gsd:new-milestone`. See the Korean guide: **[README.ko.md](README.ko.md)**.
+Development is driven by the **GSD** workflow (`.planning/` + `/gsd:*` commands). If you cloned this
+as a template, start with **`/gsd:new-project`** — `/gsd:new-milestone` assumes an existing
+`PROJECT.md` and prior milestone history, so it is the wrong entry point on a fresh checkout. See
+the Korean guide: **[README.ko.md](README.ko.md)**.
+
+> **`.planning/` in this repo is the source project's own history, not yours.** GSD treats a
+> populated `.planning/` as an already-initialized project, so clear it (or start from a clean
+> snapshot) before running `/gsd:new-project`.
 
 ## 🤝 Contributing
 

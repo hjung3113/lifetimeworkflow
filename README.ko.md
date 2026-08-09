@@ -95,7 +95,13 @@ AGENTS.md CLAUDE.md  # nearest-wins 에이전트 규칙
 - 🗑 **v2.2 — Adaptive Task Control Plane (Phase 18–23)**: 6개 phase로 출시(ADR-0008 비준)했으나
   v2.5에서 CER-07에 따라 전량 제거됨. 저장소에 남은 산출물 없음 — 마일스톤 이력으로만 기록.
 
-개발은 **GSD** 워크플로우(`.planning/` + `/gsd:*` 커맨드)로 진행. 새 마일스톤은 `/gsd:new-milestone`.
+개발은 **GSD** 워크플로우(`.planning/` + `/gsd:*` 커맨드)로 진행. 템플릿으로 받아서 시작한다면
+**`/gsd:new-project`** 부터 — `/gsd:new-milestone`은 기존 `PROJECT.md`와 이전 마일스톤 이력을
+전제하므로 새 체크아웃에서는 잘못된 진입점이다.
+
+> **이 레포의 `.planning/`은 원본 프로젝트의 이력이지 당신 것이 아니다.** GSD는 내용이 있는
+> `.planning/`을 "이미 초기화된 프로젝트"로 인식하므로, `/gsd:new-project` 전에 비우거나 깨끗한
+> 스냅샷에서 시작할 것.
 
 ## 기여 규칙
 
