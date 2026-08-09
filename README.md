@@ -248,8 +248,25 @@ as a template, start with **`/gsd:new-project`** — `/gsd:new-milestone` assume
 the Korean guide: **[README.ko.md](README.ko.md)**.
 
 > **`.planning/` in this repo is the source project's own history, not yours.** GSD treats a
-> populated `.planning/` as an already-initialized project, so clear it (or start from a clean
-> snapshot) before running `/gsd:new-project`.
+> populated `.planning/` as an already-initialized project, so `/gsd:new-project` will not
+> initialize over it. Clear it first — it is roughly half the tracked files, and none of it
+> describes your project.
+
+```bash
+# Starting a new project from this template
+git clone <this-repo> my-project && cd my-project
+rm -rf .planning .git                  # drop the source project's history, keep the harness
+git init && git add -A && git commit -m "initial: harness template"
+uv sync --all-packages && uv run pytest -q      # 1078 passed
+# then, in your agent runtime:  /gsd:new-project
+```
+
+Commit **before** running the suite: several gates (contract-drift's baseline, package facts)
+read committed state through `git`, so they fail on a repo with no commit yet. Verified by
+replaying exactly these steps into a scratch clone — 1078 passed, same as the source tree.
+
+Everything the harness itself needs — `harness/`, `contracts/`, `tools/`, `libs/`, `docs/`,
+`.github/`, and the generated `.opencode/` + `.claude/` trees — is independent of `.planning/`.
 
 ## 🤝 Contributing
 
