@@ -6,9 +6,9 @@
   contract-drift: fixed fixture
   ## Contracts index (summary)
   contracts fixture
-  ## Repo map (top-N)
-  repo fixture
   ## Progress log (pointer)
   .memory/state/activeContext.md — session progress log; git holds the full completed history. On a data conflict, contracts/ADR win. [updated: unknown — run /checkpoint]
+  ## Repo map (top-N)
+  repo fixture
   '''
 # ---

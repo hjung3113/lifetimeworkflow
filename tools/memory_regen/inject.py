@@ -125,6 +125,23 @@ def _active_context_pointer(state_dir: Path = STATE_DIR) -> str:
     )
 
 
+def _fit_lines(text: str, limit: int) -> str:
+    """Return the longest whole-line prefix of ``text`` that fits ``limit`` chars.
+
+    Returns "" when not even the header line fits, so the caller drops the section rather than
+    emitting a bare heading.
+    """
+    kept: list[str] = []
+    used = 0
+    for line in text.splitlines():
+        addition = len(line) + (1 if kept else 0)
+        if used + addition > limit:
+            break
+        kept.append(line)
+        used += addition
+    return "\n".join(kept) if len(kept) > 1 else ""
+
+
 def assemble(
     budget_chars: int = 4000,
     derived_dir: Path = DERIVED_DIR,
@@ -140,8 +157,13 @@ def assemble(
         ("banner", BANNER),
         ("drift", _drift_summary()),
         ("contracts", _contracts_summary(derived_dir)),
-        ("repomap", _repo_map_topN(derived_dir)),
+        # "active" is a fixed-size POINTER, so it is ordered AHEAD of the elastic repo map. When it
+        # sat last, a repo map that grew into the budget silently dropped it — adding one public
+        # symbol anywhere in the tree was enough to do that. The repo map is the derived,
+        # regenerable section, so it is the one that gets squeezed out. The budget still binds
+        # every section here, including this one.
         ("active", _active_context_pointer(state_dir)),
+        ("repomap", _repo_map_topN(derived_dir)),
     ]
     out: list[str] = []
     used = 0
@@ -150,7 +172,15 @@ def assemble(
             continue
         addition = len(text) + (1 if out else 0)
         if name not in ("agreements", "banner", "drift") and used + addition > budget_chars:
-            continue
+            # The repo map is the one ELASTIC section: it is a ranked list, so a short one is
+            # still useful. Trim it to the remaining budget on a line boundary instead of
+            # dropping it whole — an all-or-nothing skip here cost the payload its entire map.
+            if name != "repomap":
+                continue
+            text = _fit_lines(text, budget_chars - used - (1 if out else 0))
+            if not text:
+                continue
+            addition = len(text) + (1 if out else 0)
         out.append(text)
         used += addition
     return "\n".join(out)
