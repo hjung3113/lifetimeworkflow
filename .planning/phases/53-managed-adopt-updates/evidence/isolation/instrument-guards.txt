@@ -11,6 +11,14 @@ identical between before and after — this is precisely the case a path-set del
   SAME mutation, tree digests OMITTED (the old     -> exit=0  (expected 0 — THIS is why the path-set delta alone is not the proof)
             path-set-only instrument)
 
+## 1b. --require-no-writes must REFUSE to run without the tree digests
+Row 1's third line is the residual hole: the same mutation exits 0 when the digests are
+omitted, so the gate could still pass vacuously in a later run that forgot the flags. The
+driver now refuses that argv instead of degrading to the path-set delta.
+
+  --require-no-writes, digests OMITTED  -> exit=2, "requires --before-tree and --after-tree"
+  --require-no-writes, digests SUPPLIED -> exit=0  (no false positive; cycle-2's real captures)
+
 ## 2. anchored mis-target argv guard (53-04-PLAN.md Task 2 verify block)
   hand-written MIS-TARGETED argv -> guard matches, verify would exit 1: YES
   legitimate worktree argv       -> guard does NOT match (no false positive): YES
